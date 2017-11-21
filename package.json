@@ -2,10 +2,12 @@
   "name": "node-metaverse",
   "version": "0.0.1",
   "description": "A node.js interface for Second Life.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "start": "npm run build:live",
-    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts"
+    "prepublish": "npm run build",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "None",
@@ -17,5 +19,15 @@
     "tslint": "^5.8.0",
     "tslint-eslint-rules": "^4.1.1",
     "typescript": "^2.6.1"
+  },
+  "dependencies": {
+    "@types/uuid": "^3.4.3",
+    "@types/validator": "^6.3.0",
+    "@types/xml": "^1.0.2",
+    "@types/xmlrpc": "^1.3.3",
+    "uuid": "^3.1.0",
+    "validator": "^9.1.1",
+    "xml": "^1.0.1",
+    "xmlrpc": "^1.3.2"
   }
 }
