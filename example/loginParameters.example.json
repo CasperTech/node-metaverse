@@ -1,0 +1,6 @@
+{
+  "firstName": "Username",
+  "lastName": "Resident",
+  "password": "YourPassword",
+  "start": "home" //home, last, or login uri
+}
