@@ -1,8 +1,10 @@
 import {MessageFlags} from '../enums/MessageFlags';
 
-export class Packet
+export interface Packet
 {
     name: string;
     flags: MessageFlags;
     id: number;
+
+    getSize(): number;
 }

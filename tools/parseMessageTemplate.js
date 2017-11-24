@@ -1,5 +1,4 @@
 const fs = require('fs');
-let messageCount = 0;
 
 function getParams(str)
 {
@@ -77,7 +76,22 @@ fs.readFile('./msg_template.msg', (err, data) =>
     }
     else
     {
-        const msgTemplate = data.toString('ascii');
+        let msgTemplate = data.toString('ascii');
+
+        //Remove all comments
+        const lines = msgTemplate.split('\n');
+        let newLines = [];
+        lines.forEach((line) => {
+           let pos = line.indexOf('//');
+           if (pos !== -1)
+           {
+               line = line.substr(0, pos-1);
+           }
+           newLines.push(line);
+        });
+        msgTemplate = newLines.join('\n');
+
+
         let messages = getBlocks(msgTemplate);
         let done = false;
         let msgObjects = [];
