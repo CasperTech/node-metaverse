@@ -1,5 +1,5 @@
 import {Bot} from './Bot';
-import {LoginParameters} from './structs/LoginParameters';
+import {LoginParameters} from './classes/LoginParameters';
 
 export {
     Bot,

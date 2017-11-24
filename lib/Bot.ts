@@ -1,6 +1,6 @@
 import {LoginHandler} from './LoginHandler';
-import {LoginResponse} from './structs/LoginResponse';
-import {LoginParameters} from './structs/LoginParameters';
+import {LoginResponse} from './classes/LoginResponse';
+import {LoginParameters} from './classes/LoginParameters';
 
 export class Bot
 {
