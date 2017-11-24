@@ -34,4 +34,58 @@ export class AvatarClassifiedReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['TargetID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.Data.length;
+         buf.writeUInt8(this.Data.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.Data[i]['ClassifiedID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.Data[i]['Name'], pos);
+             pos += this.Data[i]['Name'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             TargetID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             TargetID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['TargetID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.Data = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjData: {
+                 ClassifiedID: UUID,
+                 Name: string
+             } = {
+                 ClassifiedID: UUID.zero(),
+                 Name: ''
+             };
+             newObjData['ClassifiedID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjData['Name'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.Data.push(newObjData);
+         }
+         return pos - startPos;
+     }
 }
+

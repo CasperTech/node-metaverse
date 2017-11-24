@@ -25,4 +25,62 @@ export class ObjectSaleInfoPacket implements Packet
         return ((9) * this.ObjectData.length) + 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.ObjectData.length;
+         buf.writeUInt8(this.ObjectData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt32LE(this.ObjectData[i]['LocalID'], pos);
+             pos += 4;
+             buf.writeUInt8(this.ObjectData[i]['SaleType'], pos++);
+             buf.writeInt32LE(this.ObjectData[i]['SalePrice'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.ObjectData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjObjectData: {
+                 LocalID: number,
+                 SaleType: number,
+                 SalePrice: number
+             } = {
+                 LocalID: 0,
+                 SaleType: 0,
+                 SalePrice: 0
+             };
+             newObjObjectData['LocalID'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjObjectData['SaleType'] = buf.readUInt8(pos++);
+             newObjObjectData['SalePrice'] = buf.readInt32LE(pos);
+             pos += 4;
+             this.ObjectData.push(newObjObjectData);
+         }
+         return pos - startPos;
+     }
 }
+

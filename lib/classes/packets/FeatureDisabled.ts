@@ -21,4 +21,38 @@ export class FeatureDisabledPacket implements Packet
         return (this.FailureInfo['ErrorMessage'].length + 1) + 32;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.write(this.FailureInfo['ErrorMessage'], pos);
+         pos += this.FailureInfo['ErrorMessage'].length;
+         this.FailureInfo['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.FailureInfo['TransactionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjFailureInfo: {
+             ErrorMessage: string,
+             AgentID: UUID,
+             TransactionID: UUID
+         } = {
+             ErrorMessage: '',
+             AgentID: UUID.zero(),
+             TransactionID: UUID.zero()
+         };
+         newObjFailureInfo['ErrorMessage'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjFailureInfo['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjFailureInfo['TransactionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.FailureInfo = newObjFailureInfo;
+         return pos - startPos;
+     }
 }
+

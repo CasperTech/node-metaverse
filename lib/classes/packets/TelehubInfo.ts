@@ -27,4 +27,64 @@ export class TelehubInfoPacket implements Packet
         return (this.TelehubBlock['ObjectName'].length + 1) + ((12) * this.SpawnPointBlock.length) + 41;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.TelehubBlock['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.TelehubBlock['ObjectName'], pos);
+         pos += this.TelehubBlock['ObjectName'].length;
+         this.TelehubBlock['TelehubPos'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         this.TelehubBlock['TelehubRot'].writeToBuffer(buf, pos);
+         pos += 12;
+         const count = this.SpawnPointBlock.length;
+         buf.writeUInt8(this.SpawnPointBlock.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.SpawnPointBlock[i]['SpawnPointPos'].writeToBuffer(buf, pos, false);
+             pos += 12;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjTelehubBlock: {
+             ObjectID: UUID,
+             ObjectName: string,
+             TelehubPos: Vector3,
+             TelehubRot: Quaternion
+         } = {
+             ObjectID: UUID.zero(),
+             ObjectName: '',
+             TelehubPos: Vector3.getZero(),
+             TelehubRot: Quaternion.getIdentity()
+         };
+         newObjTelehubBlock['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjTelehubBlock['ObjectName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjTelehubBlock['TelehubPos'] = new Vector3(buf, pos, false);
+         pos += 12;
+         newObjTelehubBlock['TelehubRot'] = new Quaternion(buf, pos);
+         pos += 12;
+         this.TelehubBlock = newObjTelehubBlock;
+         const count = buf.readUInt8(pos++);
+         this.SpawnPointBlock = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjSpawnPointBlock: {
+                 SpawnPointPos: Vector3
+             } = {
+                 SpawnPointPos: Vector3.getZero()
+             };
+             newObjSpawnPointBlock['SpawnPointPos'] = new Vector3(buf, pos, false);
+             pos += 12;
+             this.SpawnPointBlock.push(newObjSpawnPointBlock);
+         }
+         return pos - startPos;
+     }
 }
+

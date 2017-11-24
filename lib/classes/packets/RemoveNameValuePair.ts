@@ -32,4 +32,46 @@ export class RemoveNameValuePairPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.TaskData['ID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.NameValueData.length;
+         buf.writeUInt8(this.NameValueData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.write(this.NameValueData[i]['NVPair'], pos);
+             pos += this.NameValueData[i]['NVPair'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjTaskData: {
+             ID: UUID
+         } = {
+             ID: UUID.zero()
+         };
+         newObjTaskData['ID'] = new UUID(buf, pos);
+         pos += 16;
+         this.TaskData = newObjTaskData;
+         const count = buf.readUInt8(pos++);
+         this.NameValueData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjNameValueData: {
+                 NVPair: string
+             } = {
+                 NVPair: ''
+             };
+             newObjNameValueData['NVPair'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.NameValueData.push(newObjNameValueData);
+         }
+         return pos - startPos;
+     }
 }
+

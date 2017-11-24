@@ -27,4 +27,72 @@ export class RequestImagePacket implements Packet
         return ((26) * this.RequestImage.length) + 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.RequestImage.length;
+         buf.writeUInt8(this.RequestImage.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.RequestImage[i]['Image'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeInt8(this.RequestImage[i]['DiscardLevel'], pos++);
+             buf.writeFloatLE(this.RequestImage[i]['DownloadPriority'], pos);
+             pos += 4;
+             buf.writeUInt32LE(this.RequestImage[i]['Packet'], pos);
+             pos += 4;
+             buf.writeUInt8(this.RequestImage[i]['Type'], pos++);
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.RequestImage = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjRequestImage: {
+                 Image: UUID,
+                 DiscardLevel: number,
+                 DownloadPriority: number,
+                 Packet: number,
+                 Type: number
+             } = {
+                 Image: UUID.zero(),
+                 DiscardLevel: 0,
+                 DownloadPriority: 0,
+                 Packet: 0,
+                 Type: 0
+             };
+             newObjRequestImage['Image'] = new UUID(buf, pos);
+             pos += 16;
+             newObjRequestImage['DiscardLevel'] = buf.readInt8(pos++);
+             newObjRequestImage['DownloadPriority'] = buf.readFloatLE(pos);
+             pos += 4;
+             newObjRequestImage['Packet'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjRequestImage['Type'] = buf.readUInt8(pos++);
+             this.RequestImage.push(newObjRequestImage);
+         }
+         return pos - startPos;
+     }
 }
+

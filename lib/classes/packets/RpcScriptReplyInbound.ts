@@ -23,4 +23,50 @@ export class RpcScriptReplyInboundPacket implements Packet
         return (this.DataBlock['StringValue'].length + 2) + 52;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.DataBlock['TaskID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.DataBlock['ItemID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.DataBlock['ChannelID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.DataBlock['IntValue'], pos);
+         pos += 4;
+         buf.write(this.DataBlock['StringValue'], pos);
+         pos += this.DataBlock['StringValue'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjDataBlock: {
+             TaskID: UUID,
+             ItemID: UUID,
+             ChannelID: UUID,
+             IntValue: number,
+             StringValue: string
+         } = {
+             TaskID: UUID.zero(),
+             ItemID: UUID.zero(),
+             ChannelID: UUID.zero(),
+             IntValue: 0,
+             StringValue: ''
+         };
+         newObjDataBlock['TaskID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['ItemID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['ChannelID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['IntValue'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjDataBlock['StringValue'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

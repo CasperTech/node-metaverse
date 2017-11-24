@@ -24,4 +24,46 @@ export class UserInfoReplyPacket implements Packet
         return (this.UserData['DirectoryVisibility'].length + 1 + this.UserData['EMail'].length + 2) + 17;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.UserData['IMViaEMail']) ? 1 : 0, pos++);
+         buf.write(this.UserData['DirectoryVisibility'], pos);
+         pos += this.UserData['DirectoryVisibility'].length;
+         buf.write(this.UserData['EMail'], pos);
+         pos += this.UserData['EMail'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjUserData: {
+             IMViaEMail: boolean,
+             DirectoryVisibility: string,
+             EMail: string
+         } = {
+             IMViaEMail: false,
+             DirectoryVisibility: '',
+             EMail: ''
+         };
+         newObjUserData['IMViaEMail'] = (buf.readUInt8(pos++) === 1);
+         newObjUserData['DirectoryVisibility'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjUserData['EMail'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.UserData = newObjUserData;
+         return pos - startPos;
+     }
 }
+

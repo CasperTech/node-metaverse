@@ -20,4 +20,32 @@ export class DetachAttachmentIntoInvPacket implements Packet
         return 32;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.ObjectData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.ObjectData['ItemID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjObjectData: {
+             AgentID: UUID,
+             ItemID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             ItemID: UUID.zero()
+         };
+         newObjObjectData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjObjectData['ItemID'] = new UUID(buf, pos);
+         pos += 16;
+         this.ObjectData = newObjObjectData;
+         return pos - startPos;
+     }
 }
+

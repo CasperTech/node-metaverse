@@ -24,4 +24,48 @@ export class JoinGroupRequestExtendedPacket implements Packet
         return 52;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.AgentData['GroupLimit'], pos);
+         pos += 4;
+         this.GroupData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             GroupLimit: number
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             GroupLimit: 0
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['GroupLimit'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.AgentData = newObjAgentData;
+         const newObjGroupData: {
+             GroupID: UUID
+         } = {
+             GroupID: UUID.zero()
+         };
+         newObjGroupData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         this.GroupData = newObjGroupData;
+         return pos - startPos;
+     }
 }
+

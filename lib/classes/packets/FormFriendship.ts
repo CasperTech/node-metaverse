@@ -20,4 +20,32 @@ export class FormFriendshipPacket implements Packet
         return 32;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentBlock['SourceID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentBlock['DestID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentBlock: {
+             SourceID: UUID,
+             DestID: UUID
+         } = {
+             SourceID: UUID.zero(),
+             DestID: UUID.zero()
+         };
+         newObjAgentBlock['SourceID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentBlock['DestID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentBlock = newObjAgentBlock;
+         return pos - startPos;
+     }
 }
+

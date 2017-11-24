@@ -23,4 +23,42 @@ export class SaveAssetIntoInventoryPacket implements Packet
         return 48;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.InventoryData['ItemID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.InventoryData['NewAssetID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjInventoryData: {
+             ItemID: UUID,
+             NewAssetID: UUID
+         } = {
+             ItemID: UUID.zero(),
+             NewAssetID: UUID.zero()
+         };
+         newObjInventoryData['ItemID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInventoryData['NewAssetID'] = new UUID(buf, pos);
+         pos += 16;
+         this.InventoryData = newObjInventoryData;
+         return pos - startPos;
+     }
 }
+

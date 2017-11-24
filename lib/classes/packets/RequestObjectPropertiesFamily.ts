@@ -24,4 +24,48 @@ export class RequestObjectPropertiesFamilyPacket implements Packet
         return 52;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.ObjectData['RequestFlags'], pos);
+         pos += 4;
+         this.ObjectData['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjObjectData: {
+             RequestFlags: number,
+             ObjectID: UUID
+         } = {
+             RequestFlags: 0,
+             ObjectID: UUID.zero()
+         };
+         newObjObjectData['RequestFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjObjectData['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         this.ObjectData = newObjObjectData;
+         return pos - startPos;
+     }
 }
+

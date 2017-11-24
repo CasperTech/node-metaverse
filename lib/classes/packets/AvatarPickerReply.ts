@@ -35,4 +35,64 @@ export class AvatarPickerReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.Data.length;
+         buf.writeUInt8(this.Data.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.Data[i]['AvatarID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.Data[i]['FirstName'], pos);
+             pos += this.Data[i]['FirstName'].length;
+             buf.write(this.Data[i]['LastName'], pos);
+             pos += this.Data[i]['LastName'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             QueryID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             QueryID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.Data = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjData: {
+                 AvatarID: UUID,
+                 FirstName: string,
+                 LastName: string
+             } = {
+                 AvatarID: UUID.zero(),
+                 FirstName: '',
+                 LastName: ''
+             };
+             newObjData['AvatarID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjData['FirstName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjData['LastName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.Data.push(newObjData);
+         }
+         return pos - startPos;
+     }
 }
+

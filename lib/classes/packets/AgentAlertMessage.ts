@@ -23,4 +23,40 @@ export class AgentAlertMessagePacket implements Packet
         return (this.AlertData['Message'].length + 1) + 17;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.AlertData['Modal']) ? 1 : 0, pos++);
+         buf.write(this.AlertData['Message'], pos);
+         pos += this.AlertData['Message'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjAlertData: {
+             Modal: boolean,
+             Message: string
+         } = {
+             Modal: false,
+             Message: ''
+         };
+         newObjAlertData['Modal'] = (buf.readUInt8(pos++) === 1);
+         newObjAlertData['Message'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.AlertData = newObjAlertData;
+         return pos - startPos;
+     }
 }
+

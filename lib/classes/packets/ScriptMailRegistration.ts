@@ -22,4 +22,44 @@ export class ScriptMailRegistrationPacket implements Packet
         return (this.DataBlock['TargetIP'].length + 1) + 22;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.write(this.DataBlock['TargetIP'], pos);
+         pos += this.DataBlock['TargetIP'].length;
+         buf.writeUInt16LE(this.DataBlock['TargetPort'], pos);
+         pos += 2;
+         this.DataBlock['TaskID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.DataBlock['Flags'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjDataBlock: {
+             TargetIP: string,
+             TargetPort: number,
+             TaskID: UUID,
+             Flags: number
+         } = {
+             TargetIP: '',
+             TargetPort: 0,
+             TaskID: UUID.zero(),
+             Flags: 0
+         };
+         newObjDataBlock['TargetIP'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjDataBlock['TargetPort'] = buf.readUInt16LE(pos);
+         pos += 2;
+         newObjDataBlock['TaskID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['Flags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

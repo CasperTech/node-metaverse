@@ -18,4 +18,36 @@ export class KillObjectPacket implements Packet
         return ((4) * this.ObjectData.length) + 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.ObjectData.length;
+         buf.writeUInt8(this.ObjectData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt32LE(this.ObjectData[i]['ID'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.ObjectData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjObjectData: {
+                 ID: number
+             } = {
+                 ID: 0
+             };
+             newObjObjectData['ID'] = buf.readUInt32LE(pos);
+             pos += 4;
+             this.ObjectData.push(newObjObjectData);
+         }
+         return pos - startPos;
+     }
 }
+

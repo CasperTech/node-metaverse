@@ -43,4 +43,100 @@ export class GroupRoleDataReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.GroupData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.GroupData['RequestID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.GroupData['RoleCount'], pos);
+         pos += 4;
+         const count = this.RoleData.length;
+         buf.writeUInt8(this.RoleData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.RoleData[i]['RoleID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.RoleData[i]['Name'], pos);
+             pos += this.RoleData[i]['Name'].length;
+             buf.write(this.RoleData[i]['Title'], pos);
+             pos += this.RoleData[i]['Title'].length;
+             buf.write(this.RoleData[i]['Description'], pos);
+             pos += this.RoleData[i]['Description'].length;
+             buf.writeInt32LE(this.RoleData[i]['Powers'].low, pos);
+             pos += 4;
+             buf.writeInt32LE(this.RoleData[i]['Powers'].high, pos);
+             pos += 4;
+             buf.writeUInt32LE(this.RoleData[i]['Members'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjGroupData: {
+             GroupID: UUID,
+             RequestID: UUID,
+             RoleCount: number
+         } = {
+             GroupID: UUID.zero(),
+             RequestID: UUID.zero(),
+             RoleCount: 0
+         };
+         newObjGroupData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjGroupData['RequestID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjGroupData['RoleCount'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.GroupData = newObjGroupData;
+         const count = buf.readUInt8(pos++);
+         this.RoleData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjRoleData: {
+                 RoleID: UUID,
+                 Name: string,
+                 Title: string,
+                 Description: string,
+                 Powers: Long,
+                 Members: number
+             } = {
+                 RoleID: UUID.zero(),
+                 Name: '',
+                 Title: '',
+                 Description: '',
+                 Powers: Long.ZERO,
+                 Members: 0
+             };
+             newObjRoleData['RoleID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjRoleData['Name'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjRoleData['Title'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjRoleData['Description'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+             pos += 8;
+             newObjRoleData['Members'] = buf.readUInt32LE(pos);
+             pos += 4;
+             this.RoleData.push(newObjRoleData);
+         }
+         return pos - startPos;
+     }
 }
+

@@ -19,4 +19,36 @@ export class SystemKickUserPacket implements Packet
         return ((16) * this.AgentInfo.length) + 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.AgentInfo.length;
+         buf.writeUInt8(this.AgentInfo.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.AgentInfo[i]['AgentID'].writeToBuffer(buf, pos);
+             pos += 16;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.AgentInfo = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjAgentInfo: {
+                 AgentID: UUID
+             } = {
+                 AgentID: UUID.zero()
+             };
+             newObjAgentInfo['AgentID'] = new UUID(buf, pos);
+             pos += 16;
+             this.AgentInfo.push(newObjAgentInfo);
+         }
+         return pos - startPos;
+     }
 }
+

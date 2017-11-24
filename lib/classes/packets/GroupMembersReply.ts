@@ -43,4 +43,98 @@ export class GroupMembersReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.GroupData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.GroupData['RequestID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.GroupData['MemberCount'], pos);
+         pos += 4;
+         const count = this.MemberData.length;
+         buf.writeUInt8(this.MemberData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.MemberData[i]['AgentID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeInt32LE(this.MemberData[i]['Contribution'], pos);
+             pos += 4;
+             buf.write(this.MemberData[i]['OnlineStatus'], pos);
+             pos += this.MemberData[i]['OnlineStatus'].length;
+             buf.writeInt32LE(this.MemberData[i]['AgentPowers'].low, pos);
+             pos += 4;
+             buf.writeInt32LE(this.MemberData[i]['AgentPowers'].high, pos);
+             pos += 4;
+             buf.write(this.MemberData[i]['Title'], pos);
+             pos += this.MemberData[i]['Title'].length;
+             buf.writeUInt8((this.MemberData[i]['IsOwner']) ? 1 : 0, pos++);
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjGroupData: {
+             GroupID: UUID,
+             RequestID: UUID,
+             MemberCount: number
+         } = {
+             GroupID: UUID.zero(),
+             RequestID: UUID.zero(),
+             MemberCount: 0
+         };
+         newObjGroupData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjGroupData['RequestID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjGroupData['MemberCount'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.GroupData = newObjGroupData;
+         const count = buf.readUInt8(pos++);
+         this.MemberData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjMemberData: {
+                 AgentID: UUID,
+                 Contribution: number,
+                 OnlineStatus: string,
+                 AgentPowers: Long,
+                 Title: string,
+                 IsOwner: boolean
+             } = {
+                 AgentID: UUID.zero(),
+                 Contribution: 0,
+                 OnlineStatus: '',
+                 AgentPowers: Long.ZERO,
+                 Title: '',
+                 IsOwner: false
+             };
+             newObjMemberData['AgentID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjMemberData['Contribution'] = buf.readInt32LE(pos);
+             pos += 4;
+             newObjMemberData['OnlineStatus'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjMemberData['AgentPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+             pos += 8;
+             newObjMemberData['Title'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjMemberData['IsOwner'] = (buf.readUInt8(pos++) === 1);
+             this.MemberData.push(newObjMemberData);
+         }
+         return pos - startPos;
+     }
 }
+

@@ -23,4 +23,42 @@ export class DataHomeLocationRequestPacket implements Packet
         return 24;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.Info['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.Info['KickedFromEstateID'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.AgentInfo['AgentEffectiveMaturity'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjInfo: {
+             AgentID: UUID,
+             KickedFromEstateID: number
+         } = {
+             AgentID: UUID.zero(),
+             KickedFromEstateID: 0
+         };
+         newObjInfo['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfo['KickedFromEstateID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.Info = newObjInfo;
+         const newObjAgentInfo: {
+             AgentEffectiveMaturity: number
+         } = {
+             AgentEffectiveMaturity: 0
+         };
+         newObjAgentInfo['AgentEffectiveMaturity'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.AgentInfo = newObjAgentInfo;
+         return pos - startPos;
+     }
 }
+

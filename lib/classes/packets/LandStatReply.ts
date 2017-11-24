@@ -41,4 +41,100 @@ export class LandStatReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt32LE(this.RequestData['ReportType'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.RequestData['RequestFlags'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.RequestData['TotalObjectCount'], pos);
+         pos += 4;
+         const count = this.ReportData.length;
+         buf.writeUInt8(this.ReportData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt32LE(this.ReportData[i]['TaskLocalID'], pos);
+             pos += 4;
+             this.ReportData[i]['TaskID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeFloatLE(this.ReportData[i]['LocationX'], pos);
+             pos += 4;
+             buf.writeFloatLE(this.ReportData[i]['LocationY'], pos);
+             pos += 4;
+             buf.writeFloatLE(this.ReportData[i]['LocationZ'], pos);
+             pos += 4;
+             buf.writeFloatLE(this.ReportData[i]['Score'], pos);
+             pos += 4;
+             buf.write(this.ReportData[i]['TaskName'], pos);
+             pos += this.ReportData[i]['TaskName'].length;
+             buf.write(this.ReportData[i]['OwnerName'], pos);
+             pos += this.ReportData[i]['OwnerName'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjRequestData: {
+             ReportType: number,
+             RequestFlags: number,
+             TotalObjectCount: number
+         } = {
+             ReportType: 0,
+             RequestFlags: 0,
+             TotalObjectCount: 0
+         };
+         newObjRequestData['ReportType'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjRequestData['RequestFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjRequestData['TotalObjectCount'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.RequestData = newObjRequestData;
+         const count = buf.readUInt8(pos++);
+         this.ReportData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjReportData: {
+                 TaskLocalID: number,
+                 TaskID: UUID,
+                 LocationX: number,
+                 LocationY: number,
+                 LocationZ: number,
+                 Score: number,
+                 TaskName: string,
+                 OwnerName: string
+             } = {
+                 TaskLocalID: 0,
+                 TaskID: UUID.zero(),
+                 LocationX: 0,
+                 LocationY: 0,
+                 LocationZ: 0,
+                 Score: 0,
+                 TaskName: '',
+                 OwnerName: ''
+             };
+             newObjReportData['TaskLocalID'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjReportData['TaskID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjReportData['LocationX'] = buf.readFloatLE(pos);
+             pos += 4;
+             newObjReportData['LocationY'] = buf.readFloatLE(pos);
+             pos += 4;
+             newObjReportData['LocationZ'] = buf.readFloatLE(pos);
+             pos += 4;
+             newObjReportData['Score'] = buf.readFloatLE(pos);
+             pos += 4;
+             newObjReportData['TaskName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjReportData['OwnerName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.ReportData.push(newObjReportData);
+         }
+         return pos - startPos;
+     }
 }
+

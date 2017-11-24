@@ -23,4 +23,50 @@ export class TransferRequestPacket implements Packet
         return (this.TransferInfo['Params'].length + 2) + 28;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.TransferInfo['TransferID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.TransferInfo['ChannelType'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.TransferInfo['SourceType'], pos);
+         pos += 4;
+         buf.writeFloatLE(this.TransferInfo['Priority'], pos);
+         pos += 4;
+         buf.write(this.TransferInfo['Params'], pos);
+         pos += this.TransferInfo['Params'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjTransferInfo: {
+             TransferID: UUID,
+             ChannelType: number,
+             SourceType: number,
+             Priority: number,
+             Params: string
+         } = {
+             TransferID: UUID.zero(),
+             ChannelType: 0,
+             SourceType: 0,
+             Priority: 0,
+             Params: ''
+         };
+         newObjTransferInfo['TransferID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjTransferInfo['ChannelType'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjTransferInfo['SourceType'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjTransferInfo['Priority'] = buf.readFloatLE(pos);
+         pos += 4;
+         newObjTransferInfo['Params'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.TransferInfo = newObjTransferInfo;
+         return pos - startPos;
+     }
 }
+

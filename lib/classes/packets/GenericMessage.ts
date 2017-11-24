@@ -38,4 +38,74 @@ export class GenericMessagePacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['TransactionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.MethodData['Method'], pos);
+         pos += this.MethodData['Method'].length;
+         this.MethodData['Invoice'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.ParamList.length;
+         buf.writeUInt8(this.ParamList.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.write(this.ParamList[i]['Parameter'], pos);
+             pos += this.ParamList[i]['Parameter'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             TransactionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             TransactionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['TransactionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjMethodData: {
+             Method: string,
+             Invoice: UUID
+         } = {
+             Method: '',
+             Invoice: UUID.zero()
+         };
+         newObjMethodData['Method'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjMethodData['Invoice'] = new UUID(buf, pos);
+         pos += 16;
+         this.MethodData = newObjMethodData;
+         const count = buf.readUInt8(pos++);
+         this.ParamList = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjParamList: {
+                 Parameter: string
+             } = {
+                 Parameter: ''
+             };
+             newObjParamList['Parameter'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.ParamList.push(newObjParamList);
+         }
+         return pos - startPos;
+     }
 }
+

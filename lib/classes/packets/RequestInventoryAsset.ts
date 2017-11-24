@@ -22,4 +22,44 @@ export class RequestInventoryAssetPacket implements Packet
         return 64;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.QueryData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.QueryData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.QueryData['OwnerID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.QueryData['ItemID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjQueryData: {
+             QueryID: UUID,
+             AgentID: UUID,
+             OwnerID: UUID,
+             ItemID: UUID
+         } = {
+             QueryID: UUID.zero(),
+             AgentID: UUID.zero(),
+             OwnerID: UUID.zero(),
+             ItemID: UUID.zero()
+         };
+         newObjQueryData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjQueryData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjQueryData['OwnerID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjQueryData['ItemID'] = new UUID(buf, pos);
+         pos += 16;
+         this.QueryData = newObjQueryData;
+         return pos - startPos;
+     }
 }
+

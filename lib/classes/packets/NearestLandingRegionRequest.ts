@@ -19,4 +19,28 @@ export class NearestLandingRegionRequestPacket implements Packet
         return 8;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeInt32LE(this.RequestingRegionData['RegionHandle'].low, pos);
+         pos += 4;
+         buf.writeInt32LE(this.RequestingRegionData['RegionHandle'].high, pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjRequestingRegionData: {
+             RegionHandle: Long
+         } = {
+             RegionHandle: Long.ZERO
+         };
+         newObjRequestingRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+         pos += 8;
+         this.RequestingRegionData = newObjRequestingRegionData;
+         return pos - startPos;
+     }
 }
+

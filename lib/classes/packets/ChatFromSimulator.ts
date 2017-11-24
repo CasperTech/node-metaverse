@@ -27,4 +27,62 @@ export class ChatFromSimulatorPacket implements Packet
         return (this.ChatData['FromName'].length + 1 + this.ChatData['Message'].length + 2) + 47;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.write(this.ChatData['FromName'], pos);
+         pos += this.ChatData['FromName'].length;
+         this.ChatData['SourceID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.ChatData['OwnerID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8(this.ChatData['SourceType'], pos++);
+         buf.writeUInt8(this.ChatData['ChatType'], pos++);
+         buf.writeUInt8(this.ChatData['Audible'], pos++);
+         this.ChatData['Position'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         buf.write(this.ChatData['Message'], pos);
+         pos += this.ChatData['Message'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjChatData: {
+             FromName: string,
+             SourceID: UUID,
+             OwnerID: UUID,
+             SourceType: number,
+             ChatType: number,
+             Audible: number,
+             Position: Vector3,
+             Message: string
+         } = {
+             FromName: '',
+             SourceID: UUID.zero(),
+             OwnerID: UUID.zero(),
+             SourceType: 0,
+             ChatType: 0,
+             Audible: 0,
+             Position: Vector3.getZero(),
+             Message: ''
+         };
+         newObjChatData['FromName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjChatData['SourceID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjChatData['OwnerID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjChatData['SourceType'] = buf.readUInt8(pos++);
+         newObjChatData['ChatType'] = buf.readUInt8(pos++);
+         newObjChatData['Audible'] = buf.readUInt8(pos++);
+         newObjChatData['Position'] = new Vector3(buf, pos, false);
+         pos += 12;
+         newObjChatData['Message'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.ChatData = newObjChatData;
+         return pos - startPos;
+     }
 }
+

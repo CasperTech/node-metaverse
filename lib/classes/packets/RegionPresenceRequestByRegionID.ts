@@ -19,4 +19,36 @@ export class RegionPresenceRequestByRegionIDPacket implements Packet
         return ((16) * this.RegionData.length) + 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.RegionData.length;
+         buf.writeUInt8(this.RegionData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.RegionData[i]['RegionID'].writeToBuffer(buf, pos);
+             pos += 16;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.RegionData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjRegionData: {
+                 RegionID: UUID
+             } = {
+                 RegionID: UUID.zero()
+             };
+             newObjRegionData['RegionID'] = new UUID(buf, pos);
+             pos += 16;
+             this.RegionData.push(newObjRegionData);
+         }
+         return pos - startPos;
+     }
 }
+

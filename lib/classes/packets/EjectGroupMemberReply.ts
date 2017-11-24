@@ -25,4 +25,44 @@ export class EjectGroupMemberReplyPacket implements Packet
         return 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.GroupData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.EjectData['Success']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjGroupData: {
+             GroupID: UUID
+         } = {
+             GroupID: UUID.zero()
+         };
+         newObjGroupData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         this.GroupData = newObjGroupData;
+         const newObjEjectData: {
+             Success: boolean
+         } = {
+             Success: false
+         };
+         newObjEjectData['Success'] = (buf.readUInt8(pos++) === 1);
+         this.EjectData = newObjEjectData;
+         return pos - startPos;
+     }
 }
+

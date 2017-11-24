@@ -29,4 +29,76 @@ export class MapBlockRequestPacket implements Packet
         return 49;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.AgentData['Flags'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.AgentData['EstateID'], pos);
+         pos += 4;
+         buf.writeUInt8((this.AgentData['Godlike']) ? 1 : 0, pos++);
+         buf.writeUInt16LE(this.PositionData['MinX'], pos);
+         pos += 2;
+         buf.writeUInt16LE(this.PositionData['MaxX'], pos);
+         pos += 2;
+         buf.writeUInt16LE(this.PositionData['MinY'], pos);
+         pos += 2;
+         buf.writeUInt16LE(this.PositionData['MaxY'], pos);
+         pos += 2;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             Flags: number,
+             EstateID: number,
+             Godlike: boolean
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             Flags: 0,
+             EstateID: 0,
+             Godlike: false
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['Flags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjAgentData['EstateID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjAgentData['Godlike'] = (buf.readUInt8(pos++) === 1);
+         this.AgentData = newObjAgentData;
+         const newObjPositionData: {
+             MinX: number,
+             MaxX: number,
+             MinY: number,
+             MaxY: number
+         } = {
+             MinX: 0,
+             MaxX: 0,
+             MinY: 0,
+             MaxY: 0
+         };
+         newObjPositionData['MinX'] = buf.readUInt16LE(pos);
+         pos += 2;
+         newObjPositionData['MaxX'] = buf.readUInt16LE(pos);
+         pos += 2;
+         newObjPositionData['MinY'] = buf.readUInt16LE(pos);
+         pos += 2;
+         newObjPositionData['MaxY'] = buf.readUInt16LE(pos);
+         pos += 2;
+         this.PositionData = newObjPositionData;
+         return pos - startPos;
+     }
 }
+

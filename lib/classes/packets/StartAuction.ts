@@ -24,4 +24,48 @@ export class StartAuctionPacket implements Packet
         return (this.ParcelData['Name'].length + 1) + 48;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.ParcelData['ParcelID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.ParcelData['SnapshotID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.ParcelData['Name'], pos);
+         pos += this.ParcelData['Name'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjParcelData: {
+             ParcelID: UUID,
+             SnapshotID: UUID,
+             Name: string
+         } = {
+             ParcelID: UUID.zero(),
+             SnapshotID: UUID.zero(),
+             Name: ''
+         };
+         newObjParcelData['ParcelID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjParcelData['SnapshotID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjParcelData['Name'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.ParcelData = newObjParcelData;
+         return pos - startPos;
+     }
 }
+

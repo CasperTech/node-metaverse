@@ -33,4 +33,96 @@ export class AgentSetAppearancePacket implements Packet
         return ((17) * this.WearableData.length) + (this.ObjectData['TextureEntry'].length + 2) + ((1) * this.VisualParam.length) + 50;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.AgentData['SerialNum'], pos);
+         pos += 4;
+         this.AgentData['Size'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         let count = this.WearableData.length;
+         buf.writeUInt8(this.WearableData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.WearableData[i]['CacheID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeUInt8(this.WearableData[i]['TextureIndex'], pos++);
+         }
+         buf.write(this.ObjectData['TextureEntry'], pos);
+         pos += this.ObjectData['TextureEntry'].length;
+         count = this.VisualParam.length;
+         buf.writeUInt8(this.VisualParam.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt8(this.VisualParam[i]['ParamValue'], pos++);
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             SerialNum: number,
+             Size: Vector3
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             SerialNum: 0,
+             Size: Vector3.getZero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SerialNum'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjAgentData['Size'] = new Vector3(buf, pos, false);
+         pos += 12;
+         this.AgentData = newObjAgentData;
+         let count = buf.readUInt8(pos++);
+         this.WearableData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjWearableData: {
+                 CacheID: UUID,
+                 TextureIndex: number
+             } = {
+                 CacheID: UUID.zero(),
+                 TextureIndex: 0
+             };
+             newObjWearableData['CacheID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjWearableData['TextureIndex'] = buf.readUInt8(pos++);
+             this.WearableData.push(newObjWearableData);
+         }
+         const newObjObjectData: {
+             TextureEntry: string
+         } = {
+             TextureEntry: ''
+         };
+         newObjObjectData['TextureEntry'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.ObjectData = newObjObjectData;
+         count = buf.readUInt8(pos++);
+         this.VisualParam = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjVisualParam: {
+                 ParamValue: number
+             } = {
+                 ParamValue: 0
+             };
+             newObjVisualParam['ParamValue'] = buf.readUInt8(pos++);
+             this.VisualParam.push(newObjVisualParam);
+         }
+         return pos - startPos;
+     }
 }
+

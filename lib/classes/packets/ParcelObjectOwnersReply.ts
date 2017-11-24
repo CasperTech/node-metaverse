@@ -22,4 +22,50 @@ export class ParcelObjectOwnersReplyPacket implements Packet
         return ((22) * this.Data.length) + 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.Data.length;
+         buf.writeUInt8(this.Data.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.Data[i]['OwnerID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeUInt8((this.Data[i]['IsGroupOwned']) ? 1 : 0, pos++);
+             buf.writeInt32LE(this.Data[i]['Count'], pos);
+             pos += 4;
+             buf.writeUInt8((this.Data[i]['OnlineStatus']) ? 1 : 0, pos++);
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.Data = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjData: {
+                 OwnerID: UUID,
+                 IsGroupOwned: boolean,
+                 Count: number,
+                 OnlineStatus: boolean
+             } = {
+                 OwnerID: UUID.zero(),
+                 IsGroupOwned: false,
+                 Count: 0,
+                 OnlineStatus: false
+             };
+             newObjData['OwnerID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjData['IsGroupOwned'] = (buf.readUInt8(pos++) === 1);
+             newObjData['Count'] = buf.readInt32LE(pos);
+             pos += 4;
+             newObjData['OnlineStatus'] = (buf.readUInt8(pos++) === 1);
+             this.Data.push(newObjData);
+         }
+         return pos - startPos;
+     }
 }
+

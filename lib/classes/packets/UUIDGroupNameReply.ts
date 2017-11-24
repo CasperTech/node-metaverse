@@ -30,4 +30,42 @@ export class UUIDGroupNameReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.UUIDNameBlock.length;
+         buf.writeUInt8(this.UUIDNameBlock.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.UUIDNameBlock[i]['ID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.UUIDNameBlock[i]['GroupName'], pos);
+             pos += this.UUIDNameBlock[i]['GroupName'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.UUIDNameBlock = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjUUIDNameBlock: {
+                 ID: UUID,
+                 GroupName: string
+             } = {
+                 ID: UUID.zero(),
+                 GroupName: ''
+             };
+             newObjUUIDNameBlock['ID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjUUIDNameBlock['GroupName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.UUIDNameBlock.push(newObjUUIDNameBlock);
+         }
+         return pos - startPos;
+     }
 }
+

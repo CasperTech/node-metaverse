@@ -19,4 +19,26 @@ export class ImageNotInDatabasePacket implements Packet
         return 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.ImageID['ID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjImageID: {
+             ID: UUID
+         } = {
+             ID: UUID.zero()
+         };
+         newObjImageID['ID'] = new UUID(buf, pos);
+         pos += 16;
+         this.ImageID = newObjImageID;
+         return pos - startPos;
+     }
 }
+

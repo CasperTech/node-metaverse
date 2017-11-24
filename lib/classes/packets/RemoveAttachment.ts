@@ -24,4 +24,46 @@ export class RemoveAttachmentPacket implements Packet
         return 49;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8(this.AttachmentBlock['AttachmentPoint'], pos++);
+         this.AttachmentBlock['ItemID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjAttachmentBlock: {
+             AttachmentPoint: number,
+             ItemID: UUID
+         } = {
+             AttachmentPoint: 0,
+             ItemID: UUID.zero()
+         };
+         newObjAttachmentBlock['AttachmentPoint'] = buf.readUInt8(pos++);
+         newObjAttachmentBlock['ItemID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AttachmentBlock = newObjAttachmentBlock;
+         return pos - startPos;
+     }
 }
+

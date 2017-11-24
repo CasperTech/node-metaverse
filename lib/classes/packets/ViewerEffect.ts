@@ -38,4 +38,80 @@ export class ViewerEffectPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.Effect.length;
+         buf.writeUInt8(this.Effect.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.Effect[i]['ID'].writeToBuffer(buf, pos);
+             pos += 16;
+             this.Effect[i]['AgentID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeUInt8(this.Effect[i]['Type'], pos++);
+             buf.writeFloatLE(this.Effect[i]['Duration'], pos);
+             pos += 4;
+             this.Effect[i]['Color'].copy(buf, pos);
+             pos += 4;
+             buf.write(this.Effect[i]['TypeData'], pos);
+             pos += this.Effect[i]['TypeData'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.Effect = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjEffect: {
+                 ID: UUID,
+                 AgentID: UUID,
+                 Type: number,
+                 Duration: number,
+                 Color: Buffer,
+                 TypeData: string
+             } = {
+                 ID: UUID.zero(),
+                 AgentID: UUID.zero(),
+                 Type: 0,
+                 Duration: 0,
+                 Color: Buffer.allocUnsafe(0),
+                 TypeData: ''
+             };
+             newObjEffect['ID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjEffect['AgentID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjEffect['Type'] = buf.readUInt8(pos++);
+             newObjEffect['Duration'] = buf.readFloatLE(pos);
+             pos += 4;
+             newObjEffect['Color'] = buf.slice(pos, pos + 4);
+             pos += 4;
+             newObjEffect['TypeData'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.Effect.push(newObjEffect);
+         }
+         return pos - startPos;
+     }
 }
+

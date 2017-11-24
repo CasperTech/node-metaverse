@@ -19,4 +19,32 @@ export class ReportAutosaveCrashPacket implements Packet
         return 8;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeInt32LE(this.AutosaveData['PID'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.AutosaveData['Status'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAutosaveData: {
+             PID: number,
+             Status: number
+         } = {
+             PID: 0,
+             Status: 0
+         };
+         newObjAutosaveData['PID'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjAutosaveData['Status'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.AutosaveData = newObjAutosaveData;
+         return pos - startPos;
+     }
 }
+

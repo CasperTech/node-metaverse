@@ -28,4 +28,70 @@ export class DirClassifiedQueryBackendPacket implements Packet
         return (this.QueryData['QueryText'].length + 1) + 49;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.QueryData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.QueryData['QueryText'], pos);
+         pos += this.QueryData['QueryText'].length;
+         buf.writeUInt32LE(this.QueryData['QueryFlags'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.QueryData['Category'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.QueryData['EstateID'], pos);
+         pos += 4;
+         buf.writeUInt8((this.QueryData['Godlike']) ? 1 : 0, pos++);
+         buf.writeInt32LE(this.QueryData['QueryStart'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjQueryData: {
+             QueryID: UUID,
+             QueryText: string,
+             QueryFlags: number,
+             Category: number,
+             EstateID: number,
+             Godlike: boolean,
+             QueryStart: number
+         } = {
+             QueryID: UUID.zero(),
+             QueryText: '',
+             QueryFlags: 0,
+             Category: 0,
+             EstateID: 0,
+             Godlike: false,
+             QueryStart: 0
+         };
+         newObjQueryData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjQueryData['QueryText'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjQueryData['QueryFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjQueryData['Category'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjQueryData['EstateID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjQueryData['Godlike'] = (buf.readUInt8(pos++) === 1);
+         newObjQueryData['QueryStart'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.QueryData = newObjQueryData;
+         return pos - startPos;
+     }
 }
+

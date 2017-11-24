@@ -19,4 +19,30 @@ export class StartPingCheckPacket implements Packet
         return 5;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt8(this.PingID['PingID'], pos++);
+         buf.writeUInt32LE(this.PingID['OldestUnacked'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjPingID: {
+             PingID: number,
+             OldestUnacked: number
+         } = {
+             PingID: 0,
+             OldestUnacked: 0
+         };
+         newObjPingID['PingID'] = buf.readUInt8(pos++);
+         newObjPingID['OldestUnacked'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.PingID = newObjPingID;
+         return pos - startPos;
+     }
 }
+

@@ -23,4 +23,40 @@ export class JoinGroupReplyPacket implements Packet
         return 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.GroupData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.GroupData['Success']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjGroupData: {
+             GroupID: UUID,
+             Success: boolean
+         } = {
+             GroupID: UUID.zero(),
+             Success: false
+         };
+         newObjGroupData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjGroupData['Success'] = (buf.readUInt8(pos++) === 1);
+         this.GroupData = newObjGroupData;
+         return pos - startPos;
+     }
 }
+

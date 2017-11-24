@@ -21,4 +21,36 @@ export class ScriptRunningReplyPacket implements Packet
         return 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.Script['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Script['ItemID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.Script['Running']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjScript: {
+             ObjectID: UUID,
+             ItemID: UUID,
+             Running: boolean
+         } = {
+             ObjectID: UUID.zero(),
+             ItemID: UUID.zero(),
+             Running: false
+         };
+         newObjScript['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjScript['ItemID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjScript['Running'] = (buf.readUInt8(pos++) === 1);
+         this.Script = newObjScript;
+         return pos - startPos;
+     }
 }
+

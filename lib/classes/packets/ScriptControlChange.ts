@@ -20,4 +20,44 @@ export class ScriptControlChangePacket implements Packet
         return ((6) * this.Data.length) + 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.Data.length;
+         buf.writeUInt8(this.Data.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt8((this.Data[i]['TakeControls']) ? 1 : 0, pos++);
+             buf.writeUInt32LE(this.Data[i]['Controls'], pos);
+             pos += 4;
+             buf.writeUInt8((this.Data[i]['PassToAgent']) ? 1 : 0, pos++);
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.Data = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjData: {
+                 TakeControls: boolean,
+                 Controls: number,
+                 PassToAgent: boolean
+             } = {
+                 TakeControls: false,
+                 Controls: 0,
+                 PassToAgent: false
+             };
+             newObjData['TakeControls'] = (buf.readUInt8(pos++) === 1);
+             newObjData['Controls'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjData['PassToAgent'] = (buf.readUInt8(pos++) === 1);
+             this.Data.push(newObjData);
+         }
+         return pos - startPos;
+     }
 }
+

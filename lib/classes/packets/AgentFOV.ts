@@ -25,4 +25,54 @@ export class AgentFOVPacket implements Packet
         return 44;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.AgentData['CircuitCode'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.FOVBlock['GenCounter'], pos);
+         pos += 4;
+         buf.writeFloatLE(this.FOVBlock['VerticalAngle'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             CircuitCode: number
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             CircuitCode: 0
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['CircuitCode'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.AgentData = newObjAgentData;
+         const newObjFOVBlock: {
+             GenCounter: number,
+             VerticalAngle: number
+         } = {
+             GenCounter: 0,
+             VerticalAngle: 0
+         };
+         newObjFOVBlock['GenCounter'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjFOVBlock['VerticalAngle'] = buf.readFloatLE(pos);
+         pos += 4;
+         this.FOVBlock = newObjFOVBlock;
+         return pos - startPos;
+     }
 }
+

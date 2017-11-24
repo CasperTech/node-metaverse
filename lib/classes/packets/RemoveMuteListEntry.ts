@@ -24,4 +24,48 @@ export class RemoveMuteListEntryPacket implements Packet
         return (this.MuteData['MuteName'].length + 1) + 48;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.MuteData['MuteID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.MuteData['MuteName'], pos);
+         pos += this.MuteData['MuteName'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjMuteData: {
+             MuteID: UUID,
+             MuteName: string
+         } = {
+             MuteID: UUID.zero(),
+             MuteName: ''
+         };
+         newObjMuteData['MuteID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMuteData['MuteName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.MuteData = newObjMuteData;
+         return pos - startPos;
+     }
 }
+

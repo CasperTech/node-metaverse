@@ -24,4 +24,48 @@ export class SimWideDeletesPacket implements Packet
         return 52;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.DataBlock['TargetID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.DataBlock['Flags'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjDataBlock: {
+             TargetID: UUID,
+             Flags: number
+         } = {
+             TargetID: UUID.zero(),
+             Flags: 0
+         };
+         newObjDataBlock['TargetID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['Flags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

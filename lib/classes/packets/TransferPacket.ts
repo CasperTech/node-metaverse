@@ -23,4 +23,50 @@ export class TransferPacketPacket implements Packet
         return (this.TransferData['Data'].length + 2) + 28;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.TransferData['TransferID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.TransferData['ChannelType'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.TransferData['Packet'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.TransferData['Status'], pos);
+         pos += 4;
+         buf.write(this.TransferData['Data'], pos);
+         pos += this.TransferData['Data'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjTransferData: {
+             TransferID: UUID,
+             ChannelType: number,
+             Packet: number,
+             Status: number,
+             Data: string
+         } = {
+             TransferID: UUID.zero(),
+             ChannelType: 0,
+             Packet: 0,
+             Status: 0,
+             Data: ''
+         };
+         newObjTransferData['TransferID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjTransferData['ChannelType'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjTransferData['Packet'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjTransferData['Status'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjTransferData['Data'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.TransferData = newObjTransferData;
+         return pos - startPos;
+     }
 }
+

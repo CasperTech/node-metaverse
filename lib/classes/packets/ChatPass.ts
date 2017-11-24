@@ -29,4 +29,74 @@ export class ChatPassPacket implements Packet
         return (this.ChatData['Name'].length + 1 + this.ChatData['Message'].length + 2) + 55;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeInt32LE(this.ChatData['Channel'], pos);
+         pos += 4;
+         this.ChatData['Position'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         this.ChatData['ID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.ChatData['OwnerID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.ChatData['Name'], pos);
+         pos += this.ChatData['Name'].length;
+         buf.writeUInt8(this.ChatData['SourceType'], pos++);
+         buf.writeUInt8(this.ChatData['Type'], pos++);
+         buf.writeFloatLE(this.ChatData['Radius'], pos);
+         pos += 4;
+         buf.writeUInt8(this.ChatData['SimAccess'], pos++);
+         buf.write(this.ChatData['Message'], pos);
+         pos += this.ChatData['Message'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjChatData: {
+             Channel: number,
+             Position: Vector3,
+             ID: UUID,
+             OwnerID: UUID,
+             Name: string,
+             SourceType: number,
+             Type: number,
+             Radius: number,
+             SimAccess: number,
+             Message: string
+         } = {
+             Channel: 0,
+             Position: Vector3.getZero(),
+             ID: UUID.zero(),
+             OwnerID: UUID.zero(),
+             Name: '',
+             SourceType: 0,
+             Type: 0,
+             Radius: 0,
+             SimAccess: 0,
+             Message: ''
+         };
+         newObjChatData['Channel'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjChatData['Position'] = new Vector3(buf, pos, false);
+         pos += 12;
+         newObjChatData['ID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjChatData['OwnerID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjChatData['Name'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjChatData['SourceType'] = buf.readUInt8(pos++);
+         newObjChatData['Type'] = buf.readUInt8(pos++);
+         newObjChatData['Radius'] = buf.readFloatLE(pos);
+         pos += 4;
+         newObjChatData['SimAccess'] = buf.readUInt8(pos++);
+         newObjChatData['Message'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.ChatData = newObjChatData;
+         return pos - startPos;
+     }
 }
+

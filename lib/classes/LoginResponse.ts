@@ -325,6 +325,5 @@ export class LoginResponse
 
             }
         });
-        console.log(this);
     }
 }

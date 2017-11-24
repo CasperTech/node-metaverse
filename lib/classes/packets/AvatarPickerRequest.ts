@@ -24,4 +24,48 @@ export class AvatarPickerRequestPacket implements Packet
         return (this.Data['Name'].length + 1) + 48;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.Data['Name'], pos);
+         pos += this.Data['Name'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             QueryID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             QueryID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjData: {
+             Name: string
+         } = {
+             Name: ''
+         };
+         newObjData['Name'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.Data = newObjData;
+         return pos - startPos;
+     }
 }
+

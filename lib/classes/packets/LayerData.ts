@@ -21,4 +21,34 @@ export class LayerDataPacket implements Packet
         return (this.LayerData['Data'].length + 2) + 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt8(this.LayerID['Type'], pos++);
+         buf.write(this.LayerData['Data'], pos);
+         pos += this.LayerData['Data'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjLayerID: {
+             Type: number
+         } = {
+             Type: 0
+         };
+         newObjLayerID['Type'] = buf.readUInt8(pos++);
+         this.LayerID = newObjLayerID;
+         const newObjLayerData: {
+             Data: string
+         } = {
+             Data: ''
+         };
+         newObjLayerData['Data'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.LayerData = newObjLayerData;
+         return pos - startPos;
+     }
 }
+

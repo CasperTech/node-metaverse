@@ -18,4 +18,24 @@ export class SetCPURatioPacket implements Packet
         return 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt8(this.Data['Ratio'], pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjData: {
+             Ratio: number
+         } = {
+             Ratio: 0
+         };
+         newObjData['Ratio'] = buf.readUInt8(pos++);
+         this.Data = newObjData;
+         return pos - startPos;
+     }
 }
+

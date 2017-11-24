@@ -26,4 +26,64 @@ export class FindAgentPacket implements Packet
         return ((16) * this.LocationBlock.length) + 37;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentBlock['Hunter'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentBlock['Prey'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentBlock['SpaceIP'].writeToBuffer(buf, pos);
+         pos += 4;
+         const count = this.LocationBlock.length;
+         buf.writeUInt8(this.LocationBlock.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeDoubleLE(this.LocationBlock[i]['GlobalX'], pos);
+             pos += 8;
+             buf.writeDoubleLE(this.LocationBlock[i]['GlobalY'], pos);
+             pos += 8;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentBlock: {
+             Hunter: UUID,
+             Prey: UUID,
+             SpaceIP: IPAddress
+         } = {
+             Hunter: UUID.zero(),
+             Prey: UUID.zero(),
+             SpaceIP: IPAddress.zero()
+         };
+         newObjAgentBlock['Hunter'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentBlock['Prey'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentBlock['SpaceIP'] = new IPAddress(buf, pos);
+         pos += 4;
+         this.AgentBlock = newObjAgentBlock;
+         const count = buf.readUInt8(pos++);
+         this.LocationBlock = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjLocationBlock: {
+                 GlobalX: number,
+                 GlobalY: number
+             } = {
+                 GlobalX: 0,
+                 GlobalY: 0
+             };
+             newObjLocationBlock['GlobalX'] = buf.readDoubleLE(pos);
+             pos += 8;
+             newObjLocationBlock['GlobalY'] = buf.readDoubleLE(pos);
+             pos += 8;
+             this.LocationBlock.push(newObjLocationBlock);
+         }
+         return pos - startPos;
+     }
 }
+

@@ -20,4 +20,30 @@ export class DerezContainerPacket implements Packet
         return 17;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.Data['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.Data['Delete']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjData: {
+             ObjectID: UUID,
+             Delete: boolean
+         } = {
+             ObjectID: UUID.zero(),
+             Delete: false
+         };
+         newObjData['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['Delete'] = (buf.readUInt8(pos++) === 1);
+         this.Data = newObjData;
+         return pos - startPos;
+     }
 }
+

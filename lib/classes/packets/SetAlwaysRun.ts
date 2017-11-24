@@ -21,4 +21,36 @@ export class SetAlwaysRunPacket implements Packet
         return 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.AgentData['AlwaysRun']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             AlwaysRun: boolean
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             AlwaysRun: false
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['AlwaysRun'] = (buf.readUInt8(pos++) === 1);
+         this.AgentData = newObjAgentData;
+         return pos - startPos;
+     }
 }
+

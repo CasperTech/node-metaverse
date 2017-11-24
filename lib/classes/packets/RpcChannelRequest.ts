@@ -22,4 +22,44 @@ export class RpcChannelRequestPacket implements Packet
         return 40;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt32LE(this.DataBlock['GridX'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.DataBlock['GridY'], pos);
+         pos += 4;
+         this.DataBlock['TaskID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.DataBlock['ItemID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjDataBlock: {
+             GridX: number,
+             GridY: number,
+             TaskID: UUID,
+             ItemID: UUID
+         } = {
+             GridX: 0,
+             GridY: 0,
+             TaskID: UUID.zero(),
+             ItemID: UUID.zero()
+         };
+         newObjDataBlock['GridX'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjDataBlock['GridY'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjDataBlock['TaskID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['ItemID'] = new UUID(buf, pos);
+         pos += 16;
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

@@ -27,4 +27,68 @@ export class CreateNewOutfitAttachmentsPacket implements Packet
         return ((32) * this.ObjectData.length) + 49;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.HeaderData['NewFolderID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.ObjectData.length;
+         buf.writeUInt8(this.ObjectData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.ObjectData[i]['OldItemID'].writeToBuffer(buf, pos);
+             pos += 16;
+             this.ObjectData[i]['OldFolderID'].writeToBuffer(buf, pos);
+             pos += 16;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjHeaderData: {
+             NewFolderID: UUID
+         } = {
+             NewFolderID: UUID.zero()
+         };
+         newObjHeaderData['NewFolderID'] = new UUID(buf, pos);
+         pos += 16;
+         this.HeaderData = newObjHeaderData;
+         const count = buf.readUInt8(pos++);
+         this.ObjectData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjObjectData: {
+                 OldItemID: UUID,
+                 OldFolderID: UUID
+             } = {
+                 OldItemID: UUID.zero(),
+                 OldFolderID: UUID.zero()
+             };
+             newObjObjectData['OldItemID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjObjectData['OldFolderID'] = new UUID(buf, pos);
+             pos += 16;
+             this.ObjectData.push(newObjObjectData);
+         }
+         return pos - startPos;
+     }
 }
+

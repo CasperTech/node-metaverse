@@ -24,4 +24,46 @@ export class RequestGodlikePowersPacket implements Packet
         return 49;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.RequestBlock['Godlike']) ? 1 : 0, pos++);
+         this.RequestBlock['Token'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjRequestBlock: {
+             Godlike: boolean,
+             Token: UUID
+         } = {
+             Godlike: false,
+             Token: UUID.zero()
+         };
+         newObjRequestBlock['Godlike'] = (buf.readUInt8(pos++) === 1);
+         newObjRequestBlock['Token'] = new UUID(buf, pos);
+         pos += 16;
+         this.RequestBlock = newObjRequestBlock;
+         return pos - startPos;
+     }
 }
+

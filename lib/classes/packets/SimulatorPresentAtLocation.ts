@@ -40,4 +40,130 @@ export class SimulatorPresentAtLocationPacket implements Packet
         return (this.SimulatorBlock['SimName'].length + 1) + ((13) * this.TelehubBlock.length) + 68;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt16LE(this.SimulatorPublicHostBlock['Port'], pos);
+         pos += 2;
+         this.SimulatorPublicHostBlock['SimulatorIP'].writeToBuffer(buf, pos);
+         pos += 4;
+         buf.writeUInt32LE(this.SimulatorPublicHostBlock['GridX'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.SimulatorPublicHostBlock['GridY'], pos);
+         pos += 4;
+         let count = 4;
+         for (let i = 0; i < count; i++)
+         {
+             this.NeighborBlock[i]['IP'].writeToBuffer(buf, pos);
+             pos += 4;
+             buf.writeUInt16LE(this.NeighborBlock[i]['Port'], pos);
+             pos += 2;
+         }
+         buf.write(this.SimulatorBlock['SimName'], pos);
+         pos += this.SimulatorBlock['SimName'].length;
+         buf.writeUInt8(this.SimulatorBlock['SimAccess'], pos++);
+         buf.writeUInt32LE(this.SimulatorBlock['RegionFlags'], pos);
+         pos += 4;
+         this.SimulatorBlock['RegionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.SimulatorBlock['EstateID'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.SimulatorBlock['ParentEstateID'], pos);
+         pos += 4;
+         count = this.TelehubBlock.length;
+         buf.writeUInt8(this.TelehubBlock.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt8((this.TelehubBlock[i]['HasTelehub']) ? 1 : 0, pos++);
+             this.TelehubBlock[i]['TelehubPos'].writeToBuffer(buf, pos, false);
+             pos += 12;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjSimulatorPublicHostBlock: {
+             Port: number,
+             SimulatorIP: IPAddress,
+             GridX: number,
+             GridY: number
+         } = {
+             Port: 0,
+             SimulatorIP: IPAddress.zero(),
+             GridX: 0,
+             GridY: 0
+         };
+         newObjSimulatorPublicHostBlock['Port'] = buf.readUInt16LE(pos);
+         pos += 2;
+         newObjSimulatorPublicHostBlock['SimulatorIP'] = new IPAddress(buf, pos);
+         pos += 4;
+         newObjSimulatorPublicHostBlock['GridX'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjSimulatorPublicHostBlock['GridY'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.SimulatorPublicHostBlock = newObjSimulatorPublicHostBlock;
+         let count = 4;
+         this.NeighborBlock = [];         for (let i = 0; i < count; i++)
+         {
+             const newObjNeighborBlock: {
+                 IP: IPAddress,
+                 Port: number
+             } = {
+                 IP: IPAddress.zero(),
+                 Port: 0
+             };
+             newObjNeighborBlock['IP'] = new IPAddress(buf, pos);
+             pos += 4;
+             newObjNeighborBlock['Port'] = buf.readUInt16LE(pos);
+             pos += 2;
+             this.NeighborBlock.push(newObjNeighborBlock);
+         }
+         const newObjSimulatorBlock: {
+             SimName: string,
+             SimAccess: number,
+             RegionFlags: number,
+             RegionID: UUID,
+             EstateID: number,
+             ParentEstateID: number
+         } = {
+             SimName: '',
+             SimAccess: 0,
+             RegionFlags: 0,
+             RegionID: UUID.zero(),
+             EstateID: 0,
+             ParentEstateID: 0
+         };
+         newObjSimulatorBlock['SimName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjSimulatorBlock['SimAccess'] = buf.readUInt8(pos++);
+         newObjSimulatorBlock['RegionFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjSimulatorBlock['RegionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjSimulatorBlock['EstateID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjSimulatorBlock['ParentEstateID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.SimulatorBlock = newObjSimulatorBlock;
+         count = buf.readUInt8(pos++);
+         this.TelehubBlock = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjTelehubBlock: {
+                 HasTelehub: boolean,
+                 TelehubPos: Vector3
+             } = {
+                 HasTelehub: false,
+                 TelehubPos: Vector3.getZero()
+             };
+             newObjTelehubBlock['HasTelehub'] = (buf.readUInt8(pos++) === 1);
+             newObjTelehubBlock['TelehubPos'] = new Vector3(buf, pos, false);
+             pos += 12;
+             this.TelehubBlock.push(newObjTelehubBlock);
+         }
+         return pos - startPos;
+     }
 }
+

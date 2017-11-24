@@ -35,4 +35,104 @@ export class PickInfoReplyPacket implements Packet
         return (this.Data['Name'].length + 1 + this.Data['Desc'].length + 2 + this.Data['User'].length + 1 + this.Data['OriginalName'].length + 1 + this.Data['SimName'].length + 1) + 110;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Data['PickID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Data['CreatorID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.Data['TopPick']) ? 1 : 0, pos++);
+         this.Data['ParcelID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.Data['Name'], pos);
+         pos += this.Data['Name'].length;
+         buf.write(this.Data['Desc'], pos);
+         pos += this.Data['Desc'].length;
+         this.Data['SnapshotID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.Data['User'], pos);
+         pos += this.Data['User'].length;
+         buf.write(this.Data['OriginalName'], pos);
+         pos += this.Data['OriginalName'].length;
+         buf.write(this.Data['SimName'], pos);
+         pos += this.Data['SimName'].length;
+         this.Data['PosGlobal'].writeToBuffer(buf, pos, true);
+         pos += 24;
+         buf.writeInt32LE(this.Data['SortOrder'], pos);
+         pos += 4;
+         buf.writeUInt8((this.Data['Enabled']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjData: {
+             PickID: UUID,
+             CreatorID: UUID,
+             TopPick: boolean,
+             ParcelID: UUID,
+             Name: string,
+             Desc: string,
+             SnapshotID: UUID,
+             User: string,
+             OriginalName: string,
+             SimName: string,
+             PosGlobal: Vector3,
+             SortOrder: number,
+             Enabled: boolean
+         } = {
+             PickID: UUID.zero(),
+             CreatorID: UUID.zero(),
+             TopPick: false,
+             ParcelID: UUID.zero(),
+             Name: '',
+             Desc: '',
+             SnapshotID: UUID.zero(),
+             User: '',
+             OriginalName: '',
+             SimName: '',
+             PosGlobal: Vector3.getZero(),
+             SortOrder: 0,
+             Enabled: false
+         };
+         newObjData['PickID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['CreatorID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['TopPick'] = (buf.readUInt8(pos++) === 1);
+         newObjData['ParcelID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['Name'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjData['Desc'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjData['SnapshotID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['User'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjData['OriginalName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjData['SimName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjData['PosGlobal'] = new Vector3(buf, pos, true);
+         pos += 24;
+         newObjData['SortOrder'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjData['Enabled'] = (buf.readUInt8(pos++) === 1);
+         this.Data = newObjData;
+         return pos - startPos;
+     }
 }
+

@@ -20,4 +20,32 @@ export class OpenCircuitPacket implements Packet
         return 6;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.CircuitInfo['IP'].writeToBuffer(buf, pos);
+         pos += 4;
+         buf.writeUInt16LE(this.CircuitInfo['Port'], pos);
+         pos += 2;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjCircuitInfo: {
+             IP: IPAddress,
+             Port: number
+         } = {
+             IP: IPAddress.zero(),
+             Port: 0
+         };
+         newObjCircuitInfo['IP'] = new IPAddress(buf, pos);
+         pos += 4;
+         newObjCircuitInfo['Port'] = buf.readUInt16LE(pos);
+         pos += 2;
+         this.CircuitInfo = newObjCircuitInfo;
+         return pos - startPos;
+     }
 }
+

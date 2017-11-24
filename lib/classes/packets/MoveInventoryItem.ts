@@ -36,4 +36,68 @@ export class MoveInventoryItemPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.AgentData['Stamp']) ? 1 : 0, pos++);
+         const count = this.InventoryData.length;
+         buf.writeUInt8(this.InventoryData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.InventoryData[i]['ItemID'].writeToBuffer(buf, pos);
+             pos += 16;
+             this.InventoryData[i]['FolderID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.InventoryData[i]['NewName'], pos);
+             pos += this.InventoryData[i]['NewName'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             Stamp: boolean
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             Stamp: false
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['Stamp'] = (buf.readUInt8(pos++) === 1);
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.InventoryData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjInventoryData: {
+                 ItemID: UUID,
+                 FolderID: UUID,
+                 NewName: string
+             } = {
+                 ItemID: UUID.zero(),
+                 FolderID: UUID.zero(),
+                 NewName: ''
+             };
+             newObjInventoryData['ItemID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjInventoryData['FolderID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjInventoryData['NewName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.InventoryData.push(newObjInventoryData);
+         }
+         return pos - startPos;
+     }
 }
+

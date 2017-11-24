@@ -21,4 +21,34 @@ export class AssetUploadCompletePacket implements Packet
         return 18;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AssetBlock['UUID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt8(this.AssetBlock['Type'], pos++);
+         buf.writeUInt8((this.AssetBlock['Success']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAssetBlock: {
+             UUID: UUID,
+             Type: number,
+             Success: boolean
+         } = {
+             UUID: UUID.zero(),
+             Type: 0,
+             Success: false
+         };
+         newObjAssetBlock['UUID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAssetBlock['Type'] = buf.readInt8(pos++);
+         newObjAssetBlock['Success'] = (buf.readUInt8(pos++) === 1);
+         this.AssetBlock = newObjAssetBlock;
+         return pos - startPos;
+     }
 }
+

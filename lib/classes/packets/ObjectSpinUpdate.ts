@@ -25,4 +25,48 @@ export class ObjectSpinUpdatePacket implements Packet
         return 60;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.ObjectData['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.ObjectData['Rotation'].writeToBuffer(buf, pos);
+         pos += 12;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjObjectData: {
+             ObjectID: UUID,
+             Rotation: Quaternion
+         } = {
+             ObjectID: UUID.zero(),
+             Rotation: Quaternion.getIdentity()
+         };
+         newObjObjectData['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjObjectData['Rotation'] = new Quaternion(buf, pos);
+         pos += 12;
+         this.ObjectData = newObjObjectData;
+         return pos - startPos;
+     }
 }
+

@@ -18,4 +18,24 @@ export class CompletePingCheckPacket implements Packet
         return 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt8(this.PingID['PingID'], pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjPingID: {
+             PingID: number
+         } = {
+             PingID: 0
+         };
+         newObjPingID['PingID'] = buf.readUInt8(pos++);
+         this.PingID = newObjPingID;
+         return pos - startPos;
+     }
 }
+

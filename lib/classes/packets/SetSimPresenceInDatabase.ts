@@ -26,4 +26,68 @@ export class SetSimPresenceInDatabasePacket implements Packet
         return (this.SimData['HostName'].length + 1 + this.SimData['Status'].length + 1) + 36;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.SimData['RegionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.SimData['HostName'], pos);
+         pos += this.SimData['HostName'].length;
+         buf.writeUInt32LE(this.SimData['GridX'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.SimData['GridY'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.SimData['PID'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.SimData['AgentCount'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.SimData['TimeToLive'], pos);
+         pos += 4;
+         buf.write(this.SimData['Status'], pos);
+         pos += this.SimData['Status'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjSimData: {
+             RegionID: UUID,
+             HostName: string,
+             GridX: number,
+             GridY: number,
+             PID: number,
+             AgentCount: number,
+             TimeToLive: number,
+             Status: string
+         } = {
+             RegionID: UUID.zero(),
+             HostName: '',
+             GridX: 0,
+             GridY: 0,
+             PID: 0,
+             AgentCount: 0,
+             TimeToLive: 0,
+             Status: ''
+         };
+         newObjSimData['RegionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjSimData['HostName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjSimData['GridX'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjSimData['GridY'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjSimData['PID'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjSimData['AgentCount'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjSimData['TimeToLive'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjSimData['Status'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.SimData = newObjSimData;
+         return pos - startPos;
+     }
 }
+

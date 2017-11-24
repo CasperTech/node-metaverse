@@ -31,4 +31,48 @@ export class UUIDNameReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.UUIDNameBlock.length;
+         buf.writeUInt8(this.UUIDNameBlock.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.UUIDNameBlock[i]['ID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.UUIDNameBlock[i]['FirstName'], pos);
+             pos += this.UUIDNameBlock[i]['FirstName'].length;
+             buf.write(this.UUIDNameBlock[i]['LastName'], pos);
+             pos += this.UUIDNameBlock[i]['LastName'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.UUIDNameBlock = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjUUIDNameBlock: {
+                 ID: UUID,
+                 FirstName: string,
+                 LastName: string
+             } = {
+                 ID: UUID.zero(),
+                 FirstName: '',
+                 LastName: ''
+             };
+             newObjUUIDNameBlock['ID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjUUIDNameBlock['FirstName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjUUIDNameBlock['LastName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.UUIDNameBlock.push(newObjUUIDNameBlock);
+         }
+         return pos - startPos;
+     }
 }
+

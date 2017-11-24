@@ -19,4 +19,26 @@ export class RebakeAvatarTexturesPacket implements Packet
         return 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.TextureData['TextureID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjTextureData: {
+             TextureID: UUID
+         } = {
+             TextureID: UUID.zero()
+         };
+         newObjTextureData['TextureID'] = new UUID(buf, pos);
+         pos += 16;
+         this.TextureData = newObjTextureData;
+         return pos - startPos;
+     }
 }
+

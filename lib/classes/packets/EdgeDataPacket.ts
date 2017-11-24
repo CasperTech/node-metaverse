@@ -20,4 +20,34 @@ export class EdgeDataPacketPacket implements Packet
         return (this.EdgeData['LayerData'].length + 2) + 2;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt8(this.EdgeData['LayerType'], pos++);
+         buf.writeUInt8(this.EdgeData['Direction'], pos++);
+         buf.write(this.EdgeData['LayerData'], pos);
+         pos += this.EdgeData['LayerData'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjEdgeData: {
+             LayerType: number,
+             Direction: number,
+             LayerData: string
+         } = {
+             LayerType: 0,
+             Direction: 0,
+             LayerData: ''
+         };
+         newObjEdgeData['LayerType'] = buf.readUInt8(pos++);
+         newObjEdgeData['Direction'] = buf.readUInt8(pos++);
+         newObjEdgeData['LayerData'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.EdgeData = newObjEdgeData;
+         return pos - startPos;
+     }
 }
+

@@ -29,4 +29,74 @@ export class ObjectPermissionsPacket implements Packet
         return ((10) * this.ObjectData.length) + 34;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.HeaderData['Override']) ? 1 : 0, pos++);
+         const count = this.ObjectData.length;
+         buf.writeUInt8(this.ObjectData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt32LE(this.ObjectData[i]['ObjectLocalID'], pos);
+             pos += 4;
+             buf.writeUInt8(this.ObjectData[i]['Field'], pos++);
+             buf.writeUInt8(this.ObjectData[i]['Set'], pos++);
+             buf.writeUInt32LE(this.ObjectData[i]['Mask'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjHeaderData: {
+             Override: boolean
+         } = {
+             Override: false
+         };
+         newObjHeaderData['Override'] = (buf.readUInt8(pos++) === 1);
+         this.HeaderData = newObjHeaderData;
+         const count = buf.readUInt8(pos++);
+         this.ObjectData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjObjectData: {
+                 ObjectLocalID: number,
+                 Field: number,
+                 Set: number,
+                 Mask: number
+             } = {
+                 ObjectLocalID: 0,
+                 Field: 0,
+                 Set: 0,
+                 Mask: 0
+             };
+             newObjObjectData['ObjectLocalID'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjObjectData['Field'] = buf.readUInt8(pos++);
+             newObjObjectData['Set'] = buf.readUInt8(pos++);
+             newObjObjectData['Mask'] = buf.readUInt32LE(pos);
+             pos += 4;
+             this.ObjectData.push(newObjObjectData);
+         }
+         return pos - startPos;
+     }
 }
+

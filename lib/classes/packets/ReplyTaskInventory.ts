@@ -21,4 +21,38 @@ export class ReplyTaskInventoryPacket implements Packet
         return (this.InventoryData['Filename'].length + 1) + 18;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.InventoryData['TaskID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt16LE(this.InventoryData['Serial'], pos);
+         pos += 2;
+         buf.write(this.InventoryData['Filename'], pos);
+         pos += this.InventoryData['Filename'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjInventoryData: {
+             TaskID: UUID,
+             Serial: number,
+             Filename: string
+         } = {
+             TaskID: UUID.zero(),
+             Serial: 0,
+             Filename: ''
+         };
+         newObjInventoryData['TaskID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInventoryData['Serial'] = buf.readInt16LE(pos);
+         pos += 2;
+         newObjInventoryData['Filename'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.InventoryData = newObjInventoryData;
+         return pos - startPos;
+     }
 }
+

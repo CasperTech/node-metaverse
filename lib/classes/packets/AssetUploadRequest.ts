@@ -23,4 +23,44 @@ export class AssetUploadRequestPacket implements Packet
         return (this.AssetBlock['AssetData'].length + 2) + 19;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AssetBlock['TransactionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt8(this.AssetBlock['Type'], pos++);
+         buf.writeUInt8((this.AssetBlock['Tempfile']) ? 1 : 0, pos++);
+         buf.writeUInt8((this.AssetBlock['StoreLocal']) ? 1 : 0, pos++);
+         buf.write(this.AssetBlock['AssetData'], pos);
+         pos += this.AssetBlock['AssetData'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAssetBlock: {
+             TransactionID: UUID,
+             Type: number,
+             Tempfile: boolean,
+             StoreLocal: boolean,
+             AssetData: string
+         } = {
+             TransactionID: UUID.zero(),
+             Type: 0,
+             Tempfile: false,
+             StoreLocal: false,
+             AssetData: ''
+         };
+         newObjAssetBlock['TransactionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAssetBlock['Type'] = buf.readInt8(pos++);
+         newObjAssetBlock['Tempfile'] = (buf.readUInt8(pos++) === 1);
+         newObjAssetBlock['StoreLocal'] = (buf.readUInt8(pos++) === 1);
+         newObjAssetBlock['AssetData'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.AssetBlock = newObjAssetBlock;
+         return pos - startPos;
+     }
 }
+
