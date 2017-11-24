@@ -90,7 +90,7 @@ messages.forEach((message) =>
     classString += '    name = \''+message.name+'\';\n';
 
 
-    var flags = [];
+    let flags = [];
     message.flags.forEach((flag) =>
     {
        switch(flag.toUpperCase())
