@@ -19,4 +19,26 @@ export class RequestPayPricePacket implements Packet
         return 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.ObjectData['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjObjectData: {
+             ObjectID: UUID
+         } = {
+             ObjectID: UUID.zero()
+         };
+         newObjObjectData['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         this.ObjectData = newObjObjectData;
+         return pos - startPos;
+     }
 }
+

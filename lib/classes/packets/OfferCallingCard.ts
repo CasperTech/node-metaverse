@@ -24,4 +24,48 @@ export class OfferCallingCardPacket implements Packet
         return 64;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentBlock['DestID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentBlock['TransactionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjAgentBlock: {
+             DestID: UUID,
+             TransactionID: UUID
+         } = {
+             DestID: UUID.zero(),
+             TransactionID: UUID.zero()
+         };
+         newObjAgentBlock['DestID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentBlock['TransactionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentBlock = newObjAgentBlock;
+         return pos - startPos;
+     }
 }
+

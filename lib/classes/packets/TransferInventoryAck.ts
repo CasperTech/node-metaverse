@@ -20,4 +20,32 @@ export class TransferInventoryAckPacket implements Packet
         return 32;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.InfoBlock['TransactionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.InfoBlock['InventoryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjInfoBlock: {
+             TransactionID: UUID,
+             InventoryID: UUID
+         } = {
+             TransactionID: UUID.zero(),
+             InventoryID: UUID.zero()
+         };
+         newObjInfoBlock['TransactionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfoBlock['InventoryID'] = new UUID(buf, pos);
+         pos += 16;
+         this.InfoBlock = newObjInfoBlock;
+         return pos - startPos;
+     }
 }
+

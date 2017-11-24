@@ -1,8 +1,8 @@
 import * as xmlrpc from 'xmlrpc';
 import * as crypto from 'crypto';
-import * as uuid from 'uuid';
 import {LoginParameters} from './classes/LoginParameters';
 import {LoginResponse} from './classes/LoginResponse';
+const uuid = require('uuid');
 
 export class LoginHandler
 {

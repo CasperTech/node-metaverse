@@ -22,4 +22,36 @@ export class EventLocationRequestPacket implements Packet
         return 20;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.QueryData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.EventData['EventID'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjQueryData: {
+             QueryID: UUID
+         } = {
+             QueryID: UUID.zero()
+         };
+         newObjQueryData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         this.QueryData = newObjQueryData;
+         const newObjEventData: {
+             EventID: number
+         } = {
+             EventID: 0
+         };
+         newObjEventData['EventID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.EventData = newObjEventData;
+         return pos - startPos;
+     }
 }
+

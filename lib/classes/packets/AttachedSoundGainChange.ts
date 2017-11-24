@@ -20,4 +20,32 @@ export class AttachedSoundGainChangePacket implements Packet
         return 20;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.DataBlock['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeFloatLE(this.DataBlock['Gain'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjDataBlock: {
+             ObjectID: UUID,
+             Gain: number
+         } = {
+             ObjectID: UUID.zero(),
+             Gain: 0
+         };
+         newObjDataBlock['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['Gain'] = buf.readFloatLE(pos);
+         pos += 4;
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

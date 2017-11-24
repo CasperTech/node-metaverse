@@ -28,4 +28,66 @@ export class MapItemRequestPacket implements Packet
         return 53;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.AgentData['Flags'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.AgentData['EstateID'], pos);
+         pos += 4;
+         buf.writeUInt8((this.AgentData['Godlike']) ? 1 : 0, pos++);
+         buf.writeUInt32LE(this.RequestData['ItemType'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.RequestData['RegionHandle'].low, pos);
+         pos += 4;
+         buf.writeInt32LE(this.RequestData['RegionHandle'].high, pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             Flags: number,
+             EstateID: number,
+             Godlike: boolean
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             Flags: 0,
+             EstateID: 0,
+             Godlike: false
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['Flags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjAgentData['EstateID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjAgentData['Godlike'] = (buf.readUInt8(pos++) === 1);
+         this.AgentData = newObjAgentData;
+         const newObjRequestData: {
+             ItemType: number,
+             RegionHandle: Long
+         } = {
+             ItemType: 0,
+             RegionHandle: Long.ZERO
+         };
+         newObjRequestData['ItemType'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjRequestData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+         pos += 8;
+         this.RequestData = newObjRequestData;
+         return pos - startPos;
+     }
 }
+

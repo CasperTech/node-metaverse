@@ -40,4 +40,86 @@ export class GroupAccountDetailsReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.MoneyData['RequestID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.MoneyData['IntervalDays'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.MoneyData['CurrentInterval'], pos);
+         pos += 4;
+         buf.write(this.MoneyData['StartDate'], pos);
+         pos += this.MoneyData['StartDate'].length;
+         const count = this.HistoryData.length;
+         buf.writeUInt8(this.HistoryData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.write(this.HistoryData[i]['Description'], pos);
+             pos += this.HistoryData[i]['Description'].length;
+             buf.writeInt32LE(this.HistoryData[i]['Amount'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             GroupID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             GroupID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjMoneyData: {
+             RequestID: UUID,
+             IntervalDays: number,
+             CurrentInterval: number,
+             StartDate: string
+         } = {
+             RequestID: UUID.zero(),
+             IntervalDays: 0,
+             CurrentInterval: 0,
+             StartDate: ''
+         };
+         newObjMoneyData['RequestID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMoneyData['IntervalDays'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjMoneyData['CurrentInterval'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjMoneyData['StartDate'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.MoneyData = newObjMoneyData;
+         const count = buf.readUInt8(pos++);
+         this.HistoryData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjHistoryData: {
+                 Description: string,
+                 Amount: number
+             } = {
+                 Description: '',
+                 Amount: 0
+             };
+             newObjHistoryData['Description'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjHistoryData['Amount'] = buf.readInt32LE(pos);
+             pos += 4;
+             this.HistoryData.push(newObjHistoryData);
+         }
+         return pos - startPos;
+     }
 }
+

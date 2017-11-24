@@ -20,4 +20,38 @@ export class ParcelMediaCommandMessagePacket implements Packet
         return 12;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt32LE(this.CommandBlock['Flags'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.CommandBlock['Command'], pos);
+         pos += 4;
+         buf.writeFloatLE(this.CommandBlock['Time'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjCommandBlock: {
+             Flags: number,
+             Command: number,
+             Time: number
+         } = {
+             Flags: 0,
+             Command: 0,
+             Time: 0
+         };
+         newObjCommandBlock['Flags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjCommandBlock['Command'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjCommandBlock['Time'] = buf.readFloatLE(pos);
+         pos += 4;
+         this.CommandBlock = newObjCommandBlock;
+         return pos - startPos;
+     }
 }
+

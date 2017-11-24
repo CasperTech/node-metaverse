@@ -36,4 +36,72 @@ export class AlertMessagePacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.write(this.AlertData['Message'], pos);
+         pos += this.AlertData['Message'].length;
+         let count = this.AlertInfo.length;
+         buf.writeUInt8(this.AlertInfo.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.write(this.AlertInfo[i]['Message'], pos);
+             pos += this.AlertInfo[i]['Message'].length;
+             buf.write(this.AlertInfo[i]['ExtraParams'], pos);
+             pos += this.AlertInfo[i]['ExtraParams'].length;
+         }
+         count = this.AgentInfo.length;
+         buf.writeUInt8(this.AgentInfo.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.AgentInfo[i]['AgentID'].writeToBuffer(buf, pos);
+             pos += 16;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAlertData: {
+             Message: string
+         } = {
+             Message: ''
+         };
+         newObjAlertData['Message'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.AlertData = newObjAlertData;
+         let count = buf.readUInt8(pos++);
+         this.AlertInfo = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjAlertInfo: {
+                 Message: string,
+                 ExtraParams: string
+             } = {
+                 Message: '',
+                 ExtraParams: ''
+             };
+             newObjAlertInfo['Message'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjAlertInfo['ExtraParams'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.AlertInfo.push(newObjAlertInfo);
+         }
+         count = buf.readUInt8(pos++);
+         this.AgentInfo = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjAgentInfo: {
+                 AgentID: UUID
+             } = {
+                 AgentID: UUID.zero()
+             };
+             newObjAgentInfo['AgentID'] = new UUID(buf, pos);
+             pos += 16;
+             this.AgentInfo.push(newObjAgentInfo);
+         }
+         return pos - startPos;
+     }
 }
+

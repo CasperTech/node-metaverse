@@ -24,4 +24,50 @@ export class TeleportLocalPacket implements Packet
         return 48;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.Info['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.Info['LocationID'], pos);
+         pos += 4;
+         this.Info['Position'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         this.Info['LookAt'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         buf.writeUInt32LE(this.Info['TeleportFlags'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjInfo: {
+             AgentID: UUID,
+             LocationID: number,
+             Position: Vector3,
+             LookAt: Vector3,
+             TeleportFlags: number
+         } = {
+             AgentID: UUID.zero(),
+             LocationID: 0,
+             Position: Vector3.getZero(),
+             LookAt: Vector3.getZero(),
+             TeleportFlags: 0
+         };
+         newObjInfo['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfo['LocationID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjInfo['Position'] = new Vector3(buf, pos, false);
+         pos += 12;
+         newObjInfo['LookAt'] = new Vector3(buf, pos, false);
+         pos += 12;
+         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.Info = newObjInfo;
+         return pos - startPos;
+     }
 }
+

@@ -23,4 +23,50 @@ export class GodKickUserPacket implements Packet
         return (this.UserInfo['Reason'].length + 2) + 52;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.UserInfo['GodID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.UserInfo['GodSessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.UserInfo['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.UserInfo['KickFlags'], pos);
+         pos += 4;
+         buf.write(this.UserInfo['Reason'], pos);
+         pos += this.UserInfo['Reason'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjUserInfo: {
+             GodID: UUID,
+             GodSessionID: UUID,
+             AgentID: UUID,
+             KickFlags: number,
+             Reason: string
+         } = {
+             GodID: UUID.zero(),
+             GodSessionID: UUID.zero(),
+             AgentID: UUID.zero(),
+             KickFlags: 0,
+             Reason: ''
+         };
+         newObjUserInfo['GodID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjUserInfo['GodSessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjUserInfo['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjUserInfo['KickFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjUserInfo['Reason'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.UserInfo = newObjUserInfo;
+         return pos - startPos;
+     }
 }
+

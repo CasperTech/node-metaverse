@@ -19,4 +19,26 @@ export class RegionHandleRequestPacket implements Packet
         return 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.RequestBlock['RegionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjRequestBlock: {
+             RegionID: UUID
+         } = {
+             RegionID: UUID.zero()
+         };
+         newObjRequestBlock['RegionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.RequestBlock = newObjRequestBlock;
+         return pos - startPos;
+     }
 }
+

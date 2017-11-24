@@ -13,5 +13,8 @@ const bot = new nmv.Bot(loginParameters);
 bot.Login().then(() =>
 {
 
+}).catch((error) =>
+{
+    console.error(error);
 });
 

@@ -19,4 +19,32 @@ export class ParcelOverlayPacket implements Packet
         return (this.ParcelData['Data'].length + 2) + 4;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeInt32LE(this.ParcelData['SequenceID'], pos);
+         pos += 4;
+         buf.write(this.ParcelData['Data'], pos);
+         pos += this.ParcelData['Data'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjParcelData: {
+             SequenceID: number,
+             Data: string
+         } = {
+             SequenceID: 0,
+             Data: ''
+         };
+         newObjParcelData['SequenceID'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjParcelData['Data'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.ParcelData = newObjParcelData;
+         return pos - startPos;
+     }
 }
+

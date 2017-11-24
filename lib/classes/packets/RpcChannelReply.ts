@@ -21,4 +21,38 @@ export class RpcChannelReplyPacket implements Packet
         return 48;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.DataBlock['TaskID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.DataBlock['ItemID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.DataBlock['ChannelID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjDataBlock: {
+             TaskID: UUID,
+             ItemID: UUID,
+             ChannelID: UUID
+         } = {
+             TaskID: UUID.zero(),
+             ItemID: UUID.zero(),
+             ChannelID: UUID.zero()
+         };
+         newObjDataBlock['TaskID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['ItemID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['ChannelID'] = new UUID(buf, pos);
+         pos += 16;
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

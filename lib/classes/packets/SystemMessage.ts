@@ -34,4 +34,58 @@ export class SystemMessagePacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.write(this.MethodData['Method'], pos);
+         pos += this.MethodData['Method'].length;
+         this.MethodData['Invoice'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.MethodData['Digest'].copy(buf, pos);
+         pos += 32;
+         const count = this.ParamList.length;
+         buf.writeUInt8(this.ParamList.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.write(this.ParamList[i]['Parameter'], pos);
+             pos += this.ParamList[i]['Parameter'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjMethodData: {
+             Method: string,
+             Invoice: UUID,
+             Digest: Buffer
+         } = {
+             Method: '',
+             Invoice: UUID.zero(),
+             Digest: Buffer.allocUnsafe(0)
+         };
+         newObjMethodData['Method'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjMethodData['Invoice'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMethodData['Digest'] = buf.slice(pos, pos + 32);
+         pos += 32;
+         this.MethodData = newObjMethodData;
+         const count = buf.readUInt8(pos++);
+         this.ParamList = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjParamList: {
+                 Parameter: string
+             } = {
+                 Parameter: ''
+             };
+             newObjParamList['Parameter'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.ParamList.push(newObjParamList);
+         }
+         return pos - startPos;
+     }
 }
+

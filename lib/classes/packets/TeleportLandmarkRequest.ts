@@ -21,4 +21,38 @@ export class TeleportLandmarkRequestPacket implements Packet
         return 48;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.Info['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Info['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Info['LandmarkID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjInfo: {
+             AgentID: UUID,
+             SessionID: UUID,
+             LandmarkID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             LandmarkID: UUID.zero()
+         };
+         newObjInfo['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfo['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfo['LandmarkID'] = new UUID(buf, pos);
+         pos += 16;
+         this.Info = newObjInfo;
+         return pos - startPos;
+     }
 }
+

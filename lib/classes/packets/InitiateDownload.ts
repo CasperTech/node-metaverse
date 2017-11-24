@@ -23,4 +23,42 @@ export class InitiateDownloadPacket implements Packet
         return (this.FileData['SimFilename'].length + 1 + this.FileData['ViewerFilename'].length + 1) + 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.FileData['SimFilename'], pos);
+         pos += this.FileData['SimFilename'].length;
+         buf.write(this.FileData['ViewerFilename'], pos);
+         pos += this.FileData['ViewerFilename'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjFileData: {
+             SimFilename: string,
+             ViewerFilename: string
+         } = {
+             SimFilename: '',
+             ViewerFilename: ''
+         };
+         newObjFileData['SimFilename'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjFileData['ViewerFilename'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.FileData = newObjFileData;
+         return pos - startPos;
+     }
 }
+

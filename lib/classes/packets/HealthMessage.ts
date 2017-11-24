@@ -18,4 +18,26 @@ export class HealthMessagePacket implements Packet
         return 4;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeFloatLE(this.HealthData['Health'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjHealthData: {
+             Health: number
+         } = {
+             Health: 0
+         };
+         newObjHealthData['Health'] = buf.readFloatLE(pos);
+         pos += 4;
+         this.HealthData = newObjHealthData;
+         return pos - startPos;
+     }
 }
+

@@ -27,4 +27,60 @@ export class SetStartLocationRequestPacket implements Packet
         return (this.StartLocationData['SimName'].length + 1) + 60;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.StartLocationData['SimName'], pos);
+         pos += this.StartLocationData['SimName'].length;
+         buf.writeUInt32LE(this.StartLocationData['LocationID'], pos);
+         pos += 4;
+         this.StartLocationData['LocationPos'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         this.StartLocationData['LocationLookAt'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjStartLocationData: {
+             SimName: string,
+             LocationID: number,
+             LocationPos: Vector3,
+             LocationLookAt: Vector3
+         } = {
+             SimName: '',
+             LocationID: 0,
+             LocationPos: Vector3.getZero(),
+             LocationLookAt: Vector3.getZero()
+         };
+         newObjStartLocationData['SimName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjStartLocationData['LocationID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjStartLocationData['LocationPos'] = new Vector3(buf, pos, false);
+         pos += 12;
+         newObjStartLocationData['LocationLookAt'] = new Vector3(buf, pos, false);
+         pos += 12;
+         this.StartLocationData = newObjStartLocationData;
+         return pos - startPos;
+     }
 }
+

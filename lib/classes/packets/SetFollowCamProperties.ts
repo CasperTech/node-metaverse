@@ -23,4 +23,52 @@ export class SetFollowCamPropertiesPacket implements Packet
         return ((8) * this.CameraProperty.length) + 17;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.ObjectData['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.CameraProperty.length;
+         buf.writeUInt8(this.CameraProperty.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeInt32LE(this.CameraProperty[i]['Type'], pos);
+             pos += 4;
+             buf.writeFloatLE(this.CameraProperty[i]['Value'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjObjectData: {
+             ObjectID: UUID
+         } = {
+             ObjectID: UUID.zero()
+         };
+         newObjObjectData['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         this.ObjectData = newObjObjectData;
+         const count = buf.readUInt8(pos++);
+         this.CameraProperty = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjCameraProperty: {
+                 Type: number,
+                 Value: number
+             } = {
+                 Type: 0,
+                 Value: 0
+             };
+             newObjCameraProperty['Type'] = buf.readInt32LE(pos);
+             pos += 4;
+             newObjCameraProperty['Value'] = buf.readFloatLE(pos);
+             pos += 4;
+             this.CameraProperty.push(newObjCameraProperty);
+         }
+         return pos - startPos;
+     }
 }
+

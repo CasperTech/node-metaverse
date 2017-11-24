@@ -20,4 +20,32 @@ export class ConfirmAuctionStartPacket implements Packet
         return 20;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AuctionData['ParcelID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.AuctionData['AuctionID'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAuctionData: {
+             ParcelID: UUID,
+             AuctionID: number
+         } = {
+             ParcelID: UUID.zero(),
+             AuctionID: 0
+         };
+         newObjAuctionData['ParcelID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAuctionData['AuctionID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.AuctionData = newObjAuctionData;
+         return pos - startPos;
+     }
 }
+

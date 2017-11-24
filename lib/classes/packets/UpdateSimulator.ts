@@ -22,4 +22,42 @@ export class UpdateSimulatorPacket implements Packet
         return (this.SimulatorInfo['SimName'].length + 1) + 21;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.SimulatorInfo['RegionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.SimulatorInfo['SimName'], pos);
+         pos += this.SimulatorInfo['SimName'].length;
+         buf.writeUInt32LE(this.SimulatorInfo['EstateID'], pos);
+         pos += 4;
+         buf.writeUInt8(this.SimulatorInfo['SimAccess'], pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjSimulatorInfo: {
+             RegionID: UUID,
+             SimName: string,
+             EstateID: number,
+             SimAccess: number
+         } = {
+             RegionID: UUID.zero(),
+             SimName: '',
+             EstateID: 0,
+             SimAccess: 0
+         };
+         newObjSimulatorInfo['RegionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjSimulatorInfo['SimName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjSimulatorInfo['EstateID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjSimulatorInfo['SimAccess'] = buf.readUInt8(pos++);
+         this.SimulatorInfo = newObjSimulatorInfo;
+         return pos - startPos;
+     }
 }
+

@@ -30,4 +30,42 @@ export class ParcelRenamePacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.ParcelData.length;
+         buf.writeUInt8(this.ParcelData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.ParcelData[i]['ParcelID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.ParcelData[i]['NewName'], pos);
+             pos += this.ParcelData[i]['NewName'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.ParcelData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjParcelData: {
+                 ParcelID: UUID,
+                 NewName: string
+             } = {
+                 ParcelID: UUID.zero(),
+                 NewName: ''
+             };
+             newObjParcelData['ParcelID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjParcelData['NewName'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.ParcelData.push(newObjParcelData);
+         }
+         return pos - startPos;
+     }
 }
+

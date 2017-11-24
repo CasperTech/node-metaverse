@@ -19,4 +19,36 @@ export class OfflineNotificationPacket implements Packet
         return ((16) * this.AgentBlock.length) + 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.AgentBlock.length;
+         buf.writeUInt8(this.AgentBlock.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.AgentBlock[i]['AgentID'].writeToBuffer(buf, pos);
+             pos += 16;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.AgentBlock = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjAgentBlock: {
+                 AgentID: UUID
+             } = {
+                 AgentID: UUID.zero()
+             };
+             newObjAgentBlock['AgentID'] = new UUID(buf, pos);
+             pos += 16;
+             this.AgentBlock.push(newObjAgentBlock);
+         }
+         return pos - startPos;
+     }
 }
+

@@ -24,4 +24,58 @@ export class GrantUserRightsPacket implements Packet
         return ((20) * this.Rights.length) + 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.Rights.length;
+         buf.writeUInt8(this.Rights.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.Rights[i]['AgentRelated'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeInt32LE(this.Rights[i]['RelatedRights'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.Rights = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjRights: {
+                 AgentRelated: UUID,
+                 RelatedRights: number
+             } = {
+                 AgentRelated: UUID.zero(),
+                 RelatedRights: 0
+             };
+             newObjRights['AgentRelated'] = new UUID(buf, pos);
+             pos += 16;
+             newObjRights['RelatedRights'] = buf.readInt32LE(pos);
+             pos += 4;
+             this.Rights.push(newObjRights);
+         }
+         return pos - startPos;
+     }
 }
+

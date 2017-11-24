@@ -30,4 +30,76 @@ export class UpdateGroupInfoPacket implements Packet
         return (this.GroupData['Charter'].length + 2) + 72;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.GroupData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.GroupData['Charter'], pos);
+         pos += this.GroupData['Charter'].length;
+         buf.writeUInt8((this.GroupData['ShowInList']) ? 1 : 0, pos++);
+         this.GroupData['InsigniaID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.GroupData['MembershipFee'], pos);
+         pos += 4;
+         buf.writeUInt8((this.GroupData['OpenEnrollment']) ? 1 : 0, pos++);
+         buf.writeUInt8((this.GroupData['AllowPublish']) ? 1 : 0, pos++);
+         buf.writeUInt8((this.GroupData['MaturePublish']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjGroupData: {
+             GroupID: UUID,
+             Charter: string,
+             ShowInList: boolean,
+             InsigniaID: UUID,
+             MembershipFee: number,
+             OpenEnrollment: boolean,
+             AllowPublish: boolean,
+             MaturePublish: boolean
+         } = {
+             GroupID: UUID.zero(),
+             Charter: '',
+             ShowInList: false,
+             InsigniaID: UUID.zero(),
+             MembershipFee: 0,
+             OpenEnrollment: false,
+             AllowPublish: false,
+             MaturePublish: false
+         };
+         newObjGroupData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjGroupData['Charter'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjGroupData['ShowInList'] = (buf.readUInt8(pos++) === 1);
+         newObjGroupData['InsigniaID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjGroupData['MembershipFee'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjGroupData['OpenEnrollment'] = (buf.readUInt8(pos++) === 1);
+         newObjGroupData['AllowPublish'] = (buf.readUInt8(pos++) === 1);
+         newObjGroupData['MaturePublish'] = (buf.readUInt8(pos++) === 1);
+         this.GroupData = newObjGroupData;
+         return pos - startPos;
+     }
 }
+

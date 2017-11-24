@@ -40,4 +40,82 @@ export class DirLandReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.QueryData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.QueryReplies.length;
+         buf.writeUInt8(this.QueryReplies.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.QueryReplies[i]['ParcelID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.QueryReplies[i]['Name'], pos);
+             pos += this.QueryReplies[i]['Name'].length;
+             buf.writeUInt8((this.QueryReplies[i]['Auction']) ? 1 : 0, pos++);
+             buf.writeUInt8((this.QueryReplies[i]['ForSale']) ? 1 : 0, pos++);
+             buf.writeInt32LE(this.QueryReplies[i]['SalePrice'], pos);
+             pos += 4;
+             buf.writeInt32LE(this.QueryReplies[i]['ActualArea'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjQueryData: {
+             QueryID: UUID
+         } = {
+             QueryID: UUID.zero()
+         };
+         newObjQueryData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         this.QueryData = newObjQueryData;
+         const count = buf.readUInt8(pos++);
+         this.QueryReplies = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjQueryReplies: {
+                 ParcelID: UUID,
+                 Name: string,
+                 Auction: boolean,
+                 ForSale: boolean,
+                 SalePrice: number,
+                 ActualArea: number
+             } = {
+                 ParcelID: UUID.zero(),
+                 Name: '',
+                 Auction: false,
+                 ForSale: false,
+                 SalePrice: 0,
+                 ActualArea: 0
+             };
+             newObjQueryReplies['ParcelID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjQueryReplies['Name'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjQueryReplies['Auction'] = (buf.readUInt8(pos++) === 1);
+             newObjQueryReplies['ForSale'] = (buf.readUInt8(pos++) === 1);
+             newObjQueryReplies['SalePrice'] = buf.readInt32LE(pos);
+             pos += 4;
+             newObjQueryReplies['ActualArea'] = buf.readInt32LE(pos);
+             pos += 4;
+             this.QueryReplies.push(newObjQueryReplies);
+         }
+         return pos - startPos;
+     }
 }
+

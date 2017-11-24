@@ -7,4 +7,6 @@ export interface Packet
     id: number;
 
     getSize(): number;
+    writeToBuffer(buf: Buffer, pos: number): number;
+    readFromBuffer(buf: Buffer, pos: number): number;
 }

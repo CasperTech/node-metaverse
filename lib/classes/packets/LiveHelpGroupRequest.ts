@@ -20,4 +20,32 @@ export class LiveHelpGroupRequestPacket implements Packet
         return 32;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.RequestData['RequestID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.RequestData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjRequestData: {
+             RequestID: UUID,
+             AgentID: UUID
+         } = {
+             RequestID: UUID.zero(),
+             AgentID: UUID.zero()
+         };
+         newObjRequestData['RequestID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjRequestData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.RequestData = newObjRequestData;
+         return pos - startPos;
+     }
 }
+

@@ -26,4 +26,62 @@ export class ObjectAttachPacket implements Packet
         return ((16) * this.ObjectData.length) + 34;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8(this.AgentData['AttachmentPoint'], pos++);
+         const count = this.ObjectData.length;
+         buf.writeUInt8(this.ObjectData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt32LE(this.ObjectData[i]['ObjectLocalID'], pos);
+             pos += 4;
+             this.ObjectData[i]['Rotation'].writeToBuffer(buf, pos);
+             pos += 12;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             AttachmentPoint: number
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             AttachmentPoint: 0
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['AttachmentPoint'] = buf.readUInt8(pos++);
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.ObjectData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjObjectData: {
+                 ObjectLocalID: number,
+                 Rotation: Quaternion
+             } = {
+                 ObjectLocalID: 0,
+                 Rotation: Quaternion.getIdentity()
+             };
+             newObjObjectData['ObjectLocalID'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjObjectData['Rotation'] = new Quaternion(buf, pos);
+             pos += 12;
+             this.ObjectData.push(newObjObjectData);
+         }
+         return pos - startPos;
+     }
 }
+

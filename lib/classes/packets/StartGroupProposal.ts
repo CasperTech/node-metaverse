@@ -27,4 +27,66 @@ export class StartGroupProposalPacket implements Packet
         return (this.ProposalData['ProposalText'].length + 1) + 60;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.ProposalData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.ProposalData['Quorum'], pos);
+         pos += 4;
+         buf.writeFloatLE(this.ProposalData['Majority'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.ProposalData['Duration'], pos);
+         pos += 4;
+         buf.write(this.ProposalData['ProposalText'], pos);
+         pos += this.ProposalData['ProposalText'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjProposalData: {
+             GroupID: UUID,
+             Quorum: number,
+             Majority: number,
+             Duration: number,
+             ProposalText: string
+         } = {
+             GroupID: UUID.zero(),
+             Quorum: 0,
+             Majority: 0,
+             Duration: 0,
+             ProposalText: ''
+         };
+         newObjProposalData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjProposalData['Quorum'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjProposalData['Majority'] = buf.readFloatLE(pos);
+         pos += 4;
+         newObjProposalData['Duration'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjProposalData['ProposalText'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.ProposalData = newObjProposalData;
+         return pos - startPos;
+     }
 }
+

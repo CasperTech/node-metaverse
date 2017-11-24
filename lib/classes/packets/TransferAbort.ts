@@ -20,4 +20,32 @@ export class TransferAbortPacket implements Packet
         return 20;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.TransferInfo['TransferID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt32LE(this.TransferInfo['ChannelType'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjTransferInfo: {
+             TransferID: UUID,
+             ChannelType: number
+         } = {
+             TransferID: UUID.zero(),
+             ChannelType: 0
+         };
+         newObjTransferInfo['TransferID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjTransferInfo['ChannelType'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.TransferInfo = newObjTransferInfo;
+         return pos - startPos;
+     }
 }
+

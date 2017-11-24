@@ -25,4 +25,52 @@ export class ChatFromViewerPacket implements Packet
         return (this.ChatData['Message'].length + 2) + 37;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.ChatData['Message'], pos);
+         pos += this.ChatData['Message'].length;
+         buf.writeUInt8(this.ChatData['Type'], pos++);
+         buf.writeInt32LE(this.ChatData['Channel'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjChatData: {
+             Message: string,
+             Type: number,
+             Channel: number
+         } = {
+             Message: '',
+             Type: 0,
+             Channel: 0
+         };
+         newObjChatData['Message'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjChatData['Type'] = buf.readUInt8(pos++);
+         newObjChatData['Channel'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.ChatData = newObjChatData;
+         return pos - startPos;
+     }
 }
+

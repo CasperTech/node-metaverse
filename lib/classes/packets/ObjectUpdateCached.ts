@@ -25,4 +25,66 @@ export class ObjectUpdateCachedPacket implements Packet
         return ((12) * this.ObjectData.length) + 11;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeInt32LE(this.RegionData['RegionHandle'].low, pos);
+         pos += 4;
+         buf.writeInt32LE(this.RegionData['RegionHandle'].high, pos);
+         pos += 4;
+         buf.writeUInt16LE(this.RegionData['TimeDilation'], pos);
+         pos += 2;
+         const count = this.ObjectData.length;
+         buf.writeUInt8(this.ObjectData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt32LE(this.ObjectData[i]['ID'], pos);
+             pos += 4;
+             buf.writeUInt32LE(this.ObjectData[i]['CRC'], pos);
+             pos += 4;
+             buf.writeUInt32LE(this.ObjectData[i]['UpdateFlags'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjRegionData: {
+             RegionHandle: Long,
+             TimeDilation: number
+         } = {
+             RegionHandle: Long.ZERO,
+             TimeDilation: 0
+         };
+         newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+         pos += 8;
+         newObjRegionData['TimeDilation'] = buf.readUInt16LE(pos);
+         pos += 2;
+         this.RegionData = newObjRegionData;
+         const count = buf.readUInt8(pos++);
+         this.ObjectData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjObjectData: {
+                 ID: number,
+                 CRC: number,
+                 UpdateFlags: number
+             } = {
+                 ID: 0,
+                 CRC: 0,
+                 UpdateFlags: 0
+             };
+             newObjObjectData['ID'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjObjectData['CRC'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjObjectData['UpdateFlags'] = buf.readUInt32LE(pos);
+             pos += 4;
+             this.ObjectData.push(newObjObjectData);
+         }
+         return pos - startPos;
+     }
 }
+

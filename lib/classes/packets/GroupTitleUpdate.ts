@@ -22,4 +22,44 @@ export class GroupTitleUpdatePacket implements Packet
         return 64;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['TitleRoleID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             GroupID: UUID,
+             TitleRoleID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             GroupID: UUID.zero(),
+             TitleRoleID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['TitleRoleID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         return pos - startPos;
+     }
 }
+

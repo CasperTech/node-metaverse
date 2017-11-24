@@ -23,4 +23,42 @@ export class TeleportProgressPacket implements Packet
         return (this.Info['Message'].length + 1) + 20;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.Info['TeleportFlags'], pos);
+         pos += 4;
+         buf.write(this.Info['Message'], pos);
+         pos += this.Info['Message'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjInfo: {
+             TeleportFlags: number,
+             Message: string
+         } = {
+             TeleportFlags: 0,
+             Message: ''
+         };
+         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjInfo['Message'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.Info = newObjInfo;
+         return pos - startPos;
+     }
 }
+

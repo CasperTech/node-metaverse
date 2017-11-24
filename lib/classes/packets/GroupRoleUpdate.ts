@@ -40,4 +40,88 @@ export class GroupRoleUpdatePacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.RoleData.length;
+         buf.writeUInt8(this.RoleData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.RoleData[i]['RoleID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.RoleData[i]['Name'], pos);
+             pos += this.RoleData[i]['Name'].length;
+             buf.write(this.RoleData[i]['Description'], pos);
+             pos += this.RoleData[i]['Description'].length;
+             buf.write(this.RoleData[i]['Title'], pos);
+             pos += this.RoleData[i]['Title'].length;
+             buf.writeInt32LE(this.RoleData[i]['Powers'].low, pos);
+             pos += 4;
+             buf.writeInt32LE(this.RoleData[i]['Powers'].high, pos);
+             pos += 4;
+             buf.writeUInt8(this.RoleData[i]['UpdateType'], pos++);
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID,
+             GroupID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             GroupID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.RoleData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjRoleData: {
+                 RoleID: UUID,
+                 Name: string,
+                 Description: string,
+                 Title: string,
+                 Powers: Long,
+                 UpdateType: number
+             } = {
+                 RoleID: UUID.zero(),
+                 Name: '',
+                 Description: '',
+                 Title: '',
+                 Powers: Long.ZERO,
+                 UpdateType: 0
+             };
+             newObjRoleData['RoleID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjRoleData['Name'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjRoleData['Description'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjRoleData['Title'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+             pos += 8;
+             newObjRoleData['UpdateType'] = buf.readUInt8(pos++);
+             this.RoleData.push(newObjRoleData);
+         }
+         return pos - startPos;
+     }
 }
+

@@ -19,4 +19,28 @@ export class NearestLandingRegionReplyPacket implements Packet
         return 8;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeInt32LE(this.LandingRegionData['RegionHandle'].low, pos);
+         pos += 4;
+         buf.writeInt32LE(this.LandingRegionData['RegionHandle'].high, pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjLandingRegionData: {
+             RegionHandle: Long
+         } = {
+             RegionHandle: Long.ZERO
+         };
+         newObjLandingRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+         pos += 8;
+         this.LandingRegionData = newObjLandingRegionData;
+         return pos - startPos;
+     }
 }
+

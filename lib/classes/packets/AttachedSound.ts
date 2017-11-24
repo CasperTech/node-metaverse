@@ -23,4 +23,48 @@ export class AttachedSoundPacket implements Packet
         return 53;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.DataBlock['SoundID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.DataBlock['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.DataBlock['OwnerID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeFloatLE(this.DataBlock['Gain'], pos);
+         pos += 4;
+         buf.writeUInt8(this.DataBlock['Flags'], pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjDataBlock: {
+             SoundID: UUID,
+             ObjectID: UUID,
+             OwnerID: UUID,
+             Gain: number,
+             Flags: number
+         } = {
+             SoundID: UUID.zero(),
+             ObjectID: UUID.zero(),
+             OwnerID: UUID.zero(),
+             Gain: 0,
+             Flags: 0
+         };
+         newObjDataBlock['SoundID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['OwnerID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['Gain'] = buf.readFloatLE(pos);
+         pos += 4;
+         newObjDataBlock['Flags'] = buf.readUInt8(pos++);
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

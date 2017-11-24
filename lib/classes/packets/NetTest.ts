@@ -18,4 +18,26 @@ export class NetTestPacket implements Packet
         return 2;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt16LE(this.NetBlock['Port'], pos);
+         pos += 2;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjNetBlock: {
+             Port: number
+         } = {
+             Port: 0
+         };
+         newObjNetBlock['Port'] = buf.readUInt16LE(pos);
+         pos += 2;
+         this.NetBlock = newObjNetBlock;
+         return pos - startPos;
+     }
 }
+

@@ -18,4 +18,26 @@ export class SimulatorMapUpdatePacket implements Packet
         return 4;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt32LE(this.MapData['Flags'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjMapData: {
+             Flags: number
+         } = {
+             Flags: 0
+         };
+         newObjMapData['Flags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.MapData = newObjMapData;
+         return pos - startPos;
+     }
 }
+

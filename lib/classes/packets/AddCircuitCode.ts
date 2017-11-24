@@ -21,4 +21,38 @@ export class AddCircuitCodePacket implements Packet
         return 36;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt32LE(this.CircuitCode['Code'], pos);
+         pos += 4;
+         this.CircuitCode['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.CircuitCode['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjCircuitCode: {
+             Code: number,
+             SessionID: UUID,
+             AgentID: UUID
+         } = {
+             Code: 0,
+             SessionID: UUID.zero(),
+             AgentID: UUID.zero()
+         };
+         newObjCircuitCode['Code'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjCircuitCode['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjCircuitCode['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.CircuitCode = newObjCircuitCode;
+         return pos - startPos;
+     }
 }
+

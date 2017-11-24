@@ -19,4 +19,26 @@ export class CameraConstraintPacket implements Packet
         return 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.CameraCollidePlane['Plane'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjCameraCollidePlane: {
+             Plane: Vector4
+         } = {
+             Plane: Vector4.getZero()
+         };
+         newObjCameraCollidePlane['Plane'] = new Vector4(buf, pos);
+         pos += 16;
+         this.CameraCollidePlane = newObjCameraCollidePlane;
+         return pos - startPos;
+     }
 }
+

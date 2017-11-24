@@ -15,4 +15,14 @@ export class EconomyDataRequestPacket implements Packet
         return 0;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         return 0;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         return 0;
+     }
 }
+

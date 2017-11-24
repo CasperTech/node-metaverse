@@ -22,4 +22,46 @@ export class MergeParcelPacket implements Packet
         return ((16) * this.SlaveParcelData.length) + 17;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.MasterParcelData['MasterID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.SlaveParcelData.length;
+         buf.writeUInt8(this.SlaveParcelData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.SlaveParcelData[i]['SlaveID'].writeToBuffer(buf, pos);
+             pos += 16;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjMasterParcelData: {
+             MasterID: UUID
+         } = {
+             MasterID: UUID.zero()
+         };
+         newObjMasterParcelData['MasterID'] = new UUID(buf, pos);
+         pos += 16;
+         this.MasterParcelData = newObjMasterParcelData;
+         const count = buf.readUInt8(pos++);
+         this.SlaveParcelData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjSlaveParcelData: {
+                 SlaveID: UUID
+             } = {
+                 SlaveID: UUID.zero()
+             };
+             newObjSlaveParcelData['SlaveID'] = new UUID(buf, pos);
+             pos += 16;
+             this.SlaveParcelData.push(newObjSlaveParcelData);
+         }
+         return pos - startPos;
+     }
 }
+

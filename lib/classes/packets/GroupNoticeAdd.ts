@@ -27,4 +27,64 @@ export class GroupNoticeAddPacket implements Packet
         return (this.MessageBlock['FromAgentName'].length + 1 + this.MessageBlock['Message'].length + 2 + this.MessageBlock['BinaryBucket'].length + 2) + 49;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.MessageBlock['ToGroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.MessageBlock['ID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8(this.MessageBlock['Dialog'], pos++);
+         buf.write(this.MessageBlock['FromAgentName'], pos);
+         pos += this.MessageBlock['FromAgentName'].length;
+         buf.write(this.MessageBlock['Message'], pos);
+         pos += this.MessageBlock['Message'].length;
+         buf.write(this.MessageBlock['BinaryBucket'], pos);
+         pos += this.MessageBlock['BinaryBucket'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjMessageBlock: {
+             ToGroupID: UUID,
+             ID: UUID,
+             Dialog: number,
+             FromAgentName: string,
+             Message: string,
+             BinaryBucket: string
+         } = {
+             ToGroupID: UUID.zero(),
+             ID: UUID.zero(),
+             Dialog: 0,
+             FromAgentName: '',
+             Message: '',
+             BinaryBucket: ''
+         };
+         newObjMessageBlock['ToGroupID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMessageBlock['ID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMessageBlock['Dialog'] = buf.readUInt8(pos++);
+         newObjMessageBlock['FromAgentName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjMessageBlock['Message'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjMessageBlock['BinaryBucket'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.MessageBlock = newObjMessageBlock;
+         return pos - startPos;
+     }
 }
+

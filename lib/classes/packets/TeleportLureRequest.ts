@@ -22,4 +22,44 @@ export class TeleportLureRequestPacket implements Packet
         return 52;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.Info['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Info['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Info['LureID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.Info['TeleportFlags'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjInfo: {
+             AgentID: UUID,
+             SessionID: UUID,
+             LureID: UUID,
+             TeleportFlags: number
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             LureID: UUID.zero(),
+             TeleportFlags: 0
+         };
+         newObjInfo['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfo['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfo['LureID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.Info = newObjInfo;
+         return pos - startPos;
+     }
 }
+

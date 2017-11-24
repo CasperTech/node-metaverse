@@ -24,4 +24,58 @@ export class ChangeInventoryItemFlagsPacket implements Packet
         return ((20) * this.InventoryData.length) + 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.InventoryData.length;
+         buf.writeUInt8(this.InventoryData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.InventoryData[i]['ItemID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeUInt32LE(this.InventoryData[i]['Flags'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.InventoryData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjInventoryData: {
+                 ItemID: UUID,
+                 Flags: number
+             } = {
+                 ItemID: UUID.zero(),
+                 Flags: 0
+             };
+             newObjInventoryData['ItemID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjInventoryData['Flags'] = buf.readUInt32LE(pos);
+             pos += 4;
+             this.InventoryData.push(newObjInventoryData);
+         }
+         return pos - startPos;
+     }
 }
+

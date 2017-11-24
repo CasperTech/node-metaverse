@@ -24,4 +24,56 @@ export class AgentIsNowWearingPacket implements Packet
         return ((17) * this.WearableData.length) + 33;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.WearableData.length;
+         buf.writeUInt8(this.WearableData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.WearableData[i]['ItemID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeUInt8(this.WearableData[i]['WearableType'], pos++);
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.WearableData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjWearableData: {
+                 ItemID: UUID,
+                 WearableType: number
+             } = {
+                 ItemID: UUID.zero(),
+                 WearableType: 0
+             };
+             newObjWearableData['ItemID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjWearableData['WearableType'] = buf.readUInt8(pos++);
+             this.WearableData.push(newObjWearableData);
+         }
+         return pos - startPos;
+     }
 }
+

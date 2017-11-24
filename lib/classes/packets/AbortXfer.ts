@@ -20,4 +20,34 @@ export class AbortXferPacket implements Packet
         return 12;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeInt32LE(this.XferID['ID'].low, pos);
+         pos += 4;
+         buf.writeInt32LE(this.XferID['ID'].high, pos);
+         pos += 4;
+         buf.writeInt32LE(this.XferID['Result'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjXferID: {
+             ID: Long,
+             Result: number
+         } = {
+             ID: Long.ZERO,
+             Result: 0
+         };
+         newObjXferID['ID'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+         pos += 8;
+         newObjXferID['Result'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.XferID = newObjXferID;
+         return pos - startPos;
+     }
 }
+

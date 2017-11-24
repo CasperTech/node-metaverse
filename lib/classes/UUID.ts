@@ -1,4 +1,5 @@
 import * as validator from 'validator';
+const uuid = require('uuid');
 
 export class UUID
 {
@@ -9,11 +10,18 @@ export class UUID
         return new UUID();
     }
 
-    constructor(val?: string)
+    constructor(buf?: Buffer | string, pos?: number)
     {
-        if (val !== undefined)
+        if (buf !== undefined)
         {
-            this.setUUID(val);
+            if (typeof buf === 'string')
+            {
+                this.setUUID(buf);
+            }
+            else if (pos !== undefined)
+            {
+                this.mUUID = uuid.unparse(buf, pos);
+            }
         }
     }
 
@@ -30,5 +38,10 @@ export class UUID
     public toString = (): string =>
     {
         return this.mUUID;
+    };
+
+    writeToBuffer(buf: Buffer, pos: number)
+    {
+        uuid.parse(this.mUUID, buf, pos);
     }
 }

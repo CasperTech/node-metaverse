@@ -19,4 +19,26 @@ export class KillChildAgentsPacket implements Packet
         return 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.IDBlock['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjIDBlock: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjIDBlock['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.IDBlock = newObjIDBlock;
+         return pos - startPos;
+     }
 }
+

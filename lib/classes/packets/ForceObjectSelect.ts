@@ -21,4 +21,44 @@ export class ForceObjectSelectPacket implements Packet
         return ((4) * this.Data.length) + 2;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt8((this.Header['ResetList']) ? 1 : 0, pos++);
+         const count = this.Data.length;
+         buf.writeUInt8(this.Data.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt32LE(this.Data[i]['LocalID'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjHeader: {
+             ResetList: boolean
+         } = {
+             ResetList: false
+         };
+         newObjHeader['ResetList'] = (buf.readUInt8(pos++) === 1);
+         this.Header = newObjHeader;
+         const count = buf.readUInt8(pos++);
+         this.Data = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjData: {
+                 LocalID: number
+             } = {
+                 LocalID: 0
+             };
+             newObjData['LocalID'] = buf.readUInt32LE(pos);
+             pos += 4;
+             this.Data.push(newObjData);
+         }
+         return pos - startPos;
+     }
 }
+

@@ -26,4 +26,62 @@ export class EjectGroupMemberRequestPacket implements Packet
         return ((16) * this.EjectData.length) + 49;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.GroupData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.EjectData.length;
+         buf.writeUInt8(this.EjectData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.EjectData[i]['EjecteeID'].writeToBuffer(buf, pos);
+             pos += 16;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjGroupData: {
+             GroupID: UUID
+         } = {
+             GroupID: UUID.zero()
+         };
+         newObjGroupData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         this.GroupData = newObjGroupData;
+         const count = buf.readUInt8(pos++);
+         this.EjectData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjEjectData: {
+                 EjecteeID: UUID
+             } = {
+                 EjecteeID: UUID.zero()
+             };
+             newObjEjectData['EjecteeID'] = new UUID(buf, pos);
+             pos += 16;
+             this.EjectData.push(newObjEjectData);
+         }
+         return pos - startPos;
+     }
 }
+

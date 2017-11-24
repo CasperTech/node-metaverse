@@ -18,4 +18,26 @@ export class TeleportStartPacket implements Packet
         return 4;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt32LE(this.Info['TeleportFlags'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjInfo: {
+             TeleportFlags: number
+         } = {
+             TeleportFlags: 0
+         };
+         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.Info = newObjInfo;
+         return pos - startPos;
+     }
 }
+

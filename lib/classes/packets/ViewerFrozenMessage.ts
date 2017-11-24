@@ -18,4 +18,24 @@ export class ViewerFrozenMessagePacket implements Packet
         return 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         buf.writeUInt8((this.FrozenData['Data']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjFrozenData: {
+             Data: boolean
+         } = {
+             Data: false
+         };
+         newObjFrozenData['Data'] = (buf.readUInt8(pos++) === 1);
+         this.FrozenData = newObjFrozenData;
+         return pos - startPos;
+     }
 }
+

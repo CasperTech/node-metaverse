@@ -10,6 +10,7 @@ export class Region
 
     constructor()
     {
+        console.log("Creating circuit");
         this.circuit = new Circuit();
     }
 }

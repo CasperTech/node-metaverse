@@ -31,4 +31,92 @@ export class MoneyTransferBackendPacket implements Packet
         return (this.MoneyData['Description'].length + 1) + 87;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.MoneyData['TransactionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.MoneyData['TransactionTime'], pos);
+         pos += 4;
+         this.MoneyData['SourceID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.MoneyData['DestID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8(this.MoneyData['Flags'], pos++);
+         buf.writeInt32LE(this.MoneyData['Amount'], pos);
+         pos += 4;
+         buf.writeUInt8(this.MoneyData['AggregatePermNextOwner'], pos++);
+         buf.writeUInt8(this.MoneyData['AggregatePermInventory'], pos++);
+         buf.writeInt32LE(this.MoneyData['TransactionType'], pos);
+         pos += 4;
+         this.MoneyData['RegionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.MoneyData['GridX'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.MoneyData['GridY'], pos);
+         pos += 4;
+         buf.write(this.MoneyData['Description'], pos);
+         pos += this.MoneyData['Description'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjMoneyData: {
+             TransactionID: UUID,
+             TransactionTime: number,
+             SourceID: UUID,
+             DestID: UUID,
+             Flags: number,
+             Amount: number,
+             AggregatePermNextOwner: number,
+             AggregatePermInventory: number,
+             TransactionType: number,
+             RegionID: UUID,
+             GridX: number,
+             GridY: number,
+             Description: string
+         } = {
+             TransactionID: UUID.zero(),
+             TransactionTime: 0,
+             SourceID: UUID.zero(),
+             DestID: UUID.zero(),
+             Flags: 0,
+             Amount: 0,
+             AggregatePermNextOwner: 0,
+             AggregatePermInventory: 0,
+             TransactionType: 0,
+             RegionID: UUID.zero(),
+             GridX: 0,
+             GridY: 0,
+             Description: ''
+         };
+         newObjMoneyData['TransactionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMoneyData['TransactionTime'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjMoneyData['SourceID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMoneyData['DestID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMoneyData['Flags'] = buf.readUInt8(pos++);
+         newObjMoneyData['Amount'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjMoneyData['AggregatePermNextOwner'] = buf.readUInt8(pos++);
+         newObjMoneyData['AggregatePermInventory'] = buf.readUInt8(pos++);
+         newObjMoneyData['TransactionType'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjMoneyData['RegionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMoneyData['GridX'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjMoneyData['GridY'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjMoneyData['Description'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.MoneyData = newObjMoneyData;
+         return pos - startPos;
+     }
 }
+

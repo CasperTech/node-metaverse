@@ -36,4 +36,118 @@ export class ParcelInfoReplyPacket implements Packet
         return (this.Data['Name'].length + 1 + this.Data['Desc'].length + 1 + this.Data['SimName'].length + 1) + 97;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Data['ParcelID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Data['OwnerID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.Data['Name'], pos);
+         pos += this.Data['Name'].length;
+         buf.write(this.Data['Desc'], pos);
+         pos += this.Data['Desc'].length;
+         buf.writeInt32LE(this.Data['ActualArea'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.Data['BillableArea'], pos);
+         pos += 4;
+         buf.writeUInt8(this.Data['Flags'], pos++);
+         buf.writeFloatLE(this.Data['GlobalX'], pos);
+         pos += 4;
+         buf.writeFloatLE(this.Data['GlobalY'], pos);
+         pos += 4;
+         buf.writeFloatLE(this.Data['GlobalZ'], pos);
+         pos += 4;
+         buf.write(this.Data['SimName'], pos);
+         pos += this.Data['SimName'].length;
+         this.Data['SnapshotID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeFloatLE(this.Data['Dwell'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.Data['SalePrice'], pos);
+         pos += 4;
+         buf.writeInt32LE(this.Data['AuctionID'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjData: {
+             ParcelID: UUID,
+             OwnerID: UUID,
+             Name: string,
+             Desc: string,
+             ActualArea: number,
+             BillableArea: number,
+             Flags: number,
+             GlobalX: number,
+             GlobalY: number,
+             GlobalZ: number,
+             SimName: string,
+             SnapshotID: UUID,
+             Dwell: number,
+             SalePrice: number,
+             AuctionID: number
+         } = {
+             ParcelID: UUID.zero(),
+             OwnerID: UUID.zero(),
+             Name: '',
+             Desc: '',
+             ActualArea: 0,
+             BillableArea: 0,
+             Flags: 0,
+             GlobalX: 0,
+             GlobalY: 0,
+             GlobalZ: 0,
+             SimName: '',
+             SnapshotID: UUID.zero(),
+             Dwell: 0,
+             SalePrice: 0,
+             AuctionID: 0
+         };
+         newObjData['ParcelID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['OwnerID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['Name'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjData['Desc'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjData['ActualArea'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjData['BillableArea'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjData['Flags'] = buf.readUInt8(pos++);
+         newObjData['GlobalX'] = buf.readFloatLE(pos);
+         pos += 4;
+         newObjData['GlobalY'] = buf.readFloatLE(pos);
+         pos += 4;
+         newObjData['GlobalZ'] = buf.readFloatLE(pos);
+         pos += 4;
+         newObjData['SimName'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjData['SnapshotID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['Dwell'] = buf.readFloatLE(pos);
+         pos += 4;
+         newObjData['SalePrice'] = buf.readInt32LE(pos);
+         pos += 4;
+         newObjData['AuctionID'] = buf.readInt32LE(pos);
+         pos += 4;
+         this.Data = newObjData;
+         return pos - startPos;
+     }
 }
+

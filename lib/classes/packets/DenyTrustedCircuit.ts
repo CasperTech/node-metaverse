@@ -19,4 +19,26 @@ export class DenyTrustedCircuitPacket implements Packet
         return 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.DataBlock['EndPointID'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjDataBlock: {
+             EndPointID: UUID
+         } = {
+             EndPointID: UUID.zero()
+         };
+         newObjDataBlock['EndPointID'] = new UUID(buf, pos);
+         pos += 16;
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

@@ -19,4 +19,36 @@ export class CancelAuctionPacket implements Packet
         return ((16) * this.ParcelData.length) + 1;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.ParcelData.length;
+         buf.writeUInt8(this.ParcelData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.ParcelData[i]['ParcelID'].writeToBuffer(buf, pos);
+             pos += 16;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.ParcelData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjParcelData: {
+                 ParcelID: UUID
+             } = {
+                 ParcelID: UUID.zero()
+             };
+             newObjParcelData['ParcelID'] = new UUID(buf, pos);
+             pos += 16;
+             this.ParcelData.push(newObjParcelData);
+         }
+         return pos - startPos;
+     }
 }
+

@@ -36,4 +36,68 @@ export class GroupTitlesReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['GroupID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['RequestID'].writeToBuffer(buf, pos);
+         pos += 16;
+         const count = this.GroupData.length;
+         buf.writeUInt8(this.GroupData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.write(this.GroupData[i]['Title'], pos);
+             pos += this.GroupData[i]['Title'].length;
+             this.GroupData[i]['RoleID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeUInt8((this.GroupData[i]['Selected']) ? 1 : 0, pos++);
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             GroupID: UUID,
+             RequestID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             GroupID: UUID.zero(),
+             RequestID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['GroupID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['RequestID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const count = buf.readUInt8(pos++);
+         this.GroupData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjGroupData: {
+                 Title: string,
+                 RoleID: UUID,
+                 Selected: boolean
+             } = {
+                 Title: '',
+                 RoleID: UUID.zero(),
+                 Selected: false
+             };
+             newObjGroupData['Title'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjGroupData['RoleID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjGroupData['Selected'] = (buf.readUInt8(pos++) === 1);
+             this.GroupData.push(newObjGroupData);
+         }
+         return pos - startPos;
+     }
 }
+

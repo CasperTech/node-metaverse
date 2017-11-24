@@ -21,4 +21,38 @@ export class EmailMessageRequestPacket implements Packet
         return (this.DataBlock['FromAddress'].length + 1 + this.DataBlock['Subject'].length + 1) + 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.DataBlock['ObjectID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.DataBlock['FromAddress'], pos);
+         pos += this.DataBlock['FromAddress'].length;
+         buf.write(this.DataBlock['Subject'], pos);
+         pos += this.DataBlock['Subject'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjDataBlock: {
+             ObjectID: UUID,
+             FromAddress: string,
+             Subject: string
+         } = {
+             ObjectID: UUID.zero(),
+             FromAddress: '',
+             Subject: ''
+         };
+         newObjDataBlock['ObjectID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjDataBlock['FromAddress'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjDataBlock['Subject'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.DataBlock = newObjDataBlock;
+         return pos - startPos;
+     }
 }
+

@@ -25,4 +25,52 @@ export class DirPopularQueryBackendPacket implements Packet
         return 41;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.QueryData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.QueryData['QueryFlags'], pos);
+         pos += 4;
+         buf.writeUInt32LE(this.QueryData['EstateID'], pos);
+         pos += 4;
+         buf.writeUInt8((this.QueryData['Godlike']) ? 1 : 0, pos++);
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjQueryData: {
+             QueryID: UUID,
+             QueryFlags: number,
+             EstateID: number,
+             Godlike: boolean
+         } = {
+             QueryID: UUID.zero(),
+             QueryFlags: 0,
+             EstateID: 0,
+             Godlike: false
+         };
+         newObjQueryData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjQueryData['QueryFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjQueryData['EstateID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjQueryData['Godlike'] = (buf.readUInt8(pos++) === 1);
+         this.QueryData = newObjQueryData;
+         return pos - startPos;
+     }
 }
+

@@ -34,4 +34,66 @@ export class LogTextMessagePacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = this.DataBlock.length;
+         buf.writeUInt8(this.DataBlock.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.DataBlock[i]['FromAgentId'].writeToBuffer(buf, pos);
+             pos += 16;
+             this.DataBlock[i]['ToAgentId'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.writeDoubleLE(this.DataBlock[i]['GlobalX'], pos);
+             pos += 8;
+             buf.writeDoubleLE(this.DataBlock[i]['GlobalY'], pos);
+             pos += 8;
+             buf.writeUInt32LE(this.DataBlock[i]['Time'], pos);
+             pos += 4;
+             buf.write(this.DataBlock[i]['Message'], pos);
+             pos += this.DataBlock[i]['Message'].length;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const count = buf.readUInt8(pos++);
+         this.DataBlock = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjDataBlock: {
+                 FromAgentId: UUID,
+                 ToAgentId: UUID,
+                 GlobalX: number,
+                 GlobalY: number,
+                 Time: number,
+                 Message: string
+             } = {
+                 FromAgentId: UUID.zero(),
+                 ToAgentId: UUID.zero(),
+                 GlobalX: 0,
+                 GlobalY: 0,
+                 Time: 0,
+                 Message: ''
+             };
+             newObjDataBlock['FromAgentId'] = new UUID(buf, pos);
+             pos += 16;
+             newObjDataBlock['ToAgentId'] = new UUID(buf, pos);
+             pos += 16;
+             newObjDataBlock['GlobalX'] = buf.readDoubleLE(pos);
+             pos += 8;
+             newObjDataBlock['GlobalY'] = buf.readDoubleLE(pos);
+             pos += 8;
+             newObjDataBlock['Time'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjDataBlock['Message'] = buf.toString('utf8', pos, length);
+             pos += length;
+             this.DataBlock.push(newObjDataBlock);
+         }
+         return pos - startPos;
+     }
 }
+

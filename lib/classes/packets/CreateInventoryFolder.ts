@@ -26,4 +26,58 @@ export class CreateInventoryFolderPacket implements Packet
         return (this.FolderData['Name'].length + 1) + 65;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.FolderData['FolderID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.FolderData['ParentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeInt8(this.FolderData['Type'], pos++);
+         buf.write(this.FolderData['Name'], pos);
+         pos += this.FolderData['Name'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjFolderData: {
+             FolderID: UUID,
+             ParentID: UUID,
+             Type: number,
+             Name: string
+         } = {
+             FolderID: UUID.zero(),
+             ParentID: UUID.zero(),
+             Type: 0,
+             Name: ''
+         };
+         newObjFolderData['FolderID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjFolderData['ParentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjFolderData['Type'] = buf.readInt8(pos++);
+         newObjFolderData['Name'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.FolderData = newObjFolderData;
+         return pos - startPos;
+     }
 }
+

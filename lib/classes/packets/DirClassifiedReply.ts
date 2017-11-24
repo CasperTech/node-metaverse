@@ -43,4 +43,104 @@ export class DirClassifiedReplyPacket implements Packet
         return size;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.QueryData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         let count = this.QueryReplies.length;
+         buf.writeUInt8(this.QueryReplies.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             this.QueryReplies[i]['ClassifiedID'].writeToBuffer(buf, pos);
+             pos += 16;
+             buf.write(this.QueryReplies[i]['Name'], pos);
+             pos += this.QueryReplies[i]['Name'].length;
+             buf.writeUInt8(this.QueryReplies[i]['ClassifiedFlags'], pos++);
+             buf.writeUInt32LE(this.QueryReplies[i]['CreationDate'], pos);
+             pos += 4;
+             buf.writeUInt32LE(this.QueryReplies[i]['ExpirationDate'], pos);
+             pos += 4;
+             buf.writeInt32LE(this.QueryReplies[i]['PriceForListing'], pos);
+             pos += 4;
+         }
+         count = this.StatusData.length;
+         buf.writeUInt8(this.StatusData.length, pos++);
+         for (let i = 0; i < count; i++)
+         {
+             buf.writeUInt32LE(this.StatusData[i]['Status'], pos);
+             pos += 4;
+         }
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID
+         } = {
+             AgentID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjQueryData: {
+             QueryID: UUID
+         } = {
+             QueryID: UUID.zero()
+         };
+         newObjQueryData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         this.QueryData = newObjQueryData;
+         let count = buf.readUInt8(pos++);
+         this.QueryReplies = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjQueryReplies: {
+                 ClassifiedID: UUID,
+                 Name: string,
+                 ClassifiedFlags: number,
+                 CreationDate: number,
+                 ExpirationDate: number,
+                 PriceForListing: number
+             } = {
+                 ClassifiedID: UUID.zero(),
+                 Name: '',
+                 ClassifiedFlags: 0,
+                 CreationDate: 0,
+                 ExpirationDate: 0,
+                 PriceForListing: 0
+             };
+             newObjQueryReplies['ClassifiedID'] = new UUID(buf, pos);
+             pos += 16;
+             newObjQueryReplies['Name'] = buf.toString('utf8', pos, length);
+             pos += length;
+             newObjQueryReplies['ClassifiedFlags'] = buf.readUInt8(pos++);
+             newObjQueryReplies['CreationDate'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjQueryReplies['ExpirationDate'] = buf.readUInt32LE(pos);
+             pos += 4;
+             newObjQueryReplies['PriceForListing'] = buf.readInt32LE(pos);
+             pos += 4;
+             this.QueryReplies.push(newObjQueryReplies);
+         }
+         count = buf.readUInt8(pos++);
+         this.StatusData = [];
+         for (let i = 0; i < count; i++)
+         {
+             const newObjStatusData: {
+                 Status: number
+             } = {
+                 Status: 0
+             };
+             newObjStatusData['Status'] = buf.readUInt32LE(pos);
+             pos += 4;
+             this.StatusData.push(newObjStatusData);
+         }
+         return pos - startPos;
+     }
 }
+

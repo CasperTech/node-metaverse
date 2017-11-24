@@ -24,4 +24,48 @@ export class AvatarNotesUpdatePacket implements Packet
         return (this.Data['Notes'].length + 2) + 48;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.Data['TargetID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.Data['Notes'], pos);
+         pos += this.Data['Notes'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjData: {
+             TargetID: UUID,
+             Notes: string
+         } = {
+             TargetID: UUID.zero(),
+             Notes: ''
+         };
+         newObjData['TargetID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjData['Notes'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.Data = newObjData;
+         return pos - startPos;
+     }
 }
+

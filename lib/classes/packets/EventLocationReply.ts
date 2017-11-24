@@ -25,4 +25,46 @@ export class EventLocationReplyPacket implements Packet
         return 45;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.QueryData['QueryID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8((this.EventData['Success']) ? 1 : 0, pos++);
+         this.EventData['RegionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.EventData['RegionPos'].writeToBuffer(buf, pos, false);
+         pos += 12;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjQueryData: {
+             QueryID: UUID
+         } = {
+             QueryID: UUID.zero()
+         };
+         newObjQueryData['QueryID'] = new UUID(buf, pos);
+         pos += 16;
+         this.QueryData = newObjQueryData;
+         const newObjEventData: {
+             Success: boolean,
+             RegionID: UUID,
+             RegionPos: Vector3
+         } = {
+             Success: false,
+             RegionID: UUID.zero(),
+             RegionPos: Vector3.getZero()
+         };
+         newObjEventData['Success'] = (buf.readUInt8(pos++) === 1);
+         newObjEventData['RegionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjEventData['RegionPos'] = new Vector3(buf, pos, false);
+         pos += 12;
+         this.EventData = newObjEventData;
+         return pos - startPos;
+     }
 }
+

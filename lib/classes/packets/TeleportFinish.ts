@@ -28,4 +28,68 @@ export class TeleportFinishPacket implements Packet
         return (this.Info['SeedCapability'].length + 2) + 39;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.Info['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt32LE(this.Info['LocationID'], pos);
+         pos += 4;
+         this.Info['SimIP'].writeToBuffer(buf, pos);
+         pos += 4;
+         buf.writeUInt16LE(this.Info['SimPort'], pos);
+         pos += 2;
+         buf.writeInt32LE(this.Info['RegionHandle'].low, pos);
+         pos += 4;
+         buf.writeInt32LE(this.Info['RegionHandle'].high, pos);
+         pos += 4;
+         buf.write(this.Info['SeedCapability'], pos);
+         pos += this.Info['SeedCapability'].length;
+         buf.writeUInt8(this.Info['SimAccess'], pos++);
+         buf.writeUInt32LE(this.Info['TeleportFlags'], pos);
+         pos += 4;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjInfo: {
+             AgentID: UUID,
+             LocationID: number,
+             SimIP: IPAddress,
+             SimPort: number,
+             RegionHandle: Long,
+             SeedCapability: string,
+             SimAccess: number,
+             TeleportFlags: number
+         } = {
+             AgentID: UUID.zero(),
+             LocationID: 0,
+             SimIP: IPAddress.zero(),
+             SimPort: 0,
+             RegionHandle: Long.ZERO,
+             SeedCapability: '',
+             SimAccess: 0,
+             TeleportFlags: 0
+         };
+         newObjInfo['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjInfo['LocationID'] = buf.readUInt32LE(pos);
+         pos += 4;
+         newObjInfo['SimIP'] = new IPAddress(buf, pos);
+         pos += 4;
+         newObjInfo['SimPort'] = buf.readUInt16LE(pos);
+         pos += 2;
+         newObjInfo['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+         pos += 8;
+         newObjInfo['SeedCapability'] = buf.toString('utf8', pos, length);
+         pos += length;
+         newObjInfo['SimAccess'] = buf.readUInt8(pos++);
+         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);
+         pos += 4;
+         this.Info = newObjInfo;
+         return pos - startPos;
+     }
 }
+

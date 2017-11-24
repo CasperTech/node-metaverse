@@ -26,4 +26,54 @@ export class KickUserPacket implements Packet
         return (this.UserInfo['Reason'].length + 2) + 38;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.TargetBlock['TargetIP'].writeToBuffer(buf, pos);
+         pos += 4;
+         buf.writeUInt16LE(this.TargetBlock['TargetPort'], pos);
+         pos += 2;
+         this.UserInfo['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.UserInfo['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.UserInfo['Reason'], pos);
+         pos += this.UserInfo['Reason'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjTargetBlock: {
+             TargetIP: IPAddress,
+             TargetPort: number
+         } = {
+             TargetIP: IPAddress.zero(),
+             TargetPort: 0
+         };
+         newObjTargetBlock['TargetIP'] = new IPAddress(buf, pos);
+         pos += 4;
+         newObjTargetBlock['TargetPort'] = buf.readUInt16LE(pos);
+         pos += 2;
+         this.TargetBlock = newObjTargetBlock;
+         const newObjUserInfo: {
+             AgentID: UUID,
+             SessionID: UUID,
+             Reason: string
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero(),
+             Reason: ''
+         };
+         newObjUserInfo['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjUserInfo['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjUserInfo['Reason'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.UserInfo = newObjUserInfo;
+         return pos - startPos;
+     }
 }
+

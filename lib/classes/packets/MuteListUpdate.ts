@@ -20,4 +20,32 @@ export class MuteListUpdatePacket implements Packet
         return (this.MuteData['Filename'].length + 1) + 16;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.MuteData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.write(this.MuteData['Filename'], pos);
+         pos += this.MuteData['Filename'].length;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjMuteData: {
+             AgentID: UUID,
+             Filename: string
+         } = {
+             AgentID: UUID.zero(),
+             Filename: ''
+         };
+         newObjMuteData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjMuteData['Filename'] = buf.toString('utf8', pos, length);
+         pos += length;
+         this.MuteData = newObjMuteData;
+         return pos - startPos;
+     }
 }
+

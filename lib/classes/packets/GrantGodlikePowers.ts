@@ -24,4 +24,46 @@ export class GrantGodlikePowersPacket implements Packet
         return 49;
     }
 
+     writeToBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         this.AgentData['AgentID'].writeToBuffer(buf, pos);
+         pos += 16;
+         this.AgentData['SessionID'].writeToBuffer(buf, pos);
+         pos += 16;
+         buf.writeUInt8(this.GrantData['GodLevel'], pos++);
+         this.GrantData['Token'].writeToBuffer(buf, pos);
+         pos += 16;
+         return pos - startPos;
+     }
+
+     readFromBuffer(buf: Buffer, pos: number): number
+     {
+         const startPos = pos;
+         const newObjAgentData: {
+             AgentID: UUID,
+             SessionID: UUID
+         } = {
+             AgentID: UUID.zero(),
+             SessionID: UUID.zero()
+         };
+         newObjAgentData['AgentID'] = new UUID(buf, pos);
+         pos += 16;
+         newObjAgentData['SessionID'] = new UUID(buf, pos);
+         pos += 16;
+         this.AgentData = newObjAgentData;
+         const newObjGrantData: {
+             GodLevel: number,
+             Token: UUID
+         } = {
+             GodLevel: 0,
+             Token: UUID.zero()
+         };
+         newObjGrantData['GodLevel'] = buf.readUInt8(pos++);
+         newObjGrantData['Token'] = new UUID(buf, pos);
+         pos += 16;
+         this.GrantData = newObjGrantData;
+         return pos - startPos;
+     }
 }
+
