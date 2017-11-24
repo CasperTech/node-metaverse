@@ -1,4 +1,4 @@
-import {UUID} from '../structs/UUID';
+import {UUID} from './UUID';
 
 export class Inventory
 {

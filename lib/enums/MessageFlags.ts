@@ -6,5 +6,6 @@ export enum MessageFlags
     FrequencyFixed = 8,
     Zerocoded = 16,
     Trusted = 32,
-    Blacklisted = 64
+    Blacklisted = 64,
+    Deprecated = 128
 }
