@@ -1,8 +1,8 @@
 import * as xmlrpc from 'xmlrpc';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
-import {LoginParameters} from './structs/LoginParameters';
-import {LoginResponse} from './structs/LoginResponse';
+import {LoginParameters} from './classes/LoginParameters';
+import {LoginResponse} from './classes/LoginResponse';
 
 export class LoginHandler
 {
@@ -79,6 +79,8 @@ export class LoginHandler
                         }
                         else
                         {
+                            const response = new LoginResponse(value);
+                            resolve(response);
 
                         }
                     }
