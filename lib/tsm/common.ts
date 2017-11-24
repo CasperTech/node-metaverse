@@ -30,7 +30,7 @@
  */
 
 
-var EPSILON = 0.000001;
+let EPSILON = 0.000001;
 
 ///<reference path='./vec2.ts' />
 ///<reference path='./vec3.ts' />
