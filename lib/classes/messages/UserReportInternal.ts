@@ -25,11 +25,11 @@ export class UserReportInternalMessage implements MessageBase
         CreatorID: UUID;
         RegionID: UUID;
         AbuserID: UUID;
-        AbuseRegionName: string;
+        AbuseRegionName: Buffer;
         AbuseRegionID: UUID;
-        Summary: string;
-        Details: string;
-        VersionString: string;
+        Summary: Buffer;
+        Details: Buffer;
+        VersionString: Buffer;
     };
 
     getSize(): number
@@ -63,19 +63,19 @@ export class UserReportInternalMessage implements MessageBase
         this.ReportData['AbuserID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.ReportData['AbuseRegionName'].length, pos++);
-        buf.write(this.ReportData['AbuseRegionName'], pos);
+        this.ReportData['AbuseRegionName'].copy(buf, pos);
         pos += this.ReportData['AbuseRegionName'].length;
         this.ReportData['AbuseRegionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.ReportData['Summary'].length, pos++);
-        buf.write(this.ReportData['Summary'], pos);
+        this.ReportData['Summary'].copy(buf, pos);
         pos += this.ReportData['Summary'].length;
         buf.writeUInt16LE(this.ReportData['Details'].length, pos);
         pos += 2;
-        buf.write(this.ReportData['Details'], pos);
+        this.ReportData['Details'].copy(buf, pos);
         pos += this.ReportData['Details'].length;
         buf.writeUInt8(this.ReportData['VersionString'].length, pos++);
-        buf.write(this.ReportData['VersionString'], pos);
+        this.ReportData['VersionString'].copy(buf, pos);
         pos += this.ReportData['VersionString'].length;
         return pos - startPos;
     }
@@ -97,11 +97,11 @@ export class UserReportInternalMessage implements MessageBase
             CreatorID: UUID,
             RegionID: UUID,
             AbuserID: UUID,
-            AbuseRegionName: string,
+            AbuseRegionName: Buffer,
             AbuseRegionID: UUID,
-            Summary: string,
-            Details: string,
-            VersionString: string
+            Summary: Buffer,
+            Details: Buffer,
+            VersionString: Buffer
         } = {
             ReportType: 0,
             Category: 0,
@@ -115,11 +115,11 @@ export class UserReportInternalMessage implements MessageBase
             CreatorID: UUID.zero(),
             RegionID: UUID.zero(),
             AbuserID: UUID.zero(),
-            AbuseRegionName: '',
+            AbuseRegionName: Buffer.allocUnsafe(0),
             AbuseRegionID: UUID.zero(),
-            Summary: '',
-            Details: '',
-            VersionString: ''
+            Summary: Buffer.allocUnsafe(0),
+            Details: Buffer.allocUnsafe(0),
+            VersionString: Buffer.allocUnsafe(0)
         };
         newObjReportData['ReportType'] = buf.readUInt8(pos++);
         newObjReportData['Category'] = buf.readUInt8(pos++);
@@ -144,19 +144,19 @@ export class UserReportInternalMessage implements MessageBase
         newObjReportData['AbuserID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjReportData['AbuseRegionName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjReportData['AbuseRegionName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjReportData['AbuseRegionID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjReportData['Summary'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjReportData['Summary'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjReportData['Details'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjReportData['Details'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjReportData['VersionString'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjReportData['VersionString'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ReportData = newObjReportData;
         return pos - startPos;

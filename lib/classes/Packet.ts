@@ -38,7 +38,7 @@ export class Packet
         buf.writeUInt8(this.extraHeader.length, pos++);
         if (this.extraHeader.length > 0)
         {
-            this.extraHeader.copy(buf, pos, 0, this.extraHeader.length - 1);
+            this.extraHeader.copy(buf, pos);
             pos += this.extraHeader.length;
         }
         const bodyStart = pos;

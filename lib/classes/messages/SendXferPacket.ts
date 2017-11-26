@@ -16,7 +16,7 @@ export class SendXferPacketMessage implements MessageBase
         Packet: number;
     };
     DataPacket: {
-        Data: string;
+        Data: Buffer;
     };
 
     getSize(): number
@@ -35,7 +35,7 @@ export class SendXferPacketMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.DataPacket['Data'].length, pos);
         pos += 2;
-        buf.write(this.DataPacket['Data'], pos);
+        this.DataPacket['Data'].copy(buf, pos);
         pos += this.DataPacket['Data'].length;
         return pos - startPos;
     }
@@ -57,13 +57,13 @@ export class SendXferPacketMessage implements MessageBase
         pos += 4;
         this.XferID = newObjXferID;
         const newObjDataPacket: {
-            Data: string
+            Data: Buffer
         } = {
-            Data: ''
+            Data: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjDataPacket['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataPacket['Data'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.DataPacket = newObjDataPacket;
         return pos - startPos;

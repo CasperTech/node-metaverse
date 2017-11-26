@@ -28,8 +28,8 @@ export class RezMultipleAttachmentsFromInvMessage implements MessageBase
         GroupMask: number;
         EveryoneMask: number;
         NextOwnerMask: number;
-        Name: string;
-        Description: string;
+        Name: Buffer;
+        Description: Buffer;
     }[];
 
     getSize(): number
@@ -76,10 +76,10 @@ export class RezMultipleAttachmentsFromInvMessage implements MessageBase
             buf.writeUInt32LE(this.ObjectData[i]['NextOwnerMask'], pos);
             pos += 4;
             buf.writeUInt8(this.ObjectData[i]['Name'].length, pos++);
-            buf.write(this.ObjectData[i]['Name'], pos);
+            this.ObjectData[i]['Name'].copy(buf, pos);
             pos += this.ObjectData[i]['Name'].length;
             buf.writeUInt8(this.ObjectData[i]['Description'].length, pos++);
-            buf.write(this.ObjectData[i]['Description'], pos);
+            this.ObjectData[i]['Description'].copy(buf, pos);
             pos += this.ObjectData[i]['Description'].length;
         }
         return pos - startPos;
@@ -127,8 +127,8 @@ export class RezMultipleAttachmentsFromInvMessage implements MessageBase
                 GroupMask: number,
                 EveryoneMask: number,
                 NextOwnerMask: number,
-                Name: string,
-                Description: string
+                Name: Buffer,
+                Description: Buffer
             } = {
                 ItemID: UUID.zero(),
                 OwnerID: UUID.zero(),
@@ -137,8 +137,8 @@ export class RezMultipleAttachmentsFromInvMessage implements MessageBase
                 GroupMask: 0,
                 EveryoneMask: 0,
                 NextOwnerMask: 0,
-                Name: '',
-                Description: ''
+                Name: Buffer.allocUnsafe(0),
+                Description: Buffer.allocUnsafe(0)
             };
             newObjObjectData['ItemID'] = new UUID(buf, pos);
             pos += 16;
@@ -154,10 +154,10 @@ export class RezMultipleAttachmentsFromInvMessage implements MessageBase
             newObjObjectData['NextOwnerMask'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Description'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

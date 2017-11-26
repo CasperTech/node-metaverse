@@ -21,7 +21,7 @@ export class AgentGroupDataUpdateMessage implements MessageBase
         AcceptNotices: boolean;
         GroupInsigniaID: UUID;
         Contribution: number;
-        GroupName: string;
+        GroupName: Buffer;
     }[];
 
     getSize(): number
@@ -60,7 +60,7 @@ export class AgentGroupDataUpdateMessage implements MessageBase
             buf.writeInt32LE(this.GroupData[i]['Contribution'], pos);
             pos += 4;
             buf.writeUInt8(this.GroupData[i]['GroupName'].length, pos++);
-            buf.write(this.GroupData[i]['GroupName'], pos);
+            this.GroupData[i]['GroupName'].copy(buf, pos);
             pos += this.GroupData[i]['GroupName'].length;
         }
         return pos - startPos;
@@ -88,14 +88,14 @@ export class AgentGroupDataUpdateMessage implements MessageBase
                 AcceptNotices: boolean,
                 GroupInsigniaID: UUID,
                 Contribution: number,
-                GroupName: string
+                GroupName: Buffer
             } = {
                 GroupID: UUID.zero(),
                 GroupPowers: Long.ZERO,
                 AcceptNotices: false,
                 GroupInsigniaID: UUID.zero(),
                 Contribution: 0,
-                GroupName: ''
+                GroupName: Buffer.allocUnsafe(0)
             };
             newObjGroupData['GroupID'] = new UUID(buf, pos);
             pos += 16;
@@ -107,7 +107,7 @@ export class AgentGroupDataUpdateMessage implements MessageBase
             newObjGroupData['Contribution'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjGroupData['GroupName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjGroupData['GroupName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.GroupData.push(newObjGroupData);
         }

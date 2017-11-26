@@ -19,7 +19,7 @@ export class DirClassifiedReplyMessage implements MessageBase
     };
     QueryReplies: {
         ClassifiedID: UUID;
-        Name: string;
+        Name: Buffer;
         ClassifiedFlags: number;
         CreationDate: number;
         ExpirationDate: number;
@@ -58,7 +58,7 @@ export class DirClassifiedReplyMessage implements MessageBase
             this.QueryReplies[i]['ClassifiedID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.QueryReplies[i]['Name'].length, pos++);
-            buf.write(this.QueryReplies[i]['Name'], pos);
+            this.QueryReplies[i]['Name'].copy(buf, pos);
             pos += this.QueryReplies[i]['Name'].length;
             buf.writeUInt8(this.QueryReplies[i]['ClassifiedFlags'], pos++);
             buf.writeUInt32LE(this.QueryReplies[i]['CreationDate'], pos);
@@ -104,14 +104,14 @@ export class DirClassifiedReplyMessage implements MessageBase
         {
             const newObjQueryReplies: {
                 ClassifiedID: UUID,
-                Name: string,
+                Name: Buffer,
                 ClassifiedFlags: number,
                 CreationDate: number,
                 ExpirationDate: number,
                 PriceForListing: number
             } = {
                 ClassifiedID: UUID.zero(),
-                Name: '',
+                Name: Buffer.allocUnsafe(0),
                 ClassifiedFlags: 0,
                 CreationDate: 0,
                 ExpirationDate: 0,
@@ -120,7 +120,7 @@ export class DirClassifiedReplyMessage implements MessageBase
             newObjQueryReplies['ClassifiedID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryReplies['ClassifiedFlags'] = buf.readUInt8(pos++);
             newObjQueryReplies['CreationDate'] = buf.readUInt32LE(pos);

@@ -13,14 +13,14 @@ export class ChatFromSimulatorMessage implements MessageBase
     id = Message.ChatFromSimulator;
 
     ChatData: {
-        FromName: string;
+        FromName: Buffer;
         SourceID: UUID;
         OwnerID: UUID;
         SourceType: number;
         ChatType: number;
         Audible: number;
         Position: Vector3;
-        Message: string;
+        Message: Buffer;
     };
 
     getSize(): number
@@ -32,7 +32,7 @@ export class ChatFromSimulatorMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.ChatData['FromName'].length, pos++);
-        buf.write(this.ChatData['FromName'], pos);
+        this.ChatData['FromName'].copy(buf, pos);
         pos += this.ChatData['FromName'].length;
         this.ChatData['SourceID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -45,7 +45,7 @@ export class ChatFromSimulatorMessage implements MessageBase
         pos += 12;
         buf.writeUInt16LE(this.ChatData['Message'].length, pos);
         pos += 2;
-        buf.write(this.ChatData['Message'], pos);
+        this.ChatData['Message'].copy(buf, pos);
         pos += this.ChatData['Message'].length;
         return pos - startPos;
     }
@@ -55,26 +55,26 @@ export class ChatFromSimulatorMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjChatData: {
-            FromName: string,
+            FromName: Buffer,
             SourceID: UUID,
             OwnerID: UUID,
             SourceType: number,
             ChatType: number,
             Audible: number,
             Position: Vector3,
-            Message: string
+            Message: Buffer
         } = {
-            FromName: '',
+            FromName: Buffer.allocUnsafe(0),
             SourceID: UUID.zero(),
             OwnerID: UUID.zero(),
             SourceType: 0,
             ChatType: 0,
             Audible: 0,
             Position: Vector3.getZero(),
-            Message: ''
+            Message: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjChatData['FromName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjChatData['FromName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjChatData['SourceID'] = new UUID(buf, pos);
         pos += 16;
@@ -87,7 +87,7 @@ export class ChatFromSimulatorMessage implements MessageBase
         pos += 12;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjChatData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjChatData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ChatData = newObjChatData;
         return pos - startPos;

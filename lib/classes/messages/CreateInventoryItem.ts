@@ -23,8 +23,8 @@ export class CreateInventoryItemMessage implements MessageBase
         Type: number;
         InvType: number;
         WearableType: number;
-        Name: string;
-        Description: string;
+        Name: Buffer;
+        Description: Buffer;
     };
 
     getSize(): number
@@ -51,10 +51,10 @@ export class CreateInventoryItemMessage implements MessageBase
         buf.writeInt8(this.InventoryBlock['InvType'], pos++);
         buf.writeUInt8(this.InventoryBlock['WearableType'], pos++);
         buf.writeUInt8(this.InventoryBlock['Name'].length, pos++);
-        buf.write(this.InventoryBlock['Name'], pos);
+        this.InventoryBlock['Name'].copy(buf, pos);
         pos += this.InventoryBlock['Name'].length;
         buf.writeUInt8(this.InventoryBlock['Description'].length, pos++);
-        buf.write(this.InventoryBlock['Description'], pos);
+        this.InventoryBlock['Description'].copy(buf, pos);
         pos += this.InventoryBlock['Description'].length;
         return pos - startPos;
     }
@@ -83,8 +83,8 @@ export class CreateInventoryItemMessage implements MessageBase
             Type: number,
             InvType: number,
             WearableType: number,
-            Name: string,
-            Description: string
+            Name: Buffer,
+            Description: Buffer
         } = {
             CallbackID: 0,
             FolderID: UUID.zero(),
@@ -93,8 +93,8 @@ export class CreateInventoryItemMessage implements MessageBase
             Type: 0,
             InvType: 0,
             WearableType: 0,
-            Name: '',
-            Description: ''
+            Name: Buffer.allocUnsafe(0),
+            Description: Buffer.allocUnsafe(0)
         };
         newObjInventoryBlock['CallbackID'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -108,10 +108,10 @@ export class CreateInventoryItemMessage implements MessageBase
         newObjInventoryBlock['InvType'] = buf.readInt8(pos++);
         newObjInventoryBlock['WearableType'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjInventoryBlock['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInventoryBlock['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryBlock['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInventoryBlock['Description'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.InventoryBlock = newObjInventoryBlock;
         return pos - startPos;

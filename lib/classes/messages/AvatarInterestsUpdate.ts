@@ -17,10 +17,10 @@ export class AvatarInterestsUpdateMessage implements MessageBase
     };
     PropertiesData: {
         WantToMask: number;
-        WantToText: string;
+        WantToText: Buffer;
         SkillsMask: number;
-        SkillsText: string;
-        LanguagesText: string;
+        SkillsText: Buffer;
+        LanguagesText: Buffer;
     };
 
     getSize(): number
@@ -38,15 +38,15 @@ export class AvatarInterestsUpdateMessage implements MessageBase
         buf.writeUInt32LE(this.PropertiesData['WantToMask'], pos);
         pos += 4;
         buf.writeUInt8(this.PropertiesData['WantToText'].length, pos++);
-        buf.write(this.PropertiesData['WantToText'], pos);
+        this.PropertiesData['WantToText'].copy(buf, pos);
         pos += this.PropertiesData['WantToText'].length;
         buf.writeUInt32LE(this.PropertiesData['SkillsMask'], pos);
         pos += 4;
         buf.writeUInt8(this.PropertiesData['SkillsText'].length, pos++);
-        buf.write(this.PropertiesData['SkillsText'], pos);
+        this.PropertiesData['SkillsText'].copy(buf, pos);
         pos += this.PropertiesData['SkillsText'].length;
         buf.writeUInt8(this.PropertiesData['LanguagesText'].length, pos++);
-        buf.write(this.PropertiesData['LanguagesText'], pos);
+        this.PropertiesData['LanguagesText'].copy(buf, pos);
         pos += this.PropertiesData['LanguagesText'].length;
         return pos - startPos;
     }
@@ -69,29 +69,29 @@ export class AvatarInterestsUpdateMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjPropertiesData: {
             WantToMask: number,
-            WantToText: string,
+            WantToText: Buffer,
             SkillsMask: number,
-            SkillsText: string,
-            LanguagesText: string
+            SkillsText: Buffer,
+            LanguagesText: Buffer
         } = {
             WantToMask: 0,
-            WantToText: '',
+            WantToText: Buffer.allocUnsafe(0),
             SkillsMask: 0,
-            SkillsText: '',
-            LanguagesText: ''
+            SkillsText: Buffer.allocUnsafe(0),
+            LanguagesText: Buffer.allocUnsafe(0)
         };
         newObjPropertiesData['WantToMask'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['WantToText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['WantToText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjPropertiesData['SkillsMask'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['SkillsText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['SkillsText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['LanguagesText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['LanguagesText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.PropertiesData = newObjPropertiesData;
         return pos - startPos;

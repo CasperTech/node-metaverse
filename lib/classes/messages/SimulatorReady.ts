@@ -13,7 +13,7 @@ export class SimulatorReadyMessage implements MessageBase
     id = Message.SimulatorReady;
 
     SimulatorBlock: {
-        SimName: string;
+        SimName: Buffer;
         SimAccess: number;
         RegionFlags: number;
         RegionID: UUID;
@@ -34,7 +34,7 @@ export class SimulatorReadyMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.SimulatorBlock['SimName'].length, pos++);
-        buf.write(this.SimulatorBlock['SimName'], pos);
+        this.SimulatorBlock['SimName'].copy(buf, pos);
         pos += this.SimulatorBlock['SimName'].length;
         buf.writeUInt8(this.SimulatorBlock['SimAccess'], pos++);
         buf.writeUInt32LE(this.SimulatorBlock['RegionFlags'], pos);
@@ -56,14 +56,14 @@ export class SimulatorReadyMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjSimulatorBlock: {
-            SimName: string,
+            SimName: Buffer,
             SimAccess: number,
             RegionFlags: number,
             RegionID: UUID,
             EstateID: number,
             ParentEstateID: number
         } = {
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             SimAccess: 0,
             RegionFlags: 0,
             RegionID: UUID.zero(),
@@ -71,7 +71,7 @@ export class SimulatorReadyMessage implements MessageBase
             ParentEstateID: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjSimulatorBlock['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjSimulatorBlock['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjSimulatorBlock['SimAccess'] = buf.readUInt8(pos++);
         newObjSimulatorBlock['RegionFlags'] = buf.readUInt32LE(pos);

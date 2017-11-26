@@ -24,7 +24,7 @@ export class SimulatorPresentAtLocationMessage implements MessageBase
         Port: number;
     }[];
     SimulatorBlock: {
-        SimName: string;
+        SimName: Buffer;
         SimAccess: number;
         RegionFlags: number;
         RegionID: UUID;
@@ -61,7 +61,7 @@ export class SimulatorPresentAtLocationMessage implements MessageBase
             pos += 2;
         }
         buf.writeUInt8(this.SimulatorBlock['SimName'].length, pos++);
-        buf.write(this.SimulatorBlock['SimName'], pos);
+        this.SimulatorBlock['SimName'].copy(buf, pos);
         pos += this.SimulatorBlock['SimName'].length;
         buf.writeUInt8(this.SimulatorBlock['SimAccess'], pos++);
         buf.writeUInt32LE(this.SimulatorBlock['RegionFlags'], pos);
@@ -124,14 +124,14 @@ export class SimulatorPresentAtLocationMessage implements MessageBase
             this.NeighborBlock.push(newObjNeighborBlock);
         }
         const newObjSimulatorBlock: {
-            SimName: string,
+            SimName: Buffer,
             SimAccess: number,
             RegionFlags: number,
             RegionID: UUID,
             EstateID: number,
             ParentEstateID: number
         } = {
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             SimAccess: 0,
             RegionFlags: 0,
             RegionID: UUID.zero(),
@@ -139,7 +139,7 @@ export class SimulatorPresentAtLocationMessage implements MessageBase
             ParentEstateID: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjSimulatorBlock['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjSimulatorBlock['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjSimulatorBlock['SimAccess'] = buf.readUInt8(pos++);
         newObjSimulatorBlock['RegionFlags'] = buf.readUInt32LE(pos);

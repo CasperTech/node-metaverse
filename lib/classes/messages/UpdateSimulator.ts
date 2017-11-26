@@ -13,7 +13,7 @@ export class UpdateSimulatorMessage implements MessageBase
 
     SimulatorInfo: {
         RegionID: UUID;
-        SimName: string;
+        SimName: Buffer;
         EstateID: number;
         SimAccess: number;
     };
@@ -29,7 +29,7 @@ export class UpdateSimulatorMessage implements MessageBase
         this.SimulatorInfo['RegionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.SimulatorInfo['SimName'].length, pos++);
-        buf.write(this.SimulatorInfo['SimName'], pos);
+        this.SimulatorInfo['SimName'].copy(buf, pos);
         pos += this.SimulatorInfo['SimName'].length;
         buf.writeUInt32LE(this.SimulatorInfo['EstateID'], pos);
         pos += 4;
@@ -43,19 +43,19 @@ export class UpdateSimulatorMessage implements MessageBase
         let varLength = 0;
         const newObjSimulatorInfo: {
             RegionID: UUID,
-            SimName: string,
+            SimName: Buffer,
             EstateID: number,
             SimAccess: number
         } = {
             RegionID: UUID.zero(),
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             EstateID: 0,
             SimAccess: 0
         };
         newObjSimulatorInfo['RegionID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjSimulatorInfo['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjSimulatorInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjSimulatorInfo['EstateID'] = buf.readUInt32LE(pos);
         pos += 4;

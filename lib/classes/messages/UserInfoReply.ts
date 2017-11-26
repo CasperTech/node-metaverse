@@ -16,8 +16,8 @@ export class UserInfoReplyMessage implements MessageBase
     };
     UserData: {
         IMViaEMail: boolean;
-        DirectoryVisibility: string;
-        EMail: string;
+        DirectoryVisibility: Buffer;
+        EMail: Buffer;
     };
 
     getSize(): number
@@ -32,11 +32,11 @@ export class UserInfoReplyMessage implements MessageBase
         pos += 16;
         buf.writeUInt8((this.UserData['IMViaEMail']) ? 1 : 0, pos++);
         buf.writeUInt8(this.UserData['DirectoryVisibility'].length, pos++);
-        buf.write(this.UserData['DirectoryVisibility'], pos);
+        this.UserData['DirectoryVisibility'].copy(buf, pos);
         pos += this.UserData['DirectoryVisibility'].length;
         buf.writeUInt16LE(this.UserData['EMail'].length, pos);
         pos += 2;
-        buf.write(this.UserData['EMail'], pos);
+        this.UserData['EMail'].copy(buf, pos);
         pos += this.UserData['EMail'].length;
         return pos - startPos;
     }
@@ -55,20 +55,20 @@ export class UserInfoReplyMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjUserData: {
             IMViaEMail: boolean,
-            DirectoryVisibility: string,
-            EMail: string
+            DirectoryVisibility: Buffer,
+            EMail: Buffer
         } = {
             IMViaEMail: false,
-            DirectoryVisibility: '',
-            EMail: ''
+            DirectoryVisibility: Buffer.allocUnsafe(0),
+            EMail: Buffer.allocUnsafe(0)
         };
         newObjUserData['IMViaEMail'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjUserData['DirectoryVisibility'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjUserData['DirectoryVisibility'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjUserData['EMail'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjUserData['EMail'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.UserData = newObjUserData;
         return pos - startPos;

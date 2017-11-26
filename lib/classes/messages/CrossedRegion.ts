@@ -22,7 +22,7 @@ export class CrossedRegionMessage implements MessageBase
         SimIP: IPAddress;
         SimPort: number;
         RegionHandle: Long;
-        SeedCapability: string;
+        SeedCapability: Buffer;
     };
     Info: {
         Position: Vector3;
@@ -51,7 +51,7 @@ export class CrossedRegionMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.RegionData['SeedCapability'].length, pos);
         pos += 2;
-        buf.write(this.RegionData['SeedCapability'], pos);
+        this.RegionData['SeedCapability'].copy(buf, pos);
         pos += this.RegionData['SeedCapability'].length;
         this.Info['Position'].writeToBuffer(buf, pos, false);
         pos += 12;
@@ -80,12 +80,12 @@ export class CrossedRegionMessage implements MessageBase
             SimIP: IPAddress,
             SimPort: number,
             RegionHandle: Long,
-            SeedCapability: string
+            SeedCapability: Buffer
         } = {
             SimIP: IPAddress.zero(),
             SimPort: 0,
             RegionHandle: Long.ZERO,
-            SeedCapability: ''
+            SeedCapability: Buffer.allocUnsafe(0)
         };
         newObjRegionData['SimIP'] = new IPAddress(buf, pos);
         pos += 4;
@@ -95,7 +95,7 @@ export class CrossedRegionMessage implements MessageBase
         pos += 8;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjRegionData['SeedCapability'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionData['SeedCapability'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.RegionData = newObjRegionData;
         const newObjInfo: {

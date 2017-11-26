@@ -12,10 +12,10 @@ export class InternalScriptMailMessage implements MessageBase
     id = Message.InternalScriptMail;
 
     DataBlock: {
-        From: string;
+        From: Buffer;
         To: UUID;
-        Subject: string;
-        Body: string;
+        Subject: Buffer;
+        Body: Buffer;
     };
 
     getSize(): number
@@ -27,16 +27,16 @@ export class InternalScriptMailMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.DataBlock['From'].length, pos++);
-        buf.write(this.DataBlock['From'], pos);
+        this.DataBlock['From'].copy(buf, pos);
         pos += this.DataBlock['From'].length;
         this.DataBlock['To'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.DataBlock['Subject'].length, pos++);
-        buf.write(this.DataBlock['Subject'], pos);
+        this.DataBlock['Subject'].copy(buf, pos);
         pos += this.DataBlock['Subject'].length;
         buf.writeUInt16LE(this.DataBlock['Body'].length, pos);
         pos += 2;
-        buf.write(this.DataBlock['Body'], pos);
+        this.DataBlock['Body'].copy(buf, pos);
         pos += this.DataBlock['Body'].length;
         return pos - startPos;
     }
@@ -46,27 +46,27 @@ export class InternalScriptMailMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjDataBlock: {
-            From: string,
+            From: Buffer,
             To: UUID,
-            Subject: string,
-            Body: string
+            Subject: Buffer,
+            Body: Buffer
         } = {
-            From: '',
+            From: Buffer.allocUnsafe(0),
             To: UUID.zero(),
-            Subject: '',
-            Body: ''
+            Subject: Buffer.allocUnsafe(0),
+            Body: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['From'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['From'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjDataBlock['To'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['Subject'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['Subject'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjDataBlock['Body'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['Body'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.DataBlock = newObjDataBlock;
         return pos - startPos;

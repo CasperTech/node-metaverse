@@ -17,7 +17,7 @@ export class AvatarPickerRequestMessage implements MessageBase
         QueryID: UUID;
     };
     Data: {
-        Name: string;
+        Name: Buffer;
     };
 
     getSize(): number
@@ -35,7 +35,7 @@ export class AvatarPickerRequestMessage implements MessageBase
         this.AgentData['QueryID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['Name'].length, pos++);
-        buf.write(this.Data['Name'], pos);
+        this.Data['Name'].copy(buf, pos);
         pos += this.Data['Name'].length;
         return pos - startPos;
     }
@@ -61,12 +61,12 @@ export class AvatarPickerRequestMessage implements MessageBase
         pos += 16;
         this.AgentData = newObjAgentData;
         const newObjData: {
-            Name: string
+            Name: Buffer
         } = {
-            Name: ''
+            Name: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

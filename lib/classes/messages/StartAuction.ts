@@ -17,7 +17,7 @@ export class StartAuctionMessage implements MessageBase
     ParcelData: {
         ParcelID: UUID;
         SnapshotID: UUID;
-        Name: string;
+        Name: Buffer;
     };
 
     getSize(): number
@@ -35,7 +35,7 @@ export class StartAuctionMessage implements MessageBase
         this.ParcelData['SnapshotID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.ParcelData['Name'].length, pos++);
-        buf.write(this.ParcelData['Name'], pos);
+        this.ParcelData['Name'].copy(buf, pos);
         pos += this.ParcelData['Name'].length;
         return pos - startPos;
     }
@@ -55,18 +55,18 @@ export class StartAuctionMessage implements MessageBase
         const newObjParcelData: {
             ParcelID: UUID,
             SnapshotID: UUID,
-            Name: string
+            Name: Buffer
         } = {
             ParcelID: UUID.zero(),
             SnapshotID: UUID.zero(),
-            Name: ''
+            Name: Buffer.allocUnsafe(0)
         };
         newObjParcelData['ParcelID'] = new UUID(buf, pos);
         pos += 16;
         newObjParcelData['SnapshotID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ParcelData = newObjParcelData;
         return pos - startPos;

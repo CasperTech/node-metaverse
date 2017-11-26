@@ -23,7 +23,7 @@ export class AgentSetAppearanceMessage implements MessageBase
         TextureIndex: number;
     }[];
     ObjectData: {
-        TextureEntry: string;
+        TextureEntry: Buffer;
     };
     VisualParam: {
         ParamValue: number;
@@ -55,7 +55,7 @@ export class AgentSetAppearanceMessage implements MessageBase
         }
         buf.writeUInt16LE(this.ObjectData['TextureEntry'].length, pos);
         pos += 2;
-        buf.write(this.ObjectData['TextureEntry'], pos);
+        this.ObjectData['TextureEntry'].copy(buf, pos);
         pos += this.ObjectData['TextureEntry'].length;
         count = this.VisualParam.length;
         buf.writeUInt8(this.VisualParam.length, pos++);
@@ -107,13 +107,13 @@ export class AgentSetAppearanceMessage implements MessageBase
             this.WearableData.push(newObjWearableData);
         }
         const newObjObjectData: {
-            TextureEntry: string
+            TextureEntry: Buffer
         } = {
-            TextureEntry: ''
+            TextureEntry: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjObjectData['TextureEntry'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjObjectData['TextureEntry'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ObjectData = newObjObjectData;
         count = buf.readUInt8(pos++);

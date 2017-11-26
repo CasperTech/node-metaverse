@@ -20,7 +20,7 @@ export class ScriptSensorRequestMessage implements MessageBase
         SearchID: UUID;
         SearchPos: Vector3;
         SearchDir: Quaternion;
-        SearchName: string;
+        SearchName: Buffer;
         Type: number;
         Range: number;
         Arc: number;
@@ -47,7 +47,7 @@ export class ScriptSensorRequestMessage implements MessageBase
         this.Requester['SearchDir'].writeToBuffer(buf, pos);
         pos += 12;
         buf.writeUInt8(this.Requester['SearchName'].length, pos++);
-        buf.write(this.Requester['SearchName'], pos);
+        this.Requester['SearchName'].copy(buf, pos);
         pos += this.Requester['SearchName'].length;
         buf.writeInt32LE(this.Requester['Type'], pos);
         pos += 4;
@@ -73,7 +73,7 @@ export class ScriptSensorRequestMessage implements MessageBase
             SearchID: UUID,
             SearchPos: Vector3,
             SearchDir: Quaternion,
-            SearchName: string,
+            SearchName: Buffer,
             Type: number,
             Range: number,
             Arc: number,
@@ -85,7 +85,7 @@ export class ScriptSensorRequestMessage implements MessageBase
             SearchID: UUID.zero(),
             SearchPos: Vector3.getZero(),
             SearchDir: Quaternion.getIdentity(),
-            SearchName: '',
+            SearchName: Buffer.allocUnsafe(0),
             Type: 0,
             Range: 0,
             Arc: 0,
@@ -103,7 +103,7 @@ export class ScriptSensorRequestMessage implements MessageBase
         newObjRequester['SearchDir'] = new Quaternion(buf, pos);
         pos += 12;
         varLength = buf.readUInt8(pos++);
-        newObjRequester['SearchName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRequester['SearchName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjRequester['Type'] = buf.readInt32LE(pos);
         pos += 4;

@@ -17,7 +17,7 @@ export class AvatarClassifiedReplyMessage implements MessageBase
     };
     Data: {
         ClassifiedID: UUID;
-        Name: string;
+        Name: Buffer;
     }[];
 
     getSize(): number
@@ -49,7 +49,7 @@ export class AvatarClassifiedReplyMessage implements MessageBase
             this.Data[i]['ClassifiedID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.Data[i]['Name'].length, pos++);
-            buf.write(this.Data[i]['Name'], pos);
+            this.Data[i]['Name'].copy(buf, pos);
             pos += this.Data[i]['Name'].length;
         }
         return pos - startPos;
@@ -77,15 +77,15 @@ export class AvatarClassifiedReplyMessage implements MessageBase
         {
             const newObjData: {
                 ClassifiedID: UUID,
-                Name: string
+                Name: Buffer
             } = {
                 ClassifiedID: UUID.zero(),
-                Name: ''
+                Name: Buffer.allocUnsafe(0)
             };
             newObjData['ClassifiedID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.Data.push(newObjData);
         }

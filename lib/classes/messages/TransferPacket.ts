@@ -16,7 +16,7 @@ export class TransferPacketMessage implements MessageBase
         ChannelType: number;
         Packet: number;
         Status: number;
-        Data: string;
+        Data: Buffer;
     };
 
     getSize(): number
@@ -37,7 +37,7 @@ export class TransferPacketMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.TransferData['Data'].length, pos);
         pos += 2;
-        buf.write(this.TransferData['Data'], pos);
+        this.TransferData['Data'].copy(buf, pos);
         pos += this.TransferData['Data'].length;
         return pos - startPos;
     }
@@ -51,13 +51,13 @@ export class TransferPacketMessage implements MessageBase
             ChannelType: number,
             Packet: number,
             Status: number,
-            Data: string
+            Data: Buffer
         } = {
             TransferID: UUID.zero(),
             ChannelType: 0,
             Packet: 0,
             Status: 0,
-            Data: ''
+            Data: Buffer.allocUnsafe(0)
         };
         newObjTransferData['TransferID'] = new UUID(buf, pos);
         pos += 16;
@@ -69,7 +69,7 @@ export class TransferPacketMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjTransferData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjTransferData['Data'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.TransferData = newObjTransferData;
         return pos - startPos;

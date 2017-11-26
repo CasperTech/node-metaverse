@@ -16,7 +16,7 @@ export class GodKickUserMessage implements MessageBase
         GodSessionID: UUID;
         AgentID: UUID;
         KickFlags: number;
-        Reason: string;
+        Reason: Buffer;
     };
 
     getSize(): number
@@ -37,7 +37,7 @@ export class GodKickUserMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.UserInfo['Reason'].length, pos);
         pos += 2;
-        buf.write(this.UserInfo['Reason'], pos);
+        this.UserInfo['Reason'].copy(buf, pos);
         pos += this.UserInfo['Reason'].length;
         return pos - startPos;
     }
@@ -51,13 +51,13 @@ export class GodKickUserMessage implements MessageBase
             GodSessionID: UUID,
             AgentID: UUID,
             KickFlags: number,
-            Reason: string
+            Reason: Buffer
         } = {
             GodID: UUID.zero(),
             GodSessionID: UUID.zero(),
             AgentID: UUID.zero(),
             KickFlags: 0,
-            Reason: ''
+            Reason: Buffer.allocUnsafe(0)
         };
         newObjUserInfo['GodID'] = new UUID(buf, pos);
         pos += 16;
@@ -69,7 +69,7 @@ export class GodKickUserMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjUserInfo['Reason'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjUserInfo['Reason'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.UserInfo = newObjUserInfo;
         return pos - startPos;

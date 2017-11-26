@@ -19,11 +19,11 @@ export class AvatarPropertiesReplyMessage implements MessageBase
         ImageID: UUID;
         FLImageID: UUID;
         PartnerID: UUID;
-        AboutText: string;
-        FLAboutText: string;
-        BornOn: string;
-        ProfileURL: string;
-        CharterMember: string;
+        AboutText: Buffer;
+        FLAboutText: Buffer;
+        BornOn: Buffer;
+        ProfileURL: Buffer;
+        CharterMember: Buffer;
         Flags: number;
     };
 
@@ -47,19 +47,19 @@ export class AvatarPropertiesReplyMessage implements MessageBase
         pos += 16;
         buf.writeUInt16LE(this.PropertiesData['AboutText'].length, pos);
         pos += 2;
-        buf.write(this.PropertiesData['AboutText'], pos);
+        this.PropertiesData['AboutText'].copy(buf, pos);
         pos += this.PropertiesData['AboutText'].length;
         buf.writeUInt8(this.PropertiesData['FLAboutText'].length, pos++);
-        buf.write(this.PropertiesData['FLAboutText'], pos);
+        this.PropertiesData['FLAboutText'].copy(buf, pos);
         pos += this.PropertiesData['FLAboutText'].length;
         buf.writeUInt8(this.PropertiesData['BornOn'].length, pos++);
-        buf.write(this.PropertiesData['BornOn'], pos);
+        this.PropertiesData['BornOn'].copy(buf, pos);
         pos += this.PropertiesData['BornOn'].length;
         buf.writeUInt8(this.PropertiesData['ProfileURL'].length, pos++);
-        buf.write(this.PropertiesData['ProfileURL'], pos);
+        this.PropertiesData['ProfileURL'].copy(buf, pos);
         pos += this.PropertiesData['ProfileURL'].length;
         buf.writeUInt8(this.PropertiesData['CharterMember'].length, pos++);
-        buf.write(this.PropertiesData['CharterMember'], pos);
+        this.PropertiesData['CharterMember'].copy(buf, pos);
         pos += this.PropertiesData['CharterMember'].length;
         buf.writeUInt32LE(this.PropertiesData['Flags'], pos);
         pos += 4;
@@ -86,21 +86,21 @@ export class AvatarPropertiesReplyMessage implements MessageBase
             ImageID: UUID,
             FLImageID: UUID,
             PartnerID: UUID,
-            AboutText: string,
-            FLAboutText: string,
-            BornOn: string,
-            ProfileURL: string,
-            CharterMember: string,
+            AboutText: Buffer,
+            FLAboutText: Buffer,
+            BornOn: Buffer,
+            ProfileURL: Buffer,
+            CharterMember: Buffer,
             Flags: number
         } = {
             ImageID: UUID.zero(),
             FLImageID: UUID.zero(),
             PartnerID: UUID.zero(),
-            AboutText: '',
-            FLAboutText: '',
-            BornOn: '',
-            ProfileURL: '',
-            CharterMember: '',
+            AboutText: Buffer.allocUnsafe(0),
+            FLAboutText: Buffer.allocUnsafe(0),
+            BornOn: Buffer.allocUnsafe(0),
+            ProfileURL: Buffer.allocUnsafe(0),
+            CharterMember: Buffer.allocUnsafe(0),
             Flags: 0
         };
         newObjPropertiesData['ImageID'] = new UUID(buf, pos);
@@ -111,19 +111,19 @@ export class AvatarPropertiesReplyMessage implements MessageBase
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjPropertiesData['AboutText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['AboutText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['FLAboutText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['FLAboutText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['BornOn'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['BornOn'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['ProfileURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['ProfileURL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['CharterMember'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['CharterMember'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjPropertiesData['Flags'] = buf.readUInt32LE(pos);
         pos += 4;

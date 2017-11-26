@@ -13,7 +13,7 @@ export class EdgeDataPacketMessage implements MessageBase
     EdgeData: {
         LayerType: number;
         Direction: number;
-        LayerData: string;
+        LayerData: Buffer;
     };
 
     getSize(): number
@@ -28,7 +28,7 @@ export class EdgeDataPacketMessage implements MessageBase
         buf.writeUInt8(this.EdgeData['Direction'], pos++);
         buf.writeUInt16LE(this.EdgeData['LayerData'].length, pos);
         pos += 2;
-        buf.write(this.EdgeData['LayerData'], pos);
+        this.EdgeData['LayerData'].copy(buf, pos);
         pos += this.EdgeData['LayerData'].length;
         return pos - startPos;
     }
@@ -40,17 +40,17 @@ export class EdgeDataPacketMessage implements MessageBase
         const newObjEdgeData: {
             LayerType: number,
             Direction: number,
-            LayerData: string
+            LayerData: Buffer
         } = {
             LayerType: 0,
             Direction: 0,
-            LayerData: ''
+            LayerData: Buffer.allocUnsafe(0)
         };
         newObjEdgeData['LayerType'] = buf.readUInt8(pos++);
         newObjEdgeData['Direction'] = buf.readUInt8(pos++);
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjEdgeData['LayerData'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjEdgeData['LayerData'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.EdgeData = newObjEdgeData;
         return pos - startPos;

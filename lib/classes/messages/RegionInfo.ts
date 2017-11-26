@@ -17,7 +17,7 @@ export class RegionInfoMessage implements MessageBase
         SessionID: UUID;
     };
     RegionInfo: {
-        SimName: string;
+        SimName: Buffer;
         EstateID: number;
         ParentEstateID: number;
         RegionFlags: number;
@@ -35,8 +35,8 @@ export class RegionInfoMessage implements MessageBase
         SunHour: number;
     };
     RegionInfo2: {
-        ProductSKU: string;
-        ProductName: string;
+        ProductSKU: Buffer;
+        ProductName: Buffer;
         MaxAgents32: number;
         HardMaxAgents: number;
         HardMaxObjects: number;
@@ -58,7 +58,7 @@ export class RegionInfoMessage implements MessageBase
         this.AgentData['SessionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.RegionInfo['SimName'].length, pos++);
-        buf.write(this.RegionInfo['SimName'], pos);
+        this.RegionInfo['SimName'].copy(buf, pos);
         pos += this.RegionInfo['SimName'].length;
         buf.writeUInt32LE(this.RegionInfo['EstateID'], pos);
         pos += 4;
@@ -88,10 +88,10 @@ export class RegionInfoMessage implements MessageBase
         buf.writeFloatLE(this.RegionInfo['SunHour'], pos);
         pos += 4;
         buf.writeUInt8(this.RegionInfo2['ProductSKU'].length, pos++);
-        buf.write(this.RegionInfo2['ProductSKU'], pos);
+        this.RegionInfo2['ProductSKU'].copy(buf, pos);
         pos += this.RegionInfo2['ProductSKU'].length;
         buf.writeUInt8(this.RegionInfo2['ProductName'].length, pos++);
-        buf.write(this.RegionInfo2['ProductName'], pos);
+        this.RegionInfo2['ProductName'].copy(buf, pos);
         pos += this.RegionInfo2['ProductName'].length;
         buf.writeUInt32LE(this.RegionInfo2['MaxAgents32'], pos);
         pos += 4;
@@ -128,7 +128,7 @@ export class RegionInfoMessage implements MessageBase
         pos += 16;
         this.AgentData = newObjAgentData;
         const newObjRegionInfo: {
-            SimName: string,
+            SimName: Buffer,
             EstateID: number,
             ParentEstateID: number,
             RegionFlags: number,
@@ -145,7 +145,7 @@ export class RegionInfoMessage implements MessageBase
             UseEstateSun: boolean,
             SunHour: number
         } = {
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             EstateID: 0,
             ParentEstateID: 0,
             RegionFlags: 0,
@@ -163,7 +163,7 @@ export class RegionInfoMessage implements MessageBase
             SunHour: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjRegionInfo['EstateID'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -194,23 +194,23 @@ export class RegionInfoMessage implements MessageBase
         pos += 4;
         this.RegionInfo = newObjRegionInfo;
         const newObjRegionInfo2: {
-            ProductSKU: string,
-            ProductName: string,
+            ProductSKU: Buffer,
+            ProductName: Buffer,
             MaxAgents32: number,
             HardMaxAgents: number,
             HardMaxObjects: number
         } = {
-            ProductSKU: '',
-            ProductName: '',
+            ProductSKU: Buffer.allocUnsafe(0),
+            ProductName: Buffer.allocUnsafe(0),
             MaxAgents32: 0,
             HardMaxAgents: 0,
             HardMaxObjects: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo2['ProductSKU'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionInfo2['ProductSKU'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo2['ProductName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionInfo2['ProductName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjRegionInfo2['MaxAgents32'] = buf.readUInt32LE(pos);
         pos += 4;

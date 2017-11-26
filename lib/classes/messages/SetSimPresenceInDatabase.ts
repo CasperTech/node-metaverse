@@ -13,13 +13,13 @@ export class SetSimPresenceInDatabaseMessage implements MessageBase
 
     SimData: {
         RegionID: UUID;
-        HostName: string;
+        HostName: Buffer;
         GridX: number;
         GridY: number;
         PID: number;
         AgentCount: number;
         TimeToLive: number;
-        Status: string;
+        Status: Buffer;
     };
 
     getSize(): number
@@ -33,7 +33,7 @@ export class SetSimPresenceInDatabaseMessage implements MessageBase
         this.SimData['RegionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.SimData['HostName'].length, pos++);
-        buf.write(this.SimData['HostName'], pos);
+        this.SimData['HostName'].copy(buf, pos);
         pos += this.SimData['HostName'].length;
         buf.writeUInt32LE(this.SimData['GridX'], pos);
         pos += 4;
@@ -46,7 +46,7 @@ export class SetSimPresenceInDatabaseMessage implements MessageBase
         buf.writeInt32LE(this.SimData['TimeToLive'], pos);
         pos += 4;
         buf.writeUInt8(this.SimData['Status'].length, pos++);
-        buf.write(this.SimData['Status'], pos);
+        this.SimData['Status'].copy(buf, pos);
         pos += this.SimData['Status'].length;
         return pos - startPos;
     }
@@ -57,27 +57,27 @@ export class SetSimPresenceInDatabaseMessage implements MessageBase
         let varLength = 0;
         const newObjSimData: {
             RegionID: UUID,
-            HostName: string,
+            HostName: Buffer,
             GridX: number,
             GridY: number,
             PID: number,
             AgentCount: number,
             TimeToLive: number,
-            Status: string
+            Status: Buffer
         } = {
             RegionID: UUID.zero(),
-            HostName: '',
+            HostName: Buffer.allocUnsafe(0),
             GridX: 0,
             GridY: 0,
             PID: 0,
             AgentCount: 0,
             TimeToLive: 0,
-            Status: ''
+            Status: Buffer.allocUnsafe(0)
         };
         newObjSimData['RegionID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjSimData['HostName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjSimData['HostName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjSimData['GridX'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -90,7 +90,7 @@ export class SetSimPresenceInDatabaseMessage implements MessageBase
         newObjSimData['TimeToLive'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjSimData['Status'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjSimData['Status'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.SimData = newObjSimData;
         return pos - startPos;

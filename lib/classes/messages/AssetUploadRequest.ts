@@ -16,7 +16,7 @@ export class AssetUploadRequestMessage implements MessageBase
         Type: number;
         Tempfile: boolean;
         StoreLocal: boolean;
-        AssetData: string;
+        AssetData: Buffer;
     };
 
     getSize(): number
@@ -34,7 +34,7 @@ export class AssetUploadRequestMessage implements MessageBase
         buf.writeUInt8((this.AssetBlock['StoreLocal']) ? 1 : 0, pos++);
         buf.writeUInt16LE(this.AssetBlock['AssetData'].length, pos);
         pos += 2;
-        buf.write(this.AssetBlock['AssetData'], pos);
+        this.AssetBlock['AssetData'].copy(buf, pos);
         pos += this.AssetBlock['AssetData'].length;
         return pos - startPos;
     }
@@ -48,13 +48,13 @@ export class AssetUploadRequestMessage implements MessageBase
             Type: number,
             Tempfile: boolean,
             StoreLocal: boolean,
-            AssetData: string
+            AssetData: Buffer
         } = {
             TransactionID: UUID.zero(),
             Type: 0,
             Tempfile: false,
             StoreLocal: false,
-            AssetData: ''
+            AssetData: Buffer.allocUnsafe(0)
         };
         newObjAssetBlock['TransactionID'] = new UUID(buf, pos);
         pos += 16;
@@ -63,7 +63,7 @@ export class AssetUploadRequestMessage implements MessageBase
         newObjAssetBlock['StoreLocal'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjAssetBlock['AssetData'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAssetBlock['AssetData'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.AssetBlock = newObjAssetBlock;
         return pos - startPos;

@@ -14,7 +14,7 @@ export class ScriptDataRequestMessage implements MessageBase
     DataBlock: {
         Hash: Long;
         RequestType: number;
-        Request: string;
+        Request: Buffer;
     }[];
 
     getSize(): number
@@ -46,7 +46,7 @@ export class ScriptDataRequestMessage implements MessageBase
             buf.writeInt8(this.DataBlock[i]['RequestType'], pos++);
             buf.writeUInt16LE(this.DataBlock[i]['Request'].length, pos);
             pos += 2;
-            buf.write(this.DataBlock[i]['Request'], pos);
+            this.DataBlock[i]['Request'].copy(buf, pos);
             pos += this.DataBlock[i]['Request'].length;
         }
         return pos - startPos;
@@ -63,18 +63,18 @@ export class ScriptDataRequestMessage implements MessageBase
             const newObjDataBlock: {
                 Hash: Long,
                 RequestType: number,
-                Request: string
+                Request: Buffer
             } = {
                 Hash: Long.ZERO,
                 RequestType: 0,
-                Request: ''
+                Request: Buffer.allocUnsafe(0)
             };
             newObjDataBlock['Hash'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
             pos += 8;
             newObjDataBlock['RequestType'] = buf.readInt8(pos++);
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjDataBlock['Request'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjDataBlock['Request'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.DataBlock.push(newObjDataBlock);
         }

@@ -23,9 +23,9 @@ export class GroupMembersReplyMessage implements MessageBase
     MemberData: {
         AgentID: UUID;
         Contribution: number;
-        OnlineStatus: string;
+        OnlineStatus: Buffer;
         AgentPowers: Long;
-        Title: string;
+        Title: Buffer;
         IsOwner: boolean;
     }[];
 
@@ -64,14 +64,14 @@ export class GroupMembersReplyMessage implements MessageBase
             buf.writeInt32LE(this.MemberData[i]['Contribution'], pos);
             pos += 4;
             buf.writeUInt8(this.MemberData[i]['OnlineStatus'].length, pos++);
-            buf.write(this.MemberData[i]['OnlineStatus'], pos);
+            this.MemberData[i]['OnlineStatus'].copy(buf, pos);
             pos += this.MemberData[i]['OnlineStatus'].length;
             buf.writeInt32LE(this.MemberData[i]['AgentPowers'].low, pos);
             pos += 4;
             buf.writeInt32LE(this.MemberData[i]['AgentPowers'].high, pos);
             pos += 4;
             buf.writeUInt8(this.MemberData[i]['Title'].length, pos++);
-            buf.write(this.MemberData[i]['Title'], pos);
+            this.MemberData[i]['Title'].copy(buf, pos);
             pos += this.MemberData[i]['Title'].length;
             buf.writeUInt8((this.MemberData[i]['IsOwner']) ? 1 : 0, pos++);
         }
@@ -113,16 +113,16 @@ export class GroupMembersReplyMessage implements MessageBase
             const newObjMemberData: {
                 AgentID: UUID,
                 Contribution: number,
-                OnlineStatus: string,
+                OnlineStatus: Buffer,
                 AgentPowers: Long,
-                Title: string,
+                Title: Buffer,
                 IsOwner: boolean
             } = {
                 AgentID: UUID.zero(),
                 Contribution: 0,
-                OnlineStatus: '',
+                OnlineStatus: Buffer.allocUnsafe(0),
                 AgentPowers: Long.ZERO,
-                Title: '',
+                Title: Buffer.allocUnsafe(0),
                 IsOwner: false
             };
             newObjMemberData['AgentID'] = new UUID(buf, pos);
@@ -130,12 +130,12 @@ export class GroupMembersReplyMessage implements MessageBase
             newObjMemberData['Contribution'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjMemberData['OnlineStatus'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjMemberData['OnlineStatus'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjMemberData['AgentPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
             pos += 8;
             varLength = buf.readUInt8(pos++);
-            newObjMemberData['Title'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjMemberData['Title'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjMemberData['IsOwner'] = (buf.readUInt8(pos++) === 1);
             this.MemberData.push(newObjMemberData);

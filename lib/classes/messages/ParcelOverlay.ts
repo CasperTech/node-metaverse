@@ -12,7 +12,7 @@ export class ParcelOverlayMessage implements MessageBase
 
     ParcelData: {
         SequenceID: number;
-        Data: string;
+        Data: Buffer;
     };
 
     getSize(): number
@@ -27,7 +27,7 @@ export class ParcelOverlayMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.ParcelData['Data'].length, pos);
         pos += 2;
-        buf.write(this.ParcelData['Data'], pos);
+        this.ParcelData['Data'].copy(buf, pos);
         pos += this.ParcelData['Data'].length;
         return pos - startPos;
     }
@@ -38,16 +38,16 @@ export class ParcelOverlayMessage implements MessageBase
         let varLength = 0;
         const newObjParcelData: {
             SequenceID: number,
-            Data: string
+            Data: Buffer
         } = {
             SequenceID: 0,
-            Data: ''
+            Data: Buffer.allocUnsafe(0)
         };
         newObjParcelData['SequenceID'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjParcelData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Data'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ParcelData = newObjParcelData;
         return pos - startPos;

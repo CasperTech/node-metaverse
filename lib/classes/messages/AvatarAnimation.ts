@@ -22,7 +22,7 @@ export class AvatarAnimationMessage implements MessageBase
         ObjectID: UUID;
     }[];
     PhysicalAvatarEventList: {
-        TypeData: string;
+        TypeData: Buffer;
     }[];
 
     getSize(): number
@@ -66,7 +66,7 @@ export class AvatarAnimationMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.PhysicalAvatarEventList[i]['TypeData'].length, pos++);
-            buf.write(this.PhysicalAvatarEventList[i]['TypeData'], pos);
+            this.PhysicalAvatarEventList[i]['TypeData'].copy(buf, pos);
             pos += this.PhysicalAvatarEventList[i]['TypeData'].length;
         }
         return pos - startPos;
@@ -119,12 +119,12 @@ export class AvatarAnimationMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjPhysicalAvatarEventList: {
-                TypeData: string
+                TypeData: Buffer
             } = {
-                TypeData: ''
+                TypeData: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjPhysicalAvatarEventList['TypeData'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjPhysicalAvatarEventList['TypeData'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.PhysicalAvatarEventList.push(newObjPhysicalAvatarEventList);
         }

@@ -17,8 +17,8 @@ export class AvatarPickerReplyMessage implements MessageBase
     };
     Data: {
         AvatarID: UUID;
-        FirstName: string;
-        LastName: string;
+        FirstName: Buffer;
+        LastName: Buffer;
     }[];
 
     getSize(): number
@@ -50,10 +50,10 @@ export class AvatarPickerReplyMessage implements MessageBase
             this.Data[i]['AvatarID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.Data[i]['FirstName'].length, pos++);
-            buf.write(this.Data[i]['FirstName'], pos);
+            this.Data[i]['FirstName'].copy(buf, pos);
             pos += this.Data[i]['FirstName'].length;
             buf.writeUInt8(this.Data[i]['LastName'].length, pos++);
-            buf.write(this.Data[i]['LastName'], pos);
+            this.Data[i]['LastName'].copy(buf, pos);
             pos += this.Data[i]['LastName'].length;
         }
         return pos - startPos;
@@ -81,20 +81,20 @@ export class AvatarPickerReplyMessage implements MessageBase
         {
             const newObjData: {
                 AvatarID: UUID,
-                FirstName: string,
-                LastName: string
+                FirstName: Buffer,
+                LastName: Buffer
             } = {
                 AvatarID: UUID.zero(),
-                FirstName: '',
-                LastName: ''
+                FirstName: Buffer.allocUnsafe(0),
+                LastName: Buffer.allocUnsafe(0)
             };
             newObjData['AvatarID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjData['FirstName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjData['FirstName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjData['LastName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjData['LastName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.Data.push(newObjData);
         }

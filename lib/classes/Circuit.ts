@@ -3,21 +3,18 @@ import {AddressInfo, Socket} from 'dgram';
 import * as dgram from 'dgram';
 import {PacketFlags} from '../enums/PacketFlags';
 import {Packet} from './Packet';
-import {UseCircuitCodeMessage} from './messages/UseCircuitCode';
 import {MessageBase} from './MessageBase';
 import {PacketAckMessage} from './messages/PacketAck';
 import {Message} from '../enums/Message';
 import {StartPingCheckMessage} from './messages/StartPingCheck';
 import {CompletePingCheckMessage} from './messages/CompletePingCheck';
-import {CompleteAgentMovementMessage} from './messages/CompleteAgentMovement';
 import {Subscription} from 'rxjs/Subscription';
 import {Subject} from 'rxjs/Subject';
 import Timer = NodeJS.Timer;
-import {ImprovedInstantMessageMessage} from './messages/ImprovedInstantMessage';
-import {Vector3} from './Vector3';
 
 export class Circuit
 {
+    agentID: UUID;
     secureSessionID: UUID;
     sessionID: UUID;
     circuitCode: number;
@@ -37,19 +34,22 @@ export class Circuit
     } = {};
 
     onPacketReceived: Subject<Packet>;
+    onAckReceived: Subject<number>;
 
     constructor()
     {
         this.onPacketReceived = new Subject<Packet>();
+        this.onAckReceived = new Subject<number>();
     }
 
-    sendMessage(message: MessageBase, flags: PacketFlags)
+    sendMessage(message: MessageBase, flags: PacketFlags): number
     {
         const packet: Packet = new Packet();
         packet.message = message;
         packet.sequenceNumber = this.sequenceNumber++;
         packet.packetFlags = flags;
         this.sendPacket(packet);
+        return packet.sequenceNumber;
     }
 
     resend(sequenceNumber: number)
@@ -62,7 +62,87 @@ export class Circuit
         }
     }
 
-    waitForMessage(id: Message, timeout: number)
+    waitForAck(ack: number, timeout: number): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            const handleObj: {
+                timeout: Timer | null,
+                subscription: Subscription | null
+            } = {
+                timeout: null,
+                subscription: null
+            };
+            handleObj.timeout = setTimeout(() =>
+            {
+                if (handleObj.subscription !== null)
+                {
+                    handleObj.subscription.unsubscribe();
+                    reject(new Error('Timeout'));
+                }
+            }, timeout);
+
+            handleObj.subscription = this.onAckReceived.subscribe((sequenceNumber: number) =>
+            {
+                if (sequenceNumber === ack)
+                {
+                    if (handleObj.timeout !== null)
+                    {
+                        clearTimeout(handleObj.timeout);
+                        handleObj.timeout = null;
+                    }
+                    if (handleObj.subscription !== null)
+                    {
+                        handleObj.subscription.unsubscribe();
+                        handleObj.subscription = null;
+                    }
+                    resolve();
+                }
+            });
+        });
+    }
+
+    init()
+    {
+        if (this.client !== null)
+        {
+            this.client.close();
+        }
+        this.client = dgram.createSocket('udp4');
+        this.client.on('listening', () =>
+        {
+
+        });
+
+        this.client.on('message', (message, remote) =>
+        {
+            if (remote.address === this.ipAddress)
+            {
+                this.receivedPacket(message);
+            }
+        });
+
+        this.client.on('error', (error) =>
+        {
+
+        });
+    }
+
+    shutdown()
+    {
+        if (this.client !== null)
+        {
+            Object.keys(this.awaitingAck).forEach((sequenceNumber: string) =>
+            {
+                clearTimeout(this.awaitingAck[parseInt(sequenceNumber, 10)].timeout);
+                delete this.awaitingAck[parseInt(sequenceNumber, 10)];
+            });
+            this.client.close();
+            this.client = null;
+        }
+    }
+
+    waitForMessage(id: Message, timeout: number): Promise<Packet>
     {
         return new Promise<Packet>((resolve, reject) =>
         {
@@ -98,13 +178,6 @@ export class Circuit
                         }
                         resolve(packet);
                     }
-                },
-                (err) =>
-                {
-                    console.error(err);
-                }, () =>
-                {
-                    console.log('Subscription complete');
                 });
         });
     }
@@ -124,6 +197,7 @@ export class Circuit
         dataToSend = packet.writeToBuffer(dataToSend, 0);
         if (this.client !== null)
         {
+            console.log("Writing to "+this.ipAddress+":"+this.port);
             this.client.send(dataToSend, 0, dataToSend.length, this.port, this.ipAddress, (err, bytes) =>
             {
                 let resend = '';
@@ -140,57 +214,22 @@ export class Circuit
         }
     }
 
-    ackReceived(sequenceID: number)
+    ackReceived(sequenceNumber: number)
     {
-        if (this.awaitingAck[sequenceID])
+        if (this.awaitingAck[sequenceNumber])
         {
-            clearTimeout(this.awaitingAck[sequenceID].timeout);
-            delete this.awaitingAck[sequenceID];
+            clearTimeout(this.awaitingAck[sequenceNumber].timeout);
+            delete this.awaitingAck[sequenceNumber];
         }
+        this.onAckReceived.next(sequenceNumber);
     }
 
-    sendInstantMessage(from: UUID | string, to: UUID | string, message: string)
-    {
-        if (typeof from === 'string')
-        {
-            from = new UUID(from);
-        }
-        if (typeof to === 'string')
-        {
-            to = new UUID(to);
-        }
-        message += '\0';
-        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: from,
-            SessionID: this.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: to,
-            ParentEstateID: 0,
-            RegionID: UUID.zero(),
-            Position: Vector3.getZero(),
-            Offline: 0,
-            Dialog: 0,
-            ID: UUID.zero(),
-            Timestamp: 0,
-            FromAgentName: 'Yo Momma',
-            Message: message,
-            BinaryBucket: ''
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        this.sendMessage(im, PacketFlags.Reliable);
-    }
-
-    sendAck(sequenceID: number)
+    sendAck(sequenceNumber: number)
     {
         const msg: PacketAckMessage = new PacketAckMessage();
         msg.Packets = [
             {
-                ID: sequenceID
+                ID: sequenceNumber
             }
         ];
         this.sendMessage(msg, 0);
@@ -220,53 +259,5 @@ export class Circuit
             this.sendMessage(reply, 0);
         }
         this.onPacketReceived.next(packet);
-    }
-
-    establish(agentID: UUID)
-    {
-        return new Promise((resolve, reject) =>
-        {
-            if (this.client !== null)
-            {
-                this.client.close();
-            }
-            this.client = dgram.createSocket('udp4');
-            this.client.on('listening', () =>
-            {
-
-            });
-
-            this.client.on('message', (message, remote) =>
-            {
-                if (remote.address === this.ipAddress)
-                {
-                    this.receivedPacket(message);
-                }
-            });
-
-            const msg: UseCircuitCodeMessage = new UseCircuitCodeMessage();
-            msg.CircuitCode = {
-                SessionID: this.sessionID,
-                ID: agentID,
-                Code: this.circuitCode
-            };
-            this.sendMessage(msg, PacketFlags.Reliable);
-
-            const agentMovement: CompleteAgentMovementMessage = new CompleteAgentMovementMessage();
-            agentMovement.AgentData = {
-                AgentID: agentID,
-                SessionID: this.sessionID,
-                CircuitCode: this.circuitCode
-            };
-            this.sendMessage(agentMovement, PacketFlags.Reliable);
-
-            this.waitForMessage(Message.RegionHandshake, 10000).then((packet: Packet) =>
-            {
-                resolve();
-            }).catch((error) =>
-            {
-                reject(error);
-            });
-        });
     }
 }

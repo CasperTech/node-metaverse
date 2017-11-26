@@ -23,8 +23,8 @@ export class LandStatReplyMessage implements MessageBase
         LocationY: number;
         LocationZ: number;
         Score: number;
-        TaskName: string;
-        OwnerName: string;
+        TaskName: Buffer;
+        OwnerName: Buffer;
     }[];
 
     getSize(): number
@@ -68,10 +68,10 @@ export class LandStatReplyMessage implements MessageBase
             buf.writeFloatLE(this.ReportData[i]['Score'], pos);
             pos += 4;
             buf.writeUInt8(this.ReportData[i]['TaskName'].length, pos++);
-            buf.write(this.ReportData[i]['TaskName'], pos);
+            this.ReportData[i]['TaskName'].copy(buf, pos);
             pos += this.ReportData[i]['TaskName'].length;
             buf.writeUInt8(this.ReportData[i]['OwnerName'].length, pos++);
-            buf.write(this.ReportData[i]['OwnerName'], pos);
+            this.ReportData[i]['OwnerName'].copy(buf, pos);
             pos += this.ReportData[i]['OwnerName'].length;
         }
         return pos - startPos;
@@ -108,8 +108,8 @@ export class LandStatReplyMessage implements MessageBase
                 LocationY: number,
                 LocationZ: number,
                 Score: number,
-                TaskName: string,
-                OwnerName: string
+                TaskName: Buffer,
+                OwnerName: Buffer
             } = {
                 TaskLocalID: 0,
                 TaskID: UUID.zero(),
@@ -117,8 +117,8 @@ export class LandStatReplyMessage implements MessageBase
                 LocationY: 0,
                 LocationZ: 0,
                 Score: 0,
-                TaskName: '',
-                OwnerName: ''
+                TaskName: Buffer.allocUnsafe(0),
+                OwnerName: Buffer.allocUnsafe(0)
             };
             newObjReportData['TaskLocalID'] = buf.readUInt32LE(pos);
             pos += 4;
@@ -133,10 +133,10 @@ export class LandStatReplyMessage implements MessageBase
             newObjReportData['Score'] = buf.readFloatLE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjReportData['TaskName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjReportData['TaskName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjReportData['OwnerName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjReportData['OwnerName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ReportData.push(newObjReportData);
         }

@@ -14,7 +14,7 @@ export class LiveHelpGroupReplyMessage implements MessageBase
     ReplyData: {
         RequestID: UUID;
         GroupID: UUID;
-        Selection: string;
+        Selection: Buffer;
     };
 
     getSize(): number
@@ -30,7 +30,7 @@ export class LiveHelpGroupReplyMessage implements MessageBase
         this.ReplyData['GroupID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.ReplyData['Selection'].length, pos++);
-        buf.write(this.ReplyData['Selection'], pos);
+        this.ReplyData['Selection'].copy(buf, pos);
         pos += this.ReplyData['Selection'].length;
         return pos - startPos;
     }
@@ -42,18 +42,18 @@ export class LiveHelpGroupReplyMessage implements MessageBase
         const newObjReplyData: {
             RequestID: UUID,
             GroupID: UUID,
-            Selection: string
+            Selection: Buffer
         } = {
             RequestID: UUID.zero(),
             GroupID: UUID.zero(),
-            Selection: ''
+            Selection: Buffer.allocUnsafe(0)
         };
         newObjReplyData['RequestID'] = new UUID(buf, pos);
         pos += 16;
         newObjReplyData['GroupID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjReplyData['Selection'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjReplyData['Selection'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ReplyData = newObjReplyData;
         return pos - startPos;

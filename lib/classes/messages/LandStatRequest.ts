@@ -18,7 +18,7 @@ export class LandStatRequestMessage implements MessageBase
     RequestData: {
         ReportType: number;
         RequestFlags: number;
-        Filter: string;
+        Filter: Buffer;
         ParcelLocalID: number;
     };
 
@@ -39,7 +39,7 @@ export class LandStatRequestMessage implements MessageBase
         buf.writeUInt32LE(this.RequestData['RequestFlags'], pos);
         pos += 4;
         buf.writeUInt8(this.RequestData['Filter'].length, pos++);
-        buf.write(this.RequestData['Filter'], pos);
+        this.RequestData['Filter'].copy(buf, pos);
         pos += this.RequestData['Filter'].length;
         buf.writeInt32LE(this.RequestData['ParcelLocalID'], pos);
         pos += 4;
@@ -65,12 +65,12 @@ export class LandStatRequestMessage implements MessageBase
         const newObjRequestData: {
             ReportType: number,
             RequestFlags: number,
-            Filter: string,
+            Filter: Buffer,
             ParcelLocalID: number
         } = {
             ReportType: 0,
             RequestFlags: 0,
-            Filter: '',
+            Filter: Buffer.allocUnsafe(0),
             ParcelLocalID: 0
         };
         newObjRequestData['ReportType'] = buf.readUInt32LE(pos);
@@ -78,7 +78,7 @@ export class LandStatRequestMessage implements MessageBase
         newObjRequestData['RequestFlags'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjRequestData['Filter'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRequestData['Filter'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjRequestData['ParcelLocalID'] = buf.readInt32LE(pos);
         pos += 4;

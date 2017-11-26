@@ -17,7 +17,7 @@ export class UpdateUserInfoMessage implements MessageBase
     };
     UserData: {
         IMViaEMail: boolean;
-        DirectoryVisibility: string;
+        DirectoryVisibility: Buffer;
     };
 
     getSize(): number
@@ -34,7 +34,7 @@ export class UpdateUserInfoMessage implements MessageBase
         pos += 16;
         buf.writeUInt8((this.UserData['IMViaEMail']) ? 1 : 0, pos++);
         buf.writeUInt8(this.UserData['DirectoryVisibility'].length, pos++);
-        buf.write(this.UserData['DirectoryVisibility'], pos);
+        this.UserData['DirectoryVisibility'].copy(buf, pos);
         pos += this.UserData['DirectoryVisibility'].length;
         return pos - startPos;
     }
@@ -57,14 +57,14 @@ export class UpdateUserInfoMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjUserData: {
             IMViaEMail: boolean,
-            DirectoryVisibility: string
+            DirectoryVisibility: Buffer
         } = {
             IMViaEMail: false,
-            DirectoryVisibility: ''
+            DirectoryVisibility: Buffer.allocUnsafe(0)
         };
         newObjUserData['IMViaEMail'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjUserData['DirectoryVisibility'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjUserData['DirectoryVisibility'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.UserData = newObjUserData;
         return pos - startPos;

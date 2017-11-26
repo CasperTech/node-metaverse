@@ -202,7 +202,7 @@ messages.forEach((message) =>
                     jstype = 'boolean';
                     break;
                 case 'Variable':
-                    jstype = 'string';
+                    jstype = 'Buffer';
 
                     if (block.type === 'Single')
                     {
@@ -211,7 +211,7 @@ messages.forEach((message) =>
                     else
                     {
                         //Variable parameter in variable or multi block - tricky edge case
-                        blockVariableSize.push('this.calculateVarVarSize(this.'+block.name+', \''+param.name+'\', '+param.size+')')
+                        blockVariableSize.push('this.calculateVarVarSize(this.'+block.name+', \''+param.name+'\', '+param.size+')');
                         calcVarVar = true;
                     }
                     break;
@@ -447,7 +447,7 @@ messages.forEach((message) =>
                             classString += spaces + '        buf.writeUInt16LE(' + val + '.length, pos);\n';
                             classString += spaces + '        pos += 2;\n';
                         }
-                        classString += spaces + '        buf.write(' + val + ', pos);\n';
+                        classString += spaces + '        ' + val + '.copy(buf, pos);\n';
                         classString += spaces + '        pos += ' + val + '.length;\n';
                         break;
                     case 'LLVector4':
@@ -615,8 +615,8 @@ messages.forEach((message) =>
                         jsvalue = 'false';
                         break;
                     case 'Variable':
-                        jstype = 'string';
-                        jsvalue = '\'\'';
+                        jstype = 'Buffer';
+                        jsvalue = 'Buffer.allocUnsafe(0)';
                         break;
                     case 'LLVector4':
                         jstype = 'Vector4';
@@ -714,7 +714,7 @@ messages.forEach((message) =>
                         {
                             console.error("INVALID VARIABLE LENGTH: " + param.size);
                         }
-                        classString += spaces + '        newObj' + block.name + '[\'' + param.name + '\'] = buf.toString(\'utf8\', pos, pos + (varLength - 1));\n';
+                        classString += spaces + '        newObj' + block.name + '[\'' + param.name + '\'] = buf.slice(pos, pos + (varLength - 1));\n';
                         classString += spaces + '        pos += varLength;\n';
                         break;
                     case 'LLVector4':

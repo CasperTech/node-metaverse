@@ -19,7 +19,7 @@ export class DirPopularReplyMessage implements MessageBase
     };
     QueryReplies: {
         ParcelID: UUID;
-        Name: string;
+        Name: Buffer;
         Dwell: number;
     }[];
 
@@ -52,7 +52,7 @@ export class DirPopularReplyMessage implements MessageBase
             this.QueryReplies[i]['ParcelID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.QueryReplies[i]['Name'].length, pos++);
-            buf.write(this.QueryReplies[i]['Name'], pos);
+            this.QueryReplies[i]['Name'].copy(buf, pos);
             pos += this.QueryReplies[i]['Name'].length;
             buf.writeFloatLE(this.QueryReplies[i]['Dwell'], pos);
             pos += 4;
@@ -86,17 +86,17 @@ export class DirPopularReplyMessage implements MessageBase
         {
             const newObjQueryReplies: {
                 ParcelID: UUID,
-                Name: string,
+                Name: Buffer,
                 Dwell: number
             } = {
                 ParcelID: UUID.zero(),
-                Name: '',
+                Name: Buffer.allocUnsafe(0),
                 Dwell: 0
             };
             newObjQueryReplies['ParcelID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryReplies['Dwell'] = buf.readFloatLE(pos);
             pos += 4;

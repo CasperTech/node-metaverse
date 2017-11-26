@@ -19,7 +19,7 @@ export class MapNameRequestMessage implements MessageBase
         Godlike: boolean;
     };
     NameData: {
-        Name: string;
+        Name: Buffer;
     };
 
     getSize(): number
@@ -40,7 +40,7 @@ export class MapNameRequestMessage implements MessageBase
         pos += 4;
         buf.writeUInt8((this.AgentData['Godlike']) ? 1 : 0, pos++);
         buf.writeUInt8(this.NameData['Name'].length, pos++);
-        buf.write(this.NameData['Name'], pos);
+        this.NameData['Name'].copy(buf, pos);
         pos += this.NameData['Name'].length;
         return pos - startPos;
     }
@@ -73,12 +73,12 @@ export class MapNameRequestMessage implements MessageBase
         newObjAgentData['Godlike'] = (buf.readUInt8(pos++) === 1);
         this.AgentData = newObjAgentData;
         const newObjNameData: {
-            Name: string
+            Name: Buffer
         } = {
-            Name: ''
+            Name: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjNameData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjNameData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.NameData = newObjNameData;
         return pos - startPos;

@@ -13,11 +13,11 @@ export class TeleportFailedMessage implements MessageBase
 
     Info: {
         AgentID: UUID;
-        Reason: string;
+        Reason: Buffer;
     };
     AlertInfo: {
-        Message: string;
-        ExtraParams: string;
+        Message: Buffer;
+        ExtraParams: Buffer;
     }[];
 
     getSize(): number
@@ -41,17 +41,17 @@ export class TeleportFailedMessage implements MessageBase
         this.Info['AgentID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Info['Reason'].length, pos++);
-        buf.write(this.Info['Reason'], pos);
+        this.Info['Reason'].copy(buf, pos);
         pos += this.Info['Reason'].length;
         const count = this.AlertInfo.length;
         buf.writeUInt8(this.AlertInfo.length, pos++);
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.AlertInfo[i]['Message'].length, pos++);
-            buf.write(this.AlertInfo[i]['Message'], pos);
+            this.AlertInfo[i]['Message'].copy(buf, pos);
             pos += this.AlertInfo[i]['Message'].length;
             buf.writeUInt8(this.AlertInfo[i]['ExtraParams'].length, pos++);
-            buf.write(this.AlertInfo[i]['ExtraParams'], pos);
+            this.AlertInfo[i]['ExtraParams'].copy(buf, pos);
             pos += this.AlertInfo[i]['ExtraParams'].length;
         }
         return pos - startPos;
@@ -63,15 +63,15 @@ export class TeleportFailedMessage implements MessageBase
         let varLength = 0;
         const newObjInfo: {
             AgentID: UUID,
-            Reason: string
+            Reason: Buffer
         } = {
             AgentID: UUID.zero(),
-            Reason: ''
+            Reason: Buffer.allocUnsafe(0)
         };
         newObjInfo['AgentID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjInfo['Reason'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInfo['Reason'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Info = newObjInfo;
         const count = buf.readUInt8(pos++);
@@ -79,17 +79,17 @@ export class TeleportFailedMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjAlertInfo: {
-                Message: string,
-                ExtraParams: string
+                Message: Buffer,
+                ExtraParams: Buffer
             } = {
-                Message: '',
-                ExtraParams: ''
+                Message: Buffer.allocUnsafe(0),
+                ExtraParams: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjAlertInfo['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjAlertInfo['Message'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjAlertInfo['ExtraParams'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjAlertInfo['ExtraParams'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.AlertInfo.push(newObjAlertInfo);
         }

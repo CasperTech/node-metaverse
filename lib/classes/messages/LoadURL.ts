@@ -12,12 +12,12 @@ export class LoadURLMessage implements MessageBase
     id = Message.LoadURL;
 
     Data: {
-        ObjectName: string;
+        ObjectName: Buffer;
         ObjectID: UUID;
         OwnerID: UUID;
         OwnerIsGroup: boolean;
-        Message: string;
-        URL: string;
+        Message: Buffer;
+        URL: Buffer;
     };
 
     getSize(): number
@@ -29,7 +29,7 @@ export class LoadURLMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.Data['ObjectName'].length, pos++);
-        buf.write(this.Data['ObjectName'], pos);
+        this.Data['ObjectName'].copy(buf, pos);
         pos += this.Data['ObjectName'].length;
         this.Data['ObjectID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -37,10 +37,10 @@ export class LoadURLMessage implements MessageBase
         pos += 16;
         buf.writeUInt8((this.Data['OwnerIsGroup']) ? 1 : 0, pos++);
         buf.writeUInt8(this.Data['Message'].length, pos++);
-        buf.write(this.Data['Message'], pos);
+        this.Data['Message'].copy(buf, pos);
         pos += this.Data['Message'].length;
         buf.writeUInt8(this.Data['URL'].length, pos++);
-        buf.write(this.Data['URL'], pos);
+        this.Data['URL'].copy(buf, pos);
         pos += this.Data['URL'].length;
         return pos - startPos;
     }
@@ -50,22 +50,22 @@ export class LoadURLMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjData: {
-            ObjectName: string,
+            ObjectName: Buffer,
             ObjectID: UUID,
             OwnerID: UUID,
             OwnerIsGroup: boolean,
-            Message: string,
-            URL: string
+            Message: Buffer,
+            URL: Buffer
         } = {
-            ObjectName: '',
+            ObjectName: Buffer.allocUnsafe(0),
             ObjectID: UUID.zero(),
             OwnerID: UUID.zero(),
             OwnerIsGroup: false,
-            Message: '',
-            URL: ''
+            Message: Buffer.allocUnsafe(0),
+            URL: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['ObjectID'] = new UUID(buf, pos);
         pos += 16;
@@ -73,10 +73,10 @@ export class LoadURLMessage implements MessageBase
         pos += 16;
         newObjData['OwnerIsGroup'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['URL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['URL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

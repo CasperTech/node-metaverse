@@ -17,7 +17,7 @@ export class StartLureMessage implements MessageBase
     };
     Info: {
         LureType: number;
-        Message: string;
+        Message: Buffer;
     };
     TargetData: {
         TargetID: UUID;
@@ -37,7 +37,7 @@ export class StartLureMessage implements MessageBase
         pos += 16;
         buf.writeUInt8(this.Info['LureType'], pos++);
         buf.writeUInt8(this.Info['Message'].length, pos++);
-        buf.write(this.Info['Message'], pos);
+        this.Info['Message'].copy(buf, pos);
         pos += this.Info['Message'].length;
         const count = this.TargetData.length;
         buf.writeUInt8(this.TargetData.length, pos++);
@@ -67,14 +67,14 @@ export class StartLureMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjInfo: {
             LureType: number,
-            Message: string
+            Message: Buffer
         } = {
             LureType: 0,
-            Message: ''
+            Message: Buffer.allocUnsafe(0)
         };
         newObjInfo['LureType'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjInfo['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInfo['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Info = newObjInfo;
         const count = buf.readUInt8(pos++);

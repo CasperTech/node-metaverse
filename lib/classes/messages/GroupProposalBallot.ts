@@ -18,7 +18,7 @@ export class GroupProposalBallotMessage implements MessageBase
     ProposalData: {
         ProposalID: UUID;
         GroupID: UUID;
-        VoteCast: string;
+        VoteCast: Buffer;
     };
 
     getSize(): number
@@ -38,7 +38,7 @@ export class GroupProposalBallotMessage implements MessageBase
         this.ProposalData['GroupID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.ProposalData['VoteCast'].length, pos++);
-        buf.write(this.ProposalData['VoteCast'], pos);
+        this.ProposalData['VoteCast'].copy(buf, pos);
         pos += this.ProposalData['VoteCast'].length;
         return pos - startPos;
     }
@@ -62,18 +62,18 @@ export class GroupProposalBallotMessage implements MessageBase
         const newObjProposalData: {
             ProposalID: UUID,
             GroupID: UUID,
-            VoteCast: string
+            VoteCast: Buffer
         } = {
             ProposalID: UUID.zero(),
             GroupID: UUID.zero(),
-            VoteCast: ''
+            VoteCast: Buffer.allocUnsafe(0)
         };
         newObjProposalData['ProposalID'] = new UUID(buf, pos);
         pos += 16;
         newObjProposalData['GroupID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjProposalData['VoteCast'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjProposalData['VoteCast'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ProposalData = newObjProposalData;
         return pos - startPos;

@@ -16,11 +16,11 @@ export class ErrorMessage implements MessageBase
     };
     Data: {
         Code: number;
-        Token: string;
+        Token: Buffer;
         ID: UUID;
-        System: string;
-        Message: string;
-        Data: string;
+        System: Buffer;
+        Message: Buffer;
+        Data: Buffer;
     };
 
     getSize(): number
@@ -36,20 +36,20 @@ export class ErrorMessage implements MessageBase
         buf.writeInt32LE(this.Data['Code'], pos);
         pos += 4;
         buf.writeUInt8(this.Data['Token'].length, pos++);
-        buf.write(this.Data['Token'], pos);
+        this.Data['Token'].copy(buf, pos);
         pos += this.Data['Token'].length;
         this.Data['ID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['System'].length, pos++);
-        buf.write(this.Data['System'], pos);
+        this.Data['System'].copy(buf, pos);
         pos += this.Data['System'].length;
         buf.writeUInt16LE(this.Data['Message'].length, pos);
         pos += 2;
-        buf.write(this.Data['Message'], pos);
+        this.Data['Message'].copy(buf, pos);
         pos += this.Data['Message'].length;
         buf.writeUInt16LE(this.Data['Data'].length, pos);
         pos += 2;
-        buf.write(this.Data['Data'], pos);
+        this.Data['Data'].copy(buf, pos);
         pos += this.Data['Data'].length;
         return pos - startPos;
     }
@@ -68,36 +68,36 @@ export class ErrorMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjData: {
             Code: number,
-            Token: string,
+            Token: Buffer,
             ID: UUID,
-            System: string,
-            Message: string,
-            Data: string
+            System: Buffer,
+            Message: Buffer,
+            Data: Buffer
         } = {
             Code: 0,
-            Token: '',
+            Token: Buffer.allocUnsafe(0),
             ID: UUID.zero(),
-            System: '',
-            Message: '',
-            Data: ''
+            System: Buffer.allocUnsafe(0),
+            Message: Buffer.allocUnsafe(0),
+            Data: Buffer.allocUnsafe(0)
         };
         newObjData['Code'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['Token'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Token'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['ID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['System'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['System'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Data'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

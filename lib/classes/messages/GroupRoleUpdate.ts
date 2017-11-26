@@ -19,9 +19,9 @@ export class GroupRoleUpdateMessage implements MessageBase
     };
     RoleData: {
         RoleID: UUID;
-        Name: string;
-        Description: string;
-        Title: string;
+        Name: Buffer;
+        Description: Buffer;
+        Title: Buffer;
         Powers: Long;
         UpdateType: number;
     }[];
@@ -57,13 +57,13 @@ export class GroupRoleUpdateMessage implements MessageBase
             this.RoleData[i]['RoleID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.RoleData[i]['Name'].length, pos++);
-            buf.write(this.RoleData[i]['Name'], pos);
+            this.RoleData[i]['Name'].copy(buf, pos);
             pos += this.RoleData[i]['Name'].length;
             buf.writeUInt8(this.RoleData[i]['Description'].length, pos++);
-            buf.write(this.RoleData[i]['Description'], pos);
+            this.RoleData[i]['Description'].copy(buf, pos);
             pos += this.RoleData[i]['Description'].length;
             buf.writeUInt8(this.RoleData[i]['Title'].length, pos++);
-            buf.write(this.RoleData[i]['Title'], pos);
+            this.RoleData[i]['Title'].copy(buf, pos);
             pos += this.RoleData[i]['Title'].length;
             buf.writeInt32LE(this.RoleData[i]['Powers'].low, pos);
             pos += 4;
@@ -100,29 +100,29 @@ export class GroupRoleUpdateMessage implements MessageBase
         {
             const newObjRoleData: {
                 RoleID: UUID,
-                Name: string,
-                Description: string,
-                Title: string,
+                Name: Buffer,
+                Description: Buffer,
+                Title: Buffer,
                 Powers: Long,
                 UpdateType: number
             } = {
                 RoleID: UUID.zero(),
-                Name: '',
-                Description: '',
-                Title: '',
+                Name: Buffer.allocUnsafe(0),
+                Description: Buffer.allocUnsafe(0),
+                Title: Buffer.allocUnsafe(0),
                 Powers: Long.ZERO,
                 UpdateType: 0
             };
             newObjRoleData['RoleID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjRoleData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjRoleData['Description'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Title'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjRoleData['Title'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
             pos += 8;

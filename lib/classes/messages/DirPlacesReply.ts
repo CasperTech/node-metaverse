@@ -19,7 +19,7 @@ export class DirPlacesReplyMessage implements MessageBase
     }[];
     QueryReplies: {
         ParcelID: UUID;
-        Name: string;
+        Name: Buffer;
         ForSale: boolean;
         Auction: boolean;
         Dwell: number;
@@ -62,7 +62,7 @@ export class DirPlacesReplyMessage implements MessageBase
             this.QueryReplies[i]['ParcelID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.QueryReplies[i]['Name'].length, pos++);
-            buf.write(this.QueryReplies[i]['Name'], pos);
+            this.QueryReplies[i]['Name'].copy(buf, pos);
             pos += this.QueryReplies[i]['Name'].length;
             buf.writeUInt8((this.QueryReplies[i]['ForSale']) ? 1 : 0, pos++);
             buf.writeUInt8((this.QueryReplies[i]['Auction']) ? 1 : 0, pos++);
@@ -110,13 +110,13 @@ export class DirPlacesReplyMessage implements MessageBase
         {
             const newObjQueryReplies: {
                 ParcelID: UUID,
-                Name: string,
+                Name: Buffer,
                 ForSale: boolean,
                 Auction: boolean,
                 Dwell: number
             } = {
                 ParcelID: UUID.zero(),
-                Name: '',
+                Name: Buffer.allocUnsafe(0),
                 ForSale: false,
                 Auction: false,
                 Dwell: 0
@@ -124,7 +124,7 @@ export class DirPlacesReplyMessage implements MessageBase
             newObjQueryReplies['ParcelID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryReplies['ForSale'] = (buf.readUInt8(pos++) === 1);
             newObjQueryReplies['Auction'] = (buf.readUInt8(pos++) === 1);

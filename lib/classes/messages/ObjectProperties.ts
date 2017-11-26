@@ -35,11 +35,11 @@ export class ObjectPropertiesMessage implements MessageBase
         FolderID: UUID;
         FromTaskID: UUID;
         LastOwnerID: UUID;
-        Name: string;
-        Description: string;
-        TouchName: string;
-        SitName: string;
-        TextureID: string;
+        Name: Buffer;
+        Description: Buffer;
+        TouchName: Buffer;
+        SitName: Buffer;
+        TextureID: Buffer;
     }[];
 
     getSize(): number
@@ -107,19 +107,19 @@ export class ObjectPropertiesMessage implements MessageBase
             this.ObjectData[i]['LastOwnerID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.ObjectData[i]['Name'].length, pos++);
-            buf.write(this.ObjectData[i]['Name'], pos);
+            this.ObjectData[i]['Name'].copy(buf, pos);
             pos += this.ObjectData[i]['Name'].length;
             buf.writeUInt8(this.ObjectData[i]['Description'].length, pos++);
-            buf.write(this.ObjectData[i]['Description'], pos);
+            this.ObjectData[i]['Description'].copy(buf, pos);
             pos += this.ObjectData[i]['Description'].length;
             buf.writeUInt8(this.ObjectData[i]['TouchName'].length, pos++);
-            buf.write(this.ObjectData[i]['TouchName'], pos);
+            this.ObjectData[i]['TouchName'].copy(buf, pos);
             pos += this.ObjectData[i]['TouchName'].length;
             buf.writeUInt8(this.ObjectData[i]['SitName'].length, pos++);
-            buf.write(this.ObjectData[i]['SitName'], pos);
+            this.ObjectData[i]['SitName'].copy(buf, pos);
             pos += this.ObjectData[i]['SitName'].length;
             buf.writeUInt8(this.ObjectData[i]['TextureID'].length, pos++);
-            buf.write(this.ObjectData[i]['TextureID'], pos);
+            this.ObjectData[i]['TextureID'].copy(buf, pos);
             pos += this.ObjectData[i]['TextureID'].length;
         }
         return pos - startPos;
@@ -156,11 +156,11 @@ export class ObjectPropertiesMessage implements MessageBase
                 FolderID: UUID,
                 FromTaskID: UUID,
                 LastOwnerID: UUID,
-                Name: string,
-                Description: string,
-                TouchName: string,
-                SitName: string,
-                TextureID: string
+                Name: Buffer,
+                Description: Buffer,
+                TouchName: Buffer,
+                SitName: Buffer,
+                TextureID: Buffer
             } = {
                 ObjectID: UUID.zero(),
                 CreatorID: UUID.zero(),
@@ -184,11 +184,11 @@ export class ObjectPropertiesMessage implements MessageBase
                 FolderID: UUID.zero(),
                 FromTaskID: UUID.zero(),
                 LastOwnerID: UUID.zero(),
-                Name: '',
-                Description: '',
-                TouchName: '',
-                SitName: '',
-                TextureID: ''
+                Name: Buffer.allocUnsafe(0),
+                Description: Buffer.allocUnsafe(0),
+                TouchName: Buffer.allocUnsafe(0),
+                SitName: Buffer.allocUnsafe(0),
+                TextureID: Buffer.allocUnsafe(0)
             };
             newObjObjectData['ObjectID'] = new UUID(buf, pos);
             pos += 16;
@@ -231,19 +231,19 @@ export class ObjectPropertiesMessage implements MessageBase
             newObjObjectData['LastOwnerID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Description'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['TouchName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['TouchName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['SitName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['SitName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['TextureID'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['TextureID'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

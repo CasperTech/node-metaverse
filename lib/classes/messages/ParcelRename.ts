@@ -13,7 +13,7 @@ export class ParcelRenameMessage implements MessageBase
 
     ParcelData: {
         ParcelID: UUID;
-        NewName: string;
+        NewName: Buffer;
     }[];
 
     getSize(): number
@@ -41,7 +41,7 @@ export class ParcelRenameMessage implements MessageBase
             this.ParcelData[i]['ParcelID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.ParcelData[i]['NewName'].length, pos++);
-            buf.write(this.ParcelData[i]['NewName'], pos);
+            this.ParcelData[i]['NewName'].copy(buf, pos);
             pos += this.ParcelData[i]['NewName'].length;
         }
         return pos - startPos;
@@ -57,15 +57,15 @@ export class ParcelRenameMessage implements MessageBase
         {
             const newObjParcelData: {
                 ParcelID: UUID,
-                NewName: string
+                NewName: Buffer
             } = {
                 ParcelID: UUID.zero(),
-                NewName: ''
+                NewName: Buffer.allocUnsafe(0)
             };
             newObjParcelData['ParcelID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjParcelData['NewName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjParcelData['NewName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ParcelData.push(newObjParcelData);
         }

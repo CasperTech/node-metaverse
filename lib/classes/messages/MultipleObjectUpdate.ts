@@ -18,7 +18,7 @@ export class MultipleObjectUpdateMessage implements MessageBase
     ObjectData: {
         ObjectLocalID: number;
         Type: number;
-        Data: string;
+        Data: Buffer;
     }[];
 
     getSize(): number
@@ -51,7 +51,7 @@ export class MultipleObjectUpdateMessage implements MessageBase
             pos += 4;
             buf.writeUInt8(this.ObjectData[i]['Type'], pos++);
             buf.writeUInt8(this.ObjectData[i]['Data'].length, pos++);
-            buf.write(this.ObjectData[i]['Data'], pos);
+            this.ObjectData[i]['Data'].copy(buf, pos);
             pos += this.ObjectData[i]['Data'].length;
         }
         return pos - startPos;
@@ -80,17 +80,17 @@ export class MultipleObjectUpdateMessage implements MessageBase
             const newObjObjectData: {
                 ObjectLocalID: number,
                 Type: number,
-                Data: string
+                Data: Buffer
             } = {
                 ObjectLocalID: 0,
                 Type: 0,
-                Data: ''
+                Data: Buffer.allocUnsafe(0)
             };
             newObjObjectData['ObjectLocalID'] = buf.readUInt32LE(pos);
             pos += 4;
             newObjObjectData['Type'] = buf.readUInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Data'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

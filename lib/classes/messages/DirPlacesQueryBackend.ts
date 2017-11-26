@@ -16,10 +16,10 @@ export class DirPlacesQueryBackendMessage implements MessageBase
     };
     QueryData: {
         QueryID: UUID;
-        QueryText: string;
+        QueryText: Buffer;
         QueryFlags: number;
         Category: number;
-        SimName: string;
+        SimName: Buffer;
         EstateID: number;
         Godlike: boolean;
         QueryStart: number;
@@ -38,13 +38,13 @@ export class DirPlacesQueryBackendMessage implements MessageBase
         this.QueryData['QueryID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.QueryData['QueryText'].length, pos++);
-        buf.write(this.QueryData['QueryText'], pos);
+        this.QueryData['QueryText'].copy(buf, pos);
         pos += this.QueryData['QueryText'].length;
         buf.writeUInt32LE(this.QueryData['QueryFlags'], pos);
         pos += 4;
         buf.writeInt8(this.QueryData['Category'], pos++);
         buf.writeUInt8(this.QueryData['SimName'].length, pos++);
-        buf.write(this.QueryData['SimName'], pos);
+        this.QueryData['SimName'].copy(buf, pos);
         pos += this.QueryData['SimName'].length;
         buf.writeUInt32LE(this.QueryData['EstateID'], pos);
         pos += 4;
@@ -68,19 +68,19 @@ export class DirPlacesQueryBackendMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjQueryData: {
             QueryID: UUID,
-            QueryText: string,
+            QueryText: Buffer,
             QueryFlags: number,
             Category: number,
-            SimName: string,
+            SimName: Buffer,
             EstateID: number,
             Godlike: boolean,
             QueryStart: number
         } = {
             QueryID: UUID.zero(),
-            QueryText: '',
+            QueryText: Buffer.allocUnsafe(0),
             QueryFlags: 0,
             Category: 0,
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             EstateID: 0,
             Godlike: false,
             QueryStart: 0
@@ -88,13 +88,13 @@ export class DirPlacesQueryBackendMessage implements MessageBase
         newObjQueryData['QueryID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['QueryText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjQueryData['QueryText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjQueryData['QueryFlags'] = buf.readUInt32LE(pos);
         pos += 4;
         newObjQueryData['Category'] = buf.readInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjQueryData['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjQueryData['EstateID'] = buf.readUInt32LE(pos);
         pos += 4;

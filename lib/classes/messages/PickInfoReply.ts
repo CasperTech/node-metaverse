@@ -20,12 +20,12 @@ export class PickInfoReplyMessage implements MessageBase
         CreatorID: UUID;
         TopPick: boolean;
         ParcelID: UUID;
-        Name: string;
-        Desc: string;
+        Name: Buffer;
+        Desc: Buffer;
         SnapshotID: UUID;
-        User: string;
-        OriginalName: string;
-        SimName: string;
+        User: Buffer;
+        OriginalName: Buffer;
+        SimName: Buffer;
         PosGlobal: Vector3;
         SortOrder: number;
         Enabled: boolean;
@@ -49,22 +49,22 @@ export class PickInfoReplyMessage implements MessageBase
         this.Data['ParcelID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['Name'].length, pos++);
-        buf.write(this.Data['Name'], pos);
+        this.Data['Name'].copy(buf, pos);
         pos += this.Data['Name'].length;
         buf.writeUInt16LE(this.Data['Desc'].length, pos);
         pos += 2;
-        buf.write(this.Data['Desc'], pos);
+        this.Data['Desc'].copy(buf, pos);
         pos += this.Data['Desc'].length;
         this.Data['SnapshotID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['User'].length, pos++);
-        buf.write(this.Data['User'], pos);
+        this.Data['User'].copy(buf, pos);
         pos += this.Data['User'].length;
         buf.writeUInt8(this.Data['OriginalName'].length, pos++);
-        buf.write(this.Data['OriginalName'], pos);
+        this.Data['OriginalName'].copy(buf, pos);
         pos += this.Data['OriginalName'].length;
         buf.writeUInt8(this.Data['SimName'].length, pos++);
-        buf.write(this.Data['SimName'], pos);
+        this.Data['SimName'].copy(buf, pos);
         pos += this.Data['SimName'].length;
         this.Data['PosGlobal'].writeToBuffer(buf, pos, true);
         pos += 24;
@@ -91,12 +91,12 @@ export class PickInfoReplyMessage implements MessageBase
             CreatorID: UUID,
             TopPick: boolean,
             ParcelID: UUID,
-            Name: string,
-            Desc: string,
+            Name: Buffer,
+            Desc: Buffer,
             SnapshotID: UUID,
-            User: string,
-            OriginalName: string,
-            SimName: string,
+            User: Buffer,
+            OriginalName: Buffer,
+            SimName: Buffer,
             PosGlobal: Vector3,
             SortOrder: number,
             Enabled: boolean
@@ -105,12 +105,12 @@ export class PickInfoReplyMessage implements MessageBase
             CreatorID: UUID.zero(),
             TopPick: false,
             ParcelID: UUID.zero(),
-            Name: '',
-            Desc: '',
+            Name: Buffer.allocUnsafe(0),
+            Desc: Buffer.allocUnsafe(0),
             SnapshotID: UUID.zero(),
-            User: '',
-            OriginalName: '',
-            SimName: '',
+            User: Buffer.allocUnsafe(0),
+            OriginalName: Buffer.allocUnsafe(0),
+            SimName: Buffer.allocUnsafe(0),
             PosGlobal: Vector3.getZero(),
             SortOrder: 0,
             Enabled: false
@@ -123,22 +123,22 @@ export class PickInfoReplyMessage implements MessageBase
         newObjData['ParcelID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Desc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Desc'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['SnapshotID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['User'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['User'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['OriginalName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['OriginalName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['PosGlobal'] = new Vector3(buf, pos, true);
         pos += 24;

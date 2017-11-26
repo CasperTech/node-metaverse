@@ -14,7 +14,7 @@ export class EstateCovenantReplyMessage implements MessageBase
     Data: {
         CovenantID: UUID;
         CovenantTimestamp: number;
-        EstateName: string;
+        EstateName: Buffer;
         EstateOwnerID: UUID;
     };
 
@@ -31,7 +31,7 @@ export class EstateCovenantReplyMessage implements MessageBase
         buf.writeUInt32LE(this.Data['CovenantTimestamp'], pos);
         pos += 4;
         buf.writeUInt8(this.Data['EstateName'].length, pos++);
-        buf.write(this.Data['EstateName'], pos);
+        this.Data['EstateName'].copy(buf, pos);
         pos += this.Data['EstateName'].length;
         this.Data['EstateOwnerID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -45,12 +45,12 @@ export class EstateCovenantReplyMessage implements MessageBase
         const newObjData: {
             CovenantID: UUID,
             CovenantTimestamp: number,
-            EstateName: string,
+            EstateName: Buffer,
             EstateOwnerID: UUID
         } = {
             CovenantID: UUID.zero(),
             CovenantTimestamp: 0,
-            EstateName: '',
+            EstateName: Buffer.allocUnsafe(0),
             EstateOwnerID: UUID.zero()
         };
         newObjData['CovenantID'] = new UUID(buf, pos);
@@ -58,7 +58,7 @@ export class EstateCovenantReplyMessage implements MessageBase
         newObjData['CovenantTimestamp'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['EstateName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['EstateName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['EstateOwnerID'] = new UUID(buf, pos);
         pos += 16;

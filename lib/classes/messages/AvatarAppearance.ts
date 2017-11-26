@@ -17,7 +17,7 @@ export class AvatarAppearanceMessage implements MessageBase
         IsTrial: boolean;
     };
     ObjectData: {
-        TextureEntry: string;
+        TextureEntry: Buffer;
     };
     VisualParam: {
         ParamValue: number;
@@ -44,7 +44,7 @@ export class AvatarAppearanceMessage implements MessageBase
         buf.writeUInt8((this.Sender['IsTrial']) ? 1 : 0, pos++);
         buf.writeUInt16LE(this.ObjectData['TextureEntry'].length, pos);
         pos += 2;
-        buf.write(this.ObjectData['TextureEntry'], pos);
+        this.ObjectData['TextureEntry'].copy(buf, pos);
         pos += this.ObjectData['TextureEntry'].length;
         let count = this.VisualParam.length;
         buf.writeUInt8(this.VisualParam.length, pos++);
@@ -88,13 +88,13 @@ export class AvatarAppearanceMessage implements MessageBase
         newObjSender['IsTrial'] = (buf.readUInt8(pos++) === 1);
         this.Sender = newObjSender;
         const newObjObjectData: {
-            TextureEntry: string
+            TextureEntry: Buffer
         } = {
-            TextureEntry: ''
+            TextureEntry: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjObjectData['TextureEntry'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjObjectData['TextureEntry'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ObjectData = newObjObjectData;
         let count = buf.readUInt8(pos++);

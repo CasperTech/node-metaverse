@@ -20,7 +20,7 @@ export class RpcScriptRequestInboundMessage implements MessageBase
         ItemID: UUID;
         ChannelID: UUID;
         IntValue: number;
-        StringValue: string;
+        StringValue: Buffer;
     };
 
     getSize(): number
@@ -45,7 +45,7 @@ export class RpcScriptRequestInboundMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.DataBlock['StringValue'].length, pos);
         pos += 2;
-        buf.write(this.DataBlock['StringValue'], pos);
+        this.DataBlock['StringValue'].copy(buf, pos);
         pos += this.DataBlock['StringValue'].length;
         return pos - startPos;
     }
@@ -71,13 +71,13 @@ export class RpcScriptRequestInboundMessage implements MessageBase
             ItemID: UUID,
             ChannelID: UUID,
             IntValue: number,
-            StringValue: string
+            StringValue: Buffer
         } = {
             TaskID: UUID.zero(),
             ItemID: UUID.zero(),
             ChannelID: UUID.zero(),
             IntValue: 0,
-            StringValue: ''
+            StringValue: Buffer.allocUnsafe(0)
         };
         newObjDataBlock['TaskID'] = new UUID(buf, pos);
         pos += 16;
@@ -89,7 +89,7 @@ export class RpcScriptRequestInboundMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjDataBlock['StringValue'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['StringValue'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.DataBlock = newObjDataBlock;
         return pos - startPos;

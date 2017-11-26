@@ -17,7 +17,7 @@ export class UpdateGroupInfoMessage implements MessageBase
     };
     GroupData: {
         GroupID: UUID;
-        Charter: string;
+        Charter: Buffer;
         ShowInList: boolean;
         InsigniaID: UUID;
         MembershipFee: number;
@@ -42,7 +42,7 @@ export class UpdateGroupInfoMessage implements MessageBase
         pos += 16;
         buf.writeUInt16LE(this.GroupData['Charter'].length, pos);
         pos += 2;
-        buf.write(this.GroupData['Charter'], pos);
+        this.GroupData['Charter'].copy(buf, pos);
         pos += this.GroupData['Charter'].length;
         buf.writeUInt8((this.GroupData['ShowInList']) ? 1 : 0, pos++);
         this.GroupData['InsigniaID'].writeToBuffer(buf, pos);
@@ -73,7 +73,7 @@ export class UpdateGroupInfoMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjGroupData: {
             GroupID: UUID,
-            Charter: string,
+            Charter: Buffer,
             ShowInList: boolean,
             InsigniaID: UUID,
             MembershipFee: number,
@@ -82,7 +82,7 @@ export class UpdateGroupInfoMessage implements MessageBase
             MaturePublish: boolean
         } = {
             GroupID: UUID.zero(),
-            Charter: '',
+            Charter: Buffer.allocUnsafe(0),
             ShowInList: false,
             InsigniaID: UUID.zero(),
             MembershipFee: 0,
@@ -94,7 +94,7 @@ export class UpdateGroupInfoMessage implements MessageBase
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjGroupData['Charter'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjGroupData['Charter'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjGroupData['ShowInList'] = (buf.readUInt8(pos++) === 1);
         newObjGroupData['InsigniaID'] = new UUID(buf, pos);

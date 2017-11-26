@@ -25,9 +25,9 @@ export class ViewerStatsMessage implements MessageBase
         MetersTraveled: number;
         RegionsVisited: number;
         SysRAM: number;
-        SysOS: string;
-        SysCPU: string;
-        SysGPU: string;
+        SysOS: Buffer;
+        SysCPU: Buffer;
+        SysGPU: Buffer;
     };
     DownloadTotals: {
         World: number;
@@ -85,13 +85,13 @@ export class ViewerStatsMessage implements MessageBase
         buf.writeUInt32LE(this.AgentData['SysRAM'], pos);
         pos += 4;
         buf.writeUInt8(this.AgentData['SysOS'].length, pos++);
-        buf.write(this.AgentData['SysOS'], pos);
+        this.AgentData['SysOS'].copy(buf, pos);
         pos += this.AgentData['SysOS'].length;
         buf.writeUInt8(this.AgentData['SysCPU'].length, pos++);
-        buf.write(this.AgentData['SysCPU'], pos);
+        this.AgentData['SysCPU'].copy(buf, pos);
         pos += this.AgentData['SysCPU'].length;
         buf.writeUInt8(this.AgentData['SysGPU'].length, pos++);
-        buf.write(this.AgentData['SysGPU'], pos);
+        this.AgentData['SysGPU'].copy(buf, pos);
         pos += this.AgentData['SysGPU'].length;
         buf.writeUInt32LE(this.DownloadTotals['World'], pos);
         pos += 4;
@@ -152,9 +152,9 @@ export class ViewerStatsMessage implements MessageBase
             MetersTraveled: number,
             RegionsVisited: number,
             SysRAM: number,
-            SysOS: string,
-            SysCPU: string,
-            SysGPU: string
+            SysOS: Buffer,
+            SysCPU: Buffer,
+            SysGPU: Buffer
         } = {
             AgentID: UUID.zero(),
             SessionID: UUID.zero(),
@@ -168,9 +168,9 @@ export class ViewerStatsMessage implements MessageBase
             MetersTraveled: 0,
             RegionsVisited: 0,
             SysRAM: 0,
-            SysOS: '',
-            SysCPU: '',
-            SysGPU: ''
+            SysOS: Buffer.allocUnsafe(0),
+            SysCPU: Buffer.allocUnsafe(0),
+            SysGPU: Buffer.allocUnsafe(0)
         };
         newObjAgentData['AgentID'] = new UUID(buf, pos);
         pos += 16;
@@ -196,13 +196,13 @@ export class ViewerStatsMessage implements MessageBase
         newObjAgentData['SysRAM'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['SysOS'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['SysOS'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['SysCPU'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['SysCPU'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['SysGPU'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['SysGPU'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.AgentData = newObjAgentData;
         const newObjDownloadTotals: {

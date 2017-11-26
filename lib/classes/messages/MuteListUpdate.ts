@@ -13,7 +13,7 @@ export class MuteListUpdateMessage implements MessageBase
 
     MuteData: {
         AgentID: UUID;
-        Filename: string;
+        Filename: Buffer;
     };
 
     getSize(): number
@@ -27,7 +27,7 @@ export class MuteListUpdateMessage implements MessageBase
         this.MuteData['AgentID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.MuteData['Filename'].length, pos++);
-        buf.write(this.MuteData['Filename'], pos);
+        this.MuteData['Filename'].copy(buf, pos);
         pos += this.MuteData['Filename'].length;
         return pos - startPos;
     }
@@ -38,15 +38,15 @@ export class MuteListUpdateMessage implements MessageBase
         let varLength = 0;
         const newObjMuteData: {
             AgentID: UUID,
-            Filename: string
+            Filename: Buffer
         } = {
             AgentID: UUID.zero(),
-            Filename: ''
+            Filename: Buffer.allocUnsafe(0)
         };
         newObjMuteData['AgentID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjMuteData['Filename'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMuteData['Filename'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MuteData = newObjMuteData;
         return pos - startPos;

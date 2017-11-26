@@ -12,7 +12,7 @@ export class FeatureDisabledMessage implements MessageBase
     id = Message.FeatureDisabled;
 
     FailureInfo: {
-        ErrorMessage: string;
+        ErrorMessage: Buffer;
         AgentID: UUID;
         TransactionID: UUID;
     };
@@ -26,7 +26,7 @@ export class FeatureDisabledMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.FailureInfo['ErrorMessage'].length, pos++);
-        buf.write(this.FailureInfo['ErrorMessage'], pos);
+        this.FailureInfo['ErrorMessage'].copy(buf, pos);
         pos += this.FailureInfo['ErrorMessage'].length;
         this.FailureInfo['AgentID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -40,16 +40,16 @@ export class FeatureDisabledMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjFailureInfo: {
-            ErrorMessage: string,
+            ErrorMessage: Buffer,
             AgentID: UUID,
             TransactionID: UUID
         } = {
-            ErrorMessage: '',
+            ErrorMessage: Buffer.allocUnsafe(0),
             AgentID: UUID.zero(),
             TransactionID: UUID.zero()
         };
         varLength = buf.readUInt8(pos++);
-        newObjFailureInfo['ErrorMessage'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjFailureInfo['ErrorMessage'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjFailureInfo['AgentID'] = new UUID(buf, pos);
         pos += 16;

@@ -22,9 +22,9 @@ export class GroupRoleDataReplyMessage implements MessageBase
     };
     RoleData: {
         RoleID: UUID;
-        Name: string;
-        Title: string;
-        Description: string;
+        Name: Buffer;
+        Title: Buffer;
+        Description: Buffer;
         Powers: Long;
         Members: number;
     }[];
@@ -62,13 +62,13 @@ export class GroupRoleDataReplyMessage implements MessageBase
             this.RoleData[i]['RoleID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.RoleData[i]['Name'].length, pos++);
-            buf.write(this.RoleData[i]['Name'], pos);
+            this.RoleData[i]['Name'].copy(buf, pos);
             pos += this.RoleData[i]['Name'].length;
             buf.writeUInt8(this.RoleData[i]['Title'].length, pos++);
-            buf.write(this.RoleData[i]['Title'], pos);
+            this.RoleData[i]['Title'].copy(buf, pos);
             pos += this.RoleData[i]['Title'].length;
             buf.writeUInt8(this.RoleData[i]['Description'].length, pos++);
-            buf.write(this.RoleData[i]['Description'], pos);
+            this.RoleData[i]['Description'].copy(buf, pos);
             pos += this.RoleData[i]['Description'].length;
             buf.writeInt32LE(this.RoleData[i]['Powers'].low, pos);
             pos += 4;
@@ -114,29 +114,29 @@ export class GroupRoleDataReplyMessage implements MessageBase
         {
             const newObjRoleData: {
                 RoleID: UUID,
-                Name: string,
-                Title: string,
-                Description: string,
+                Name: Buffer,
+                Title: Buffer,
+                Description: Buffer,
                 Powers: Long,
                 Members: number
             } = {
                 RoleID: UUID.zero(),
-                Name: '',
-                Title: '',
-                Description: '',
+                Name: Buffer.allocUnsafe(0),
+                Title: Buffer.allocUnsafe(0),
+                Description: Buffer.allocUnsafe(0),
                 Powers: Long.ZERO,
                 Members: 0
             };
             newObjRoleData['RoleID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjRoleData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Title'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjRoleData['Title'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjRoleData['Description'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
             pos += 8;

@@ -20,7 +20,7 @@ export class CopyInventoryItemMessage implements MessageBase
         OldAgentID: UUID;
         OldItemID: UUID;
         NewFolderID: UUID;
-        NewName: string;
+        NewName: Buffer;
     }[];
 
     getSize(): number
@@ -58,7 +58,7 @@ export class CopyInventoryItemMessage implements MessageBase
             this.InventoryData[i]['NewFolderID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.InventoryData[i]['NewName'].length, pos++);
-            buf.write(this.InventoryData[i]['NewName'], pos);
+            this.InventoryData[i]['NewName'].copy(buf, pos);
             pos += this.InventoryData[i]['NewName'].length;
         }
         return pos - startPos;
@@ -89,13 +89,13 @@ export class CopyInventoryItemMessage implements MessageBase
                 OldAgentID: UUID,
                 OldItemID: UUID,
                 NewFolderID: UUID,
-                NewName: string
+                NewName: Buffer
             } = {
                 CallbackID: 0,
                 OldAgentID: UUID.zero(),
                 OldItemID: UUID.zero(),
                 NewFolderID: UUID.zero(),
-                NewName: ''
+                NewName: Buffer.allocUnsafe(0)
             };
             newObjInventoryData['CallbackID'] = buf.readUInt32LE(pos);
             pos += 4;
@@ -106,7 +106,7 @@ export class CopyInventoryItemMessage implements MessageBase
             newObjInventoryData['NewFolderID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjInventoryData['NewName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjInventoryData['NewName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.InventoryData.push(newObjInventoryData);
         }

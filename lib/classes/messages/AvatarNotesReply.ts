@@ -16,7 +16,7 @@ export class AvatarNotesReplyMessage implements MessageBase
     };
     Data: {
         TargetID: UUID;
-        Notes: string;
+        Notes: Buffer;
     };
 
     getSize(): number
@@ -33,7 +33,7 @@ export class AvatarNotesReplyMessage implements MessageBase
         pos += 16;
         buf.writeUInt16LE(this.Data['Notes'].length, pos);
         pos += 2;
-        buf.write(this.Data['Notes'], pos);
+        this.Data['Notes'].copy(buf, pos);
         pos += this.Data['Notes'].length;
         return pos - startPos;
     }
@@ -52,16 +52,16 @@ export class AvatarNotesReplyMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjData: {
             TargetID: UUID,
-            Notes: string
+            Notes: Buffer
         } = {
             TargetID: UUID.zero(),
-            Notes: ''
+            Notes: Buffer.allocUnsafe(0)
         };
         newObjData['TargetID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Notes'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Notes'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

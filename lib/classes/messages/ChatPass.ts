@@ -17,12 +17,12 @@ export class ChatPassMessage implements MessageBase
         Position: Vector3;
         ID: UUID;
         OwnerID: UUID;
-        Name: string;
+        Name: Buffer;
         SourceType: number;
         Type: number;
         Radius: number;
         SimAccess: number;
-        Message: string;
+        Message: Buffer;
     };
 
     getSize(): number
@@ -42,7 +42,7 @@ export class ChatPassMessage implements MessageBase
         this.ChatData['OwnerID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.ChatData['Name'].length, pos++);
-        buf.write(this.ChatData['Name'], pos);
+        this.ChatData['Name'].copy(buf, pos);
         pos += this.ChatData['Name'].length;
         buf.writeUInt8(this.ChatData['SourceType'], pos++);
         buf.writeUInt8(this.ChatData['Type'], pos++);
@@ -51,7 +51,7 @@ export class ChatPassMessage implements MessageBase
         buf.writeUInt8(this.ChatData['SimAccess'], pos++);
         buf.writeUInt16LE(this.ChatData['Message'].length, pos);
         pos += 2;
-        buf.write(this.ChatData['Message'], pos);
+        this.ChatData['Message'].copy(buf, pos);
         pos += this.ChatData['Message'].length;
         return pos - startPos;
     }
@@ -65,23 +65,23 @@ export class ChatPassMessage implements MessageBase
             Position: Vector3,
             ID: UUID,
             OwnerID: UUID,
-            Name: string,
+            Name: Buffer,
             SourceType: number,
             Type: number,
             Radius: number,
             SimAccess: number,
-            Message: string
+            Message: Buffer
         } = {
             Channel: 0,
             Position: Vector3.getZero(),
             ID: UUID.zero(),
             OwnerID: UUID.zero(),
-            Name: '',
+            Name: Buffer.allocUnsafe(0),
             SourceType: 0,
             Type: 0,
             Radius: 0,
             SimAccess: 0,
-            Message: ''
+            Message: Buffer.allocUnsafe(0)
         };
         newObjChatData['Channel'] = buf.readInt32LE(pos);
         pos += 4;
@@ -92,7 +92,7 @@ export class ChatPassMessage implements MessageBase
         newObjChatData['OwnerID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjChatData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjChatData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjChatData['SourceType'] = buf.readUInt8(pos++);
         newObjChatData['Type'] = buf.readUInt8(pos++);
@@ -101,7 +101,7 @@ export class ChatPassMessage implements MessageBase
         newObjChatData['SimAccess'] = buf.readUInt8(pos++);
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjChatData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjChatData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ChatData = newObjChatData;
         return pos - startPos;

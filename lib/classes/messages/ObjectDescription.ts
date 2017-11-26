@@ -17,7 +17,7 @@ export class ObjectDescriptionMessage implements MessageBase
     };
     ObjectData: {
         LocalID: number;
-        Description: string;
+        Description: Buffer;
     }[];
 
     getSize(): number
@@ -49,7 +49,7 @@ export class ObjectDescriptionMessage implements MessageBase
             buf.writeUInt32LE(this.ObjectData[i]['LocalID'], pos);
             pos += 4;
             buf.writeUInt8(this.ObjectData[i]['Description'].length, pos++);
-            buf.write(this.ObjectData[i]['Description'], pos);
+            this.ObjectData[i]['Description'].copy(buf, pos);
             pos += this.ObjectData[i]['Description'].length;
         }
         return pos - startPos;
@@ -77,15 +77,15 @@ export class ObjectDescriptionMessage implements MessageBase
         {
             const newObjObjectData: {
                 LocalID: number,
-                Description: string
+                Description: Buffer
             } = {
                 LocalID: 0,
-                Description: ''
+                Description: Buffer.allocUnsafe(0)
             };
             newObjObjectData['LocalID'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Description'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

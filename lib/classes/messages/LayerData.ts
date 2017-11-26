@@ -14,7 +14,7 @@ export class LayerDataMessage implements MessageBase
         Type: number;
     };
     LayerData: {
-        Data: string;
+        Data: Buffer;
     };
 
     getSize(): number
@@ -28,7 +28,7 @@ export class LayerDataMessage implements MessageBase
         buf.writeUInt8(this.LayerID['Type'], pos++);
         buf.writeUInt16LE(this.LayerData['Data'].length, pos);
         pos += 2;
-        buf.write(this.LayerData['Data'], pos);
+        this.LayerData['Data'].copy(buf, pos);
         pos += this.LayerData['Data'].length;
         return pos - startPos;
     }
@@ -45,13 +45,13 @@ export class LayerDataMessage implements MessageBase
         newObjLayerID['Type'] = buf.readUInt8(pos++);
         this.LayerID = newObjLayerID;
         const newObjLayerData: {
-            Data: string
+            Data: Buffer
         } = {
-            Data: ''
+            Data: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjLayerData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjLayerData['Data'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.LayerData = newObjLayerData;
         return pos - startPos;

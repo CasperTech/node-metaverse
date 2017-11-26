@@ -17,7 +17,7 @@ export class LogTextMessageMessage implements MessageBase
         GlobalX: number;
         GlobalY: number;
         Time: number;
-        Message: string;
+        Message: Buffer;
     }[];
 
     getSize(): number
@@ -54,7 +54,7 @@ export class LogTextMessageMessage implements MessageBase
             pos += 4;
             buf.writeUInt16LE(this.DataBlock[i]['Message'].length, pos);
             pos += 2;
-            buf.write(this.DataBlock[i]['Message'], pos);
+            this.DataBlock[i]['Message'].copy(buf, pos);
             pos += this.DataBlock[i]['Message'].length;
         }
         return pos - startPos;
@@ -74,14 +74,14 @@ export class LogTextMessageMessage implements MessageBase
                 GlobalX: number,
                 GlobalY: number,
                 Time: number,
-                Message: string
+                Message: Buffer
             } = {
                 FromAgentId: UUID.zero(),
                 ToAgentId: UUID.zero(),
                 GlobalX: 0,
                 GlobalY: 0,
                 Time: 0,
-                Message: ''
+                Message: Buffer.allocUnsafe(0)
             };
             newObjDataBlock['FromAgentId'] = new UUID(buf, pos);
             pos += 16;
@@ -95,7 +95,7 @@ export class LogTextMessageMessage implements MessageBase
             pos += 4;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjDataBlock['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjDataBlock['Message'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.DataBlock.push(newObjDataBlock);
         }

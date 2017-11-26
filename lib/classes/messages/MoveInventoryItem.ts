@@ -19,7 +19,7 @@ export class MoveInventoryItemMessage implements MessageBase
     InventoryData: {
         ItemID: UUID;
         FolderID: UUID;
-        NewName: string;
+        NewName: Buffer;
     }[];
 
     getSize(): number
@@ -54,7 +54,7 @@ export class MoveInventoryItemMessage implements MessageBase
             this.InventoryData[i]['FolderID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.InventoryData[i]['NewName'].length, pos++);
-            buf.write(this.InventoryData[i]['NewName'], pos);
+            this.InventoryData[i]['NewName'].copy(buf, pos);
             pos += this.InventoryData[i]['NewName'].length;
         }
         return pos - startPos;
@@ -86,18 +86,18 @@ export class MoveInventoryItemMessage implements MessageBase
             const newObjInventoryData: {
                 ItemID: UUID,
                 FolderID: UUID,
-                NewName: string
+                NewName: Buffer
             } = {
                 ItemID: UUID.zero(),
                 FolderID: UUID.zero(),
-                NewName: ''
+                NewName: Buffer.allocUnsafe(0)
             };
             newObjInventoryData['ItemID'] = new UUID(buf, pos);
             pos += 16;
             newObjInventoryData['FolderID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjInventoryData['NewName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjInventoryData['NewName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.InventoryData.push(newObjInventoryData);
         }

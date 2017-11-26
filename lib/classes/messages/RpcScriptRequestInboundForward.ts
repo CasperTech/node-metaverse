@@ -19,7 +19,7 @@ export class RpcScriptRequestInboundForwardMessage implements MessageBase
         ItemID: UUID;
         ChannelID: UUID;
         IntValue: number;
-        StringValue: string;
+        StringValue: Buffer;
     };
 
     getSize(): number
@@ -44,7 +44,7 @@ export class RpcScriptRequestInboundForwardMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.DataBlock['StringValue'].length, pos);
         pos += 2;
-        buf.write(this.DataBlock['StringValue'], pos);
+        this.DataBlock['StringValue'].copy(buf, pos);
         pos += this.DataBlock['StringValue'].length;
         return pos - startPos;
     }
@@ -60,7 +60,7 @@ export class RpcScriptRequestInboundForwardMessage implements MessageBase
             ItemID: UUID,
             ChannelID: UUID,
             IntValue: number,
-            StringValue: string
+            StringValue: Buffer
         } = {
             RPCServerIP: IPAddress.zero(),
             RPCServerPort: 0,
@@ -68,7 +68,7 @@ export class RpcScriptRequestInboundForwardMessage implements MessageBase
             ItemID: UUID.zero(),
             ChannelID: UUID.zero(),
             IntValue: 0,
-            StringValue: ''
+            StringValue: Buffer.allocUnsafe(0)
         };
         newObjDataBlock['RPCServerIP'] = new IPAddress(buf, pos);
         pos += 4;
@@ -84,7 +84,7 @@ export class RpcScriptRequestInboundForwardMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjDataBlock['StringValue'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['StringValue'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.DataBlock = newObjDataBlock;
         return pos - startPos;

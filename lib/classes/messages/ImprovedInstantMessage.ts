@@ -26,9 +26,9 @@ export class ImprovedInstantMessageMessage implements MessageBase
         Dialog: number;
         ID: UUID;
         Timestamp: number;
-        FromAgentName: string;
-        Message: string;
-        BinaryBucket: string;
+        FromAgentName: Buffer;
+        Message: Buffer;
+        BinaryBucket: Buffer;
     };
     EstateBlock: {
         EstateID: number;
@@ -62,15 +62,15 @@ export class ImprovedInstantMessageMessage implements MessageBase
         buf.writeUInt32LE(this.MessageBlock['Timestamp'], pos);
         pos += 4;
         buf.writeUInt8(this.MessageBlock['FromAgentName'].length, pos++);
-        buf.write(this.MessageBlock['FromAgentName'], pos);
+        this.MessageBlock['FromAgentName'].copy(buf, pos);
         pos += this.MessageBlock['FromAgentName'].length;
         buf.writeUInt16LE(this.MessageBlock['Message'].length, pos);
         pos += 2;
-        buf.write(this.MessageBlock['Message'], pos);
+        this.MessageBlock['Message'].copy(buf, pos);
         pos += this.MessageBlock['Message'].length;
         buf.writeUInt16LE(this.MessageBlock['BinaryBucket'].length, pos);
         pos += 2;
-        buf.write(this.MessageBlock['BinaryBucket'], pos);
+        this.MessageBlock['BinaryBucket'].copy(buf, pos);
         pos += this.MessageBlock['BinaryBucket'].length;
         buf.writeUInt32LE(this.EstateBlock['EstateID'], pos);
         pos += 4;
@@ -103,9 +103,9 @@ export class ImprovedInstantMessageMessage implements MessageBase
             Dialog: number,
             ID: UUID,
             Timestamp: number,
-            FromAgentName: string,
-            Message: string,
-            BinaryBucket: string
+            FromAgentName: Buffer,
+            Message: Buffer,
+            BinaryBucket: Buffer
         } = {
             FromGroup: false,
             ToAgentID: UUID.zero(),
@@ -116,9 +116,9 @@ export class ImprovedInstantMessageMessage implements MessageBase
             Dialog: 0,
             ID: UUID.zero(),
             Timestamp: 0,
-            FromAgentName: '',
-            Message: '',
-            BinaryBucket: ''
+            FromAgentName: Buffer.allocUnsafe(0),
+            Message: Buffer.allocUnsafe(0),
+            BinaryBucket: Buffer.allocUnsafe(0)
         };
         newObjMessageBlock['FromGroup'] = (buf.readUInt8(pos++) === 1);
         newObjMessageBlock['ToAgentID'] = new UUID(buf, pos);
@@ -136,15 +136,15 @@ export class ImprovedInstantMessageMessage implements MessageBase
         newObjMessageBlock['Timestamp'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMessageBlock['FromAgentName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMessageBlock['FromAgentName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjMessageBlock['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMessageBlock['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjMessageBlock['BinaryBucket'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMessageBlock['BinaryBucket'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MessageBlock = newObjMessageBlock;
         const newObjEstateBlock: {

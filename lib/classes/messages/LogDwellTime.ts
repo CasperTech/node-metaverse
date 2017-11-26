@@ -15,7 +15,7 @@ export class LogDwellTimeMessage implements MessageBase
         AgentID: UUID;
         SessionID: UUID;
         Duration: number;
-        SimName: string;
+        SimName: Buffer;
         RegionX: number;
         RegionY: number;
         AvgAgentsInView: number;
@@ -37,7 +37,7 @@ export class LogDwellTimeMessage implements MessageBase
         buf.writeFloatLE(this.DwellInfo['Duration'], pos);
         pos += 4;
         buf.writeUInt8(this.DwellInfo['SimName'].length, pos++);
-        buf.write(this.DwellInfo['SimName'], pos);
+        this.DwellInfo['SimName'].copy(buf, pos);
         pos += this.DwellInfo['SimName'].length;
         buf.writeUInt32LE(this.DwellInfo['RegionX'], pos);
         pos += 4;
@@ -56,7 +56,7 @@ export class LogDwellTimeMessage implements MessageBase
             AgentID: UUID,
             SessionID: UUID,
             Duration: number,
-            SimName: string,
+            SimName: Buffer,
             RegionX: number,
             RegionY: number,
             AvgAgentsInView: number,
@@ -65,7 +65,7 @@ export class LogDwellTimeMessage implements MessageBase
             AgentID: UUID.zero(),
             SessionID: UUID.zero(),
             Duration: 0,
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             RegionX: 0,
             RegionY: 0,
             AvgAgentsInView: 0,
@@ -78,7 +78,7 @@ export class LogDwellTimeMessage implements MessageBase
         newObjDwellInfo['Duration'] = buf.readFloatLE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjDwellInfo['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDwellInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjDwellInfo['RegionX'] = buf.readUInt32LE(pos);
         pos += 4;

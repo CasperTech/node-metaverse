@@ -18,8 +18,8 @@ export class GroupNoticesListReplyMessage implements MessageBase
     Data: {
         NoticeID: UUID;
         Timestamp: number;
-        FromName: string;
-        Subject: string;
+        FromName: Buffer;
+        Subject: Buffer;
         HasAttachment: boolean;
         AssetType: number;
     }[];
@@ -56,11 +56,11 @@ export class GroupNoticesListReplyMessage implements MessageBase
             pos += 4;
             buf.writeUInt16LE(this.Data[i]['FromName'].length, pos);
             pos += 2;
-            buf.write(this.Data[i]['FromName'], pos);
+            this.Data[i]['FromName'].copy(buf, pos);
             pos += this.Data[i]['FromName'].length;
             buf.writeUInt16LE(this.Data[i]['Subject'].length, pos);
             pos += 2;
-            buf.write(this.Data[i]['Subject'], pos);
+            this.Data[i]['Subject'].copy(buf, pos);
             pos += this.Data[i]['Subject'].length;
             buf.writeUInt8((this.Data[i]['HasAttachment']) ? 1 : 0, pos++);
             buf.writeUInt8(this.Data[i]['AssetType'], pos++);
@@ -91,15 +91,15 @@ export class GroupNoticesListReplyMessage implements MessageBase
             const newObjData: {
                 NoticeID: UUID,
                 Timestamp: number,
-                FromName: string,
-                Subject: string,
+                FromName: Buffer,
+                Subject: Buffer,
                 HasAttachment: boolean,
                 AssetType: number
             } = {
                 NoticeID: UUID.zero(),
                 Timestamp: 0,
-                FromName: '',
-                Subject: '',
+                FromName: Buffer.allocUnsafe(0),
+                Subject: Buffer.allocUnsafe(0),
                 HasAttachment: false,
                 AssetType: 0
             };
@@ -109,11 +109,11 @@ export class GroupNoticesListReplyMessage implements MessageBase
             pos += 4;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjData['FromName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjData['FromName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjData['Subject'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjData['Subject'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjData['HasAttachment'] = (buf.readUInt8(pos++) === 1);
             newObjData['AssetType'] = buf.readUInt8(pos++);

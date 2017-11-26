@@ -17,7 +17,7 @@ export class CreateGroupReplyMessage implements MessageBase
     ReplyData: {
         GroupID: UUID;
         Success: boolean;
-        Message: string;
+        Message: Buffer;
     };
 
     getSize(): number
@@ -34,7 +34,7 @@ export class CreateGroupReplyMessage implements MessageBase
         pos += 16;
         buf.writeUInt8((this.ReplyData['Success']) ? 1 : 0, pos++);
         buf.writeUInt8(this.ReplyData['Message'].length, pos++);
-        buf.write(this.ReplyData['Message'], pos);
+        this.ReplyData['Message'].copy(buf, pos);
         pos += this.ReplyData['Message'].length;
         return pos - startPos;
     }
@@ -54,17 +54,17 @@ export class CreateGroupReplyMessage implements MessageBase
         const newObjReplyData: {
             GroupID: UUID,
             Success: boolean,
-            Message: string
+            Message: Buffer
         } = {
             GroupID: UUID.zero(),
             Success: false,
-            Message: ''
+            Message: Buffer.allocUnsafe(0)
         };
         newObjReplyData['GroupID'] = new UUID(buf, pos);
         pos += 16;
         newObjReplyData['Success'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjReplyData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjReplyData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ReplyData = newObjReplyData;
         return pos - startPos;

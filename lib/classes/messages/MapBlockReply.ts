@@ -18,7 +18,7 @@ export class MapBlockReplyMessage implements MessageBase
     Data: {
         X: number;
         Y: number;
-        Name: string;
+        Name: Buffer;
         Access: number;
         RegionFlags: number;
         WaterHeight: number;
@@ -57,7 +57,7 @@ export class MapBlockReplyMessage implements MessageBase
             buf.writeUInt16LE(this.Data[i]['Y'], pos);
             pos += 2;
             buf.writeUInt8(this.Data[i]['Name'].length, pos++);
-            buf.write(this.Data[i]['Name'], pos);
+            this.Data[i]['Name'].copy(buf, pos);
             pos += this.Data[i]['Name'].length;
             buf.writeUInt8(this.Data[i]['Access'], pos++);
             buf.writeUInt32LE(this.Data[i]['RegionFlags'], pos);
@@ -93,7 +93,7 @@ export class MapBlockReplyMessage implements MessageBase
             const newObjData: {
                 X: number,
                 Y: number,
-                Name: string,
+                Name: Buffer,
                 Access: number,
                 RegionFlags: number,
                 WaterHeight: number,
@@ -102,7 +102,7 @@ export class MapBlockReplyMessage implements MessageBase
             } = {
                 X: 0,
                 Y: 0,
-                Name: '',
+                Name: Buffer.allocUnsafe(0),
                 Access: 0,
                 RegionFlags: 0,
                 WaterHeight: 0,
@@ -114,7 +114,7 @@ export class MapBlockReplyMessage implements MessageBase
             newObjData['Y'] = buf.readUInt16LE(pos);
             pos += 2;
             varLength = buf.readUInt8(pos++);
-            newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjData['Access'] = buf.readUInt8(pos++);
             newObjData['RegionFlags'] = buf.readUInt32LE(pos);

@@ -18,7 +18,7 @@ export class AgentThrottleMessage implements MessageBase
     };
     Throttle: {
         GenCounter: number;
-        Throttles: string;
+        Throttles: Buffer;
     };
 
     getSize(): number
@@ -38,7 +38,7 @@ export class AgentThrottleMessage implements MessageBase
         buf.writeUInt32LE(this.Throttle['GenCounter'], pos);
         pos += 4;
         buf.writeUInt8(this.Throttle['Throttles'].length, pos++);
-        buf.write(this.Throttle['Throttles'], pos);
+        this.Throttle['Throttles'].copy(buf, pos);
         pos += this.Throttle['Throttles'].length;
         return pos - startPos;
     }
@@ -65,15 +65,15 @@ export class AgentThrottleMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjThrottle: {
             GenCounter: number,
-            Throttles: string
+            Throttles: Buffer
         } = {
             GenCounter: 0,
-            Throttles: ''
+            Throttles: Buffer.allocUnsafe(0)
         };
         newObjThrottle['GenCounter'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjThrottle['Throttles'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjThrottle['Throttles'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Throttle = newObjThrottle;
         return pos - startPos;
