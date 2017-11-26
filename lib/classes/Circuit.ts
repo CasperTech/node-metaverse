@@ -13,6 +13,8 @@ import {CompleteAgentMovementMessage} from './messages/CompleteAgentMovement';
 import {Subscription} from 'rxjs/Subscription';
 import {Subject} from 'rxjs/Subject';
 import Timer = NodeJS.Timer;
+import {ImprovedInstantMessageMessage} from './messages/ImprovedInstantMessage';
+import {Vector3} from './Vector3';
 
 export class Circuit
 {
@@ -118,8 +120,8 @@ export class Circuit
                 };
         }
         let size = packet.getSize();
-        const dataToSend: Buffer = Buffer.allocUnsafe(size);
-        packet.writeToBuffer(dataToSend, 0);
+        let dataToSend: Buffer = Buffer.allocUnsafe(size);
+        dataToSend = packet.writeToBuffer(dataToSend, 0);
         if (this.client !== null)
         {
             this.client.send(dataToSend, 0, dataToSend.length, this.port, this.ipAddress, (err, bytes) =>
@@ -145,6 +147,42 @@ export class Circuit
             clearTimeout(this.awaitingAck[sequenceID].timeout);
             delete this.awaitingAck[sequenceID];
         }
+    }
+
+    sendInstantMessage(from: UUID | string, to: UUID | string, message: string)
+    {
+        if (typeof from === 'string')
+        {
+            from = new UUID(from);
+        }
+        if (typeof to === 'string')
+        {
+            to = new UUID(to);
+        }
+        message += '\0';
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: from,
+            SessionID: this.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: to,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: 0,
+            Dialog: 0,
+            ID: UUID.zero(),
+            Timestamp: 0,
+            FromAgentName: 'Yo Momma',
+            Message: message,
+            BinaryBucket: ''
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        this.sendMessage(im, PacketFlags.Reliable);
     }
 
     sendAck(sequenceID: number)
