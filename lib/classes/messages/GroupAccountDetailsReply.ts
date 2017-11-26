@@ -19,10 +19,10 @@ export class GroupAccountDetailsReplyMessage implements MessageBase
         RequestID: UUID;
         IntervalDays: number;
         CurrentInterval: number;
-        StartDate: string;
+        StartDate: Buffer;
     };
     HistoryData: {
-        Description: string;
+        Description: Buffer;
         Amount: number;
     }[];
 
@@ -55,14 +55,14 @@ export class GroupAccountDetailsReplyMessage implements MessageBase
         buf.writeInt32LE(this.MoneyData['CurrentInterval'], pos);
         pos += 4;
         buf.writeUInt8(this.MoneyData['StartDate'].length, pos++);
-        buf.write(this.MoneyData['StartDate'], pos);
+        this.MoneyData['StartDate'].copy(buf, pos);
         pos += this.MoneyData['StartDate'].length;
         const count = this.HistoryData.length;
         buf.writeUInt8(this.HistoryData.length, pos++);
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.HistoryData[i]['Description'].length, pos++);
-            buf.write(this.HistoryData[i]['Description'], pos);
+            this.HistoryData[i]['Description'].copy(buf, pos);
             pos += this.HistoryData[i]['Description'].length;
             buf.writeInt32LE(this.HistoryData[i]['Amount'], pos);
             pos += 4;
@@ -90,12 +90,12 @@ export class GroupAccountDetailsReplyMessage implements MessageBase
             RequestID: UUID,
             IntervalDays: number,
             CurrentInterval: number,
-            StartDate: string
+            StartDate: Buffer
         } = {
             RequestID: UUID.zero(),
             IntervalDays: 0,
             CurrentInterval: 0,
-            StartDate: ''
+            StartDate: Buffer.allocUnsafe(0)
         };
         newObjMoneyData['RequestID'] = new UUID(buf, pos);
         pos += 16;
@@ -104,7 +104,7 @@ export class GroupAccountDetailsReplyMessage implements MessageBase
         newObjMoneyData['CurrentInterval'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['StartDate'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMoneyData['StartDate'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         const count = buf.readUInt8(pos++);
@@ -112,14 +112,14 @@ export class GroupAccountDetailsReplyMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjHistoryData: {
-                Description: string,
+                Description: Buffer,
                 Amount: number
             } = {
-                Description: '',
+                Description: Buffer.allocUnsafe(0),
                 Amount: 0
             };
             varLength = buf.readUInt8(pos++);
-            newObjHistoryData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjHistoryData['Description'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjHistoryData['Amount'] = buf.readInt32LE(pos);
             pos += 4;

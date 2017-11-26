@@ -26,8 +26,8 @@ export class ObjectPropertiesFamilyMessage implements MessageBase
         SalePrice: number;
         Category: number;
         LastOwnerID: UUID;
-        Name: string;
-        Description: string;
+        Name: Buffer;
+        Description: Buffer;
     };
 
     getSize(): number
@@ -66,10 +66,10 @@ export class ObjectPropertiesFamilyMessage implements MessageBase
         this.ObjectData['LastOwnerID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.ObjectData['Name'].length, pos++);
-        buf.write(this.ObjectData['Name'], pos);
+        this.ObjectData['Name'].copy(buf, pos);
         pos += this.ObjectData['Name'].length;
         buf.writeUInt8(this.ObjectData['Description'].length, pos++);
-        buf.write(this.ObjectData['Description'], pos);
+        this.ObjectData['Description'].copy(buf, pos);
         pos += this.ObjectData['Description'].length;
         return pos - startPos;
     }
@@ -93,8 +93,8 @@ export class ObjectPropertiesFamilyMessage implements MessageBase
             SalePrice: number,
             Category: number,
             LastOwnerID: UUID,
-            Name: string,
-            Description: string
+            Name: Buffer,
+            Description: Buffer
         } = {
             RequestFlags: 0,
             ObjectID: UUID.zero(),
@@ -110,8 +110,8 @@ export class ObjectPropertiesFamilyMessage implements MessageBase
             SalePrice: 0,
             Category: 0,
             LastOwnerID: UUID.zero(),
-            Name: '',
-            Description: ''
+            Name: Buffer.allocUnsafe(0),
+            Description: Buffer.allocUnsafe(0)
         };
         newObjObjectData['RequestFlags'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -141,10 +141,10 @@ export class ObjectPropertiesFamilyMessage implements MessageBase
         newObjObjectData['LastOwnerID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjObjectData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjObjectData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjObjectData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjObjectData['Description'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ObjectData = newObjObjectData;
         return pos - startPos;

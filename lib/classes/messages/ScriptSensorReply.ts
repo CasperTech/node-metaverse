@@ -23,7 +23,7 @@ export class ScriptSensorReplyMessage implements MessageBase
         Position: Vector3;
         Velocity: Vector3;
         Rotation: Quaternion;
-        Name: string;
+        Name: Buffer;
         Type: number;
         Range: number;
     }[];
@@ -65,7 +65,7 @@ export class ScriptSensorReplyMessage implements MessageBase
             this.SensedData[i]['Rotation'].writeToBuffer(buf, pos);
             pos += 12;
             buf.writeUInt8(this.SensedData[i]['Name'].length, pos++);
-            buf.write(this.SensedData[i]['Name'], pos);
+            this.SensedData[i]['Name'].copy(buf, pos);
             pos += this.SensedData[i]['Name'].length;
             buf.writeInt32LE(this.SensedData[i]['Type'], pos);
             pos += 4;
@@ -98,7 +98,7 @@ export class ScriptSensorReplyMessage implements MessageBase
                 Position: Vector3,
                 Velocity: Vector3,
                 Rotation: Quaternion,
-                Name: string,
+                Name: Buffer,
                 Type: number,
                 Range: number
             } = {
@@ -108,7 +108,7 @@ export class ScriptSensorReplyMessage implements MessageBase
                 Position: Vector3.getZero(),
                 Velocity: Vector3.getZero(),
                 Rotation: Quaternion.getIdentity(),
-                Name: '',
+                Name: Buffer.allocUnsafe(0),
                 Type: 0,
                 Range: 0
             };
@@ -125,7 +125,7 @@ export class ScriptSensorReplyMessage implements MessageBase
             newObjSensedData['Rotation'] = new Quaternion(buf, pos);
             pos += 12;
             varLength = buf.readUInt8(pos++);
-            newObjSensedData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjSensedData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjSensedData['Type'] = buf.readInt32LE(pos);
             pos += 4;

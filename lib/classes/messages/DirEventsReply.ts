@@ -19,9 +19,9 @@ export class DirEventsReplyMessage implements MessageBase
     };
     QueryReplies: {
         OwnerID: UUID;
-        Name: string;
+        Name: Buffer;
         EventID: number;
-        Date: string;
+        Date: Buffer;
         UnixTime: number;
         EventFlags: number;
     }[];
@@ -58,12 +58,12 @@ export class DirEventsReplyMessage implements MessageBase
             this.QueryReplies[i]['OwnerID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.QueryReplies[i]['Name'].length, pos++);
-            buf.write(this.QueryReplies[i]['Name'], pos);
+            this.QueryReplies[i]['Name'].copy(buf, pos);
             pos += this.QueryReplies[i]['Name'].length;
             buf.writeUInt32LE(this.QueryReplies[i]['EventID'], pos);
             pos += 4;
             buf.writeUInt8(this.QueryReplies[i]['Date'].length, pos++);
-            buf.write(this.QueryReplies[i]['Date'], pos);
+            this.QueryReplies[i]['Date'].copy(buf, pos);
             pos += this.QueryReplies[i]['Date'].length;
             buf.writeUInt32LE(this.QueryReplies[i]['UnixTime'], pos);
             pos += 4;
@@ -106,28 +106,28 @@ export class DirEventsReplyMessage implements MessageBase
         {
             const newObjQueryReplies: {
                 OwnerID: UUID,
-                Name: string,
+                Name: Buffer,
                 EventID: number,
-                Date: string,
+                Date: Buffer,
                 UnixTime: number,
                 EventFlags: number
             } = {
                 OwnerID: UUID.zero(),
-                Name: '',
+                Name: Buffer.allocUnsafe(0),
                 EventID: 0,
-                Date: '',
+                Date: Buffer.allocUnsafe(0),
                 UnixTime: 0,
                 EventFlags: 0
             };
             newObjQueryReplies['OwnerID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryReplies['EventID'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Date'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['Date'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryReplies['UnixTime'] = buf.readUInt32LE(pos);
             pos += 4;

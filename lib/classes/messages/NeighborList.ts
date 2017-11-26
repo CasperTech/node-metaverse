@@ -18,7 +18,7 @@ export class NeighborListMessage implements MessageBase
         PublicIP: IPAddress;
         PublicPort: number;
         RegionID: UUID;
-        Name: string;
+        Name: Buffer;
         SimAccess: number;
     }[];
 
@@ -54,7 +54,7 @@ export class NeighborListMessage implements MessageBase
             this.NeighborBlock[i]['RegionID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.NeighborBlock[i]['Name'].length, pos++);
-            buf.write(this.NeighborBlock[i]['Name'], pos);
+            this.NeighborBlock[i]['Name'].copy(buf, pos);
             pos += this.NeighborBlock[i]['Name'].length;
             buf.writeUInt8(this.NeighborBlock[i]['SimAccess'], pos++);
         }
@@ -74,7 +74,7 @@ export class NeighborListMessage implements MessageBase
                 PublicIP: IPAddress,
                 PublicPort: number,
                 RegionID: UUID,
-                Name: string,
+                Name: Buffer,
                 SimAccess: number
             } = {
                 IP: IPAddress.zero(),
@@ -82,7 +82,7 @@ export class NeighborListMessage implements MessageBase
                 PublicIP: IPAddress.zero(),
                 PublicPort: 0,
                 RegionID: UUID.zero(),
-                Name: '',
+                Name: Buffer.allocUnsafe(0),
                 SimAccess: 0
             };
             newObjNeighborBlock['IP'] = new IPAddress(buf, pos);
@@ -96,7 +96,7 @@ export class NeighborListMessage implements MessageBase
             newObjNeighborBlock['RegionID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjNeighborBlock['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjNeighborBlock['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjNeighborBlock['SimAccess'] = buf.readUInt8(pos++);
             this.NeighborBlock.push(newObjNeighborBlock);

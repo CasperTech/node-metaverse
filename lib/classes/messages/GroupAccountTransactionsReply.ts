@@ -19,13 +19,13 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
         RequestID: UUID;
         IntervalDays: number;
         CurrentInterval: number;
-        StartDate: string;
+        StartDate: Buffer;
     };
     HistoryData: {
-        Time: string;
-        User: string;
+        Time: Buffer;
+        User: Buffer;
         Type: number;
-        Item: string;
+        Item: Buffer;
         Amount: number;
     }[];
 
@@ -58,22 +58,22 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
         buf.writeInt32LE(this.MoneyData['CurrentInterval'], pos);
         pos += 4;
         buf.writeUInt8(this.MoneyData['StartDate'].length, pos++);
-        buf.write(this.MoneyData['StartDate'], pos);
+        this.MoneyData['StartDate'].copy(buf, pos);
         pos += this.MoneyData['StartDate'].length;
         const count = this.HistoryData.length;
         buf.writeUInt8(this.HistoryData.length, pos++);
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.HistoryData[i]['Time'].length, pos++);
-            buf.write(this.HistoryData[i]['Time'], pos);
+            this.HistoryData[i]['Time'].copy(buf, pos);
             pos += this.HistoryData[i]['Time'].length;
             buf.writeUInt8(this.HistoryData[i]['User'].length, pos++);
-            buf.write(this.HistoryData[i]['User'], pos);
+            this.HistoryData[i]['User'].copy(buf, pos);
             pos += this.HistoryData[i]['User'].length;
             buf.writeInt32LE(this.HistoryData[i]['Type'], pos);
             pos += 4;
             buf.writeUInt8(this.HistoryData[i]['Item'].length, pos++);
-            buf.write(this.HistoryData[i]['Item'], pos);
+            this.HistoryData[i]['Item'].copy(buf, pos);
             pos += this.HistoryData[i]['Item'].length;
             buf.writeInt32LE(this.HistoryData[i]['Amount'], pos);
             pos += 4;
@@ -101,12 +101,12 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
             RequestID: UUID,
             IntervalDays: number,
             CurrentInterval: number,
-            StartDate: string
+            StartDate: Buffer
         } = {
             RequestID: UUID.zero(),
             IntervalDays: 0,
             CurrentInterval: 0,
-            StartDate: ''
+            StartDate: Buffer.allocUnsafe(0)
         };
         newObjMoneyData['RequestID'] = new UUID(buf, pos);
         pos += 16;
@@ -115,7 +115,7 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
         newObjMoneyData['CurrentInterval'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['StartDate'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMoneyData['StartDate'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         const count = buf.readUInt8(pos++);
@@ -123,28 +123,28 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjHistoryData: {
-                Time: string,
-                User: string,
+                Time: Buffer,
+                User: Buffer,
                 Type: number,
-                Item: string,
+                Item: Buffer,
                 Amount: number
             } = {
-                Time: '',
-                User: '',
+                Time: Buffer.allocUnsafe(0),
+                User: Buffer.allocUnsafe(0),
                 Type: 0,
-                Item: '',
+                Item: Buffer.allocUnsafe(0),
                 Amount: 0
             };
             varLength = buf.readUInt8(pos++);
-            newObjHistoryData['Time'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjHistoryData['Time'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjHistoryData['User'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjHistoryData['User'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjHistoryData['Type'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjHistoryData['Item'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjHistoryData['Item'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjHistoryData['Amount'] = buf.readInt32LE(pos);
             pos += 4;

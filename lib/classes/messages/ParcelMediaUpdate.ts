@@ -12,13 +12,13 @@ export class ParcelMediaUpdateMessage implements MessageBase
     id = Message.ParcelMediaUpdate;
 
     DataBlock: {
-        MediaURL: string;
+        MediaURL: Buffer;
         MediaID: UUID;
         MediaAutoScale: number;
     };
     DataBlockExtended: {
-        MediaType: string;
-        MediaDesc: string;
+        MediaType: Buffer;
+        MediaDesc: Buffer;
         MediaWidth: number;
         MediaHeight: number;
         MediaLoop: number;
@@ -33,16 +33,16 @@ export class ParcelMediaUpdateMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.DataBlock['MediaURL'].length, pos++);
-        buf.write(this.DataBlock['MediaURL'], pos);
+        this.DataBlock['MediaURL'].copy(buf, pos);
         pos += this.DataBlock['MediaURL'].length;
         this.DataBlock['MediaID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.DataBlock['MediaAutoScale'], pos++);
         buf.writeUInt8(this.DataBlockExtended['MediaType'].length, pos++);
-        buf.write(this.DataBlockExtended['MediaType'], pos);
+        this.DataBlockExtended['MediaType'].copy(buf, pos);
         pos += this.DataBlockExtended['MediaType'].length;
         buf.writeUInt8(this.DataBlockExtended['MediaDesc'].length, pos++);
-        buf.write(this.DataBlockExtended['MediaDesc'], pos);
+        this.DataBlockExtended['MediaDesc'].copy(buf, pos);
         pos += this.DataBlockExtended['MediaDesc'].length;
         buf.writeInt32LE(this.DataBlockExtended['MediaWidth'], pos);
         pos += 4;
@@ -57,39 +57,39 @@ export class ParcelMediaUpdateMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjDataBlock: {
-            MediaURL: string,
+            MediaURL: Buffer,
             MediaID: UUID,
             MediaAutoScale: number
         } = {
-            MediaURL: '',
+            MediaURL: Buffer.allocUnsafe(0),
             MediaID: UUID.zero(),
             MediaAutoScale: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['MediaURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['MediaURL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjDataBlock['MediaID'] = new UUID(buf, pos);
         pos += 16;
         newObjDataBlock['MediaAutoScale'] = buf.readUInt8(pos++);
         this.DataBlock = newObjDataBlock;
         const newObjDataBlockExtended: {
-            MediaType: string,
-            MediaDesc: string,
+            MediaType: Buffer,
+            MediaDesc: Buffer,
             MediaWidth: number,
             MediaHeight: number,
             MediaLoop: number
         } = {
-            MediaType: '',
-            MediaDesc: '',
+            MediaType: Buffer.allocUnsafe(0),
+            MediaDesc: Buffer.allocUnsafe(0),
             MediaWidth: 0,
             MediaHeight: 0,
             MediaLoop: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlockExtended['MediaType'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlockExtended['MediaType'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlockExtended['MediaDesc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlockExtended['MediaDesc'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjDataBlockExtended['MediaWidth'] = buf.readInt32LE(pos);
         pos += 4;

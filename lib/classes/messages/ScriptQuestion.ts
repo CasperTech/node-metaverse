@@ -14,8 +14,8 @@ export class ScriptQuestionMessage implements MessageBase
     Data: {
         TaskID: UUID;
         ItemID: UUID;
-        ObjectName: string;
-        ObjectOwner: string;
+        ObjectName: Buffer;
+        ObjectOwner: Buffer;
         Questions: number;
     };
     Experience: {
@@ -35,10 +35,10 @@ export class ScriptQuestionMessage implements MessageBase
         this.Data['ItemID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['ObjectName'].length, pos++);
-        buf.write(this.Data['ObjectName'], pos);
+        this.Data['ObjectName'].copy(buf, pos);
         pos += this.Data['ObjectName'].length;
         buf.writeUInt8(this.Data['ObjectOwner'].length, pos++);
-        buf.write(this.Data['ObjectOwner'], pos);
+        this.Data['ObjectOwner'].copy(buf, pos);
         pos += this.Data['ObjectOwner'].length;
         buf.writeInt32LE(this.Data['Questions'], pos);
         pos += 4;
@@ -54,14 +54,14 @@ export class ScriptQuestionMessage implements MessageBase
         const newObjData: {
             TaskID: UUID,
             ItemID: UUID,
-            ObjectName: string,
-            ObjectOwner: string,
+            ObjectName: Buffer,
+            ObjectOwner: Buffer,
             Questions: number
         } = {
             TaskID: UUID.zero(),
             ItemID: UUID.zero(),
-            ObjectName: '',
-            ObjectOwner: '',
+            ObjectName: Buffer.allocUnsafe(0),
+            ObjectOwner: Buffer.allocUnsafe(0),
             Questions: 0
         };
         newObjData['TaskID'] = new UUID(buf, pos);
@@ -69,10 +69,10 @@ export class ScriptQuestionMessage implements MessageBase
         newObjData['ItemID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectOwner'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['ObjectOwner'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['Questions'] = buf.readInt32LE(pos);
         pos += 4;

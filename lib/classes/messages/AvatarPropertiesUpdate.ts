@@ -18,11 +18,11 @@ export class AvatarPropertiesUpdateMessage implements MessageBase
     PropertiesData: {
         ImageID: UUID;
         FLImageID: UUID;
-        AboutText: string;
-        FLAboutText: string;
+        AboutText: Buffer;
+        FLAboutText: Buffer;
         AllowPublish: boolean;
         MaturePublish: boolean;
-        ProfileURL: string;
+        ProfileURL: Buffer;
     };
 
     getSize(): number
@@ -43,15 +43,15 @@ export class AvatarPropertiesUpdateMessage implements MessageBase
         pos += 16;
         buf.writeUInt16LE(this.PropertiesData['AboutText'].length, pos);
         pos += 2;
-        buf.write(this.PropertiesData['AboutText'], pos);
+        this.PropertiesData['AboutText'].copy(buf, pos);
         pos += this.PropertiesData['AboutText'].length;
         buf.writeUInt8(this.PropertiesData['FLAboutText'].length, pos++);
-        buf.write(this.PropertiesData['FLAboutText'], pos);
+        this.PropertiesData['FLAboutText'].copy(buf, pos);
         pos += this.PropertiesData['FLAboutText'].length;
         buf.writeUInt8((this.PropertiesData['AllowPublish']) ? 1 : 0, pos++);
         buf.writeUInt8((this.PropertiesData['MaturePublish']) ? 1 : 0, pos++);
         buf.writeUInt8(this.PropertiesData['ProfileURL'].length, pos++);
-        buf.write(this.PropertiesData['ProfileURL'], pos);
+        this.PropertiesData['ProfileURL'].copy(buf, pos);
         pos += this.PropertiesData['ProfileURL'].length;
         return pos - startPos;
     }
@@ -75,19 +75,19 @@ export class AvatarPropertiesUpdateMessage implements MessageBase
         const newObjPropertiesData: {
             ImageID: UUID,
             FLImageID: UUID,
-            AboutText: string,
-            FLAboutText: string,
+            AboutText: Buffer,
+            FLAboutText: Buffer,
             AllowPublish: boolean,
             MaturePublish: boolean,
-            ProfileURL: string
+            ProfileURL: Buffer
         } = {
             ImageID: UUID.zero(),
             FLImageID: UUID.zero(),
-            AboutText: '',
-            FLAboutText: '',
+            AboutText: Buffer.allocUnsafe(0),
+            FLAboutText: Buffer.allocUnsafe(0),
             AllowPublish: false,
             MaturePublish: false,
-            ProfileURL: ''
+            ProfileURL: Buffer.allocUnsafe(0)
         };
         newObjPropertiesData['ImageID'] = new UUID(buf, pos);
         pos += 16;
@@ -95,15 +95,15 @@ export class AvatarPropertiesUpdateMessage implements MessageBase
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjPropertiesData['AboutText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['AboutText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['FLAboutText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['FLAboutText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjPropertiesData['AllowPublish'] = (buf.readUInt8(pos++) === 1);
         newObjPropertiesData['MaturePublish'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['ProfileURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjPropertiesData['ProfileURL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.PropertiesData = newObjPropertiesData;
         return pos - startPos;

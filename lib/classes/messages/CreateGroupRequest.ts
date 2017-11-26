@@ -16,8 +16,8 @@ export class CreateGroupRequestMessage implements MessageBase
         SessionID: UUID;
     };
     GroupData: {
-        Name: string;
-        Charter: string;
+        Name: Buffer;
+        Charter: Buffer;
         ShowInList: boolean;
         InsigniaID: UUID;
         MembershipFee: number;
@@ -39,11 +39,11 @@ export class CreateGroupRequestMessage implements MessageBase
         this.AgentData['SessionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.GroupData['Name'].length, pos++);
-        buf.write(this.GroupData['Name'], pos);
+        this.GroupData['Name'].copy(buf, pos);
         pos += this.GroupData['Name'].length;
         buf.writeUInt16LE(this.GroupData['Charter'].length, pos);
         pos += 2;
-        buf.write(this.GroupData['Charter'], pos);
+        this.GroupData['Charter'].copy(buf, pos);
         pos += this.GroupData['Charter'].length;
         buf.writeUInt8((this.GroupData['ShowInList']) ? 1 : 0, pos++);
         this.GroupData['InsigniaID'].writeToBuffer(buf, pos);
@@ -73,8 +73,8 @@ export class CreateGroupRequestMessage implements MessageBase
         pos += 16;
         this.AgentData = newObjAgentData;
         const newObjGroupData: {
-            Name: string,
-            Charter: string,
+            Name: Buffer,
+            Charter: Buffer,
             ShowInList: boolean,
             InsigniaID: UUID,
             MembershipFee: number,
@@ -82,8 +82,8 @@ export class CreateGroupRequestMessage implements MessageBase
             AllowPublish: boolean,
             MaturePublish: boolean
         } = {
-            Name: '',
-            Charter: '',
+            Name: Buffer.allocUnsafe(0),
+            Charter: Buffer.allocUnsafe(0),
             ShowInList: false,
             InsigniaID: UUID.zero(),
             MembershipFee: 0,
@@ -92,11 +92,11 @@ export class CreateGroupRequestMessage implements MessageBase
             MaturePublish: false
         };
         varLength = buf.readUInt8(pos++);
-        newObjGroupData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjGroupData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjGroupData['Charter'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjGroupData['Charter'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjGroupData['ShowInList'] = (buf.readUInt8(pos++) === 1);
         newObjGroupData['InsigniaID'] = new UUID(buf, pos);

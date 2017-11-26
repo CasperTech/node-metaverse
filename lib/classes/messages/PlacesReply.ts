@@ -20,15 +20,15 @@ export class PlacesReplyMessage implements MessageBase
     };
     QueryData: {
         OwnerID: UUID;
-        Name: string;
-        Desc: string;
+        Name: Buffer;
+        Desc: Buffer;
         ActualArea: number;
         BillableArea: number;
         Flags: number;
         GlobalX: number;
         GlobalY: number;
         GlobalZ: number;
-        SimName: string;
+        SimName: Buffer;
         SnapshotID: UUID;
         Dwell: number;
         Price: number;
@@ -65,10 +65,10 @@ export class PlacesReplyMessage implements MessageBase
             this.QueryData[i]['OwnerID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.QueryData[i]['Name'].length, pos++);
-            buf.write(this.QueryData[i]['Name'], pos);
+            this.QueryData[i]['Name'].copy(buf, pos);
             pos += this.QueryData[i]['Name'].length;
             buf.writeUInt8(this.QueryData[i]['Desc'].length, pos++);
-            buf.write(this.QueryData[i]['Desc'], pos);
+            this.QueryData[i]['Desc'].copy(buf, pos);
             pos += this.QueryData[i]['Desc'].length;
             buf.writeInt32LE(this.QueryData[i]['ActualArea'], pos);
             pos += 4;
@@ -82,7 +82,7 @@ export class PlacesReplyMessage implements MessageBase
             buf.writeFloatLE(this.QueryData[i]['GlobalZ'], pos);
             pos += 4;
             buf.writeUInt8(this.QueryData[i]['SimName'].length, pos++);
-            buf.write(this.QueryData[i]['SimName'], pos);
+            this.QueryData[i]['SimName'].copy(buf, pos);
             pos += this.QueryData[i]['SimName'].length;
             this.QueryData[i]['SnapshotID'].writeToBuffer(buf, pos);
             pos += 16;
@@ -124,29 +124,29 @@ export class PlacesReplyMessage implements MessageBase
         {
             const newObjQueryData: {
                 OwnerID: UUID,
-                Name: string,
-                Desc: string,
+                Name: Buffer,
+                Desc: Buffer,
                 ActualArea: number,
                 BillableArea: number,
                 Flags: number,
                 GlobalX: number,
                 GlobalY: number,
                 GlobalZ: number,
-                SimName: string,
+                SimName: Buffer,
                 SnapshotID: UUID,
                 Dwell: number,
                 Price: number
             } = {
                 OwnerID: UUID.zero(),
-                Name: '',
-                Desc: '',
+                Name: Buffer.allocUnsafe(0),
+                Desc: Buffer.allocUnsafe(0),
                 ActualArea: 0,
                 BillableArea: 0,
                 Flags: 0,
                 GlobalX: 0,
                 GlobalY: 0,
                 GlobalZ: 0,
-                SimName: '',
+                SimName: Buffer.allocUnsafe(0),
                 SnapshotID: UUID.zero(),
                 Dwell: 0,
                 Price: 0
@@ -154,10 +154,10 @@ export class PlacesReplyMessage implements MessageBase
             newObjQueryData['OwnerID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjQueryData['Desc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryData['Desc'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryData['ActualArea'] = buf.readInt32LE(pos);
             pos += 4;
@@ -171,7 +171,7 @@ export class PlacesReplyMessage implements MessageBase
             newObjQueryData['GlobalZ'] = buf.readFloatLE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjQueryData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryData['SimName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryData['SnapshotID'] = new UUID(buf, pos);
             pos += 16;

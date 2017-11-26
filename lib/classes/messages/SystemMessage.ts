@@ -12,12 +12,12 @@ export class SystemMessageMessage implements MessageBase
     id = Message.SystemMessage;
 
     MethodData: {
-        Method: string;
+        Method: Buffer;
         Invoice: UUID;
         Digest: Buffer;
     };
     ParamList: {
-        Parameter: string;
+        Parameter: Buffer;
     }[];
 
     getSize(): number
@@ -39,7 +39,7 @@ export class SystemMessageMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.MethodData['Method'].length, pos++);
-        buf.write(this.MethodData['Method'], pos);
+        this.MethodData['Method'].copy(buf, pos);
         pos += this.MethodData['Method'].length;
         this.MethodData['Invoice'].writeToBuffer(buf, pos);
         pos += 16;
@@ -50,7 +50,7 @@ export class SystemMessageMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.ParamList[i]['Parameter'].length, pos++);
-            buf.write(this.ParamList[i]['Parameter'], pos);
+            this.ParamList[i]['Parameter'].copy(buf, pos);
             pos += this.ParamList[i]['Parameter'].length;
         }
         return pos - startPos;
@@ -61,16 +61,16 @@ export class SystemMessageMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjMethodData: {
-            Method: string,
+            Method: Buffer,
             Invoice: UUID,
             Digest: Buffer
         } = {
-            Method: '',
+            Method: Buffer.allocUnsafe(0),
             Invoice: UUID.zero(),
             Digest: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjMethodData['Method'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMethodData['Method'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjMethodData['Invoice'] = new UUID(buf, pos);
         pos += 16;
@@ -82,12 +82,12 @@ export class SystemMessageMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjParamList: {
-                Parameter: string
+                Parameter: Buffer
             } = {
-                Parameter: ''
+                Parameter: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjParamList['Parameter'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjParamList['Parameter'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ParamList.push(newObjParamList);
         }

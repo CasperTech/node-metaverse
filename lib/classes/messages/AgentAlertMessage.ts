@@ -16,7 +16,7 @@ export class AgentAlertMessageMessage implements MessageBase
     };
     AlertData: {
         Modal: boolean;
-        Message: string;
+        Message: Buffer;
     };
 
     getSize(): number
@@ -31,7 +31,7 @@ export class AgentAlertMessageMessage implements MessageBase
         pos += 16;
         buf.writeUInt8((this.AlertData['Modal']) ? 1 : 0, pos++);
         buf.writeUInt8(this.AlertData['Message'].length, pos++);
-        buf.write(this.AlertData['Message'], pos);
+        this.AlertData['Message'].copy(buf, pos);
         pos += this.AlertData['Message'].length;
         return pos - startPos;
     }
@@ -50,14 +50,14 @@ export class AgentAlertMessageMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjAlertData: {
             Modal: boolean,
-            Message: string
+            Message: Buffer
         } = {
             Modal: false,
-            Message: ''
+            Message: Buffer.allocUnsafe(0)
         };
         newObjAlertData['Modal'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjAlertData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAlertData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.AlertData = newObjAlertData;
         return pos - startPos;

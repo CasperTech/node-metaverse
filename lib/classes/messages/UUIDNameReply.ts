@@ -13,8 +13,8 @@ export class UUIDNameReplyMessage implements MessageBase
 
     UUIDNameBlock: {
         ID: UUID;
-        FirstName: string;
-        LastName: string;
+        FirstName: Buffer;
+        LastName: Buffer;
     }[];
 
     getSize(): number
@@ -42,10 +42,10 @@ export class UUIDNameReplyMessage implements MessageBase
             this.UUIDNameBlock[i]['ID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.UUIDNameBlock[i]['FirstName'].length, pos++);
-            buf.write(this.UUIDNameBlock[i]['FirstName'], pos);
+            this.UUIDNameBlock[i]['FirstName'].copy(buf, pos);
             pos += this.UUIDNameBlock[i]['FirstName'].length;
             buf.writeUInt8(this.UUIDNameBlock[i]['LastName'].length, pos++);
-            buf.write(this.UUIDNameBlock[i]['LastName'], pos);
+            this.UUIDNameBlock[i]['LastName'].copy(buf, pos);
             pos += this.UUIDNameBlock[i]['LastName'].length;
         }
         return pos - startPos;
@@ -61,20 +61,20 @@ export class UUIDNameReplyMessage implements MessageBase
         {
             const newObjUUIDNameBlock: {
                 ID: UUID,
-                FirstName: string,
-                LastName: string
+                FirstName: Buffer,
+                LastName: Buffer
             } = {
                 ID: UUID.zero(),
-                FirstName: '',
-                LastName: ''
+                FirstName: Buffer.allocUnsafe(0),
+                LastName: Buffer.allocUnsafe(0)
             };
             newObjUUIDNameBlock['ID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjUUIDNameBlock['FirstName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjUUIDNameBlock['FirstName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjUUIDNameBlock['LastName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjUUIDNameBlock['LastName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.UUIDNameBlock.push(newObjUUIDNameBlock);
         }

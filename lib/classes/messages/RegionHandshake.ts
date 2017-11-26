@@ -15,7 +15,7 @@ export class RegionHandshakeMessage implements MessageBase
     RegionInfo: {
         RegionFlags: number;
         SimAccess: number;
-        SimName: string;
+        SimName: Buffer;
         SimOwner: UUID;
         IsEstateManager: boolean;
         WaterHeight: number;
@@ -44,9 +44,9 @@ export class RegionHandshakeMessage implements MessageBase
     RegionInfo3: {
         CPUClassID: number;
         CPURatio: number;
-        ColoName: string;
-        ProductSKU: string;
-        ProductName: string;
+        ColoName: Buffer;
+        ProductSKU: Buffer;
+        ProductName: Buffer;
     };
     RegionInfo4: {
         RegionFlagsExtended: Long;
@@ -65,7 +65,7 @@ export class RegionHandshakeMessage implements MessageBase
         pos += 4;
         buf.writeUInt8(this.RegionInfo['SimAccess'], pos++);
         buf.writeUInt8(this.RegionInfo['SimName'].length, pos++);
-        buf.write(this.RegionInfo['SimName'], pos);
+        this.RegionInfo['SimName'].copy(buf, pos);
         pos += this.RegionInfo['SimName'].length;
         this.RegionInfo['SimOwner'].writeToBuffer(buf, pos);
         pos += 16;
@@ -115,13 +115,13 @@ export class RegionHandshakeMessage implements MessageBase
         buf.writeInt32LE(this.RegionInfo3['CPURatio'], pos);
         pos += 4;
         buf.writeUInt8(this.RegionInfo3['ColoName'].length, pos++);
-        buf.write(this.RegionInfo3['ColoName'], pos);
+        this.RegionInfo3['ColoName'].copy(buf, pos);
         pos += this.RegionInfo3['ColoName'].length;
         buf.writeUInt8(this.RegionInfo3['ProductSKU'].length, pos++);
-        buf.write(this.RegionInfo3['ProductSKU'], pos);
+        this.RegionInfo3['ProductSKU'].copy(buf, pos);
         pos += this.RegionInfo3['ProductSKU'].length;
         buf.writeUInt8(this.RegionInfo3['ProductName'].length, pos++);
-        buf.write(this.RegionInfo3['ProductName'], pos);
+        this.RegionInfo3['ProductName'].copy(buf, pos);
         pos += this.RegionInfo3['ProductName'].length;
         const count = this.RegionInfo4.length;
         buf.writeUInt8(this.RegionInfo4.length, pos++);
@@ -146,7 +146,7 @@ export class RegionHandshakeMessage implements MessageBase
         const newObjRegionInfo: {
             RegionFlags: number,
             SimAccess: number,
-            SimName: string,
+            SimName: Buffer,
             SimOwner: UUID,
             IsEstateManager: boolean,
             WaterHeight: number,
@@ -171,7 +171,7 @@ export class RegionHandshakeMessage implements MessageBase
         } = {
             RegionFlags: 0,
             SimAccess: 0,
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             SimOwner: UUID.zero(),
             IsEstateManager: false,
             WaterHeight: 0,
@@ -198,7 +198,7 @@ export class RegionHandshakeMessage implements MessageBase
         pos += 4;
         newObjRegionInfo['SimAccess'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjRegionInfo['SimOwner'] = new UUID(buf, pos);
         pos += 16;
@@ -253,28 +253,28 @@ export class RegionHandshakeMessage implements MessageBase
         const newObjRegionInfo3: {
             CPUClassID: number,
             CPURatio: number,
-            ColoName: string,
-            ProductSKU: string,
-            ProductName: string
+            ColoName: Buffer,
+            ProductSKU: Buffer,
+            ProductName: Buffer
         } = {
             CPUClassID: 0,
             CPURatio: 0,
-            ColoName: '',
-            ProductSKU: '',
-            ProductName: ''
+            ColoName: Buffer.allocUnsafe(0),
+            ProductSKU: Buffer.allocUnsafe(0),
+            ProductName: Buffer.allocUnsafe(0)
         };
         newObjRegionInfo3['CPUClassID'] = buf.readInt32LE(pos);
         pos += 4;
         newObjRegionInfo3['CPURatio'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo3['ColoName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionInfo3['ColoName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo3['ProductSKU'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionInfo3['ProductSKU'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo3['ProductName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionInfo3['ProductName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.RegionInfo3 = newObjRegionInfo3;
         const count = buf.readUInt8(pos++);

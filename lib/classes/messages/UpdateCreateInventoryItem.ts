@@ -35,8 +35,8 @@ export class UpdateCreateInventoryItemMessage implements MessageBase
         Flags: number;
         SaleType: number;
         SalePrice: number;
-        Name: string;
-        Description: string;
+        Name: Buffer;
+        Description: Buffer;
         CreationDate: number;
         CRC: number;
     }[];
@@ -101,10 +101,10 @@ export class UpdateCreateInventoryItemMessage implements MessageBase
             buf.writeInt32LE(this.InventoryData[i]['SalePrice'], pos);
             pos += 4;
             buf.writeUInt8(this.InventoryData[i]['Name'].length, pos++);
-            buf.write(this.InventoryData[i]['Name'], pos);
+            this.InventoryData[i]['Name'].copy(buf, pos);
             pos += this.InventoryData[i]['Name'].length;
             buf.writeUInt8(this.InventoryData[i]['Description'].length, pos++);
-            buf.write(this.InventoryData[i]['Description'], pos);
+            this.InventoryData[i]['Description'].copy(buf, pos);
             pos += this.InventoryData[i]['Description'].length;
             buf.writeInt32LE(this.InventoryData[i]['CreationDate'], pos);
             pos += 4;
@@ -156,8 +156,8 @@ export class UpdateCreateInventoryItemMessage implements MessageBase
                 Flags: number,
                 SaleType: number,
                 SalePrice: number,
-                Name: string,
-                Description: string,
+                Name: Buffer,
+                Description: Buffer,
                 CreationDate: number,
                 CRC: number
             } = {
@@ -179,8 +179,8 @@ export class UpdateCreateInventoryItemMessage implements MessageBase
                 Flags: 0,
                 SaleType: 0,
                 SalePrice: 0,
-                Name: '',
-                Description: '',
+                Name: Buffer.allocUnsafe(0),
+                Description: Buffer.allocUnsafe(0),
                 CreationDate: 0,
                 CRC: 0
             };
@@ -217,10 +217,10 @@ export class UpdateCreateInventoryItemMessage implements MessageBase
             newObjInventoryData['SalePrice'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjInventoryData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjInventoryData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjInventoryData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjInventoryData['Description'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjInventoryData['CreationDate'] = buf.readInt32LE(pos);
             pos += 4;

@@ -23,7 +23,7 @@ export class MoneyTransferRequestMessage implements MessageBase
         AggregatePermNextOwner: number;
         AggregatePermInventory: number;
         TransactionType: number;
-        Description: string;
+        Description: Buffer;
     };
 
     getSize(): number
@@ -50,7 +50,7 @@ export class MoneyTransferRequestMessage implements MessageBase
         buf.writeInt32LE(this.MoneyData['TransactionType'], pos);
         pos += 4;
         buf.writeUInt8(this.MoneyData['Description'].length, pos++);
-        buf.write(this.MoneyData['Description'], pos);
+        this.MoneyData['Description'].copy(buf, pos);
         pos += this.MoneyData['Description'].length;
         return pos - startPos;
     }
@@ -79,7 +79,7 @@ export class MoneyTransferRequestMessage implements MessageBase
             AggregatePermNextOwner: number,
             AggregatePermInventory: number,
             TransactionType: number,
-            Description: string
+            Description: Buffer
         } = {
             SourceID: UUID.zero(),
             DestID: UUID.zero(),
@@ -88,7 +88,7 @@ export class MoneyTransferRequestMessage implements MessageBase
             AggregatePermNextOwner: 0,
             AggregatePermInventory: 0,
             TransactionType: 0,
-            Description: ''
+            Description: Buffer.allocUnsafe(0)
         };
         newObjMoneyData['SourceID'] = new UUID(buf, pos);
         pos += 16;
@@ -102,7 +102,7 @@ export class MoneyTransferRequestMessage implements MessageBase
         newObjMoneyData['TransactionType'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMoneyData['Description'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         return pos - startPos;

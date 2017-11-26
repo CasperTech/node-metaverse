@@ -24,7 +24,7 @@ export class AgentMovementCompleteMessage implements MessageBase
         Timestamp: number;
     };
     SimData: {
-        ChannelVersion: string;
+        ChannelVersion: Buffer;
     };
 
     getSize(): number
@@ -51,7 +51,7 @@ export class AgentMovementCompleteMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.SimData['ChannelVersion'].length, pos);
         pos += 2;
-        buf.write(this.SimData['ChannelVersion'], pos);
+        this.SimData['ChannelVersion'].copy(buf, pos);
         pos += this.SimData['ChannelVersion'].length;
         return pos - startPos;
     }
@@ -93,13 +93,13 @@ export class AgentMovementCompleteMessage implements MessageBase
         pos += 4;
         this.Data = newObjData;
         const newObjSimData: {
-            ChannelVersion: string
+            ChannelVersion: Buffer
         } = {
-            ChannelVersion: ''
+            ChannelVersion: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjSimData['ChannelVersion'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjSimData['ChannelVersion'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.SimData = newObjSimData;
         return pos - startPos;

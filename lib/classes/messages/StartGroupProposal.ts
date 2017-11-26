@@ -20,7 +20,7 @@ export class StartGroupProposalMessage implements MessageBase
         Quorum: number;
         Majority: number;
         Duration: number;
-        ProposalText: string;
+        ProposalText: Buffer;
     };
 
     getSize(): number
@@ -44,7 +44,7 @@ export class StartGroupProposalMessage implements MessageBase
         buf.writeInt32LE(this.ProposalData['Duration'], pos);
         pos += 4;
         buf.writeUInt8(this.ProposalData['ProposalText'].length, pos++);
-        buf.write(this.ProposalData['ProposalText'], pos);
+        this.ProposalData['ProposalText'].copy(buf, pos);
         pos += this.ProposalData['ProposalText'].length;
         return pos - startPos;
     }
@@ -70,13 +70,13 @@ export class StartGroupProposalMessage implements MessageBase
             Quorum: number,
             Majority: number,
             Duration: number,
-            ProposalText: string
+            ProposalText: Buffer
         } = {
             GroupID: UUID.zero(),
             Quorum: 0,
             Majority: 0,
             Duration: 0,
-            ProposalText: ''
+            ProposalText: Buffer.allocUnsafe(0)
         };
         newObjProposalData['GroupID'] = new UUID(buf, pos);
         pos += 16;
@@ -87,7 +87,7 @@ export class StartGroupProposalMessage implements MessageBase
         newObjProposalData['Duration'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjProposalData['ProposalText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjProposalData['ProposalText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ProposalData = newObjProposalData;
         return pos - startPos;

@@ -19,7 +19,7 @@ export class ScriptDialogReplyMessage implements MessageBase
         ObjectID: UUID;
         ChatChannel: number;
         ButtonIndex: number;
-        ButtonLabel: string;
+        ButtonLabel: Buffer;
     };
 
     getSize(): number
@@ -41,7 +41,7 @@ export class ScriptDialogReplyMessage implements MessageBase
         buf.writeInt32LE(this.Data['ButtonIndex'], pos);
         pos += 4;
         buf.writeUInt8(this.Data['ButtonLabel'].length, pos++);
-        buf.write(this.Data['ButtonLabel'], pos);
+        this.Data['ButtonLabel'].copy(buf, pos);
         pos += this.Data['ButtonLabel'].length;
         return pos - startPos;
     }
@@ -66,12 +66,12 @@ export class ScriptDialogReplyMessage implements MessageBase
             ObjectID: UUID,
             ChatChannel: number,
             ButtonIndex: number,
-            ButtonLabel: string
+            ButtonLabel: Buffer
         } = {
             ObjectID: UUID.zero(),
             ChatChannel: 0,
             ButtonIndex: 0,
-            ButtonLabel: ''
+            ButtonLabel: Buffer.allocUnsafe(0)
         };
         newObjData['ObjectID'] = new UUID(buf, pos);
         pos += 16;
@@ -80,7 +80,7 @@ export class ScriptDialogReplyMessage implements MessageBase
         newObjData['ButtonIndex'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['ButtonLabel'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['ButtonLabel'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

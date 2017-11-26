@@ -19,9 +19,9 @@ export class DirPeopleReplyMessage implements MessageBase
     };
     QueryReplies: {
         AgentID: UUID;
-        FirstName: string;
-        LastName: string;
-        Group: string;
+        FirstName: Buffer;
+        LastName: Buffer;
+        Group: Buffer;
         Online: boolean;
         Reputation: number;
     }[];
@@ -55,13 +55,13 @@ export class DirPeopleReplyMessage implements MessageBase
             this.QueryReplies[i]['AgentID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.QueryReplies[i]['FirstName'].length, pos++);
-            buf.write(this.QueryReplies[i]['FirstName'], pos);
+            this.QueryReplies[i]['FirstName'].copy(buf, pos);
             pos += this.QueryReplies[i]['FirstName'].length;
             buf.writeUInt8(this.QueryReplies[i]['LastName'].length, pos++);
-            buf.write(this.QueryReplies[i]['LastName'], pos);
+            this.QueryReplies[i]['LastName'].copy(buf, pos);
             pos += this.QueryReplies[i]['LastName'].length;
             buf.writeUInt8(this.QueryReplies[i]['Group'].length, pos++);
-            buf.write(this.QueryReplies[i]['Group'], pos);
+            this.QueryReplies[i]['Group'].copy(buf, pos);
             pos += this.QueryReplies[i]['Group'].length;
             buf.writeUInt8((this.QueryReplies[i]['Online']) ? 1 : 0, pos++);
             buf.writeInt32LE(this.QueryReplies[i]['Reputation'], pos);
@@ -96,29 +96,29 @@ export class DirPeopleReplyMessage implements MessageBase
         {
             const newObjQueryReplies: {
                 AgentID: UUID,
-                FirstName: string,
-                LastName: string,
-                Group: string,
+                FirstName: Buffer,
+                LastName: Buffer,
+                Group: Buffer,
                 Online: boolean,
                 Reputation: number
             } = {
                 AgentID: UUID.zero(),
-                FirstName: '',
-                LastName: '',
-                Group: '',
+                FirstName: Buffer.allocUnsafe(0),
+                LastName: Buffer.allocUnsafe(0),
+                Group: Buffer.allocUnsafe(0),
                 Online: false,
                 Reputation: 0
             };
             newObjQueryReplies['AgentID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['FirstName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['FirstName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['LastName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['LastName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Group'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['Group'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryReplies['Online'] = (buf.readUInt8(pos++) === 1);
             newObjQueryReplies['Reputation'] = buf.readInt32LE(pos);

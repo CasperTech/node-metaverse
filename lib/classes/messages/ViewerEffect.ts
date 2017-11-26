@@ -21,7 +21,7 @@ export class ViewerEffectMessage implements MessageBase
         Type: number;
         Duration: number;
         Color: Buffer;
-        TypeData: string;
+        TypeData: Buffer;
     }[];
 
     getSize(): number
@@ -60,7 +60,7 @@ export class ViewerEffectMessage implements MessageBase
             this.Effect[i]['Color'].copy(buf, pos);
             pos += 4;
             buf.writeUInt8(this.Effect[i]['TypeData'].length, pos++);
-            buf.write(this.Effect[i]['TypeData'], pos);
+            this.Effect[i]['TypeData'].copy(buf, pos);
             pos += this.Effect[i]['TypeData'].length;
         }
         return pos - startPos;
@@ -92,14 +92,14 @@ export class ViewerEffectMessage implements MessageBase
                 Type: number,
                 Duration: number,
                 Color: Buffer,
-                TypeData: string
+                TypeData: Buffer
             } = {
                 ID: UUID.zero(),
                 AgentID: UUID.zero(),
                 Type: 0,
                 Duration: 0,
                 Color: Buffer.allocUnsafe(0),
-                TypeData: ''
+                TypeData: Buffer.allocUnsafe(0)
             };
             newObjEffect['ID'] = new UUID(buf, pos);
             pos += 16;
@@ -111,7 +111,7 @@ export class ViewerEffectMessage implements MessageBase
             newObjEffect['Color'] = buf.slice(pos, pos + 4);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjEffect['TypeData'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjEffect['TypeData'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.Effect.push(newObjEffect);
         }

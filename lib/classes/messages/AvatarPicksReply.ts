@@ -17,7 +17,7 @@ export class AvatarPicksReplyMessage implements MessageBase
     };
     Data: {
         PickID: UUID;
-        PickName: string;
+        PickName: Buffer;
     }[];
 
     getSize(): number
@@ -49,7 +49,7 @@ export class AvatarPicksReplyMessage implements MessageBase
             this.Data[i]['PickID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.Data[i]['PickName'].length, pos++);
-            buf.write(this.Data[i]['PickName'], pos);
+            this.Data[i]['PickName'].copy(buf, pos);
             pos += this.Data[i]['PickName'].length;
         }
         return pos - startPos;
@@ -77,15 +77,15 @@ export class AvatarPicksReplyMessage implements MessageBase
         {
             const newObjData: {
                 PickID: UUID,
-                PickName: string
+                PickName: Buffer
             } = {
                 PickID: UUID.zero(),
-                PickName: ''
+                PickName: Buffer.allocUnsafe(0)
             };
             newObjData['PickID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjData['PickName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjData['PickName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.Data.push(newObjData);
         }

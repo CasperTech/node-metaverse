@@ -16,7 +16,7 @@ export class StateSaveMessage implements MessageBase
         SessionID: UUID;
     };
     DataBlock: {
-        Filename: string;
+        Filename: Buffer;
     };
 
     getSize(): number
@@ -32,7 +32,7 @@ export class StateSaveMessage implements MessageBase
         this.AgentData['SessionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.DataBlock['Filename'].length, pos++);
-        buf.write(this.DataBlock['Filename'], pos);
+        this.DataBlock['Filename'].copy(buf, pos);
         pos += this.DataBlock['Filename'].length;
         return pos - startPos;
     }
@@ -54,12 +54,12 @@ export class StateSaveMessage implements MessageBase
         pos += 16;
         this.AgentData = newObjAgentData;
         const newObjDataBlock: {
-            Filename: string
+            Filename: Buffer
         } = {
-            Filename: ''
+            Filename: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['Filename'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['Filename'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.DataBlock = newObjDataBlock;
         return pos - startPos;

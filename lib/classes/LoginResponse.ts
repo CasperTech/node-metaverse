@@ -309,6 +309,7 @@ export class LoginResponse
                     break;
                 case 'agent_id':
                     this.agent.agentID = new UUID(val);
+                    this.region.circuit.agentID = new UUID(val);
                     break;
                 case 'seconds_since_epoch':
                     this.region.circuit.timestamp = parseInt(val, 10);

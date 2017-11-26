@@ -17,7 +17,7 @@ export class RemoveMuteListEntryMessage implements MessageBase
     };
     MuteData: {
         MuteID: UUID;
-        MuteName: string;
+        MuteName: Buffer;
     };
 
     getSize(): number
@@ -35,7 +35,7 @@ export class RemoveMuteListEntryMessage implements MessageBase
         this.MuteData['MuteID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.MuteData['MuteName'].length, pos++);
-        buf.write(this.MuteData['MuteName'], pos);
+        this.MuteData['MuteName'].copy(buf, pos);
         pos += this.MuteData['MuteName'].length;
         return pos - startPos;
     }
@@ -58,15 +58,15 @@ export class RemoveMuteListEntryMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjMuteData: {
             MuteID: UUID,
-            MuteName: string
+            MuteName: Buffer
         } = {
             MuteID: UUID.zero(),
-            MuteName: ''
+            MuteName: Buffer.allocUnsafe(0)
         };
         newObjMuteData['MuteID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjMuteData['MuteName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMuteData['MuteName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MuteData = newObjMuteData;
         return pos - startPos;

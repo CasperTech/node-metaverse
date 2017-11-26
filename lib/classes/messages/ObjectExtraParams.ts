@@ -20,7 +20,7 @@ export class ObjectExtraParamsMessage implements MessageBase
         ParamType: number;
         ParamInUse: boolean;
         ParamSize: number;
-        ParamData: string;
+        ParamData: Buffer;
     }[];
 
     getSize(): number
@@ -57,7 +57,7 @@ export class ObjectExtraParamsMessage implements MessageBase
             buf.writeUInt32LE(this.ObjectData[i]['ParamSize'], pos);
             pos += 4;
             buf.writeUInt8(this.ObjectData[i]['ParamData'].length, pos++);
-            buf.write(this.ObjectData[i]['ParamData'], pos);
+            this.ObjectData[i]['ParamData'].copy(buf, pos);
             pos += this.ObjectData[i]['ParamData'].length;
         }
         return pos - startPos;
@@ -88,13 +88,13 @@ export class ObjectExtraParamsMessage implements MessageBase
                 ParamType: number,
                 ParamInUse: boolean,
                 ParamSize: number,
-                ParamData: string
+                ParamData: Buffer
             } = {
                 ObjectLocalID: 0,
                 ParamType: 0,
                 ParamInUse: false,
                 ParamSize: 0,
-                ParamData: ''
+                ParamData: Buffer.allocUnsafe(0)
             };
             newObjObjectData['ObjectLocalID'] = buf.readUInt32LE(pos);
             pos += 4;
@@ -104,7 +104,7 @@ export class ObjectExtraParamsMessage implements MessageBase
             newObjObjectData['ParamSize'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['ParamData'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['ParamData'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

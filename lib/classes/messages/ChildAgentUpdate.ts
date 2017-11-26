@@ -29,7 +29,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         ChangedGrid: boolean;
         Far: number;
         Aspect: number;
-        Throttles: string;
+        Throttles: Buffer;
         LocomotionState: number;
         HeadRotation: Quaternion;
         BodyRotation: Quaternion;
@@ -39,7 +39,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         AlwaysRun: boolean;
         PreyAgent: UUID;
         AgentAccess: number;
-        AgentTextures: string;
+        AgentTextures: Buffer;
         ActiveGroupID: UUID;
     };
     GroupData: {
@@ -55,7 +55,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         GranterID: UUID;
     }[];
     NVPairData: {
-        NVPairs: string;
+        NVPairs: Buffer;
     }[];
     VisualParam: {
         ParamValue: number;
@@ -68,7 +68,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         Flags: number;
     }[];
     AgentInventoryHost: {
-        InventoryHost: string;
+        InventoryHost: Buffer;
     }[];
 
     getSize(): number
@@ -119,7 +119,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         buf.writeFloatLE(this.AgentData['Aspect'], pos);
         pos += 4;
         buf.writeUInt8(this.AgentData['Throttles'].length, pos++);
-        buf.write(this.AgentData['Throttles'], pos);
+        this.AgentData['Throttles'].copy(buf, pos);
         pos += this.AgentData['Throttles'].length;
         buf.writeUInt32LE(this.AgentData['LocomotionState'], pos);
         pos += 4;
@@ -138,7 +138,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         buf.writeUInt8(this.AgentData['AgentAccess'], pos++);
         buf.writeUInt16LE(this.AgentData['AgentTextures'].length, pos);
         pos += 2;
-        buf.write(this.AgentData['AgentTextures'], pos);
+        this.AgentData['AgentTextures'].copy(buf, pos);
         pos += this.AgentData['AgentTextures'].length;
         this.AgentData['ActiveGroupID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -176,7 +176,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         {
             buf.writeUInt16LE(this.NVPairData[i]['NVPairs'].length, pos);
             pos += 2;
-            buf.write(this.NVPairData[i]['NVPairs'], pos);
+            this.NVPairData[i]['NVPairs'].copy(buf, pos);
             pos += this.NVPairData[i]['NVPairs'].length;
         }
         count = this.VisualParam.length;
@@ -204,7 +204,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.AgentInventoryHost[i]['InventoryHost'].length, pos++);
-            buf.write(this.AgentInventoryHost[i]['InventoryHost'], pos);
+            this.AgentInventoryHost[i]['InventoryHost'].copy(buf, pos);
             pos += this.AgentInventoryHost[i]['InventoryHost'].length;
         }
         return pos - startPos;
@@ -229,7 +229,7 @@ export class ChildAgentUpdateMessage implements MessageBase
             ChangedGrid: boolean,
             Far: number,
             Aspect: number,
-            Throttles: string,
+            Throttles: Buffer,
             LocomotionState: number,
             HeadRotation: Quaternion,
             BodyRotation: Quaternion,
@@ -239,7 +239,7 @@ export class ChildAgentUpdateMessage implements MessageBase
             AlwaysRun: boolean,
             PreyAgent: UUID,
             AgentAccess: number,
-            AgentTextures: string,
+            AgentTextures: Buffer,
             ActiveGroupID: UUID
         } = {
             RegionHandle: Long.ZERO,
@@ -256,7 +256,7 @@ export class ChildAgentUpdateMessage implements MessageBase
             ChangedGrid: false,
             Far: 0,
             Aspect: 0,
-            Throttles: '',
+            Throttles: Buffer.allocUnsafe(0),
             LocomotionState: 0,
             HeadRotation: Quaternion.getIdentity(),
             BodyRotation: Quaternion.getIdentity(),
@@ -266,7 +266,7 @@ export class ChildAgentUpdateMessage implements MessageBase
             AlwaysRun: false,
             PreyAgent: UUID.zero(),
             AgentAccess: 0,
-            AgentTextures: '',
+            AgentTextures: Buffer.allocUnsafe(0),
             ActiveGroupID: UUID.zero()
         };
         newObjAgentData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
@@ -297,7 +297,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         newObjAgentData['Aspect'] = buf.readFloatLE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['Throttles'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['Throttles'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjAgentData['LocomotionState'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -316,7 +316,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         newObjAgentData['AgentAccess'] = buf.readUInt8(pos++);
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjAgentData['AgentTextures'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['AgentTextures'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjAgentData['ActiveGroupID'] = new UUID(buf, pos);
         pos += 16;
@@ -376,13 +376,13 @@ export class ChildAgentUpdateMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjNVPairData: {
-                NVPairs: string
+                NVPairs: Buffer
             } = {
-                NVPairs: ''
+                NVPairs: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjNVPairData['NVPairs'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjNVPairData['NVPairs'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.NVPairData.push(newObjNVPairData);
         }
@@ -431,12 +431,12 @@ export class ChildAgentUpdateMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjAgentInventoryHost: {
-                InventoryHost: string
+                InventoryHost: Buffer
             } = {
-                InventoryHost: ''
+                InventoryHost: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjAgentInventoryHost['InventoryHost'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjAgentInventoryHost['InventoryHost'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.AgentInventoryHost.push(newObjAgentInventoryHost);
         }

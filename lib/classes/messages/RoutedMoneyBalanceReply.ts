@@ -23,7 +23,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
         MoneyBalance: number;
         SquareMetersCredit: number;
         SquareMetersCommitted: number;
-        Description: string;
+        Description: Buffer;
     };
     TransactionInfo: {
         TransactionType: number;
@@ -32,7 +32,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
         DestID: UUID;
         IsDestGroup: boolean;
         Amount: number;
-        ItemDescription: string;
+        ItemDescription: Buffer;
     };
 
     getSize(): number
@@ -59,7 +59,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
         buf.writeInt32LE(this.MoneyData['SquareMetersCommitted'], pos);
         pos += 4;
         buf.writeUInt8(this.MoneyData['Description'].length, pos++);
-        buf.write(this.MoneyData['Description'], pos);
+        this.MoneyData['Description'].copy(buf, pos);
         pos += this.MoneyData['Description'].length;
         buf.writeInt32LE(this.TransactionInfo['TransactionType'], pos);
         pos += 4;
@@ -72,7 +72,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
         buf.writeInt32LE(this.TransactionInfo['Amount'], pos);
         pos += 4;
         buf.writeUInt8(this.TransactionInfo['ItemDescription'].length, pos++);
-        buf.write(this.TransactionInfo['ItemDescription'], pos);
+        this.TransactionInfo['ItemDescription'].copy(buf, pos);
         pos += this.TransactionInfo['ItemDescription'].length;
         return pos - startPos;
     }
@@ -100,7 +100,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
             MoneyBalance: number,
             SquareMetersCredit: number,
             SquareMetersCommitted: number,
-            Description: string
+            Description: Buffer
         } = {
             AgentID: UUID.zero(),
             TransactionID: UUID.zero(),
@@ -108,7 +108,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
             MoneyBalance: 0,
             SquareMetersCredit: 0,
             SquareMetersCommitted: 0,
-            Description: ''
+            Description: Buffer.allocUnsafe(0)
         };
         newObjMoneyData['AgentID'] = new UUID(buf, pos);
         pos += 16;
@@ -122,7 +122,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
         newObjMoneyData['SquareMetersCommitted'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMoneyData['Description'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         const newObjTransactionInfo: {
@@ -132,7 +132,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
             DestID: UUID,
             IsDestGroup: boolean,
             Amount: number,
-            ItemDescription: string
+            ItemDescription: Buffer
         } = {
             TransactionType: 0,
             SourceID: UUID.zero(),
@@ -140,7 +140,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
             DestID: UUID.zero(),
             IsDestGroup: false,
             Amount: 0,
-            ItemDescription: ''
+            ItemDescription: Buffer.allocUnsafe(0)
         };
         newObjTransactionInfo['TransactionType'] = buf.readInt32LE(pos);
         pos += 4;
@@ -153,7 +153,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
         newObjTransactionInfo['Amount'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjTransactionInfo['ItemDescription'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjTransactionInfo['ItemDescription'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.TransactionInfo = newObjTransactionInfo;
         return pos - startPos;

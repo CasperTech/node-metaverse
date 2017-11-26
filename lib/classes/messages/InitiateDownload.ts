@@ -15,8 +15,8 @@ export class InitiateDownloadMessage implements MessageBase
         AgentID: UUID;
     };
     FileData: {
-        SimFilename: string;
-        ViewerFilename: string;
+        SimFilename: Buffer;
+        ViewerFilename: Buffer;
     };
 
     getSize(): number
@@ -30,10 +30,10 @@ export class InitiateDownloadMessage implements MessageBase
         this.AgentData['AgentID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.FileData['SimFilename'].length, pos++);
-        buf.write(this.FileData['SimFilename'], pos);
+        this.FileData['SimFilename'].copy(buf, pos);
         pos += this.FileData['SimFilename'].length;
         buf.writeUInt8(this.FileData['ViewerFilename'].length, pos++);
-        buf.write(this.FileData['ViewerFilename'], pos);
+        this.FileData['ViewerFilename'].copy(buf, pos);
         pos += this.FileData['ViewerFilename'].length;
         return pos - startPos;
     }
@@ -51,17 +51,17 @@ export class InitiateDownloadMessage implements MessageBase
         pos += 16;
         this.AgentData = newObjAgentData;
         const newObjFileData: {
-            SimFilename: string,
-            ViewerFilename: string
+            SimFilename: Buffer,
+            ViewerFilename: Buffer
         } = {
-            SimFilename: '',
-            ViewerFilename: ''
+            SimFilename: Buffer.allocUnsafe(0),
+            ViewerFilename: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjFileData['SimFilename'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjFileData['SimFilename'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjFileData['ViewerFilename'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjFileData['ViewerFilename'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.FileData = newObjFileData;
         return pos - startPos;

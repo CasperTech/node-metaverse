@@ -17,7 +17,7 @@ export class SetStartLocationRequestMessage implements MessageBase
         SessionID: UUID;
     };
     StartLocationData: {
-        SimName: string;
+        SimName: Buffer;
         LocationID: number;
         LocationPos: Vector3;
         LocationLookAt: Vector3;
@@ -36,7 +36,7 @@ export class SetStartLocationRequestMessage implements MessageBase
         this.AgentData['SessionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.StartLocationData['SimName'].length, pos++);
-        buf.write(this.StartLocationData['SimName'], pos);
+        this.StartLocationData['SimName'].copy(buf, pos);
         pos += this.StartLocationData['SimName'].length;
         buf.writeUInt32LE(this.StartLocationData['LocationID'], pos);
         pos += 4;
@@ -64,18 +64,18 @@ export class SetStartLocationRequestMessage implements MessageBase
         pos += 16;
         this.AgentData = newObjAgentData;
         const newObjStartLocationData: {
-            SimName: string,
+            SimName: Buffer,
             LocationID: number,
             LocationPos: Vector3,
             LocationLookAt: Vector3
         } = {
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             LocationID: 0,
             LocationPos: Vector3.getZero(),
             LocationLookAt: Vector3.getZero()
         };
         varLength = buf.readUInt8(pos++);
-        newObjStartLocationData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjStartLocationData['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjStartLocationData['LocationID'] = buf.readUInt32LE(pos);
         pos += 4;

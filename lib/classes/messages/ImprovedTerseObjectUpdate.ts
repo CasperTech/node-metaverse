@@ -16,8 +16,8 @@ export class ImprovedTerseObjectUpdateMessage implements MessageBase
         TimeDilation: number;
     };
     ObjectData: {
-        Data: string;
-        TextureEntry: string;
+        Data: Buffer;
+        TextureEntry: Buffer;
     }[];
 
     getSize(): number
@@ -49,11 +49,11 @@ export class ImprovedTerseObjectUpdateMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.ObjectData[i]['Data'].length, pos++);
-            buf.write(this.ObjectData[i]['Data'], pos);
+            this.ObjectData[i]['Data'].copy(buf, pos);
             pos += this.ObjectData[i]['Data'].length;
             buf.writeUInt16LE(this.ObjectData[i]['TextureEntry'].length, pos);
             pos += 2;
-            buf.write(this.ObjectData[i]['TextureEntry'], pos);
+            this.ObjectData[i]['TextureEntry'].copy(buf, pos);
             pos += this.ObjectData[i]['TextureEntry'].length;
         }
         return pos - startPos;
@@ -80,18 +80,18 @@ export class ImprovedTerseObjectUpdateMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjObjectData: {
-                Data: string,
-                TextureEntry: string
+                Data: Buffer,
+                TextureEntry: Buffer
             } = {
-                Data: '',
-                TextureEntry: ''
+                Data: Buffer.allocUnsafe(0),
+                TextureEntry: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Data'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['TextureEntry'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['TextureEntry'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

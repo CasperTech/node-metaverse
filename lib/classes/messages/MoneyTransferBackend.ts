@@ -24,7 +24,7 @@ export class MoneyTransferBackendMessage implements MessageBase
         RegionID: UUID;
         GridX: number;
         GridY: number;
-        Description: string;
+        Description: Buffer;
     };
 
     getSize(): number
@@ -57,7 +57,7 @@ export class MoneyTransferBackendMessage implements MessageBase
         buf.writeUInt32LE(this.MoneyData['GridY'], pos);
         pos += 4;
         buf.writeUInt8(this.MoneyData['Description'].length, pos++);
-        buf.write(this.MoneyData['Description'], pos);
+        this.MoneyData['Description'].copy(buf, pos);
         pos += this.MoneyData['Description'].length;
         return pos - startPos;
     }
@@ -79,7 +79,7 @@ export class MoneyTransferBackendMessage implements MessageBase
             RegionID: UUID,
             GridX: number,
             GridY: number,
-            Description: string
+            Description: Buffer
         } = {
             TransactionID: UUID.zero(),
             TransactionTime: 0,
@@ -93,7 +93,7 @@ export class MoneyTransferBackendMessage implements MessageBase
             RegionID: UUID.zero(),
             GridX: 0,
             GridY: 0,
-            Description: ''
+            Description: Buffer.allocUnsafe(0)
         };
         newObjMoneyData['TransactionID'] = new UUID(buf, pos);
         pos += 16;
@@ -117,7 +117,7 @@ export class MoneyTransferBackendMessage implements MessageBase
         newObjMoneyData['GridY'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMoneyData['Description'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         return pos - startPos;

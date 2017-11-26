@@ -16,7 +16,7 @@ export class TeleportProgressMessage implements MessageBase
     };
     Info: {
         TeleportFlags: number;
-        Message: string;
+        Message: Buffer;
     };
 
     getSize(): number
@@ -32,7 +32,7 @@ export class TeleportProgressMessage implements MessageBase
         buf.writeUInt32LE(this.Info['TeleportFlags'], pos);
         pos += 4;
         buf.writeUInt8(this.Info['Message'].length, pos++);
-        buf.write(this.Info['Message'], pos);
+        this.Info['Message'].copy(buf, pos);
         pos += this.Info['Message'].length;
         return pos - startPos;
     }
@@ -51,15 +51,15 @@ export class TeleportProgressMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjInfo: {
             TeleportFlags: number,
-            Message: string
+            Message: Buffer
         } = {
             TeleportFlags: 0,
-            Message: ''
+            Message: Buffer.allocUnsafe(0)
         };
         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjInfo['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInfo['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Info = newObjInfo;
         return pos - startPos;

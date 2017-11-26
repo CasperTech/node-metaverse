@@ -17,16 +17,16 @@ export class EventInfoReplyMessage implements MessageBase
     };
     EventData: {
         EventID: number;
-        Creator: string;
-        Name: string;
-        Category: string;
-        Desc: string;
-        Date: string;
+        Creator: Buffer;
+        Name: Buffer;
+        Category: Buffer;
+        Desc: Buffer;
+        Date: Buffer;
         DateUTC: number;
         Duration: number;
         Cover: number;
         Amount: number;
-        SimName: string;
+        SimName: Buffer;
         GlobalPos: Vector3;
         EventFlags: number;
     };
@@ -44,20 +44,20 @@ export class EventInfoReplyMessage implements MessageBase
         buf.writeUInt32LE(this.EventData['EventID'], pos);
         pos += 4;
         buf.writeUInt8(this.EventData['Creator'].length, pos++);
-        buf.write(this.EventData['Creator'], pos);
+        this.EventData['Creator'].copy(buf, pos);
         pos += this.EventData['Creator'].length;
         buf.writeUInt8(this.EventData['Name'].length, pos++);
-        buf.write(this.EventData['Name'], pos);
+        this.EventData['Name'].copy(buf, pos);
         pos += this.EventData['Name'].length;
         buf.writeUInt8(this.EventData['Category'].length, pos++);
-        buf.write(this.EventData['Category'], pos);
+        this.EventData['Category'].copy(buf, pos);
         pos += this.EventData['Category'].length;
         buf.writeUInt16LE(this.EventData['Desc'].length, pos);
         pos += 2;
-        buf.write(this.EventData['Desc'], pos);
+        this.EventData['Desc'].copy(buf, pos);
         pos += this.EventData['Desc'].length;
         buf.writeUInt8(this.EventData['Date'].length, pos++);
-        buf.write(this.EventData['Date'], pos);
+        this.EventData['Date'].copy(buf, pos);
         pos += this.EventData['Date'].length;
         buf.writeUInt32LE(this.EventData['DateUTC'], pos);
         pos += 4;
@@ -68,7 +68,7 @@ export class EventInfoReplyMessage implements MessageBase
         buf.writeUInt32LE(this.EventData['Amount'], pos);
         pos += 4;
         buf.writeUInt8(this.EventData['SimName'].length, pos++);
-        buf.write(this.EventData['SimName'], pos);
+        this.EventData['SimName'].copy(buf, pos);
         pos += this.EventData['SimName'].length;
         this.EventData['GlobalPos'].writeToBuffer(buf, pos, true);
         pos += 24;
@@ -91,50 +91,50 @@ export class EventInfoReplyMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjEventData: {
             EventID: number,
-            Creator: string,
-            Name: string,
-            Category: string,
-            Desc: string,
-            Date: string,
+            Creator: Buffer,
+            Name: Buffer,
+            Category: Buffer,
+            Desc: Buffer,
+            Date: Buffer,
             DateUTC: number,
             Duration: number,
             Cover: number,
             Amount: number,
-            SimName: string,
+            SimName: Buffer,
             GlobalPos: Vector3,
             EventFlags: number
         } = {
             EventID: 0,
-            Creator: '',
-            Name: '',
-            Category: '',
-            Desc: '',
-            Date: '',
+            Creator: Buffer.allocUnsafe(0),
+            Name: Buffer.allocUnsafe(0),
+            Category: Buffer.allocUnsafe(0),
+            Desc: Buffer.allocUnsafe(0),
+            Date: Buffer.allocUnsafe(0),
             DateUTC: 0,
             Duration: 0,
             Cover: 0,
             Amount: 0,
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             GlobalPos: Vector3.getZero(),
             EventFlags: 0
         };
         newObjEventData['EventID'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjEventData['Creator'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjEventData['Creator'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjEventData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjEventData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjEventData['Category'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjEventData['Category'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjEventData['Desc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjEventData['Desc'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjEventData['Date'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjEventData['Date'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjEventData['DateUTC'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -145,7 +145,7 @@ export class EventInfoReplyMessage implements MessageBase
         newObjEventData['Amount'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjEventData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjEventData['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjEventData['GlobalPos'] = new Vector3(buf, pos, true);
         pos += 24;

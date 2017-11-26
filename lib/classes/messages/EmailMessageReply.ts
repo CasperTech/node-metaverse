@@ -15,10 +15,10 @@ export class EmailMessageReplyMessage implements MessageBase
         ObjectID: UUID;
         More: number;
         Time: number;
-        FromAddress: string;
-        Subject: string;
-        Data: string;
-        MailFilter: string;
+        FromAddress: Buffer;
+        Subject: Buffer;
+        Data: Buffer;
+        MailFilter: Buffer;
     };
 
     getSize(): number
@@ -36,17 +36,17 @@ export class EmailMessageReplyMessage implements MessageBase
         buf.writeUInt32LE(this.DataBlock['Time'], pos);
         pos += 4;
         buf.writeUInt8(this.DataBlock['FromAddress'].length, pos++);
-        buf.write(this.DataBlock['FromAddress'], pos);
+        this.DataBlock['FromAddress'].copy(buf, pos);
         pos += this.DataBlock['FromAddress'].length;
         buf.writeUInt8(this.DataBlock['Subject'].length, pos++);
-        buf.write(this.DataBlock['Subject'], pos);
+        this.DataBlock['Subject'].copy(buf, pos);
         pos += this.DataBlock['Subject'].length;
         buf.writeUInt16LE(this.DataBlock['Data'].length, pos);
         pos += 2;
-        buf.write(this.DataBlock['Data'], pos);
+        this.DataBlock['Data'].copy(buf, pos);
         pos += this.DataBlock['Data'].length;
         buf.writeUInt8(this.DataBlock['MailFilter'].length, pos++);
-        buf.write(this.DataBlock['MailFilter'], pos);
+        this.DataBlock['MailFilter'].copy(buf, pos);
         pos += this.DataBlock['MailFilter'].length;
         return pos - startPos;
     }
@@ -59,18 +59,18 @@ export class EmailMessageReplyMessage implements MessageBase
             ObjectID: UUID,
             More: number,
             Time: number,
-            FromAddress: string,
-            Subject: string,
-            Data: string,
-            MailFilter: string
+            FromAddress: Buffer,
+            Subject: Buffer,
+            Data: Buffer,
+            MailFilter: Buffer
         } = {
             ObjectID: UUID.zero(),
             More: 0,
             Time: 0,
-            FromAddress: '',
-            Subject: '',
-            Data: '',
-            MailFilter: ''
+            FromAddress: Buffer.allocUnsafe(0),
+            Subject: Buffer.allocUnsafe(0),
+            Data: Buffer.allocUnsafe(0),
+            MailFilter: Buffer.allocUnsafe(0)
         };
         newObjDataBlock['ObjectID'] = new UUID(buf, pos);
         pos += 16;
@@ -79,17 +79,17 @@ export class EmailMessageReplyMessage implements MessageBase
         newObjDataBlock['Time'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['FromAddress'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['FromAddress'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['Subject'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['Subject'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjDataBlock['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['Data'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['MailFilter'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['MailFilter'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.DataBlock = newObjDataBlock;
         return pos - startPos;

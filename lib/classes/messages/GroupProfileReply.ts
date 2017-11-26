@@ -17,10 +17,10 @@ export class GroupProfileReplyMessage implements MessageBase
     };
     GroupData: {
         GroupID: UUID;
-        Name: string;
-        Charter: string;
+        Name: Buffer;
+        Charter: Buffer;
         ShowInList: boolean;
-        MemberTitle: string;
+        MemberTitle: Buffer;
         PowersMask: Long;
         InsigniaID: UUID;
         FounderID: UUID;
@@ -47,15 +47,15 @@ export class GroupProfileReplyMessage implements MessageBase
         this.GroupData['GroupID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.GroupData['Name'].length, pos++);
-        buf.write(this.GroupData['Name'], pos);
+        this.GroupData['Name'].copy(buf, pos);
         pos += this.GroupData['Name'].length;
         buf.writeUInt16LE(this.GroupData['Charter'].length, pos);
         pos += 2;
-        buf.write(this.GroupData['Charter'], pos);
+        this.GroupData['Charter'].copy(buf, pos);
         pos += this.GroupData['Charter'].length;
         buf.writeUInt8((this.GroupData['ShowInList']) ? 1 : 0, pos++);
         buf.writeUInt8(this.GroupData['MemberTitle'].length, pos++);
-        buf.write(this.GroupData['MemberTitle'], pos);
+        this.GroupData['MemberTitle'].copy(buf, pos);
         pos += this.GroupData['MemberTitle'].length;
         buf.writeInt32LE(this.GroupData['PowersMask'].low, pos);
         pos += 4;
@@ -95,10 +95,10 @@ export class GroupProfileReplyMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjGroupData: {
             GroupID: UUID,
-            Name: string,
-            Charter: string,
+            Name: Buffer,
+            Charter: Buffer,
             ShowInList: boolean,
-            MemberTitle: string,
+            MemberTitle: Buffer,
             PowersMask: Long,
             InsigniaID: UUID,
             FounderID: UUID,
@@ -112,10 +112,10 @@ export class GroupProfileReplyMessage implements MessageBase
             OwnerRole: UUID
         } = {
             GroupID: UUID.zero(),
-            Name: '',
-            Charter: '',
+            Name: Buffer.allocUnsafe(0),
+            Charter: Buffer.allocUnsafe(0),
             ShowInList: false,
-            MemberTitle: '',
+            MemberTitle: Buffer.allocUnsafe(0),
             PowersMask: Long.ZERO,
             InsigniaID: UUID.zero(),
             FounderID: UUID.zero(),
@@ -131,15 +131,15 @@ export class GroupProfileReplyMessage implements MessageBase
         newObjGroupData['GroupID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjGroupData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjGroupData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjGroupData['Charter'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjGroupData['Charter'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjGroupData['ShowInList'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjGroupData['MemberTitle'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjGroupData['MemberTitle'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjGroupData['PowersMask'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
         pos += 8;

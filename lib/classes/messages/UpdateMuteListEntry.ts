@@ -17,7 +17,7 @@ export class UpdateMuteListEntryMessage implements MessageBase
     };
     MuteData: {
         MuteID: UUID;
-        MuteName: string;
+        MuteName: Buffer;
         MuteType: number;
         MuteFlags: number;
     };
@@ -37,7 +37,7 @@ export class UpdateMuteListEntryMessage implements MessageBase
         this.MuteData['MuteID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.MuteData['MuteName'].length, pos++);
-        buf.write(this.MuteData['MuteName'], pos);
+        this.MuteData['MuteName'].copy(buf, pos);
         pos += this.MuteData['MuteName'].length;
         buf.writeInt32LE(this.MuteData['MuteType'], pos);
         pos += 4;
@@ -64,19 +64,19 @@ export class UpdateMuteListEntryMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjMuteData: {
             MuteID: UUID,
-            MuteName: string,
+            MuteName: Buffer,
             MuteType: number,
             MuteFlags: number
         } = {
             MuteID: UUID.zero(),
-            MuteName: '',
+            MuteName: Buffer.allocUnsafe(0),
             MuteType: 0,
             MuteFlags: 0
         };
         newObjMuteData['MuteID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjMuteData['MuteName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMuteData['MuteName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjMuteData['MuteType'] = buf.readInt32LE(pos);
         pos += 4;

@@ -21,10 +21,10 @@ export class ParcelPropertiesUpdateMessage implements MessageBase
         Flags: number;
         ParcelFlags: number;
         SalePrice: number;
-        Name: string;
-        Desc: string;
-        MusicURL: string;
-        MediaURL: string;
+        Name: Buffer;
+        Desc: Buffer;
+        MusicURL: Buffer;
+        MediaURL: Buffer;
         MediaID: UUID;
         MediaAutoScale: number;
         GroupID: UUID;
@@ -59,16 +59,16 @@ export class ParcelPropertiesUpdateMessage implements MessageBase
         buf.writeInt32LE(this.ParcelData['SalePrice'], pos);
         pos += 4;
         buf.writeUInt8(this.ParcelData['Name'].length, pos++);
-        buf.write(this.ParcelData['Name'], pos);
+        this.ParcelData['Name'].copy(buf, pos);
         pos += this.ParcelData['Name'].length;
         buf.writeUInt8(this.ParcelData['Desc'].length, pos++);
-        buf.write(this.ParcelData['Desc'], pos);
+        this.ParcelData['Desc'].copy(buf, pos);
         pos += this.ParcelData['Desc'].length;
         buf.writeUInt8(this.ParcelData['MusicURL'].length, pos++);
-        buf.write(this.ParcelData['MusicURL'], pos);
+        this.ParcelData['MusicURL'].copy(buf, pos);
         pos += this.ParcelData['MusicURL'].length;
         buf.writeUInt8(this.ParcelData['MediaURL'].length, pos++);
-        buf.write(this.ParcelData['MediaURL'], pos);
+        this.ParcelData['MediaURL'].copy(buf, pos);
         pos += this.ParcelData['MediaURL'].length;
         this.ParcelData['MediaID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -113,10 +113,10 @@ export class ParcelPropertiesUpdateMessage implements MessageBase
             Flags: number,
             ParcelFlags: number,
             SalePrice: number,
-            Name: string,
-            Desc: string,
-            MusicURL: string,
-            MediaURL: string,
+            Name: Buffer,
+            Desc: Buffer,
+            MusicURL: Buffer,
+            MediaURL: Buffer,
             MediaID: UUID,
             MediaAutoScale: number,
             GroupID: UUID,
@@ -133,10 +133,10 @@ export class ParcelPropertiesUpdateMessage implements MessageBase
             Flags: 0,
             ParcelFlags: 0,
             SalePrice: 0,
-            Name: '',
-            Desc: '',
-            MusicURL: '',
-            MediaURL: '',
+            Name: Buffer.allocUnsafe(0),
+            Desc: Buffer.allocUnsafe(0),
+            MusicURL: Buffer.allocUnsafe(0),
+            MediaURL: Buffer.allocUnsafe(0),
             MediaID: UUID.zero(),
             MediaAutoScale: 0,
             GroupID: UUID.zero(),
@@ -158,16 +158,16 @@ export class ParcelPropertiesUpdateMessage implements MessageBase
         newObjParcelData['SalePrice'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Desc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Desc'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['MusicURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['MusicURL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['MediaURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['MediaURL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjParcelData['MediaID'] = new UUID(buf, pos);
         pos += 16;

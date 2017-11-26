@@ -19,7 +19,7 @@ export class AgentCachedTextureResponseMessage implements MessageBase
     WearableData: {
         TextureID: UUID;
         TextureIndex: number;
-        HostName: string;
+        HostName: Buffer;
     }[];
 
     getSize(): number
@@ -54,7 +54,7 @@ export class AgentCachedTextureResponseMessage implements MessageBase
             pos += 16;
             buf.writeUInt8(this.WearableData[i]['TextureIndex'], pos++);
             buf.writeUInt8(this.WearableData[i]['HostName'].length, pos++);
-            buf.write(this.WearableData[i]['HostName'], pos);
+            this.WearableData[i]['HostName'].copy(buf, pos);
             pos += this.WearableData[i]['HostName'].length;
         }
         return pos - startPos;
@@ -87,17 +87,17 @@ export class AgentCachedTextureResponseMessage implements MessageBase
             const newObjWearableData: {
                 TextureID: UUID,
                 TextureIndex: number,
-                HostName: string
+                HostName: Buffer
             } = {
                 TextureID: UUID.zero(),
                 TextureIndex: 0,
-                HostName: ''
+                HostName: Buffer.allocUnsafe(0)
             };
             newObjWearableData['TextureID'] = new UUID(buf, pos);
             pos += 16;
             newObjWearableData['TextureIndex'] = buf.readUInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjWearableData['HostName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjWearableData['HostName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.WearableData.push(newObjWearableData);
         }

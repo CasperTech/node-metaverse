@@ -19,7 +19,7 @@ export class TeleportFinishMessage implements MessageBase
         SimIP: IPAddress;
         SimPort: number;
         RegionHandle: Long;
-        SeedCapability: string;
+        SeedCapability: Buffer;
         SimAccess: number;
         TeleportFlags: number;
     };
@@ -46,7 +46,7 @@ export class TeleportFinishMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.Info['SeedCapability'].length, pos);
         pos += 2;
-        buf.write(this.Info['SeedCapability'], pos);
+        this.Info['SeedCapability'].copy(buf, pos);
         pos += this.Info['SeedCapability'].length;
         buf.writeUInt8(this.Info['SimAccess'], pos++);
         buf.writeUInt32LE(this.Info['TeleportFlags'], pos);
@@ -64,7 +64,7 @@ export class TeleportFinishMessage implements MessageBase
             SimIP: IPAddress,
             SimPort: number,
             RegionHandle: Long,
-            SeedCapability: string,
+            SeedCapability: Buffer,
             SimAccess: number,
             TeleportFlags: number
         } = {
@@ -73,7 +73,7 @@ export class TeleportFinishMessage implements MessageBase
             SimIP: IPAddress.zero(),
             SimPort: 0,
             RegionHandle: Long.ZERO,
-            SeedCapability: '',
+            SeedCapability: Buffer.allocUnsafe(0),
             SimAccess: 0,
             TeleportFlags: 0
         };
@@ -89,7 +89,7 @@ export class TeleportFinishMessage implements MessageBase
         pos += 8;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjInfo['SeedCapability'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInfo['SeedCapability'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjInfo['SimAccess'] = buf.readUInt8(pos++);
         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);

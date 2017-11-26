@@ -15,7 +15,7 @@ export class TelehubInfoMessage implements MessageBase
 
     TelehubBlock: {
         ObjectID: UUID;
-        ObjectName: string;
+        ObjectName: Buffer;
         TelehubPos: Vector3;
         TelehubRot: Quaternion;
     };
@@ -34,7 +34,7 @@ export class TelehubInfoMessage implements MessageBase
         this.TelehubBlock['ObjectID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.TelehubBlock['ObjectName'].length, pos++);
-        buf.write(this.TelehubBlock['ObjectName'], pos);
+        this.TelehubBlock['ObjectName'].copy(buf, pos);
         pos += this.TelehubBlock['ObjectName'].length;
         this.TelehubBlock['TelehubPos'].writeToBuffer(buf, pos, false);
         pos += 12;
@@ -56,19 +56,19 @@ export class TelehubInfoMessage implements MessageBase
         let varLength = 0;
         const newObjTelehubBlock: {
             ObjectID: UUID,
-            ObjectName: string,
+            ObjectName: Buffer,
             TelehubPos: Vector3,
             TelehubRot: Quaternion
         } = {
             ObjectID: UUID.zero(),
-            ObjectName: '',
+            ObjectName: Buffer.allocUnsafe(0),
             TelehubPos: Vector3.getZero(),
             TelehubRot: Quaternion.getIdentity()
         };
         newObjTelehubBlock['ObjectID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjTelehubBlock['ObjectName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjTelehubBlock['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjTelehubBlock['TelehubPos'] = new Vector3(buf, pos, false);
         pos += 12;

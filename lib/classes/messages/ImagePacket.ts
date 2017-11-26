@@ -16,7 +16,7 @@ export class ImagePacketMessage implements MessageBase
         Packet: number;
     };
     ImageData: {
-        Data: string;
+        Data: Buffer;
     };
 
     getSize(): number
@@ -33,7 +33,7 @@ export class ImagePacketMessage implements MessageBase
         pos += 2;
         buf.writeUInt16LE(this.ImageData['Data'].length, pos);
         pos += 2;
-        buf.write(this.ImageData['Data'], pos);
+        this.ImageData['Data'].copy(buf, pos);
         pos += this.ImageData['Data'].length;
         return pos - startPos;
     }
@@ -55,13 +55,13 @@ export class ImagePacketMessage implements MessageBase
         pos += 2;
         this.ImageID = newObjImageID;
         const newObjImageData: {
-            Data: string
+            Data: Buffer
         } = {
-            Data: ''
+            Data: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjImageData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjImageData['Data'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ImageData = newObjImageData;
         return pos - startPos;

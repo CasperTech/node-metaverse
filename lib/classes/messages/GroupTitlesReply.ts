@@ -17,7 +17,7 @@ export class GroupTitlesReplyMessage implements MessageBase
         RequestID: UUID;
     };
     GroupData: {
-        Title: string;
+        Title: Buffer;
         RoleID: UUID;
         Selected: boolean;
     }[];
@@ -51,7 +51,7 @@ export class GroupTitlesReplyMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.GroupData[i]['Title'].length, pos++);
-            buf.write(this.GroupData[i]['Title'], pos);
+            this.GroupData[i]['Title'].copy(buf, pos);
             pos += this.GroupData[i]['Title'].length;
             this.GroupData[i]['RoleID'].writeToBuffer(buf, pos);
             pos += 16;
@@ -85,16 +85,16 @@ export class GroupTitlesReplyMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjGroupData: {
-                Title: string,
+                Title: Buffer,
                 RoleID: UUID,
                 Selected: boolean
             } = {
-                Title: '',
+                Title: Buffer.allocUnsafe(0),
                 RoleID: UUID.zero(),
                 Selected: false
             };
             varLength = buf.readUInt8(pos++);
-            newObjGroupData['Title'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjGroupData['Title'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjGroupData['RoleID'] = new UUID(buf, pos);
             pos += 16;

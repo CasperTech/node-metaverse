@@ -16,7 +16,7 @@ export class TransferRequestMessage implements MessageBase
         ChannelType: number;
         SourceType: number;
         Priority: number;
-        Params: string;
+        Params: Buffer;
     };
 
     getSize(): number
@@ -37,7 +37,7 @@ export class TransferRequestMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.TransferInfo['Params'].length, pos);
         pos += 2;
-        buf.write(this.TransferInfo['Params'], pos);
+        this.TransferInfo['Params'].copy(buf, pos);
         pos += this.TransferInfo['Params'].length;
         return pos - startPos;
     }
@@ -51,13 +51,13 @@ export class TransferRequestMessage implements MessageBase
             ChannelType: number,
             SourceType: number,
             Priority: number,
-            Params: string
+            Params: Buffer
         } = {
             TransferID: UUID.zero(),
             ChannelType: 0,
             SourceType: 0,
             Priority: 0,
-            Params: ''
+            Params: Buffer.allocUnsafe(0)
         };
         newObjTransferInfo['TransferID'] = new UUID(buf, pos);
         pos += 16;
@@ -69,7 +69,7 @@ export class TransferRequestMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjTransferInfo['Params'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjTransferInfo['Params'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.TransferInfo = newObjTransferInfo;
         return pos - startPos;

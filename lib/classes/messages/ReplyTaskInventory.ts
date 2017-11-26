@@ -14,7 +14,7 @@ export class ReplyTaskInventoryMessage implements MessageBase
     InventoryData: {
         TaskID: UUID;
         Serial: number;
-        Filename: string;
+        Filename: Buffer;
     };
 
     getSize(): number
@@ -30,7 +30,7 @@ export class ReplyTaskInventoryMessage implements MessageBase
         buf.writeInt16LE(this.InventoryData['Serial'], pos);
         pos += 2;
         buf.writeUInt8(this.InventoryData['Filename'].length, pos++);
-        buf.write(this.InventoryData['Filename'], pos);
+        this.InventoryData['Filename'].copy(buf, pos);
         pos += this.InventoryData['Filename'].length;
         return pos - startPos;
     }
@@ -42,18 +42,18 @@ export class ReplyTaskInventoryMessage implements MessageBase
         const newObjInventoryData: {
             TaskID: UUID,
             Serial: number,
-            Filename: string
+            Filename: Buffer
         } = {
             TaskID: UUID.zero(),
             Serial: 0,
-            Filename: ''
+            Filename: Buffer.allocUnsafe(0)
         };
         newObjInventoryData['TaskID'] = new UUID(buf, pos);
         pos += 16;
         newObjInventoryData['Serial'] = buf.readInt16LE(pos);
         pos += 2;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryData['Filename'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInventoryData['Filename'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.InventoryData = newObjInventoryData;
         return pos - startPos;

@@ -14,12 +14,12 @@ export class AgentDataUpdateMessage implements MessageBase
 
     AgentData: {
         AgentID: UUID;
-        FirstName: string;
-        LastName: string;
-        GroupTitle: string;
+        FirstName: Buffer;
+        LastName: Buffer;
+        GroupTitle: Buffer;
         ActiveGroupID: UUID;
         GroupPowers: Long;
-        GroupName: string;
+        GroupName: Buffer;
     };
 
     getSize(): number
@@ -33,13 +33,13 @@ export class AgentDataUpdateMessage implements MessageBase
         this.AgentData['AgentID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.AgentData['FirstName'].length, pos++);
-        buf.write(this.AgentData['FirstName'], pos);
+        this.AgentData['FirstName'].copy(buf, pos);
         pos += this.AgentData['FirstName'].length;
         buf.writeUInt8(this.AgentData['LastName'].length, pos++);
-        buf.write(this.AgentData['LastName'], pos);
+        this.AgentData['LastName'].copy(buf, pos);
         pos += this.AgentData['LastName'].length;
         buf.writeUInt8(this.AgentData['GroupTitle'].length, pos++);
-        buf.write(this.AgentData['GroupTitle'], pos);
+        this.AgentData['GroupTitle'].copy(buf, pos);
         pos += this.AgentData['GroupTitle'].length;
         this.AgentData['ActiveGroupID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -48,7 +48,7 @@ export class AgentDataUpdateMessage implements MessageBase
         buf.writeInt32LE(this.AgentData['GroupPowers'].high, pos);
         pos += 4;
         buf.writeUInt8(this.AgentData['GroupName'].length, pos++);
-        buf.write(this.AgentData['GroupName'], pos);
+        this.AgentData['GroupName'].copy(buf, pos);
         pos += this.AgentData['GroupName'].length;
         return pos - startPos;
     }
@@ -59,38 +59,38 @@ export class AgentDataUpdateMessage implements MessageBase
         let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
-            FirstName: string,
-            LastName: string,
-            GroupTitle: string,
+            FirstName: Buffer,
+            LastName: Buffer,
+            GroupTitle: Buffer,
             ActiveGroupID: UUID,
             GroupPowers: Long,
-            GroupName: string
+            GroupName: Buffer
         } = {
             AgentID: UUID.zero(),
-            FirstName: '',
-            LastName: '',
-            GroupTitle: '',
+            FirstName: Buffer.allocUnsafe(0),
+            LastName: Buffer.allocUnsafe(0),
+            GroupTitle: Buffer.allocUnsafe(0),
             ActiveGroupID: UUID.zero(),
             GroupPowers: Long.ZERO,
-            GroupName: ''
+            GroupName: Buffer.allocUnsafe(0)
         };
         newObjAgentData['AgentID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['FirstName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['FirstName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['LastName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['LastName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['GroupTitle'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['GroupTitle'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjAgentData['ActiveGroupID'] = new UUID(buf, pos);
         pos += 16;
         newObjAgentData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
         pos += 8;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['GroupName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['GroupName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.AgentData = newObjAgentData;
         return pos - startPos;

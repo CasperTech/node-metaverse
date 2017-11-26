@@ -24,7 +24,7 @@ export class MapItemReplyMessage implements MessageBase
         ID: UUID;
         Extra: number;
         Extra2: number;
-        Name: string;
+        Name: Buffer;
     }[];
 
     getSize(): number
@@ -66,7 +66,7 @@ export class MapItemReplyMessage implements MessageBase
             buf.writeInt32LE(this.Data[i]['Extra2'], pos);
             pos += 4;
             buf.writeUInt8(this.Data[i]['Name'].length, pos++);
-            buf.write(this.Data[i]['Name'], pos);
+            this.Data[i]['Name'].copy(buf, pos);
             pos += this.Data[i]['Name'].length;
         }
         return pos - startPos;
@@ -106,14 +106,14 @@ export class MapItemReplyMessage implements MessageBase
                 ID: UUID,
                 Extra: number,
                 Extra2: number,
-                Name: string
+                Name: Buffer
             } = {
                 X: 0,
                 Y: 0,
                 ID: UUID.zero(),
                 Extra: 0,
                 Extra2: 0,
-                Name: ''
+                Name: Buffer.allocUnsafe(0)
             };
             newObjData['X'] = buf.readUInt32LE(pos);
             pos += 4;
@@ -126,7 +126,7 @@ export class MapItemReplyMessage implements MessageBase
             newObjData['Extra2'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.Data.push(newObjData);
         }

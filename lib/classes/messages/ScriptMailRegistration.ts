@@ -12,7 +12,7 @@ export class ScriptMailRegistrationMessage implements MessageBase
     id = Message.ScriptMailRegistration;
 
     DataBlock: {
-        TargetIP: string;
+        TargetIP: Buffer;
         TargetPort: number;
         TaskID: UUID;
         Flags: number;
@@ -27,7 +27,7 @@ export class ScriptMailRegistrationMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.DataBlock['TargetIP'].length, pos++);
-        buf.write(this.DataBlock['TargetIP'], pos);
+        this.DataBlock['TargetIP'].copy(buf, pos);
         pos += this.DataBlock['TargetIP'].length;
         buf.writeUInt16LE(this.DataBlock['TargetPort'], pos);
         pos += 2;
@@ -43,18 +43,18 @@ export class ScriptMailRegistrationMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjDataBlock: {
-            TargetIP: string,
+            TargetIP: Buffer,
             TargetPort: number,
             TaskID: UUID,
             Flags: number
         } = {
-            TargetIP: '',
+            TargetIP: Buffer.allocUnsafe(0),
             TargetPort: 0,
             TaskID: UUID.zero(),
             Flags: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['TargetIP'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjDataBlock['TargetIP'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjDataBlock['TargetPort'] = buf.readUInt16LE(pos);
         pos += 2;

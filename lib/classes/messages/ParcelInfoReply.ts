@@ -17,15 +17,15 @@ export class ParcelInfoReplyMessage implements MessageBase
     Data: {
         ParcelID: UUID;
         OwnerID: UUID;
-        Name: string;
-        Desc: string;
+        Name: Buffer;
+        Desc: Buffer;
         ActualArea: number;
         BillableArea: number;
         Flags: number;
         GlobalX: number;
         GlobalY: number;
         GlobalZ: number;
-        SimName: string;
+        SimName: Buffer;
         SnapshotID: UUID;
         Dwell: number;
         SalePrice: number;
@@ -47,10 +47,10 @@ export class ParcelInfoReplyMessage implements MessageBase
         this.Data['OwnerID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['Name'].length, pos++);
-        buf.write(this.Data['Name'], pos);
+        this.Data['Name'].copy(buf, pos);
         pos += this.Data['Name'].length;
         buf.writeUInt8(this.Data['Desc'].length, pos++);
-        buf.write(this.Data['Desc'], pos);
+        this.Data['Desc'].copy(buf, pos);
         pos += this.Data['Desc'].length;
         buf.writeInt32LE(this.Data['ActualArea'], pos);
         pos += 4;
@@ -64,7 +64,7 @@ export class ParcelInfoReplyMessage implements MessageBase
         buf.writeFloatLE(this.Data['GlobalZ'], pos);
         pos += 4;
         buf.writeUInt8(this.Data['SimName'].length, pos++);
-        buf.write(this.Data['SimName'], pos);
+        this.Data['SimName'].copy(buf, pos);
         pos += this.Data['SimName'].length;
         this.Data['SnapshotID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -92,15 +92,15 @@ export class ParcelInfoReplyMessage implements MessageBase
         const newObjData: {
             ParcelID: UUID,
             OwnerID: UUID,
-            Name: string,
-            Desc: string,
+            Name: Buffer,
+            Desc: Buffer,
             ActualArea: number,
             BillableArea: number,
             Flags: number,
             GlobalX: number,
             GlobalY: number,
             GlobalZ: number,
-            SimName: string,
+            SimName: Buffer,
             SnapshotID: UUID,
             Dwell: number,
             SalePrice: number,
@@ -108,15 +108,15 @@ export class ParcelInfoReplyMessage implements MessageBase
         } = {
             ParcelID: UUID.zero(),
             OwnerID: UUID.zero(),
-            Name: '',
-            Desc: '',
+            Name: Buffer.allocUnsafe(0),
+            Desc: Buffer.allocUnsafe(0),
             ActualArea: 0,
             BillableArea: 0,
             Flags: 0,
             GlobalX: 0,
             GlobalY: 0,
             GlobalZ: 0,
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             SnapshotID: UUID.zero(),
             Dwell: 0,
             SalePrice: 0,
@@ -127,10 +127,10 @@ export class ParcelInfoReplyMessage implements MessageBase
         newObjData['OwnerID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['Desc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Desc'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['ActualArea'] = buf.readInt32LE(pos);
         pos += 4;
@@ -144,7 +144,7 @@ export class ParcelInfoReplyMessage implements MessageBase
         newObjData['GlobalZ'] = buf.readFloatLE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['SnapshotID'] = new UUID(buf, pos);
         pos += 16;

@@ -20,7 +20,7 @@ export class CreateLandmarkForEventMessage implements MessageBase
     };
     InventoryBlock: {
         FolderID: UUID;
-        Name: string;
+        Name: Buffer;
     };
 
     getSize(): number
@@ -40,7 +40,7 @@ export class CreateLandmarkForEventMessage implements MessageBase
         this.InventoryBlock['FolderID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.InventoryBlock['Name'].length, pos++);
-        buf.write(this.InventoryBlock['Name'], pos);
+        this.InventoryBlock['Name'].copy(buf, pos);
         pos += this.InventoryBlock['Name'].length;
         return pos - startPos;
     }
@@ -71,15 +71,15 @@ export class CreateLandmarkForEventMessage implements MessageBase
         this.EventData = newObjEventData;
         const newObjInventoryBlock: {
             FolderID: UUID,
-            Name: string
+            Name: Buffer
         } = {
             FolderID: UUID.zero(),
-            Name: ''
+            Name: Buffer.allocUnsafe(0)
         };
         newObjInventoryBlock['FolderID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryBlock['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInventoryBlock['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.InventoryBlock = newObjInventoryBlock;
         return pos - startPos;

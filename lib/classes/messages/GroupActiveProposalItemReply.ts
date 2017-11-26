@@ -22,14 +22,14 @@ export class GroupActiveProposalItemReplyMessage implements MessageBase
     ProposalData: {
         VoteID: UUID;
         VoteInitiator: UUID;
-        TerseDateID: string;
-        StartDateTime: string;
-        EndDateTime: string;
+        TerseDateID: Buffer;
+        StartDateTime: Buffer;
+        EndDateTime: Buffer;
         AlreadyVoted: boolean;
-        VoteCast: string;
+        VoteCast: Buffer;
         Majority: number;
         Quorum: number;
-        ProposalText: string;
+        ProposalText: Buffer;
     }[];
 
     getSize(): number
@@ -67,24 +67,24 @@ export class GroupActiveProposalItemReplyMessage implements MessageBase
             this.ProposalData[i]['VoteInitiator'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.ProposalData[i]['TerseDateID'].length, pos++);
-            buf.write(this.ProposalData[i]['TerseDateID'], pos);
+            this.ProposalData[i]['TerseDateID'].copy(buf, pos);
             pos += this.ProposalData[i]['TerseDateID'].length;
             buf.writeUInt8(this.ProposalData[i]['StartDateTime'].length, pos++);
-            buf.write(this.ProposalData[i]['StartDateTime'], pos);
+            this.ProposalData[i]['StartDateTime'].copy(buf, pos);
             pos += this.ProposalData[i]['StartDateTime'].length;
             buf.writeUInt8(this.ProposalData[i]['EndDateTime'].length, pos++);
-            buf.write(this.ProposalData[i]['EndDateTime'], pos);
+            this.ProposalData[i]['EndDateTime'].copy(buf, pos);
             pos += this.ProposalData[i]['EndDateTime'].length;
             buf.writeUInt8((this.ProposalData[i]['AlreadyVoted']) ? 1 : 0, pos++);
             buf.writeUInt8(this.ProposalData[i]['VoteCast'].length, pos++);
-            buf.write(this.ProposalData[i]['VoteCast'], pos);
+            this.ProposalData[i]['VoteCast'].copy(buf, pos);
             pos += this.ProposalData[i]['VoteCast'].length;
             buf.writeFloatLE(this.ProposalData[i]['Majority'], pos);
             pos += 4;
             buf.writeInt32LE(this.ProposalData[i]['Quorum'], pos);
             pos += 4;
             buf.writeUInt8(this.ProposalData[i]['ProposalText'].length, pos++);
-            buf.write(this.ProposalData[i]['ProposalText'], pos);
+            this.ProposalData[i]['ProposalText'].copy(buf, pos);
             pos += this.ProposalData[i]['ProposalText'].length;
         }
         return pos - startPos;
@@ -125,49 +125,49 @@ export class GroupActiveProposalItemReplyMessage implements MessageBase
             const newObjProposalData: {
                 VoteID: UUID,
                 VoteInitiator: UUID,
-                TerseDateID: string,
-                StartDateTime: string,
-                EndDateTime: string,
+                TerseDateID: Buffer,
+                StartDateTime: Buffer,
+                EndDateTime: Buffer,
                 AlreadyVoted: boolean,
-                VoteCast: string,
+                VoteCast: Buffer,
                 Majority: number,
                 Quorum: number,
-                ProposalText: string
+                ProposalText: Buffer
             } = {
                 VoteID: UUID.zero(),
                 VoteInitiator: UUID.zero(),
-                TerseDateID: '',
-                StartDateTime: '',
-                EndDateTime: '',
+                TerseDateID: Buffer.allocUnsafe(0),
+                StartDateTime: Buffer.allocUnsafe(0),
+                EndDateTime: Buffer.allocUnsafe(0),
                 AlreadyVoted: false,
-                VoteCast: '',
+                VoteCast: Buffer.allocUnsafe(0),
                 Majority: 0,
                 Quorum: 0,
-                ProposalText: ''
+                ProposalText: Buffer.allocUnsafe(0)
             };
             newObjProposalData['VoteID'] = new UUID(buf, pos);
             pos += 16;
             newObjProposalData['VoteInitiator'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjProposalData['TerseDateID'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjProposalData['TerseDateID'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjProposalData['StartDateTime'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjProposalData['StartDateTime'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjProposalData['EndDateTime'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjProposalData['EndDateTime'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjProposalData['AlreadyVoted'] = (buf.readUInt8(pos++) === 1);
             varLength = buf.readUInt8(pos++);
-            newObjProposalData['VoteCast'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjProposalData['VoteCast'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjProposalData['Majority'] = buf.readFloatLE(pos);
             pos += 4;
             newObjProposalData['Quorum'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjProposalData['ProposalText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjProposalData['ProposalText'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ProposalData.push(newObjProposalData);
         }

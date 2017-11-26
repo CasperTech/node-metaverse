@@ -20,7 +20,7 @@ export class RegionPresenceResponseMessage implements MessageBase
         ExternalRegionIP: IPAddress;
         RegionPort: number;
         ValidUntil: number;
-        Message: string;
+        Message: Buffer;
     }[];
 
     getSize(): number
@@ -60,7 +60,7 @@ export class RegionPresenceResponseMessage implements MessageBase
             buf.writeDoubleLE(this.RegionData[i]['ValidUntil'], pos);
             pos += 8;
             buf.writeUInt8(this.RegionData[i]['Message'].length, pos++);
-            buf.write(this.RegionData[i]['Message'], pos);
+            this.RegionData[i]['Message'].copy(buf, pos);
             pos += this.RegionData[i]['Message'].length;
         }
         return pos - startPos;
@@ -81,7 +81,7 @@ export class RegionPresenceResponseMessage implements MessageBase
                 ExternalRegionIP: IPAddress,
                 RegionPort: number,
                 ValidUntil: number,
-                Message: string
+                Message: Buffer
             } = {
                 RegionID: UUID.zero(),
                 RegionHandle: Long.ZERO,
@@ -89,7 +89,7 @@ export class RegionPresenceResponseMessage implements MessageBase
                 ExternalRegionIP: IPAddress.zero(),
                 RegionPort: 0,
                 ValidUntil: 0,
-                Message: ''
+                Message: Buffer.allocUnsafe(0)
             };
             newObjRegionData['RegionID'] = new UUID(buf, pos);
             pos += 16;
@@ -104,7 +104,7 @@ export class RegionPresenceResponseMessage implements MessageBase
             newObjRegionData['ValidUntil'] = buf.readDoubleLE(pos);
             pos += 8;
             varLength = buf.readUInt8(pos++);
-            newObjRegionData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjRegionData['Message'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.RegionData.push(newObjRegionData);
         }

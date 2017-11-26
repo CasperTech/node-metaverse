@@ -17,7 +17,7 @@ export class ObjectUpdateCompressedMessage implements MessageBase
     };
     ObjectData: {
         UpdateFlags: number;
-        Data: string;
+        Data: Buffer;
     }[];
 
     getSize(): number
@@ -52,7 +52,7 @@ export class ObjectUpdateCompressedMessage implements MessageBase
             pos += 4;
             buf.writeUInt16LE(this.ObjectData[i]['Data'].length, pos);
             pos += 2;
-            buf.write(this.ObjectData[i]['Data'], pos);
+            this.ObjectData[i]['Data'].copy(buf, pos);
             pos += this.ObjectData[i]['Data'].length;
         }
         return pos - startPos;
@@ -80,16 +80,16 @@ export class ObjectUpdateCompressedMessage implements MessageBase
         {
             const newObjObjectData: {
                 UpdateFlags: number,
-                Data: string
+                Data: Buffer
             } = {
                 UpdateFlags: 0,
-                Data: ''
+                Data: Buffer.allocUnsafe(0)
             };
             newObjObjectData['UpdateFlags'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Data'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

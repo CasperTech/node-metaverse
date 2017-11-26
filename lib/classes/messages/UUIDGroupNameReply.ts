@@ -13,7 +13,7 @@ export class UUIDGroupNameReplyMessage implements MessageBase
 
     UUIDNameBlock: {
         ID: UUID;
-        GroupName: string;
+        GroupName: Buffer;
     }[];
 
     getSize(): number
@@ -41,7 +41,7 @@ export class UUIDGroupNameReplyMessage implements MessageBase
             this.UUIDNameBlock[i]['ID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.UUIDNameBlock[i]['GroupName'].length, pos++);
-            buf.write(this.UUIDNameBlock[i]['GroupName'], pos);
+            this.UUIDNameBlock[i]['GroupName'].copy(buf, pos);
             pos += this.UUIDNameBlock[i]['GroupName'].length;
         }
         return pos - startPos;
@@ -57,15 +57,15 @@ export class UUIDGroupNameReplyMessage implements MessageBase
         {
             const newObjUUIDNameBlock: {
                 ID: UUID,
-                GroupName: string
+                GroupName: Buffer
             } = {
                 ID: UUID.zero(),
-                GroupName: ''
+                GroupName: Buffer.allocUnsafe(0)
             };
             newObjUUIDNameBlock['ID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjUUIDNameBlock['GroupName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjUUIDNameBlock['GroupName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.UUIDNameBlock.push(newObjUUIDNameBlock);
         }

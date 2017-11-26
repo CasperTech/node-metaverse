@@ -17,8 +17,8 @@ export class ObjectImageMessage implements MessageBase
     };
     ObjectData: {
         ObjectLocalID: number;
-        MediaURL: string;
-        TextureEntry: string;
+        MediaURL: Buffer;
+        TextureEntry: Buffer;
     }[];
 
     getSize(): number
@@ -50,11 +50,11 @@ export class ObjectImageMessage implements MessageBase
             buf.writeUInt32LE(this.ObjectData[i]['ObjectLocalID'], pos);
             pos += 4;
             buf.writeUInt8(this.ObjectData[i]['MediaURL'].length, pos++);
-            buf.write(this.ObjectData[i]['MediaURL'], pos);
+            this.ObjectData[i]['MediaURL'].copy(buf, pos);
             pos += this.ObjectData[i]['MediaURL'].length;
             buf.writeUInt16LE(this.ObjectData[i]['TextureEntry'].length, pos);
             pos += 2;
-            buf.write(this.ObjectData[i]['TextureEntry'], pos);
+            this.ObjectData[i]['TextureEntry'].copy(buf, pos);
             pos += this.ObjectData[i]['TextureEntry'].length;
         }
         return pos - startPos;
@@ -82,21 +82,21 @@ export class ObjectImageMessage implements MessageBase
         {
             const newObjObjectData: {
                 ObjectLocalID: number,
-                MediaURL: string,
-                TextureEntry: string
+                MediaURL: Buffer,
+                TextureEntry: Buffer
             } = {
                 ObjectLocalID: 0,
-                MediaURL: '',
-                TextureEntry: ''
+                MediaURL: Buffer.allocUnsafe(0),
+                TextureEntry: Buffer.allocUnsafe(0)
             };
             newObjObjectData['ObjectLocalID'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['MediaURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['MediaURL'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['TextureEntry'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['TextureEntry'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

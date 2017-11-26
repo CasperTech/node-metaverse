@@ -15,7 +15,7 @@ export class RemoveNameValuePairMessage implements MessageBase
         ID: UUID;
     };
     NameValueData: {
-        NVPair: string;
+        NVPair: Buffer;
     }[];
 
     getSize(): number
@@ -44,7 +44,7 @@ export class RemoveNameValuePairMessage implements MessageBase
         {
             buf.writeUInt16LE(this.NameValueData[i]['NVPair'].length, pos);
             pos += 2;
-            buf.write(this.NameValueData[i]['NVPair'], pos);
+            this.NameValueData[i]['NVPair'].copy(buf, pos);
             pos += this.NameValueData[i]['NVPair'].length;
         }
         return pos - startPos;
@@ -67,13 +67,13 @@ export class RemoveNameValuePairMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjNameValueData: {
-                NVPair: string
+                NVPair: Buffer
             } = {
-                NVPair: ''
+                NVPair: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjNameValueData['NVPair'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjNameValueData['NVPair'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.NameValueData.push(newObjNameValueData);
         }

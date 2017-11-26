@@ -16,7 +16,7 @@ export class ChatFromViewerMessage implements MessageBase
         SessionID: UUID;
     };
     ChatData: {
-        Message: string;
+        Message: Buffer;
         Type: number;
         Channel: number;
     };
@@ -35,7 +35,7 @@ export class ChatFromViewerMessage implements MessageBase
         pos += 16;
         buf.writeUInt16LE(this.ChatData['Message'].length, pos);
         pos += 2;
-        buf.write(this.ChatData['Message'], pos);
+        this.ChatData['Message'].copy(buf, pos);
         pos += this.ChatData['Message'].length;
         buf.writeUInt8(this.ChatData['Type'], pos++);
         buf.writeInt32LE(this.ChatData['Channel'], pos);
@@ -60,17 +60,17 @@ export class ChatFromViewerMessage implements MessageBase
         pos += 16;
         this.AgentData = newObjAgentData;
         const newObjChatData: {
-            Message: string,
+            Message: Buffer,
             Type: number,
             Channel: number
         } = {
-            Message: '',
+            Message: Buffer.allocUnsafe(0),
             Type: 0,
             Channel: 0
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjChatData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjChatData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjChatData['Type'] = buf.readUInt8(pos++);
         newObjChatData['Channel'] = buf.readInt32LE(pos);

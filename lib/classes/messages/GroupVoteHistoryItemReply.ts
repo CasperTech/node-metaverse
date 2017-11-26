@@ -21,19 +21,19 @@ export class GroupVoteHistoryItemReplyMessage implements MessageBase
     };
     HistoryItemData: {
         VoteID: UUID;
-        TerseDateID: string;
-        StartDateTime: string;
-        EndDateTime: string;
+        TerseDateID: Buffer;
+        StartDateTime: Buffer;
+        EndDateTime: Buffer;
         VoteInitiator: UUID;
-        VoteType: string;
-        VoteResult: string;
+        VoteType: Buffer;
+        VoteResult: Buffer;
         Majority: number;
         Quorum: number;
-        ProposalText: string;
+        ProposalText: Buffer;
     };
     VoteItem: {
         CandidateID: UUID;
-        VoteCast: string;
+        VoteCast: Buffer;
         NumVotes: number;
     }[];
 
@@ -66,21 +66,21 @@ export class GroupVoteHistoryItemReplyMessage implements MessageBase
         this.HistoryItemData['VoteID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.HistoryItemData['TerseDateID'].length, pos++);
-        buf.write(this.HistoryItemData['TerseDateID'], pos);
+        this.HistoryItemData['TerseDateID'].copy(buf, pos);
         pos += this.HistoryItemData['TerseDateID'].length;
         buf.writeUInt8(this.HistoryItemData['StartDateTime'].length, pos++);
-        buf.write(this.HistoryItemData['StartDateTime'], pos);
+        this.HistoryItemData['StartDateTime'].copy(buf, pos);
         pos += this.HistoryItemData['StartDateTime'].length;
         buf.writeUInt8(this.HistoryItemData['EndDateTime'].length, pos++);
-        buf.write(this.HistoryItemData['EndDateTime'], pos);
+        this.HistoryItemData['EndDateTime'].copy(buf, pos);
         pos += this.HistoryItemData['EndDateTime'].length;
         this.HistoryItemData['VoteInitiator'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.HistoryItemData['VoteType'].length, pos++);
-        buf.write(this.HistoryItemData['VoteType'], pos);
+        this.HistoryItemData['VoteType'].copy(buf, pos);
         pos += this.HistoryItemData['VoteType'].length;
         buf.writeUInt8(this.HistoryItemData['VoteResult'].length, pos++);
-        buf.write(this.HistoryItemData['VoteResult'], pos);
+        this.HistoryItemData['VoteResult'].copy(buf, pos);
         pos += this.HistoryItemData['VoteResult'].length;
         buf.writeFloatLE(this.HistoryItemData['Majority'], pos);
         pos += 4;
@@ -88,7 +88,7 @@ export class GroupVoteHistoryItemReplyMessage implements MessageBase
         pos += 4;
         buf.writeUInt16LE(this.HistoryItemData['ProposalText'].length, pos);
         pos += 2;
-        buf.write(this.HistoryItemData['ProposalText'], pos);
+        this.HistoryItemData['ProposalText'].copy(buf, pos);
         pos += this.HistoryItemData['ProposalText'].length;
         const count = this.VoteItem.length;
         buf.writeUInt8(this.VoteItem.length, pos++);
@@ -97,7 +97,7 @@ export class GroupVoteHistoryItemReplyMessage implements MessageBase
             this.VoteItem[i]['CandidateID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.VoteItem[i]['VoteCast'].length, pos++);
-            buf.write(this.VoteItem[i]['VoteCast'], pos);
+            this.VoteItem[i]['VoteCast'].copy(buf, pos);
             pos += this.VoteItem[i]['VoteCast'].length;
             buf.writeInt32LE(this.VoteItem[i]['NumVotes'], pos);
             pos += 4;
@@ -135,45 +135,45 @@ export class GroupVoteHistoryItemReplyMessage implements MessageBase
         this.TransactionData = newObjTransactionData;
         const newObjHistoryItemData: {
             VoteID: UUID,
-            TerseDateID: string,
-            StartDateTime: string,
-            EndDateTime: string,
+            TerseDateID: Buffer,
+            StartDateTime: Buffer,
+            EndDateTime: Buffer,
             VoteInitiator: UUID,
-            VoteType: string,
-            VoteResult: string,
+            VoteType: Buffer,
+            VoteResult: Buffer,
             Majority: number,
             Quorum: number,
-            ProposalText: string
+            ProposalText: Buffer
         } = {
             VoteID: UUID.zero(),
-            TerseDateID: '',
-            StartDateTime: '',
-            EndDateTime: '',
+            TerseDateID: Buffer.allocUnsafe(0),
+            StartDateTime: Buffer.allocUnsafe(0),
+            EndDateTime: Buffer.allocUnsafe(0),
             VoteInitiator: UUID.zero(),
-            VoteType: '',
-            VoteResult: '',
+            VoteType: Buffer.allocUnsafe(0),
+            VoteResult: Buffer.allocUnsafe(0),
             Majority: 0,
             Quorum: 0,
-            ProposalText: ''
+            ProposalText: Buffer.allocUnsafe(0)
         };
         newObjHistoryItemData['VoteID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjHistoryItemData['TerseDateID'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjHistoryItemData['TerseDateID'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjHistoryItemData['StartDateTime'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjHistoryItemData['StartDateTime'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjHistoryItemData['EndDateTime'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjHistoryItemData['EndDateTime'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjHistoryItemData['VoteInitiator'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjHistoryItemData['VoteType'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjHistoryItemData['VoteType'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjHistoryItemData['VoteResult'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjHistoryItemData['VoteResult'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjHistoryItemData['Majority'] = buf.readFloatLE(pos);
         pos += 4;
@@ -181,7 +181,7 @@ export class GroupVoteHistoryItemReplyMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjHistoryItemData['ProposalText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjHistoryItemData['ProposalText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.HistoryItemData = newObjHistoryItemData;
         const count = buf.readUInt8(pos++);
@@ -190,17 +190,17 @@ export class GroupVoteHistoryItemReplyMessage implements MessageBase
         {
             const newObjVoteItem: {
                 CandidateID: UUID,
-                VoteCast: string,
+                VoteCast: Buffer,
                 NumVotes: number
             } = {
                 CandidateID: UUID.zero(),
-                VoteCast: '',
+                VoteCast: Buffer.allocUnsafe(0),
                 NumVotes: 0
             };
             newObjVoteItem['CandidateID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjVoteItem['VoteCast'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjVoteItem['VoteCast'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjVoteItem['NumVotes'] = buf.readInt32LE(pos);
             pos += 4;

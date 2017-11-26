@@ -17,11 +17,11 @@ export class SendPostcardMessage implements MessageBase
         SessionID: UUID;
         AssetID: UUID;
         PosGlobal: Vector3;
-        To: string;
-        From: string;
-        Name: string;
-        Subject: string;
-        Msg: string;
+        To: Buffer;
+        From: Buffer;
+        Name: Buffer;
+        Subject: Buffer;
+        Msg: Buffer;
         AllowPublish: boolean;
         MaturePublish: boolean;
     };
@@ -43,20 +43,20 @@ export class SendPostcardMessage implements MessageBase
         this.AgentData['PosGlobal'].writeToBuffer(buf, pos, true);
         pos += 24;
         buf.writeUInt8(this.AgentData['To'].length, pos++);
-        buf.write(this.AgentData['To'], pos);
+        this.AgentData['To'].copy(buf, pos);
         pos += this.AgentData['To'].length;
         buf.writeUInt8(this.AgentData['From'].length, pos++);
-        buf.write(this.AgentData['From'], pos);
+        this.AgentData['From'].copy(buf, pos);
         pos += this.AgentData['From'].length;
         buf.writeUInt8(this.AgentData['Name'].length, pos++);
-        buf.write(this.AgentData['Name'], pos);
+        this.AgentData['Name'].copy(buf, pos);
         pos += this.AgentData['Name'].length;
         buf.writeUInt8(this.AgentData['Subject'].length, pos++);
-        buf.write(this.AgentData['Subject'], pos);
+        this.AgentData['Subject'].copy(buf, pos);
         pos += this.AgentData['Subject'].length;
         buf.writeUInt16LE(this.AgentData['Msg'].length, pos);
         pos += 2;
-        buf.write(this.AgentData['Msg'], pos);
+        this.AgentData['Msg'].copy(buf, pos);
         pos += this.AgentData['Msg'].length;
         buf.writeUInt8((this.AgentData['AllowPublish']) ? 1 : 0, pos++);
         buf.writeUInt8((this.AgentData['MaturePublish']) ? 1 : 0, pos++);
@@ -72,11 +72,11 @@ export class SendPostcardMessage implements MessageBase
             SessionID: UUID,
             AssetID: UUID,
             PosGlobal: Vector3,
-            To: string,
-            From: string,
-            Name: string,
-            Subject: string,
-            Msg: string,
+            To: Buffer,
+            From: Buffer,
+            Name: Buffer,
+            Subject: Buffer,
+            Msg: Buffer,
             AllowPublish: boolean,
             MaturePublish: boolean
         } = {
@@ -84,11 +84,11 @@ export class SendPostcardMessage implements MessageBase
             SessionID: UUID.zero(),
             AssetID: UUID.zero(),
             PosGlobal: Vector3.getZero(),
-            To: '',
-            From: '',
-            Name: '',
-            Subject: '',
-            Msg: '',
+            To: Buffer.allocUnsafe(0),
+            From: Buffer.allocUnsafe(0),
+            Name: Buffer.allocUnsafe(0),
+            Subject: Buffer.allocUnsafe(0),
+            Msg: Buffer.allocUnsafe(0),
             AllowPublish: false,
             MaturePublish: false
         };
@@ -101,20 +101,20 @@ export class SendPostcardMessage implements MessageBase
         newObjAgentData['PosGlobal'] = new Vector3(buf, pos, true);
         pos += 24;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['To'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['To'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['From'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['From'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['Subject'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['Subject'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjAgentData['Msg'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAgentData['Msg'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjAgentData['AllowPublish'] = (buf.readUInt8(pos++) === 1);
         newObjAgentData['MaturePublish'] = (buf.readUInt8(pos++) === 1);

@@ -12,8 +12,8 @@ export class ScriptTeleportRequestMessage implements MessageBase
     id = Message.ScriptTeleportRequest;
 
     Data: {
-        ObjectName: string;
-        SimName: string;
+        ObjectName: Buffer;
+        SimName: Buffer;
         SimPosition: Vector3;
         LookAt: Vector3;
     };
@@ -27,10 +27,10 @@ export class ScriptTeleportRequestMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.Data['ObjectName'].length, pos++);
-        buf.write(this.Data['ObjectName'], pos);
+        this.Data['ObjectName'].copy(buf, pos);
         pos += this.Data['ObjectName'].length;
         buf.writeUInt8(this.Data['SimName'].length, pos++);
-        buf.write(this.Data['SimName'], pos);
+        this.Data['SimName'].copy(buf, pos);
         pos += this.Data['SimName'].length;
         this.Data['SimPosition'].writeToBuffer(buf, pos, false);
         pos += 12;
@@ -44,21 +44,21 @@ export class ScriptTeleportRequestMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjData: {
-            ObjectName: string,
-            SimName: string,
+            ObjectName: Buffer,
+            SimName: Buffer,
             SimPosition: Vector3,
             LookAt: Vector3
         } = {
-            ObjectName: '',
-            SimName: '',
+            ObjectName: Buffer.allocUnsafe(0),
+            SimName: Buffer.allocUnsafe(0),
             SimPosition: Vector3.getZero(),
             LookAt: Vector3.getZero()
         };
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['SimPosition'] = new Vector3(buf, pos, false);
         pos += 12;

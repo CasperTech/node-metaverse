@@ -28,7 +28,7 @@ export class ParcelPropertiesMessage implements MessageBase
         RentPrice: number;
         AABBMin: Vector3;
         AABBMax: Vector3;
-        Bitmap: string;
+        Bitmap: Buffer;
         Area: number;
         Status: number;
         SimWideMaxPrims: number;
@@ -43,10 +43,10 @@ export class ParcelPropertiesMessage implements MessageBase
         OtherCleanTime: number;
         ParcelFlags: number;
         SalePrice: number;
-        Name: string;
-        Desc: string;
-        MusicURL: string;
-        MediaURL: string;
+        Name: Buffer;
+        Desc: Buffer;
+        MusicURL: Buffer;
+        MediaURL: Buffer;
         MediaID: UUID;
         MediaAutoScale: number;
         GroupID: UUID;
@@ -108,7 +108,7 @@ export class ParcelPropertiesMessage implements MessageBase
         pos += 12;
         buf.writeUInt16LE(this.ParcelData['Bitmap'].length, pos);
         pos += 2;
-        buf.write(this.ParcelData['Bitmap'], pos);
+        this.ParcelData['Bitmap'].copy(buf, pos);
         pos += this.ParcelData['Bitmap'].length;
         buf.writeInt32LE(this.ParcelData['Area'], pos);
         pos += 4;
@@ -138,16 +138,16 @@ export class ParcelPropertiesMessage implements MessageBase
         buf.writeInt32LE(this.ParcelData['SalePrice'], pos);
         pos += 4;
         buf.writeUInt8(this.ParcelData['Name'].length, pos++);
-        buf.write(this.ParcelData['Name'], pos);
+        this.ParcelData['Name'].copy(buf, pos);
         pos += this.ParcelData['Name'].length;
         buf.writeUInt8(this.ParcelData['Desc'].length, pos++);
-        buf.write(this.ParcelData['Desc'], pos);
+        this.ParcelData['Desc'].copy(buf, pos);
         pos += this.ParcelData['Desc'].length;
         buf.writeUInt8(this.ParcelData['MusicURL'].length, pos++);
-        buf.write(this.ParcelData['MusicURL'], pos);
+        this.ParcelData['MusicURL'].copy(buf, pos);
         pos += this.ParcelData['MusicURL'].length;
         buf.writeUInt8(this.ParcelData['MediaURL'].length, pos++);
-        buf.write(this.ParcelData['MediaURL'], pos);
+        this.ParcelData['MediaURL'].copy(buf, pos);
         pos += this.ParcelData['MediaURL'].length;
         this.ParcelData['MediaID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -197,7 +197,7 @@ export class ParcelPropertiesMessage implements MessageBase
             RentPrice: number,
             AABBMin: Vector3,
             AABBMax: Vector3,
-            Bitmap: string,
+            Bitmap: Buffer,
             Area: number,
             Status: number,
             SimWideMaxPrims: number,
@@ -212,10 +212,10 @@ export class ParcelPropertiesMessage implements MessageBase
             OtherCleanTime: number,
             ParcelFlags: number,
             SalePrice: number,
-            Name: string,
-            Desc: string,
-            MusicURL: string,
-            MediaURL: string,
+            Name: Buffer,
+            Desc: Buffer,
+            MusicURL: Buffer,
+            MediaURL: Buffer,
             MediaID: UUID,
             MediaAutoScale: number,
             GroupID: UUID,
@@ -247,7 +247,7 @@ export class ParcelPropertiesMessage implements MessageBase
             RentPrice: 0,
             AABBMin: Vector3.getZero(),
             AABBMax: Vector3.getZero(),
-            Bitmap: '',
+            Bitmap: Buffer.allocUnsafe(0),
             Area: 0,
             Status: 0,
             SimWideMaxPrims: 0,
@@ -262,10 +262,10 @@ export class ParcelPropertiesMessage implements MessageBase
             OtherCleanTime: 0,
             ParcelFlags: 0,
             SalePrice: 0,
-            Name: '',
-            Desc: '',
-            MusicURL: '',
-            MediaURL: '',
+            Name: Buffer.allocUnsafe(0),
+            Desc: Buffer.allocUnsafe(0),
+            MusicURL: Buffer.allocUnsafe(0),
+            MediaURL: Buffer.allocUnsafe(0),
             MediaID: UUID.zero(),
             MediaAutoScale: 0,
             GroupID: UUID.zero(),
@@ -312,7 +312,7 @@ export class ParcelPropertiesMessage implements MessageBase
         pos += 12;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjParcelData['Bitmap'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Bitmap'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjParcelData['Area'] = buf.readInt32LE(pos);
         pos += 4;
@@ -342,16 +342,16 @@ export class ParcelPropertiesMessage implements MessageBase
         newObjParcelData['SalePrice'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Desc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Desc'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['MusicURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['MusicURL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['MediaURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['MediaURL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjParcelData['MediaID'] = new UUID(buf, pos);
         pos += 16;

@@ -19,9 +19,9 @@ export class UpdateParcelMessage implements MessageBase
         OwnerID: UUID;
         GroupOwned: boolean;
         Status: number;
-        Name: string;
-        Description: string;
-        MusicURL: string;
+        Name: Buffer;
+        Description: Buffer;
+        MusicURL: Buffer;
         RegionX: number;
         RegionY: number;
         ActualArea: number;
@@ -56,13 +56,13 @@ export class UpdateParcelMessage implements MessageBase
         buf.writeUInt8((this.ParcelData['GroupOwned']) ? 1 : 0, pos++);
         buf.writeUInt8(this.ParcelData['Status'], pos++);
         buf.writeUInt8(this.ParcelData['Name'].length, pos++);
-        buf.write(this.ParcelData['Name'], pos);
+        this.ParcelData['Name'].copy(buf, pos);
         pos += this.ParcelData['Name'].length;
         buf.writeUInt8(this.ParcelData['Description'].length, pos++);
-        buf.write(this.ParcelData['Description'], pos);
+        this.ParcelData['Description'].copy(buf, pos);
         pos += this.ParcelData['Description'].length;
         buf.writeUInt8(this.ParcelData['MusicURL'].length, pos++);
-        buf.write(this.ParcelData['MusicURL'], pos);
+        this.ParcelData['MusicURL'].copy(buf, pos);
         pos += this.ParcelData['MusicURL'].length;
         buf.writeFloatLE(this.ParcelData['RegionX'], pos);
         pos += 4;
@@ -98,9 +98,9 @@ export class UpdateParcelMessage implements MessageBase
             OwnerID: UUID,
             GroupOwned: boolean,
             Status: number,
-            Name: string,
-            Description: string,
-            MusicURL: string,
+            Name: Buffer,
+            Description: Buffer,
+            MusicURL: Buffer,
             RegionX: number,
             RegionY: number,
             ActualArea: number,
@@ -120,9 +120,9 @@ export class UpdateParcelMessage implements MessageBase
             OwnerID: UUID.zero(),
             GroupOwned: false,
             Status: 0,
-            Name: '',
-            Description: '',
-            MusicURL: '',
+            Name: Buffer.allocUnsafe(0),
+            Description: Buffer.allocUnsafe(0),
+            MusicURL: Buffer.allocUnsafe(0),
             RegionX: 0,
             RegionY: 0,
             ActualArea: 0,
@@ -146,13 +146,13 @@ export class UpdateParcelMessage implements MessageBase
         newObjParcelData['GroupOwned'] = (buf.readUInt8(pos++) === 1);
         newObjParcelData['Status'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['Description'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['MusicURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjParcelData['MusicURL'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjParcelData['RegionX'] = buf.readFloatLE(pos);
         pos += 4;

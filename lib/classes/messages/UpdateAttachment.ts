@@ -40,8 +40,8 @@ export class UpdateAttachmentMessage implements MessageBase
         Flags: number;
         SaleType: number;
         SalePrice: number;
-        Name: string;
-        Description: string;
+        Name: Buffer;
+        Description: Buffer;
         CreationDate: number;
         CRC: number;
     };
@@ -92,10 +92,10 @@ export class UpdateAttachmentMessage implements MessageBase
         buf.writeInt32LE(this.InventoryData['SalePrice'], pos);
         pos += 4;
         buf.writeUInt8(this.InventoryData['Name'].length, pos++);
-        buf.write(this.InventoryData['Name'], pos);
+        this.InventoryData['Name'].copy(buf, pos);
         pos += this.InventoryData['Name'].length;
         buf.writeUInt8(this.InventoryData['Description'].length, pos++);
-        buf.write(this.InventoryData['Description'], pos);
+        this.InventoryData['Description'].copy(buf, pos);
         pos += this.InventoryData['Description'].length;
         buf.writeInt32LE(this.InventoryData['CreationDate'], pos);
         pos += 4;
@@ -155,8 +155,8 @@ export class UpdateAttachmentMessage implements MessageBase
             Flags: number,
             SaleType: number,
             SalePrice: number,
-            Name: string,
-            Description: string,
+            Name: Buffer,
+            Description: Buffer,
             CreationDate: number,
             CRC: number
         } = {
@@ -177,8 +177,8 @@ export class UpdateAttachmentMessage implements MessageBase
             Flags: 0,
             SaleType: 0,
             SalePrice: 0,
-            Name: '',
-            Description: '',
+            Name: Buffer.allocUnsafe(0),
+            Description: Buffer.allocUnsafe(0),
             CreationDate: 0,
             CRC: 0
         };
@@ -213,10 +213,10 @@ export class UpdateAttachmentMessage implements MessageBase
         newObjInventoryData['SalePrice'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInventoryData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjInventoryData['Description'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjInventoryData['CreationDate'] = buf.readInt32LE(pos);
         pos += 4;

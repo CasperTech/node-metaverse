@@ -12,11 +12,11 @@ export class AlertMessageMessage implements MessageBase
     id = Message.AlertMessage;
 
     AlertData: {
-        Message: string;
+        Message: Buffer;
     };
     AlertInfo: {
-        Message: string;
-        ExtraParams: string;
+        Message: Buffer;
+        ExtraParams: Buffer;
     }[];
     AgentInfo: {
         AgentID: UUID;
@@ -41,17 +41,17 @@ export class AlertMessageMessage implements MessageBase
     {
         const startPos = pos;
         buf.writeUInt8(this.AlertData['Message'].length, pos++);
-        buf.write(this.AlertData['Message'], pos);
+        this.AlertData['Message'].copy(buf, pos);
         pos += this.AlertData['Message'].length;
         let count = this.AlertInfo.length;
         buf.writeUInt8(this.AlertInfo.length, pos++);
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.AlertInfo[i]['Message'].length, pos++);
-            buf.write(this.AlertInfo[i]['Message'], pos);
+            this.AlertInfo[i]['Message'].copy(buf, pos);
             pos += this.AlertInfo[i]['Message'].length;
             buf.writeUInt8(this.AlertInfo[i]['ExtraParams'].length, pos++);
-            buf.write(this.AlertInfo[i]['ExtraParams'], pos);
+            this.AlertInfo[i]['ExtraParams'].copy(buf, pos);
             pos += this.AlertInfo[i]['ExtraParams'].length;
         }
         count = this.AgentInfo.length;
@@ -69,12 +69,12 @@ export class AlertMessageMessage implements MessageBase
         const startPos = pos;
         let varLength = 0;
         const newObjAlertData: {
-            Message: string
+            Message: Buffer
         } = {
-            Message: ''
+            Message: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjAlertData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjAlertData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.AlertData = newObjAlertData;
         let count = buf.readUInt8(pos++);
@@ -82,17 +82,17 @@ export class AlertMessageMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjAlertInfo: {
-                Message: string,
-                ExtraParams: string
+                Message: Buffer,
+                ExtraParams: Buffer
             } = {
-                Message: '',
-                ExtraParams: ''
+                Message: Buffer.allocUnsafe(0),
+                ExtraParams: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjAlertInfo['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjAlertInfo['Message'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjAlertInfo['ExtraParams'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjAlertInfo['ExtraParams'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.AlertInfo.push(newObjAlertInfo);
         }

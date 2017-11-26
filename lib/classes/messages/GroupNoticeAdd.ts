@@ -18,9 +18,9 @@ export class GroupNoticeAddMessage implements MessageBase
         ToGroupID: UUID;
         ID: UUID;
         Dialog: number;
-        FromAgentName: string;
-        Message: string;
-        BinaryBucket: string;
+        FromAgentName: Buffer;
+        Message: Buffer;
+        BinaryBucket: Buffer;
     };
 
     getSize(): number
@@ -39,15 +39,15 @@ export class GroupNoticeAddMessage implements MessageBase
         pos += 16;
         buf.writeUInt8(this.MessageBlock['Dialog'], pos++);
         buf.writeUInt8(this.MessageBlock['FromAgentName'].length, pos++);
-        buf.write(this.MessageBlock['FromAgentName'], pos);
+        this.MessageBlock['FromAgentName'].copy(buf, pos);
         pos += this.MessageBlock['FromAgentName'].length;
         buf.writeUInt16LE(this.MessageBlock['Message'].length, pos);
         pos += 2;
-        buf.write(this.MessageBlock['Message'], pos);
+        this.MessageBlock['Message'].copy(buf, pos);
         pos += this.MessageBlock['Message'].length;
         buf.writeUInt16LE(this.MessageBlock['BinaryBucket'].length, pos);
         pos += 2;
-        buf.write(this.MessageBlock['BinaryBucket'], pos);
+        this.MessageBlock['BinaryBucket'].copy(buf, pos);
         pos += this.MessageBlock['BinaryBucket'].length;
         return pos - startPos;
     }
@@ -68,16 +68,16 @@ export class GroupNoticeAddMessage implements MessageBase
             ToGroupID: UUID,
             ID: UUID,
             Dialog: number,
-            FromAgentName: string,
-            Message: string,
-            BinaryBucket: string
+            FromAgentName: Buffer,
+            Message: Buffer,
+            BinaryBucket: Buffer
         } = {
             ToGroupID: UUID.zero(),
             ID: UUID.zero(),
             Dialog: 0,
-            FromAgentName: '',
-            Message: '',
-            BinaryBucket: ''
+            FromAgentName: Buffer.allocUnsafe(0),
+            Message: Buffer.allocUnsafe(0),
+            BinaryBucket: Buffer.allocUnsafe(0)
         };
         newObjMessageBlock['ToGroupID'] = new UUID(buf, pos);
         pos += 16;
@@ -85,15 +85,15 @@ export class GroupNoticeAddMessage implements MessageBase
         pos += 16;
         newObjMessageBlock['Dialog'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjMessageBlock['FromAgentName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMessageBlock['FromAgentName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjMessageBlock['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMessageBlock['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjMessageBlock['BinaryBucket'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMessageBlock['BinaryBucket'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MessageBlock = newObjMessageBlock;
         return pos - startPos;

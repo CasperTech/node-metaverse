@@ -23,8 +23,8 @@ export class RezSingleAttachmentFromInvMessage implements MessageBase
         GroupMask: number;
         EveryoneMask: number;
         NextOwnerMask: number;
-        Name: string;
-        Description: string;
+        Name: Buffer;
+        Description: Buffer;
     };
 
     getSize(): number
@@ -53,10 +53,10 @@ export class RezSingleAttachmentFromInvMessage implements MessageBase
         buf.writeUInt32LE(this.ObjectData['NextOwnerMask'], pos);
         pos += 4;
         buf.writeUInt8(this.ObjectData['Name'].length, pos++);
-        buf.write(this.ObjectData['Name'], pos);
+        this.ObjectData['Name'].copy(buf, pos);
         pos += this.ObjectData['Name'].length;
         buf.writeUInt8(this.ObjectData['Description'].length, pos++);
-        buf.write(this.ObjectData['Description'], pos);
+        this.ObjectData['Description'].copy(buf, pos);
         pos += this.ObjectData['Description'].length;
         return pos - startPos;
     }
@@ -85,8 +85,8 @@ export class RezSingleAttachmentFromInvMessage implements MessageBase
             GroupMask: number,
             EveryoneMask: number,
             NextOwnerMask: number,
-            Name: string,
-            Description: string
+            Name: Buffer,
+            Description: Buffer
         } = {
             ItemID: UUID.zero(),
             OwnerID: UUID.zero(),
@@ -95,8 +95,8 @@ export class RezSingleAttachmentFromInvMessage implements MessageBase
             GroupMask: 0,
             EveryoneMask: 0,
             NextOwnerMask: 0,
-            Name: '',
-            Description: ''
+            Name: Buffer.allocUnsafe(0),
+            Description: Buffer.allocUnsafe(0)
         };
         newObjObjectData['ItemID'] = new UUID(buf, pos);
         pos += 16;
@@ -112,10 +112,10 @@ export class RezSingleAttachmentFromInvMessage implements MessageBase
         newObjObjectData['NextOwnerMask'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjObjectData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjObjectData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjObjectData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjObjectData['Description'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.ObjectData = newObjObjectData;
         return pos - startPos;

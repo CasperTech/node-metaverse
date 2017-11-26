@@ -13,15 +13,15 @@ export class ScriptDialogMessage implements MessageBase
 
     Data: {
         ObjectID: UUID;
-        FirstName: string;
-        LastName: string;
-        ObjectName: string;
-        Message: string;
+        FirstName: Buffer;
+        LastName: Buffer;
+        ObjectName: Buffer;
+        Message: Buffer;
         ChatChannel: number;
         ImageID: UUID;
     };
     Buttons: {
-        ButtonLabel: string;
+        ButtonLabel: Buffer;
     }[];
     OwnerData: {
         OwnerID: UUID;
@@ -48,17 +48,17 @@ export class ScriptDialogMessage implements MessageBase
         this.Data['ObjectID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['FirstName'].length, pos++);
-        buf.write(this.Data['FirstName'], pos);
+        this.Data['FirstName'].copy(buf, pos);
         pos += this.Data['FirstName'].length;
         buf.writeUInt8(this.Data['LastName'].length, pos++);
-        buf.write(this.Data['LastName'], pos);
+        this.Data['LastName'].copy(buf, pos);
         pos += this.Data['LastName'].length;
         buf.writeUInt8(this.Data['ObjectName'].length, pos++);
-        buf.write(this.Data['ObjectName'], pos);
+        this.Data['ObjectName'].copy(buf, pos);
         pos += this.Data['ObjectName'].length;
         buf.writeUInt16LE(this.Data['Message'].length, pos);
         pos += 2;
-        buf.write(this.Data['Message'], pos);
+        this.Data['Message'].copy(buf, pos);
         pos += this.Data['Message'].length;
         buf.writeInt32LE(this.Data['ChatChannel'], pos);
         pos += 4;
@@ -69,7 +69,7 @@ export class ScriptDialogMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             buf.writeUInt8(this.Buttons[i]['ButtonLabel'].length, pos++);
-            buf.write(this.Buttons[i]['ButtonLabel'], pos);
+            this.Buttons[i]['ButtonLabel'].copy(buf, pos);
             pos += this.Buttons[i]['ButtonLabel'].length;
         }
         count = this.OwnerData.length;
@@ -88,35 +88,35 @@ export class ScriptDialogMessage implements MessageBase
         let varLength = 0;
         const newObjData: {
             ObjectID: UUID,
-            FirstName: string,
-            LastName: string,
-            ObjectName: string,
-            Message: string,
+            FirstName: Buffer,
+            LastName: Buffer,
+            ObjectName: Buffer,
+            Message: Buffer,
             ChatChannel: number,
             ImageID: UUID
         } = {
             ObjectID: UUID.zero(),
-            FirstName: '',
-            LastName: '',
-            ObjectName: '',
-            Message: '',
+            FirstName: Buffer.allocUnsafe(0),
+            LastName: Buffer.allocUnsafe(0),
+            ObjectName: Buffer.allocUnsafe(0),
+            Message: Buffer.allocUnsafe(0),
             ChatChannel: 0,
             ImageID: UUID.zero()
         };
         newObjData['ObjectID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['FirstName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['FirstName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['LastName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['LastName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Message'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Message'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['ChatChannel'] = buf.readInt32LE(pos);
         pos += 4;
@@ -128,12 +128,12 @@ export class ScriptDialogMessage implements MessageBase
         for (let i = 0; i < count; i++)
         {
             const newObjButtons: {
-                ButtonLabel: string
+                ButtonLabel: Buffer
             } = {
-                ButtonLabel: ''
+                ButtonLabel: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjButtons['ButtonLabel'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjButtons['ButtonLabel'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.Buttons.push(newObjButtons);
         }

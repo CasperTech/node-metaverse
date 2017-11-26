@@ -18,7 +18,7 @@ export class AvatarTextureUpdateMessage implements MessageBase
     WearableData: {
         CacheID: UUID;
         TextureIndex: number;
-        HostName: string;
+        HostName: Buffer;
     }[];
     TextureData: {
         TextureID: UUID;
@@ -53,7 +53,7 @@ export class AvatarTextureUpdateMessage implements MessageBase
             pos += 16;
             buf.writeUInt8(this.WearableData[i]['TextureIndex'], pos++);
             buf.writeUInt8(this.WearableData[i]['HostName'].length, pos++);
-            buf.write(this.WearableData[i]['HostName'], pos);
+            this.WearableData[i]['HostName'].copy(buf, pos);
             pos += this.WearableData[i]['HostName'].length;
         }
         count = this.TextureData.length;
@@ -88,17 +88,17 @@ export class AvatarTextureUpdateMessage implements MessageBase
             const newObjWearableData: {
                 CacheID: UUID,
                 TextureIndex: number,
-                HostName: string
+                HostName: Buffer
             } = {
                 CacheID: UUID.zero(),
                 TextureIndex: 0,
-                HostName: ''
+                HostName: Buffer.allocUnsafe(0)
             };
             newObjWearableData['CacheID'] = new UUID(buf, pos);
             pos += 16;
             newObjWearableData['TextureIndex'] = buf.readUInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjWearableData['HostName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjWearableData['HostName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.WearableData.push(newObjWearableData);
         }

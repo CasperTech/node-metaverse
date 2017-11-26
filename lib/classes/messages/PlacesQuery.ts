@@ -20,10 +20,10 @@ export class PlacesQueryMessage implements MessageBase
         TransactionID: UUID;
     };
     QueryData: {
-        QueryText: string;
+        QueryText: Buffer;
         QueryFlags: number;
         Category: number;
-        SimName: string;
+        SimName: Buffer;
     };
 
     getSize(): number
@@ -43,13 +43,13 @@ export class PlacesQueryMessage implements MessageBase
         this.TransactionData['TransactionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.QueryData['QueryText'].length, pos++);
-        buf.write(this.QueryData['QueryText'], pos);
+        this.QueryData['QueryText'].copy(buf, pos);
         pos += this.QueryData['QueryText'].length;
         buf.writeUInt32LE(this.QueryData['QueryFlags'], pos);
         pos += 4;
         buf.writeInt8(this.QueryData['Category'], pos++);
         buf.writeUInt8(this.QueryData['SimName'].length, pos++);
-        buf.write(this.QueryData['SimName'], pos);
+        this.QueryData['SimName'].copy(buf, pos);
         pos += this.QueryData['SimName'].length;
         return pos - startPos;
     }
@@ -83,24 +83,24 @@ export class PlacesQueryMessage implements MessageBase
         pos += 16;
         this.TransactionData = newObjTransactionData;
         const newObjQueryData: {
-            QueryText: string,
+            QueryText: Buffer,
             QueryFlags: number,
             Category: number,
-            SimName: string
+            SimName: Buffer
         } = {
-            QueryText: '',
+            QueryText: Buffer.allocUnsafe(0),
             QueryFlags: 0,
             Category: 0,
-            SimName: ''
+            SimName: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['QueryText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjQueryData['QueryText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjQueryData['QueryFlags'] = buf.readUInt32LE(pos);
         pos += 4;
         newObjQueryData['Category'] = buf.readInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjQueryData['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.QueryData = newObjQueryData;
         return pos - startPos;

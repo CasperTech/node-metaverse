@@ -26,7 +26,7 @@ export class ObjectUpdateMessage implements MessageBase
         Material: number;
         ClickAction: number;
         Scale: Vector3;
-        ObjectData: string;
+        ObjectData: Buffer;
         ParentID: number;
         UpdateFlags: number;
         PathCurve: number;
@@ -47,15 +47,15 @@ export class ObjectUpdateMessage implements MessageBase
         ProfileBegin: number;
         ProfileEnd: number;
         ProfileHollow: number;
-        TextureEntry: string;
-        TextureAnim: string;
-        NameValue: string;
-        Data: string;
-        Text: string;
+        TextureEntry: Buffer;
+        TextureAnim: Buffer;
+        NameValue: Buffer;
+        Data: Buffer;
+        Text: Buffer;
         TextColor: Buffer;
-        MediaURL: string;
-        PSBlock: string;
-        ExtraParams: string;
+        MediaURL: Buffer;
+        PSBlock: Buffer;
+        ExtraParams: Buffer;
         Sound: UUID;
         OwnerID: UUID;
         Gain: number;
@@ -107,7 +107,7 @@ export class ObjectUpdateMessage implements MessageBase
             this.ObjectData[i]['Scale'].writeToBuffer(buf, pos, false);
             pos += 12;
             buf.writeUInt8(this.ObjectData[i]['ObjectData'].length, pos++);
-            buf.write(this.ObjectData[i]['ObjectData'], pos);
+            this.ObjectData[i]['ObjectData'].copy(buf, pos);
             pos += this.ObjectData[i]['ObjectData'].length;
             buf.writeUInt32LE(this.ObjectData[i]['ParentID'], pos);
             pos += 4;
@@ -138,32 +138,32 @@ export class ObjectUpdateMessage implements MessageBase
             pos += 2;
             buf.writeUInt16LE(this.ObjectData[i]['TextureEntry'].length, pos);
             pos += 2;
-            buf.write(this.ObjectData[i]['TextureEntry'], pos);
+            this.ObjectData[i]['TextureEntry'].copy(buf, pos);
             pos += this.ObjectData[i]['TextureEntry'].length;
             buf.writeUInt8(this.ObjectData[i]['TextureAnim'].length, pos++);
-            buf.write(this.ObjectData[i]['TextureAnim'], pos);
+            this.ObjectData[i]['TextureAnim'].copy(buf, pos);
             pos += this.ObjectData[i]['TextureAnim'].length;
             buf.writeUInt16LE(this.ObjectData[i]['NameValue'].length, pos);
             pos += 2;
-            buf.write(this.ObjectData[i]['NameValue'], pos);
+            this.ObjectData[i]['NameValue'].copy(buf, pos);
             pos += this.ObjectData[i]['NameValue'].length;
             buf.writeUInt16LE(this.ObjectData[i]['Data'].length, pos);
             pos += 2;
-            buf.write(this.ObjectData[i]['Data'], pos);
+            this.ObjectData[i]['Data'].copy(buf, pos);
             pos += this.ObjectData[i]['Data'].length;
             buf.writeUInt8(this.ObjectData[i]['Text'].length, pos++);
-            buf.write(this.ObjectData[i]['Text'], pos);
+            this.ObjectData[i]['Text'].copy(buf, pos);
             pos += this.ObjectData[i]['Text'].length;
             this.ObjectData[i]['TextColor'].copy(buf, pos);
             pos += 4;
             buf.writeUInt8(this.ObjectData[i]['MediaURL'].length, pos++);
-            buf.write(this.ObjectData[i]['MediaURL'], pos);
+            this.ObjectData[i]['MediaURL'].copy(buf, pos);
             pos += this.ObjectData[i]['MediaURL'].length;
             buf.writeUInt8(this.ObjectData[i]['PSBlock'].length, pos++);
-            buf.write(this.ObjectData[i]['PSBlock'], pos);
+            this.ObjectData[i]['PSBlock'].copy(buf, pos);
             pos += this.ObjectData[i]['PSBlock'].length;
             buf.writeUInt8(this.ObjectData[i]['ExtraParams'].length, pos++);
-            buf.write(this.ObjectData[i]['ExtraParams'], pos);
+            this.ObjectData[i]['ExtraParams'].copy(buf, pos);
             pos += this.ObjectData[i]['ExtraParams'].length;
             this.ObjectData[i]['Sound'].writeToBuffer(buf, pos);
             pos += 16;
@@ -212,7 +212,7 @@ export class ObjectUpdateMessage implements MessageBase
                 Material: number,
                 ClickAction: number,
                 Scale: Vector3,
-                ObjectData: string,
+                ObjectData: Buffer,
                 ParentID: number,
                 UpdateFlags: number,
                 PathCurve: number,
@@ -233,15 +233,15 @@ export class ObjectUpdateMessage implements MessageBase
                 ProfileBegin: number,
                 ProfileEnd: number,
                 ProfileHollow: number,
-                TextureEntry: string,
-                TextureAnim: string,
-                NameValue: string,
-                Data: string,
-                Text: string,
+                TextureEntry: Buffer,
+                TextureAnim: Buffer,
+                NameValue: Buffer,
+                Data: Buffer,
+                Text: Buffer,
                 TextColor: Buffer,
-                MediaURL: string,
-                PSBlock: string,
-                ExtraParams: string,
+                MediaURL: Buffer,
+                PSBlock: Buffer,
+                ExtraParams: Buffer,
                 Sound: UUID,
                 OwnerID: UUID,
                 Gain: number,
@@ -259,7 +259,7 @@ export class ObjectUpdateMessage implements MessageBase
                 Material: 0,
                 ClickAction: 0,
                 Scale: Vector3.getZero(),
-                ObjectData: '',
+                ObjectData: Buffer.allocUnsafe(0),
                 ParentID: 0,
                 UpdateFlags: 0,
                 PathCurve: 0,
@@ -280,15 +280,15 @@ export class ObjectUpdateMessage implements MessageBase
                 ProfileBegin: 0,
                 ProfileEnd: 0,
                 ProfileHollow: 0,
-                TextureEntry: '',
-                TextureAnim: '',
-                NameValue: '',
-                Data: '',
-                Text: '',
+                TextureEntry: Buffer.allocUnsafe(0),
+                TextureAnim: Buffer.allocUnsafe(0),
+                NameValue: Buffer.allocUnsafe(0),
+                Data: Buffer.allocUnsafe(0),
+                Text: Buffer.allocUnsafe(0),
                 TextColor: Buffer.allocUnsafe(0),
-                MediaURL: '',
-                PSBlock: '',
-                ExtraParams: '',
+                MediaURL: Buffer.allocUnsafe(0),
+                PSBlock: Buffer.allocUnsafe(0),
+                ExtraParams: Buffer.allocUnsafe(0),
                 Sound: UUID.zero(),
                 OwnerID: UUID.zero(),
                 Gain: 0,
@@ -311,7 +311,7 @@ export class ObjectUpdateMessage implements MessageBase
             newObjObjectData['Scale'] = new Vector3(buf, pos, false);
             pos += 12;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['ObjectData'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['ObjectData'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjObjectData['ParentID'] = buf.readUInt32LE(pos);
             pos += 4;
@@ -342,32 +342,32 @@ export class ObjectUpdateMessage implements MessageBase
             pos += 2;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['TextureEntry'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['TextureEntry'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['TextureAnim'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['TextureAnim'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['NameValue'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['NameValue'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['Data'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Data'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Text'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['Text'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjObjectData['TextColor'] = buf.slice(pos, pos + 4);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['MediaURL'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['MediaURL'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['PSBlock'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['PSBlock'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['ExtraParams'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjObjectData['ExtraParams'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjObjectData['Sound'] = new UUID(buf, pos);
             pos += 16;

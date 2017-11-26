@@ -19,8 +19,8 @@ export class ClassifiedInfoUpdateMessage implements MessageBase
     Data: {
         ClassifiedID: UUID;
         Category: number;
-        Name: string;
-        Desc: string;
+        Name: Buffer;
+        Desc: Buffer;
         ParcelID: UUID;
         ParentEstate: number;
         SnapshotID: UUID;
@@ -46,11 +46,11 @@ export class ClassifiedInfoUpdateMessage implements MessageBase
         buf.writeUInt32LE(this.Data['Category'], pos);
         pos += 4;
         buf.writeUInt8(this.Data['Name'].length, pos++);
-        buf.write(this.Data['Name'], pos);
+        this.Data['Name'].copy(buf, pos);
         pos += this.Data['Name'].length;
         buf.writeUInt16LE(this.Data['Desc'].length, pos);
         pos += 2;
-        buf.write(this.Data['Desc'], pos);
+        this.Data['Desc'].copy(buf, pos);
         pos += this.Data['Desc'].length;
         this.Data['ParcelID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -85,8 +85,8 @@ export class ClassifiedInfoUpdateMessage implements MessageBase
         const newObjData: {
             ClassifiedID: UUID,
             Category: number,
-            Name: string,
-            Desc: string,
+            Name: Buffer,
+            Desc: Buffer,
             ParcelID: UUID,
             ParentEstate: number,
             SnapshotID: UUID,
@@ -96,8 +96,8 @@ export class ClassifiedInfoUpdateMessage implements MessageBase
         } = {
             ClassifiedID: UUID.zero(),
             Category: 0,
-            Name: '',
-            Desc: '',
+            Name: Buffer.allocUnsafe(0),
+            Desc: Buffer.allocUnsafe(0),
             ParcelID: UUID.zero(),
             ParentEstate: 0,
             SnapshotID: UUID.zero(),
@@ -110,11 +110,11 @@ export class ClassifiedInfoUpdateMessage implements MessageBase
         newObjData['Category'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Desc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Desc'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['ParcelID'] = new UUID(buf, pos);
         pos += 16;

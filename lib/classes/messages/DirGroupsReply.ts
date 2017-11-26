@@ -19,7 +19,7 @@ export class DirGroupsReplyMessage implements MessageBase
     };
     QueryReplies: {
         GroupID: UUID;
-        GroupName: string;
+        GroupName: Buffer;
         Members: number;
         SearchOrder: number;
     }[];
@@ -53,7 +53,7 @@ export class DirGroupsReplyMessage implements MessageBase
             this.QueryReplies[i]['GroupID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.QueryReplies[i]['GroupName'].length, pos++);
-            buf.write(this.QueryReplies[i]['GroupName'], pos);
+            this.QueryReplies[i]['GroupName'].copy(buf, pos);
             pos += this.QueryReplies[i]['GroupName'].length;
             buf.writeInt32LE(this.QueryReplies[i]['Members'], pos);
             pos += 4;
@@ -89,19 +89,19 @@ export class DirGroupsReplyMessage implements MessageBase
         {
             const newObjQueryReplies: {
                 GroupID: UUID,
-                GroupName: string,
+                GroupName: Buffer,
                 Members: number,
                 SearchOrder: number
             } = {
                 GroupID: UUID.zero(),
-                GroupName: '',
+                GroupName: Buffer.allocUnsafe(0),
                 Members: 0,
                 SearchOrder: 0
             };
             newObjQueryReplies['GroupID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['GroupName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjQueryReplies['GroupName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjQueryReplies['Members'] = buf.readInt32LE(pos);
             pos += 4;

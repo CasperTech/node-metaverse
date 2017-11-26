@@ -17,7 +17,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
         SessionID: UUID;
     };
     RegionInfo: {
-        SimName: string;
+        SimName: Buffer;
         EstateID: number;
         ParentEstateID: number;
         RegionFlags: number;
@@ -43,7 +43,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
         this.AgentData['SessionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.RegionInfo['SimName'].length, pos++);
-        buf.write(this.RegionInfo['SimName'], pos);
+        this.RegionInfo['SimName'].copy(buf, pos);
         pos += this.RegionInfo['SimName'].length;
         buf.writeUInt32LE(this.RegionInfo['EstateID'], pos);
         pos += 4;
@@ -88,7 +88,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
         pos += 16;
         this.AgentData = newObjAgentData;
         const newObjRegionInfo: {
-            SimName: string,
+            SimName: Buffer,
             EstateID: number,
             ParentEstateID: number,
             RegionFlags: number,
@@ -97,7 +97,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
             RedirectGridX: number,
             RedirectGridY: number
         } = {
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             EstateID: 0,
             ParentEstateID: 0,
             RegionFlags: 0,
@@ -107,7 +107,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
             RedirectGridY: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjRegionInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjRegionInfo['EstateID'] = buf.readUInt32LE(pos);
         pos += 4;

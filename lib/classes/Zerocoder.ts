@@ -25,8 +25,9 @@ export class Zerocoder
             bytes += (zero - 2);
         }
 
-        const newBuf = Buffer.allocUnsafe((end + 1) - bytes);
-        buf.copy(newBuf, 0, 0, start - 1);
+        const newBuf = Buffer.allocUnsafe(end - bytes);
+        buf.copy(newBuf, 0, 0, start);
+
         let newBufIndex = start;
         zero = 0;
         for (let i = start; i <= end; i++)

@@ -13,13 +13,13 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
 
     Data: {
         RegionID: UUID;
-        HostName: string;
+        HostName: Buffer;
         X: number;
         Y: number;
         PID: number;
         AgentCount: number;
         TimeToLive: number;
-        Status: string;
+        Status: Buffer;
     };
 
     getSize(): number
@@ -33,7 +33,7 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
         this.Data['RegionID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['HostName'].length, pos++);
-        buf.write(this.Data['HostName'], pos);
+        this.Data['HostName'].copy(buf, pos);
         pos += this.Data['HostName'].length;
         buf.writeInt32LE(this.Data['X'], pos);
         pos += 4;
@@ -46,7 +46,7 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
         buf.writeInt32LE(this.Data['TimeToLive'], pos);
         pos += 4;
         buf.writeUInt8(this.Data['Status'].length, pos++);
-        buf.write(this.Data['Status'], pos);
+        this.Data['Status'].copy(buf, pos);
         pos += this.Data['Status'].length;
         return pos - startPos;
     }
@@ -57,27 +57,27 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
         let varLength = 0;
         const newObjData: {
             RegionID: UUID,
-            HostName: string,
+            HostName: Buffer,
             X: number,
             Y: number,
             PID: number,
             AgentCount: number,
             TimeToLive: number,
-            Status: string
+            Status: Buffer
         } = {
             RegionID: UUID.zero(),
-            HostName: '',
+            HostName: Buffer.allocUnsafe(0),
             X: 0,
             Y: 0,
             PID: 0,
             AgentCount: 0,
             TimeToLive: 0,
-            Status: ''
+            Status: Buffer.allocUnsafe(0)
         };
         newObjData['RegionID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['HostName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['HostName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['X'] = buf.readInt32LE(pos);
         pos += 4;
@@ -90,7 +90,7 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
         newObjData['TimeToLive'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['Status'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Status'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

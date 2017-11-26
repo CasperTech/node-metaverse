@@ -21,14 +21,14 @@ export class ClassifiedInfoReplyMessage implements MessageBase
         CreationDate: number;
         ExpirationDate: number;
         Category: number;
-        Name: string;
-        Desc: string;
+        Name: Buffer;
+        Desc: Buffer;
         ParcelID: UUID;
         ParentEstate: number;
         SnapshotID: UUID;
-        SimName: string;
+        SimName: Buffer;
         PosGlobal: Vector3;
-        ParcelName: string;
+        ParcelName: Buffer;
         ClassifiedFlags: number;
         PriceForListing: number;
     };
@@ -54,11 +54,11 @@ export class ClassifiedInfoReplyMessage implements MessageBase
         buf.writeUInt32LE(this.Data['Category'], pos);
         pos += 4;
         buf.writeUInt8(this.Data['Name'].length, pos++);
-        buf.write(this.Data['Name'], pos);
+        this.Data['Name'].copy(buf, pos);
         pos += this.Data['Name'].length;
         buf.writeUInt16LE(this.Data['Desc'].length, pos);
         pos += 2;
-        buf.write(this.Data['Desc'], pos);
+        this.Data['Desc'].copy(buf, pos);
         pos += this.Data['Desc'].length;
         this.Data['ParcelID'].writeToBuffer(buf, pos);
         pos += 16;
@@ -67,12 +67,12 @@ export class ClassifiedInfoReplyMessage implements MessageBase
         this.Data['SnapshotID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.Data['SimName'].length, pos++);
-        buf.write(this.Data['SimName'], pos);
+        this.Data['SimName'].copy(buf, pos);
         pos += this.Data['SimName'].length;
         this.Data['PosGlobal'].writeToBuffer(buf, pos, true);
         pos += 24;
         buf.writeUInt8(this.Data['ParcelName'].length, pos++);
-        buf.write(this.Data['ParcelName'], pos);
+        this.Data['ParcelName'].copy(buf, pos);
         pos += this.Data['ParcelName'].length;
         buf.writeUInt8(this.Data['ClassifiedFlags'], pos++);
         buf.writeInt32LE(this.Data['PriceForListing'], pos);
@@ -98,14 +98,14 @@ export class ClassifiedInfoReplyMessage implements MessageBase
             CreationDate: number,
             ExpirationDate: number,
             Category: number,
-            Name: string,
-            Desc: string,
+            Name: Buffer,
+            Desc: Buffer,
             ParcelID: UUID,
             ParentEstate: number,
             SnapshotID: UUID,
-            SimName: string,
+            SimName: Buffer,
             PosGlobal: Vector3,
-            ParcelName: string,
+            ParcelName: Buffer,
             ClassifiedFlags: number,
             PriceForListing: number
         } = {
@@ -114,14 +114,14 @@ export class ClassifiedInfoReplyMessage implements MessageBase
             CreationDate: 0,
             ExpirationDate: 0,
             Category: 0,
-            Name: '',
-            Desc: '',
+            Name: Buffer.allocUnsafe(0),
+            Desc: Buffer.allocUnsafe(0),
             ParcelID: UUID.zero(),
             ParentEstate: 0,
             SnapshotID: UUID.zero(),
-            SimName: '',
+            SimName: Buffer.allocUnsafe(0),
             PosGlobal: Vector3.getZero(),
-            ParcelName: '',
+            ParcelName: Buffer.allocUnsafe(0),
             ClassifiedFlags: 0,
             PriceForListing: 0
         };
@@ -136,11 +136,11 @@ export class ClassifiedInfoReplyMessage implements MessageBase
         newObjData['Category'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Desc'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Desc'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['ParcelID'] = new UUID(buf, pos);
         pos += 16;
@@ -149,12 +149,12 @@ export class ClassifiedInfoReplyMessage implements MessageBase
         newObjData['SnapshotID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['SimName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['SimName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['PosGlobal'] = new Vector3(buf, pos, true);
         pos += 24;
         varLength = buf.readUInt8(pos++);
-        newObjData['ParcelName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['ParcelName'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjData['ClassifiedFlags'] = buf.readUInt8(pos++);
         newObjData['PriceForListing'] = buf.readInt32LE(pos);

@@ -14,7 +14,7 @@ export class RequestXferMessage implements MessageBase
 
     XferID: {
         ID: Long;
-        Filename: string;
+        Filename: Buffer;
         FilePath: number;
         DeleteOnCompletion: boolean;
         UseBigPackets: boolean;
@@ -35,7 +35,7 @@ export class RequestXferMessage implements MessageBase
         buf.writeInt32LE(this.XferID['ID'].high, pos);
         pos += 4;
         buf.writeUInt8(this.XferID['Filename'].length, pos++);
-        buf.write(this.XferID['Filename'], pos);
+        this.XferID['Filename'].copy(buf, pos);
         pos += this.XferID['Filename'].length;
         buf.writeUInt8(this.XferID['FilePath'], pos++);
         buf.writeUInt8((this.XferID['DeleteOnCompletion']) ? 1 : 0, pos++);
@@ -53,7 +53,7 @@ export class RequestXferMessage implements MessageBase
         let varLength = 0;
         const newObjXferID: {
             ID: Long,
-            Filename: string,
+            Filename: Buffer,
             FilePath: number,
             DeleteOnCompletion: boolean,
             UseBigPackets: boolean,
@@ -61,7 +61,7 @@ export class RequestXferMessage implements MessageBase
             VFileType: number
         } = {
             ID: Long.ZERO,
-            Filename: '',
+            Filename: Buffer.allocUnsafe(0),
             FilePath: 0,
             DeleteOnCompletion: false,
             UseBigPackets: false,
@@ -71,7 +71,7 @@ export class RequestXferMessage implements MessageBase
         newObjXferID['ID'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
         pos += 8;
         varLength = buf.readUInt8(pos++);
-        newObjXferID['Filename'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjXferID['Filename'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjXferID['FilePath'] = buf.readUInt8(pos++);
         newObjXferID['DeleteOnCompletion'] = (buf.readUInt8(pos++) === 1);

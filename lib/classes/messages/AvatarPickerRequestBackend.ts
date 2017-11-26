@@ -18,7 +18,7 @@ export class AvatarPickerRequestBackendMessage implements MessageBase
         GodLevel: number;
     };
     Data: {
-        Name: string;
+        Name: Buffer;
     };
 
     getSize(): number
@@ -37,7 +37,7 @@ export class AvatarPickerRequestBackendMessage implements MessageBase
         pos += 16;
         buf.writeUInt8(this.AgentData['GodLevel'], pos++);
         buf.writeUInt8(this.Data['Name'].length, pos++);
-        buf.write(this.Data['Name'], pos);
+        this.Data['Name'].copy(buf, pos);
         pos += this.Data['Name'].length;
         return pos - startPos;
     }
@@ -66,12 +66,12 @@ export class AvatarPickerRequestBackendMessage implements MessageBase
         newObjAgentData['GodLevel'] = buf.readUInt8(pos++);
         this.AgentData = newObjAgentData;
         const newObjData: {
-            Name: string
+            Name: Buffer
         } = {
-            Name: ''
+            Name: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

@@ -13,7 +13,7 @@ export class ScriptDataReplyMessage implements MessageBase
 
     DataBlock: {
         Hash: Long;
-        Reply: string;
+        Reply: Buffer;
     }[];
 
     getSize(): number
@@ -44,7 +44,7 @@ export class ScriptDataReplyMessage implements MessageBase
             pos += 4;
             buf.writeUInt16LE(this.DataBlock[i]['Reply'].length, pos);
             pos += 2;
-            buf.write(this.DataBlock[i]['Reply'], pos);
+            this.DataBlock[i]['Reply'].copy(buf, pos);
             pos += this.DataBlock[i]['Reply'].length;
         }
         return pos - startPos;
@@ -60,16 +60,16 @@ export class ScriptDataReplyMessage implements MessageBase
         {
             const newObjDataBlock: {
                 Hash: Long,
-                Reply: string
+                Reply: Buffer
             } = {
                 Hash: Long.ZERO,
-                Reply: ''
+                Reply: Buffer.allocUnsafe(0)
             };
             newObjDataBlock['Hash'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
             pos += 8;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjDataBlock['Reply'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjDataBlock['Reply'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.DataBlock.push(newObjDataBlock);
         }

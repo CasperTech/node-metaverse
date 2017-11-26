@@ -17,7 +17,7 @@ export class DirFindQueryMessage implements MessageBase
     };
     QueryData: {
         QueryID: UUID;
-        QueryText: string;
+        QueryText: Buffer;
         QueryFlags: number;
         QueryStart: number;
     };
@@ -37,7 +37,7 @@ export class DirFindQueryMessage implements MessageBase
         this.QueryData['QueryID'].writeToBuffer(buf, pos);
         pos += 16;
         buf.writeUInt8(this.QueryData['QueryText'].length, pos++);
-        buf.write(this.QueryData['QueryText'], pos);
+        this.QueryData['QueryText'].copy(buf, pos);
         pos += this.QueryData['QueryText'].length;
         buf.writeUInt32LE(this.QueryData['QueryFlags'], pos);
         pos += 4;
@@ -64,19 +64,19 @@ export class DirFindQueryMessage implements MessageBase
         this.AgentData = newObjAgentData;
         const newObjQueryData: {
             QueryID: UUID,
-            QueryText: string,
+            QueryText: Buffer,
             QueryFlags: number,
             QueryStart: number
         } = {
             QueryID: UUID.zero(),
-            QueryText: '',
+            QueryText: Buffer.allocUnsafe(0),
             QueryFlags: 0,
             QueryStart: 0
         };
         newObjQueryData['QueryID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['QueryText'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjQueryData['QueryText'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjQueryData['QueryFlags'] = buf.readUInt32LE(pos);
         pos += 4;

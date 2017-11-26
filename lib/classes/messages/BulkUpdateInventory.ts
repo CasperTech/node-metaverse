@@ -19,7 +19,7 @@ export class BulkUpdateInventoryMessage implements MessageBase
         FolderID: UUID;
         ParentID: UUID;
         Type: number;
-        Name: string;
+        Name: Buffer;
     }[];
     ItemData: {
         ItemID: UUID;
@@ -40,8 +40,8 @@ export class BulkUpdateInventoryMessage implements MessageBase
         Flags: number;
         SaleType: number;
         SalePrice: number;
-        Name: string;
-        Description: string;
+        Name: Buffer;
+        Description: Buffer;
         CreationDate: number;
         CRC: number;
     }[];
@@ -78,7 +78,7 @@ export class BulkUpdateInventoryMessage implements MessageBase
             pos += 16;
             buf.writeInt8(this.FolderData[i]['Type'], pos++);
             buf.writeUInt8(this.FolderData[i]['Name'].length, pos++);
-            buf.write(this.FolderData[i]['Name'], pos);
+            this.FolderData[i]['Name'].copy(buf, pos);
             pos += this.FolderData[i]['Name'].length;
         }
         count = this.ItemData.length;
@@ -118,10 +118,10 @@ export class BulkUpdateInventoryMessage implements MessageBase
             buf.writeInt32LE(this.ItemData[i]['SalePrice'], pos);
             pos += 4;
             buf.writeUInt8(this.ItemData[i]['Name'].length, pos++);
-            buf.write(this.ItemData[i]['Name'], pos);
+            this.ItemData[i]['Name'].copy(buf, pos);
             pos += this.ItemData[i]['Name'].length;
             buf.writeUInt8(this.ItemData[i]['Description'].length, pos++);
-            buf.write(this.ItemData[i]['Description'], pos);
+            this.ItemData[i]['Description'].copy(buf, pos);
             pos += this.ItemData[i]['Description'].length;
             buf.writeInt32LE(this.ItemData[i]['CreationDate'], pos);
             pos += 4;
@@ -155,12 +155,12 @@ export class BulkUpdateInventoryMessage implements MessageBase
                 FolderID: UUID,
                 ParentID: UUID,
                 Type: number,
-                Name: string
+                Name: Buffer
             } = {
                 FolderID: UUID.zero(),
                 ParentID: UUID.zero(),
                 Type: 0,
-                Name: ''
+                Name: Buffer.allocUnsafe(0)
             };
             newObjFolderData['FolderID'] = new UUID(buf, pos);
             pos += 16;
@@ -168,7 +168,7 @@ export class BulkUpdateInventoryMessage implements MessageBase
             pos += 16;
             newObjFolderData['Type'] = buf.readInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjFolderData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjFolderData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.FolderData.push(newObjFolderData);
         }
@@ -195,8 +195,8 @@ export class BulkUpdateInventoryMessage implements MessageBase
                 Flags: number,
                 SaleType: number,
                 SalePrice: number,
-                Name: string,
-                Description: string,
+                Name: Buffer,
+                Description: Buffer,
                 CreationDate: number,
                 CRC: number
             } = {
@@ -218,8 +218,8 @@ export class BulkUpdateInventoryMessage implements MessageBase
                 Flags: 0,
                 SaleType: 0,
                 SalePrice: 0,
-                Name: '',
-                Description: '',
+                Name: Buffer.allocUnsafe(0),
+                Description: Buffer.allocUnsafe(0),
                 CreationDate: 0,
                 CRC: 0
             };
@@ -256,10 +256,10 @@ export class BulkUpdateInventoryMessage implements MessageBase
             newObjItemData['SalePrice'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjItemData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjItemData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjItemData['Description'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjItemData['Description'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjItemData['CreationDate'] = buf.readInt32LE(pos);
             pos += 4;

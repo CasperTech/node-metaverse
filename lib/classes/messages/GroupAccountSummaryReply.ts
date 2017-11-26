@@ -19,7 +19,7 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         RequestID: UUID;
         IntervalDays: number;
         CurrentInterval: number;
-        StartDate: string;
+        StartDate: Buffer;
         Balance: number;
         TotalCredits: number;
         TotalDebits: number;
@@ -34,8 +34,8 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         GroupTaxEstimate: number;
         ParcelDirFeeEstimate: number;
         NonExemptMembers: number;
-        LastTaxDate: string;
-        TaxDate: string;
+        LastTaxDate: Buffer;
+        TaxDate: Buffer;
     };
 
     getSize(): number
@@ -57,7 +57,7 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         buf.writeInt32LE(this.MoneyData['CurrentInterval'], pos);
         pos += 4;
         buf.writeUInt8(this.MoneyData['StartDate'].length, pos++);
-        buf.write(this.MoneyData['StartDate'], pos);
+        this.MoneyData['StartDate'].copy(buf, pos);
         pos += this.MoneyData['StartDate'].length;
         buf.writeInt32LE(this.MoneyData['Balance'], pos);
         pos += 4;
@@ -88,10 +88,10 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         buf.writeInt32LE(this.MoneyData['NonExemptMembers'], pos);
         pos += 4;
         buf.writeUInt8(this.MoneyData['LastTaxDate'].length, pos++);
-        buf.write(this.MoneyData['LastTaxDate'], pos);
+        this.MoneyData['LastTaxDate'].copy(buf, pos);
         pos += this.MoneyData['LastTaxDate'].length;
         buf.writeUInt8(this.MoneyData['TaxDate'].length, pos++);
-        buf.write(this.MoneyData['TaxDate'], pos);
+        this.MoneyData['TaxDate'].copy(buf, pos);
         pos += this.MoneyData['TaxDate'].length;
         return pos - startPos;
     }
@@ -116,7 +116,7 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
             RequestID: UUID,
             IntervalDays: number,
             CurrentInterval: number,
-            StartDate: string,
+            StartDate: Buffer,
             Balance: number,
             TotalCredits: number,
             TotalDebits: number,
@@ -131,13 +131,13 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
             GroupTaxEstimate: number,
             ParcelDirFeeEstimate: number,
             NonExemptMembers: number,
-            LastTaxDate: string,
-            TaxDate: string
+            LastTaxDate: Buffer,
+            TaxDate: Buffer
         } = {
             RequestID: UUID.zero(),
             IntervalDays: 0,
             CurrentInterval: 0,
-            StartDate: '',
+            StartDate: Buffer.allocUnsafe(0),
             Balance: 0,
             TotalCredits: 0,
             TotalDebits: 0,
@@ -152,8 +152,8 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
             GroupTaxEstimate: 0,
             ParcelDirFeeEstimate: 0,
             NonExemptMembers: 0,
-            LastTaxDate: '',
-            TaxDate: ''
+            LastTaxDate: Buffer.allocUnsafe(0),
+            TaxDate: Buffer.allocUnsafe(0)
         };
         newObjMoneyData['RequestID'] = new UUID(buf, pos);
         pos += 16;
@@ -162,7 +162,7 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         newObjMoneyData['CurrentInterval'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['StartDate'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMoneyData['StartDate'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         newObjMoneyData['Balance'] = buf.readInt32LE(pos);
         pos += 4;
@@ -193,10 +193,10 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         newObjMoneyData['NonExemptMembers'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['LastTaxDate'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMoneyData['LastTaxDate'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['TaxDate'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjMoneyData['TaxDate'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         return pos - startPos;

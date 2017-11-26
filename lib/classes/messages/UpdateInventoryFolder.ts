@@ -19,7 +19,7 @@ export class UpdateInventoryFolderMessage implements MessageBase
         FolderID: UUID;
         ParentID: UUID;
         Type: number;
-        Name: string;
+        Name: Buffer;
     }[];
 
     getSize(): number
@@ -54,7 +54,7 @@ export class UpdateInventoryFolderMessage implements MessageBase
             pos += 16;
             buf.writeInt8(this.FolderData[i]['Type'], pos++);
             buf.writeUInt8(this.FolderData[i]['Name'].length, pos++);
-            buf.write(this.FolderData[i]['Name'], pos);
+            this.FolderData[i]['Name'].copy(buf, pos);
             pos += this.FolderData[i]['Name'].length;
         }
         return pos - startPos;
@@ -84,12 +84,12 @@ export class UpdateInventoryFolderMessage implements MessageBase
                 FolderID: UUID,
                 ParentID: UUID,
                 Type: number,
-                Name: string
+                Name: Buffer
             } = {
                 FolderID: UUID.zero(),
                 ParentID: UUID.zero(),
                 Type: 0,
-                Name: ''
+                Name: Buffer.allocUnsafe(0)
             };
             newObjFolderData['FolderID'] = new UUID(buf, pos);
             pos += 16;
@@ -97,7 +97,7 @@ export class UpdateInventoryFolderMessage implements MessageBase
             pos += 16;
             newObjFolderData['Type'] = buf.readInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjFolderData['Name'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjFolderData['Name'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             this.FolderData.push(newObjFolderData);
         }

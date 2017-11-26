@@ -19,9 +19,9 @@ export class AvatarGroupsReplyMessage implements MessageBase
     GroupData: {
         GroupPowers: Long;
         AcceptNotices: boolean;
-        GroupTitle: string;
+        GroupTitle: Buffer;
         GroupID: UUID;
-        GroupName: string;
+        GroupName: Buffer;
         GroupInsigniaID: UUID;
     }[];
     NewGroupData: {
@@ -60,12 +60,12 @@ export class AvatarGroupsReplyMessage implements MessageBase
             pos += 4;
             buf.writeUInt8((this.GroupData[i]['AcceptNotices']) ? 1 : 0, pos++);
             buf.writeUInt8(this.GroupData[i]['GroupTitle'].length, pos++);
-            buf.write(this.GroupData[i]['GroupTitle'], pos);
+            this.GroupData[i]['GroupTitle'].copy(buf, pos);
             pos += this.GroupData[i]['GroupTitle'].length;
             this.GroupData[i]['GroupID'].writeToBuffer(buf, pos);
             pos += 16;
             buf.writeUInt8(this.GroupData[i]['GroupName'].length, pos++);
-            buf.write(this.GroupData[i]['GroupName'], pos);
+            this.GroupData[i]['GroupName'].copy(buf, pos);
             pos += this.GroupData[i]['GroupName'].length;
             this.GroupData[i]['GroupInsigniaID'].writeToBuffer(buf, pos);
             pos += 16;
@@ -97,28 +97,28 @@ export class AvatarGroupsReplyMessage implements MessageBase
             const newObjGroupData: {
                 GroupPowers: Long,
                 AcceptNotices: boolean,
-                GroupTitle: string,
+                GroupTitle: Buffer,
                 GroupID: UUID,
-                GroupName: string,
+                GroupName: Buffer,
                 GroupInsigniaID: UUID
             } = {
                 GroupPowers: Long.ZERO,
                 AcceptNotices: false,
-                GroupTitle: '',
+                GroupTitle: Buffer.allocUnsafe(0),
                 GroupID: UUID.zero(),
-                GroupName: '',
+                GroupName: Buffer.allocUnsafe(0),
                 GroupInsigniaID: UUID.zero()
             };
             newObjGroupData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
             pos += 8;
             newObjGroupData['AcceptNotices'] = (buf.readUInt8(pos++) === 1);
             varLength = buf.readUInt8(pos++);
-            newObjGroupData['GroupTitle'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjGroupData['GroupTitle'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjGroupData['GroupID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjGroupData['GroupName'] = buf.toString('utf8', pos, pos + (varLength - 1));
+            newObjGroupData['GroupName'] = buf.slice(pos, pos + (varLength - 1));
             pos += varLength;
             newObjGroupData['GroupInsigniaID'] = new UUID(buf, pos);
             pos += 16;

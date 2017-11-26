@@ -19,7 +19,7 @@ export class KickUserMessage implements MessageBase
     UserInfo: {
         AgentID: UUID;
         SessionID: UUID;
-        Reason: string;
+        Reason: Buffer;
     };
 
     getSize(): number
@@ -40,7 +40,7 @@ export class KickUserMessage implements MessageBase
         pos += 16;
         buf.writeUInt16LE(this.UserInfo['Reason'].length, pos);
         pos += 2;
-        buf.write(this.UserInfo['Reason'], pos);
+        this.UserInfo['Reason'].copy(buf, pos);
         pos += this.UserInfo['Reason'].length;
         return pos - startPos;
     }
@@ -64,11 +64,11 @@ export class KickUserMessage implements MessageBase
         const newObjUserInfo: {
             AgentID: UUID,
             SessionID: UUID,
-            Reason: string
+            Reason: Buffer
         } = {
             AgentID: UUID.zero(),
             SessionID: UUID.zero(),
-            Reason: ''
+            Reason: Buffer.allocUnsafe(0)
         };
         newObjUserInfo['AgentID'] = new UUID(buf, pos);
         pos += 16;
@@ -76,7 +76,7 @@ export class KickUserMessage implements MessageBase
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjUserInfo['Reason'] = buf.toString('utf8', pos, pos + (varLength - 1));
+        newObjUserInfo['Reason'] = buf.slice(pos, pos + (varLength - 1));
         pos += varLength;
         this.UserInfo = newObjUserInfo;
         return pos - startPos;
