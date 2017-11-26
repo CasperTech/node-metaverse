@@ -1,6 +1,5 @@
 import {UUID} from './UUID';
 import {Agent} from './Agent';
-import {Circuit} from './Circuit';
 import {Region} from './Region';
 import {LoginFlags} from '../enums/LoginFlags';
 import {Vector3} from './Vector3';
@@ -68,8 +67,6 @@ export class LoginResponse
 
         const json = str.replace(/[\[\]']/g, '\"');
         const parsed = JSON.parse(json);
-
-        console.log(parsed);
 
         if (parsed['region_handle'])
         {
@@ -217,10 +214,10 @@ export class LoginResponse
                     });
                     break;
                 case 'sim_port':
-                    this.region.port = parseInt(val, 10);
+                    this.region.circuit.port = parseInt(val, 10);
                     break;
                 case 'sim_ip':
-                    this.region.ipAddress = String(val);
+                    this.region.circuit.ipAddress = String(val);
                     break;
                 case 'agent_appearance_service':
                     this.agent.agentAppearanceService = val;

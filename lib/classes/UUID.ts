@@ -20,7 +20,13 @@ export class UUID
             }
             else if (pos !== undefined)
             {
-                this.mUUID = uuid.unparse(buf, pos);
+                const uuidBuf: Buffer = buf.slice(pos, pos + 16);
+                const hexString = uuidBuf.toString('hex');
+                this.setUUID(hexString.substr(0, 8) + '-'
+                    + hexString.substr(8, 4) + '-'
+                    + hexString.substr(12, 4) + '-'
+                    + hexString.substr(16, 4) + '-'
+                    + hexString.substr(20, 12));
             }
         }
     }
@@ -42,6 +48,8 @@ export class UUID
 
     writeToBuffer(buf: Buffer, pos: number)
     {
-        uuid.parse(this.mUUID, buf, pos);
+        const shortened = this.mUUID.substr(0, 8) + this.mUUID.substr(9, 4) + this.mUUID.substr(14, 4) + this.mUUID.substr(19, 4) + this.mUUID.substr(24, 12);
+        const binary = Buffer.from(shortened, 'hex');
+        binary.copy(buf, pos, 0);
     }
 }
