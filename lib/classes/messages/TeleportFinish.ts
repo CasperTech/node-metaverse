@@ -89,7 +89,7 @@ export class TeleportFinishMessage implements MessageBase
         pos += 8;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjInfo['SeedCapability'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInfo['SeedCapability'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjInfo['SimAccess'] = buf.readUInt8(pos++);
         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);

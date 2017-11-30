@@ -58,7 +58,7 @@ export class EstateCovenantReplyMessage implements MessageBase
         newObjData['CovenantTimestamp'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['EstateName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['EstateName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjData['EstateOwnerID'] = new UUID(buf, pos);
         pos += 16;

@@ -92,7 +92,7 @@ export class GodlikeMessageMessage implements MessageBase
             Invoice: UUID.zero()
         };
         varLength = buf.readUInt8(pos++);
-        newObjMethodData['Method'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMethodData['Method'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjMethodData['Invoice'] = new UUID(buf, pos);
         pos += 16;
@@ -107,7 +107,7 @@ export class GodlikeMessageMessage implements MessageBase
                 Parameter: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjParamList['Parameter'] = buf.slice(pos, pos + (varLength - 1));
+            newObjParamList['Parameter'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ParamList.push(newObjParamList);
         }

@@ -63,7 +63,7 @@ export class AssetUploadRequestMessage implements MessageBase
         newObjAssetBlock['StoreLocal'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjAssetBlock['AssetData'] = buf.slice(pos, pos + (varLength - 1));
+        newObjAssetBlock['AssetData'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.AssetBlock = newObjAssetBlock;
         return pos - startPos;

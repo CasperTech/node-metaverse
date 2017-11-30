@@ -95,10 +95,22 @@ export class Packet
         {
             this.extraHeader = Buffer.allocUnsafe(0);
         }
-
+        let appendedAcks = 0;
         if (this.packetFlags & PacketFlags.Zerocoded)
         {
-            buf = Zerocoder.Decode(buf, pos, buf.length - 1);
+            // Annoyingly, the AppendedAcks aren't zerocoded so we need to stop decode early
+            let tail = 0;
+            if (this.packetFlags & PacketFlags.Ack)
+            {
+                // Final byte in the packet contains the number of Acks
+                tail = 1;
+                appendedAcks = buf.readUInt8(buf.length - 1);
+                if (appendedAcks > 0)
+                {
+                    tail += appendedAcks * 4;
+                }
+            }
+            buf = Zerocoder.Decode(buf, pos, buf.length - 1, tail);
         }
 
         let messageID = buf.readUInt8(pos);
@@ -125,14 +137,11 @@ export class Packet
         const readLength = this.message.readFromBuffer(buf, pos);
         pos += readLength;
 
-
         if (this.packetFlags & PacketFlags.Ack)
         {
-            // Final byte in the packet contains the number of Acks
-            const numAcks = buf.readUInt8(buf.length - 1);
-            for (let i = 0; i < numAcks; i++)
+            for (let i = 0; i < appendedAcks; i++)
             {
-                const ackID = buf.readUInt32LE(pos);
+                const ackID = buf.readUInt32BE(pos);
                 ackReceived(ackID);
                 pos += 4;
             }
@@ -141,7 +150,7 @@ export class Packet
         }
         if (pos < buf.length)
         {
-            console.error('WARNING: Finished reading but we\'re not at the end of the packet');
+            console.error('WARNING: Finished reading ' + nameFromID(messageID) + ' but we\'re not at the end of the packet (' + pos + ' < ' + buf.length + ', seq ' + this.sequenceNumber + ')');
         }
     }
 }

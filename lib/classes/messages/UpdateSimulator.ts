@@ -55,7 +55,7 @@ export class UpdateSimulatorMessage implements MessageBase
         newObjSimulatorInfo['RegionID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjSimulatorInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjSimulatorInfo['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjSimulatorInfo['EstateID'] = buf.readUInt32LE(pos);
         pos += 4;

@@ -70,7 +70,7 @@ export class ChatFromViewerMessage implements MessageBase
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjChatData['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjChatData['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjChatData['Type'] = buf.readUInt8(pos++);
         newObjChatData['Channel'] = buf.readInt32LE(pos);

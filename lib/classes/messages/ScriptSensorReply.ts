@@ -125,7 +125,7 @@ export class ScriptSensorReplyMessage implements MessageBase
             newObjSensedData['Rotation'] = new Quaternion(buf, pos);
             pos += 12;
             varLength = buf.readUInt8(pos++);
-            newObjSensedData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjSensedData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjSensedData['Type'] = buf.readInt32LE(pos);
             pos += 4;

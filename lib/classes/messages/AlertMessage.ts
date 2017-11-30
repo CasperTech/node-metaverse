@@ -74,7 +74,7 @@ export class AlertMessageMessage implements MessageBase
             Message: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjAlertData['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjAlertData['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.AlertData = newObjAlertData;
         let count = buf.readUInt8(pos++);
@@ -89,10 +89,10 @@ export class AlertMessageMessage implements MessageBase
                 ExtraParams: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjAlertInfo['Message'] = buf.slice(pos, pos + (varLength - 1));
+            newObjAlertInfo['Message'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjAlertInfo['ExtraParams'] = buf.slice(pos, pos + (varLength - 1));
+            newObjAlertInfo['ExtraParams'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.AlertInfo.push(newObjAlertInfo);
         }

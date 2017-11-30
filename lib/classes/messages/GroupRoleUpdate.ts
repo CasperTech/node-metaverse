@@ -116,13 +116,13 @@ export class GroupRoleUpdateMessage implements MessageBase
             newObjRoleData['RoleID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjRoleData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Description'] = buf.slice(pos, pos + (varLength - 1));
+            newObjRoleData['Description'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjRoleData['Title'] = buf.slice(pos, pos + (varLength - 1));
+            newObjRoleData['Title'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
             pos += 8;

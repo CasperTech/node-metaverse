@@ -106,7 +106,7 @@ export class CopyInventoryItemMessage implements MessageBase
             newObjInventoryData['NewFolderID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjInventoryData['NewName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjInventoryData['NewName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.InventoryData.push(newObjInventoryData);
         }

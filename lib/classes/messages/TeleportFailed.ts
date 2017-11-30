@@ -71,7 +71,7 @@ export class TeleportFailedMessage implements MessageBase
         newObjInfo['AgentID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjInfo['Reason'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInfo['Reason'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Info = newObjInfo;
         const count = buf.readUInt8(pos++);
@@ -86,10 +86,10 @@ export class TeleportFailedMessage implements MessageBase
                 ExtraParams: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjAlertInfo['Message'] = buf.slice(pos, pos + (varLength - 1));
+            newObjAlertInfo['Message'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjAlertInfo['ExtraParams'] = buf.slice(pos, pos + (varLength - 1));
+            newObjAlertInfo['ExtraParams'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.AlertInfo.push(newObjAlertInfo);
         }

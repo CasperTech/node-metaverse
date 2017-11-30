@@ -112,13 +112,13 @@ export class DirPeopleReplyMessage implements MessageBase
             newObjQueryReplies['AgentID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['FirstName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryReplies['FirstName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['LastName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryReplies['LastName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Group'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryReplies['Group'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjQueryReplies['Online'] = (buf.readUInt8(pos++) === 1);
             newObjQueryReplies['Reputation'] = buf.readInt32LE(pos);

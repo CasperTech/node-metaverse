@@ -104,7 +104,7 @@ export class ObjectExtraParamsMessage implements MessageBase
             newObjObjectData['ParamSize'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['ParamData'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['ParamData'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

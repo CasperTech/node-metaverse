@@ -77,7 +77,7 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
         newObjData['RegionID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['HostName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['HostName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjData['X'] = buf.readInt32LE(pos);
         pos += 4;
@@ -90,7 +90,7 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
         newObjData['TimeToLive'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['Status'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['Status'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

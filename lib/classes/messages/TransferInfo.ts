@@ -76,7 +76,7 @@ export class TransferInfoMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjTransferInfo['Params'] = buf.slice(pos, pos + (varLength - 1));
+        newObjTransferInfo['Params'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.TransferInfo = newObjTransferInfo;
         return pos - startPos;

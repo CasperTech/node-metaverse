@@ -65,7 +65,7 @@ export class UUIDGroupNameReplyMessage implements MessageBase
             newObjUUIDNameBlock['ID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjUUIDNameBlock['GroupName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjUUIDNameBlock['GroupName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.UUIDNameBlock.push(newObjUUIDNameBlock);
         }

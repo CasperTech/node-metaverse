@@ -77,7 +77,7 @@ export class SetSimPresenceInDatabaseMessage implements MessageBase
         newObjSimData['RegionID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjSimData['HostName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjSimData['HostName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjSimData['GridX'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -90,7 +90,7 @@ export class SetSimPresenceInDatabaseMessage implements MessageBase
         newObjSimData['TimeToLive'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjSimData['Status'] = buf.slice(pos, pos + (varLength - 1));
+        newObjSimData['Status'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.SimData = newObjSimData;
         return pos - startPos;

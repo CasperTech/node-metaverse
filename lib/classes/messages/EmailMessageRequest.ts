@@ -52,10 +52,10 @@ export class EmailMessageRequestMessage implements MessageBase
         newObjDataBlock['ObjectID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['FromAddress'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlock['FromAddress'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['Subject'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlock['Subject'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.DataBlock = newObjDataBlock;
         return pos - startPos;

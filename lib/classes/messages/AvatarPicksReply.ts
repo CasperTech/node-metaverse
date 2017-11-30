@@ -85,7 +85,7 @@ export class AvatarPicksReplyMessage implements MessageBase
             newObjData['PickID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjData['PickName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjData['PickName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.Data.push(newObjData);
         }

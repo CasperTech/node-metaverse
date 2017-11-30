@@ -88,13 +88,13 @@ export class DirPlacesQueryBackendMessage implements MessageBase
         newObjQueryData['QueryID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['QueryText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjQueryData['QueryText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjQueryData['QueryFlags'] = buf.readUInt32LE(pos);
         pos += 4;
         newObjQueryData['Category'] = buf.readInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjQueryData['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjQueryData['EstateID'] = buf.readUInt32LE(pos);
         pos += 4;

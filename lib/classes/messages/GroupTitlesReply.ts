@@ -94,7 +94,7 @@ export class GroupTitlesReplyMessage implements MessageBase
                 Selected: false
             };
             varLength = buf.readUInt8(pos++);
-            newObjGroupData['Title'] = buf.slice(pos, pos + (varLength - 1));
+            newObjGroupData['Title'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjGroupData['RoleID'] = new UUID(buf, pos);
             pos += 16;

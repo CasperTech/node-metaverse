@@ -51,7 +51,7 @@ export class LayerDataMessage implements MessageBase
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjLayerData['Data'] = buf.slice(pos, pos + (varLength - 1));
+        newObjLayerData['Data'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.LayerData = newObjLayerData;
         return pos - startPos;

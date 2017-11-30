@@ -58,10 +58,10 @@ export class InitiateDownloadMessage implements MessageBase
             ViewerFilename: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjFileData['SimFilename'] = buf.slice(pos, pos + (varLength - 1));
+        newObjFileData['SimFilename'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjFileData['ViewerFilename'] = buf.slice(pos, pos + (varLength - 1));
+        newObjFileData['ViewerFilename'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.FileData = newObjFileData;
         return pos - startPos;

@@ -4,6 +4,7 @@ import {Region} from './Region';
 import {LoginFlags} from '../enums/LoginFlags';
 import {Vector3} from './Vector3';
 import Long = require('long');
+import {ClientEvents} from './ClientEvents';
 
 export class LoginResponse
 {
@@ -34,6 +35,7 @@ export class LoginResponse
         'moonTextureID'?: UUID,
     } = {};
     searchToken: string;
+    clientEvents: ClientEvents;
 
     private static toRegionHandle(x_global: number, y_global: number): Long
     {
@@ -88,8 +90,9 @@ export class LoginResponse
 
     constructor(json: any)
     {
-        this.agent = new Agent();
-        this.region = new Region();
+        this.clientEvents = new ClientEvents();
+        this.agent = new Agent(this.clientEvents);
+        this.region = new Region(this.agent, this.clientEvents);
         Object.keys(json).forEach((key: string) =>
         {
             const val: any = json[key];
@@ -309,13 +312,12 @@ export class LoginResponse
                     break;
                 case 'agent_id':
                     this.agent.agentID = new UUID(val);
-                    this.region.circuit.agentID = new UUID(val);
                     break;
                 case 'seconds_since_epoch':
                     this.region.circuit.timestamp = parseInt(val, 10);
                     break;
                 case 'seed_capability':
-                    this.region.circuit.seedCapability = String(val);
+                    this.region.activateCaps(String(val));
                     break;
                 case 'first_name':
                     this.agent.firstName = String(val).replace(/"/g, '');
@@ -323,5 +325,6 @@ export class LoginResponse
 
             }
         });
+        this.agent.setCurrentRegion(this.region);
     }
 }

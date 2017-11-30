@@ -163,7 +163,7 @@ export class RegionInfoMessage implements MessageBase
             SunHour: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionInfo['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjRegionInfo['EstateID'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -207,10 +207,10 @@ export class RegionInfoMessage implements MessageBase
             HardMaxObjects: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo2['ProductSKU'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionInfo2['ProductSKU'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo2['ProductName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionInfo2['ProductName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjRegionInfo2['MaxAgents32'] = buf.readUInt32LE(pos);
         pos += 4;

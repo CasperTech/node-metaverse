@@ -92,11 +92,11 @@ export class ObjectImageMessage implements MessageBase
             newObjObjectData['ObjectLocalID'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['MediaURL'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['MediaURL'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['TextureEntry'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['TextureEntry'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

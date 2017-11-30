@@ -154,10 +154,10 @@ export class PlacesReplyMessage implements MessageBase
             newObjQueryData['OwnerID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjQueryData['Desc'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryData['Desc'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjQueryData['ActualArea'] = buf.readInt32LE(pos);
             pos += 4;
@@ -171,7 +171,7 @@ export class PlacesReplyMessage implements MessageBase
             newObjQueryData['GlobalZ'] = buf.readFloatLE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjQueryData['SimName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryData['SimName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjQueryData['SnapshotID'] = new UUID(buf, pos);
             pos += 16;

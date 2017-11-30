@@ -71,10 +71,10 @@ export class UUIDNameReplyMessage implements MessageBase
             newObjUUIDNameBlock['ID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjUUIDNameBlock['FirstName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjUUIDNameBlock['FirstName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjUUIDNameBlock['LastName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjUUIDNameBlock['LastName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.UUIDNameBlock.push(newObjUUIDNameBlock);
         }

@@ -231,19 +231,19 @@ export class ObjectPropertiesMessage implements MessageBase
             newObjObjectData['LastOwnerID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Description'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['Description'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['TouchName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['TouchName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['SitName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['SitName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['TextureID'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['TextureID'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

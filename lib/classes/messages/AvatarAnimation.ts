@@ -124,7 +124,7 @@ export class AvatarAnimationMessage implements MessageBase
                 TypeData: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjPhysicalAvatarEventList['TypeData'] = buf.slice(pos, pos + (varLength - 1));
+            newObjPhysicalAvatarEventList['TypeData'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.PhysicalAvatarEventList.push(newObjPhysicalAvatarEventList);
         }

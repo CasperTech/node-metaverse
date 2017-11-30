@@ -115,7 +115,7 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
         newObjMoneyData['CurrentInterval'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['StartDate'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMoneyData['StartDate'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         const count = buf.readUInt8(pos++);
@@ -136,15 +136,15 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
                 Amount: 0
             };
             varLength = buf.readUInt8(pos++);
-            newObjHistoryData['Time'] = buf.slice(pos, pos + (varLength - 1));
+            newObjHistoryData['Time'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjHistoryData['User'] = buf.slice(pos, pos + (varLength - 1));
+            newObjHistoryData['User'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjHistoryData['Type'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjHistoryData['Item'] = buf.slice(pos, pos + (varLength - 1));
+            newObjHistoryData['Item'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjHistoryData['Amount'] = buf.readInt32LE(pos);
             pos += 4;

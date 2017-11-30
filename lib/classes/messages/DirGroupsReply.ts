@@ -101,7 +101,7 @@ export class DirGroupsReplyMessage implements MessageBase
             newObjQueryReplies['GroupID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['GroupName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryReplies['GroupName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjQueryReplies['Members'] = buf.readInt32LE(pos);
             pos += 4;

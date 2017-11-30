@@ -59,7 +59,7 @@ export class StateSaveMessage implements MessageBase
             Filename: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['Filename'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlock['Filename'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.DataBlock = newObjDataBlock;
         return pos - startPos;

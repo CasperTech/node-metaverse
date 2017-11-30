@@ -50,7 +50,7 @@ export class EdgeDataPacketMessage implements MessageBase
         newObjEdgeData['Direction'] = buf.readUInt8(pos++);
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjEdgeData['LayerData'] = buf.slice(pos, pos + (varLength - 1));
+        newObjEdgeData['LayerData'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.EdgeData = newObjEdgeData;
         return pos - startPos;

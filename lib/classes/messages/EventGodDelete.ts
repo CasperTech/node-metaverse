@@ -89,7 +89,7 @@ export class EventGodDeleteMessage implements MessageBase
         newObjQueryData['QueryID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['QueryText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjQueryData['QueryText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjQueryData['QueryFlags'] = buf.readUInt32LE(pos);
         pos += 4;

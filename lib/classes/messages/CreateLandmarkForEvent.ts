@@ -79,7 +79,7 @@ export class CreateLandmarkForEventMessage implements MessageBase
         newObjInventoryBlock['FolderID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryBlock['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInventoryBlock['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.InventoryBlock = newObjInventoryBlock;
         return pos - startPos;

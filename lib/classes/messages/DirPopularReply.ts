@@ -96,7 +96,7 @@ export class DirPopularReplyMessage implements MessageBase
             newObjQueryReplies['ParcelID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryReplies['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjQueryReplies['Dwell'] = buf.readFloatLE(pos);
             pos += 4;

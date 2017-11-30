@@ -78,7 +78,7 @@ export class LogDwellTimeMessage implements MessageBase
         newObjDwellInfo['Duration'] = buf.readFloatLE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjDwellInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDwellInfo['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjDwellInfo['RegionX'] = buf.readUInt32LE(pos);
         pos += 4;

@@ -146,13 +146,13 @@ export class UpdateParcelMessage implements MessageBase
         newObjParcelData['GroupOwned'] = (buf.readUInt8(pos++) === 1);
         newObjParcelData['Status'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjParcelData['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Description'] = buf.slice(pos, pos + (varLength - 1));
+        newObjParcelData['Description'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['MusicURL'] = buf.slice(pos, pos + (varLength - 1));
+        newObjParcelData['MusicURL'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjParcelData['RegionX'] = buf.readFloatLE(pos);
         pos += 4;

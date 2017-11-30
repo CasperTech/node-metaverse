@@ -57,7 +57,7 @@ export class AgentAlertMessageMessage implements MessageBase
         };
         newObjAlertData['Modal'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjAlertData['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjAlertData['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.AlertData = newObjAlertData;
         return pos - startPos;

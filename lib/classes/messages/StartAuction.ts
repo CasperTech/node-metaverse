@@ -66,7 +66,7 @@ export class StartAuctionMessage implements MessageBase
         newObjParcelData['SnapshotID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjParcelData['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjParcelData['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ParcelData = newObjParcelData;
         return pos - startPos;

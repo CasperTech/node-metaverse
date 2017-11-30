@@ -73,7 +73,7 @@ export class AgentThrottleMessage implements MessageBase
         newObjThrottle['GenCounter'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjThrottle['Throttles'] = buf.slice(pos, pos + (varLength - 1));
+        newObjThrottle['Throttles'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Throttle = newObjThrottle;
         return pos - startPos;

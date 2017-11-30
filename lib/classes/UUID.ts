@@ -28,15 +28,24 @@ export class UUID
                     + hexString.substr(16, 4) + '-'
                     + hexString.substr(20, 12));
             }
+            else
+            {
+                console.error('Can\'t accept UUIDs of type ' + typeof buf);
+            }
         }
     }
 
     public setUUID(val: string): boolean
     {
-        if (validator.isUUID(val, 4))
+        const test = val.trim();
+        if (validator.isUUID(test))
         {
-            this.mUUID = val;
+            this.mUUID = test;
             return true;
+        }
+        else
+        {
+            console.log('Invalid UUID: ' + test + ' (length ' + val.length + ')');
         }
         return false;
     }

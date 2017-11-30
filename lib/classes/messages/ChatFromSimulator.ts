@@ -74,7 +74,7 @@ export class ChatFromSimulatorMessage implements MessageBase
             Message: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjChatData['FromName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjChatData['FromName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjChatData['SourceID'] = new UUID(buf, pos);
         pos += 16;
@@ -87,7 +87,7 @@ export class ChatFromSimulatorMessage implements MessageBase
         pos += 12;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjChatData['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjChatData['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ChatData = newObjChatData;
         return pos - startPos;

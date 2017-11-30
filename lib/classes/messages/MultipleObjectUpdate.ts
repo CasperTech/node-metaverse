@@ -90,7 +90,7 @@ export class MultipleObjectUpdateMessage implements MessageBase
             pos += 4;
             newObjObjectData['Type'] = buf.readUInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Data'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['Data'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

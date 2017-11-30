@@ -122,12 +122,12 @@ export class DirEventsReplyMessage implements MessageBase
             newObjQueryReplies['OwnerID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryReplies['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjQueryReplies['EventID'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Date'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryReplies['Date'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjQueryReplies['UnixTime'] = buf.readUInt32LE(pos);
             pos += 4;

@@ -53,7 +53,7 @@ export class ReplyTaskInventoryMessage implements MessageBase
         newObjInventoryData['Serial'] = buf.readInt16LE(pos);
         pos += 2;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryData['Filename'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInventoryData['Filename'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.InventoryData = newObjInventoryData;
         return pos - startPos;

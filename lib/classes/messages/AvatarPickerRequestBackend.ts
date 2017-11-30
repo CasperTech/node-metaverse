@@ -71,7 +71,7 @@ export class AvatarPickerRequestBackendMessage implements MessageBase
             Name: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

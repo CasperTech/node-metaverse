@@ -162,7 +162,7 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         newObjMoneyData['CurrentInterval'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['StartDate'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMoneyData['StartDate'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjMoneyData['Balance'] = buf.readInt32LE(pos);
         pos += 4;
@@ -193,10 +193,10 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         newObjMoneyData['NonExemptMembers'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['LastTaxDate'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMoneyData['LastTaxDate'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['TaxDate'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMoneyData['TaxDate'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         return pos - startPos;

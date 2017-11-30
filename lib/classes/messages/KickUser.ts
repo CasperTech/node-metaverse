@@ -76,7 +76,7 @@ export class KickUserMessage implements MessageBase
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjUserInfo['Reason'] = buf.slice(pos, pos + (varLength - 1));
+        newObjUserInfo['Reason'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.UserInfo = newObjUserInfo;
         return pos - startPos;

@@ -71,7 +71,7 @@ export class SimulatorReadyMessage implements MessageBase
             ParentEstateID: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjSimulatorBlock['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjSimulatorBlock['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjSimulatorBlock['SimAccess'] = buf.readUInt8(pos++);
         newObjSimulatorBlock['RegionFlags'] = buf.readUInt32LE(pos);

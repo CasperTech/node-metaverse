@@ -196,13 +196,13 @@ export class ViewerStatsMessage implements MessageBase
         newObjAgentData['SysRAM'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['SysOS'] = buf.slice(pos, pos + (varLength - 1));
+        newObjAgentData['SysOS'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['SysCPU'] = buf.slice(pos, pos + (varLength - 1));
+        newObjAgentData['SysCPU'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['SysGPU'] = buf.slice(pos, pos + (varLength - 1));
+        newObjAgentData['SysGPU'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.AgentData = newObjAgentData;
         const newObjDownloadTotals: {

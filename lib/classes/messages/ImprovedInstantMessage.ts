@@ -136,15 +136,15 @@ export class ImprovedInstantMessageMessage implements MessageBase
         newObjMessageBlock['Timestamp'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMessageBlock['FromAgentName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMessageBlock['FromAgentName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjMessageBlock['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMessageBlock['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjMessageBlock['BinaryBucket'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMessageBlock['BinaryBucket'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.MessageBlock = newObjMessageBlock;
         const newObjEstateBlock: {

@@ -54,7 +54,7 @@ export class ScriptMailRegistrationMessage implements MessageBase
             Flags: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['TargetIP'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlock['TargetIP'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjDataBlock['TargetPort'] = buf.readUInt16LE(pos);
         pos += 2;

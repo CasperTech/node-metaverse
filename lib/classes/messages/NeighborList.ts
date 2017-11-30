@@ -96,7 +96,7 @@ export class NeighborListMessage implements MessageBase
             newObjNeighborBlock['RegionID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjNeighborBlock['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjNeighborBlock['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjNeighborBlock['SimAccess'] = buf.readUInt8(pos++);
             this.NeighborBlock.push(newObjNeighborBlock);

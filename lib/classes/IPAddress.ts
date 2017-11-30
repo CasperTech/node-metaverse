@@ -8,7 +8,10 @@ export class IPAddress
     {
         return new IPAddress('0.0.0.0');
     }
-
+    public toString = (): string =>
+    {
+        return this.ip.toString();
+    };
     constructor(buf?: Buffer | string, pos?: number)
     {
         if (buf !== undefined && buf instanceof Buffer)

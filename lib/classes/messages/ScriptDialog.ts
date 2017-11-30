@@ -106,17 +106,17 @@ export class ScriptDialogMessage implements MessageBase
         newObjData['ObjectID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['FirstName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['FirstName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['LastName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['LastName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['ObjectName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjData['ChatChannel'] = buf.readInt32LE(pos);
         pos += 4;
@@ -133,7 +133,7 @@ export class ScriptDialogMessage implements MessageBase
                 ButtonLabel: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjButtons['ButtonLabel'] = buf.slice(pos, pos + (varLength - 1));
+            newObjButtons['ButtonLabel'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.Buttons.push(newObjButtons);
         }

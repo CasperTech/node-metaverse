@@ -87,11 +87,11 @@ export class ImprovedTerseObjectUpdateMessage implements MessageBase
                 TextureEntry: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Data'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['Data'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['TextureEntry'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['TextureEntry'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

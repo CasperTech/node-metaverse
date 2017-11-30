@@ -131,15 +131,15 @@ export class GroupProfileReplyMessage implements MessageBase
         newObjGroupData['GroupID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjGroupData['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjGroupData['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjGroupData['Charter'] = buf.slice(pos, pos + (varLength - 1));
+        newObjGroupData['Charter'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjGroupData['ShowInList'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjGroupData['MemberTitle'] = buf.slice(pos, pos + (varLength - 1));
+        newObjGroupData['MemberTitle'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjGroupData['PowersMask'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
         pos += 8;

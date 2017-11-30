@@ -47,7 +47,7 @@ export class ParcelOverlayMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjParcelData['Data'] = buf.slice(pos, pos + (varLength - 1));
+        newObjParcelData['Data'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ParcelData = newObjParcelData;
         return pos - startPos;

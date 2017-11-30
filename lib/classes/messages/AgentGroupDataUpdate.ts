@@ -107,7 +107,7 @@ export class AgentGroupDataUpdateMessage implements MessageBase
             newObjGroupData['Contribution'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjGroupData['GroupName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjGroupData['GroupName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.GroupData.push(newObjGroupData);
         }
