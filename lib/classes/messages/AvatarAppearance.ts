@@ -94,7 +94,7 @@ export class AvatarAppearanceMessage implements MessageBase
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjObjectData['TextureEntry'] = buf.slice(pos, pos + (varLength - 1));
+        newObjObjectData['TextureEntry'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ObjectData = newObjObjectData;
         let count = buf.readUInt8(pos++);

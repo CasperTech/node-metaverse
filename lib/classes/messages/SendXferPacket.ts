@@ -63,7 +63,7 @@ export class SendXferPacketMessage implements MessageBase
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjDataPacket['Data'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataPacket['Data'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.DataPacket = newObjDataPacket;
         return pos - startPos;

@@ -126,7 +126,7 @@ export class MapItemReplyMessage implements MessageBase
             newObjData['Extra2'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.Data.push(newObjData);
         }

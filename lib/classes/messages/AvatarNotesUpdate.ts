@@ -68,7 +68,7 @@ export class AvatarNotesUpdateMessage implements MessageBase
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjData['Notes'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['Notes'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

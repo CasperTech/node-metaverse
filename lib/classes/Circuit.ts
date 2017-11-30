@@ -1,5 +1,5 @@
 import {UUID} from './UUID';
-import {AddressInfo, Socket} from 'dgram';
+import {Socket} from 'dgram';
 import * as dgram from 'dgram';
 import {PacketFlags} from '../enums/PacketFlags';
 import {Packet} from './Packet';
@@ -10,17 +10,17 @@ import {StartPingCheckMessage} from './messages/StartPingCheck';
 import {CompletePingCheckMessage} from './messages/CompletePingCheck';
 import {Subscription} from 'rxjs/Subscription';
 import {Subject} from 'rxjs/Subject';
+import 'rxjs/add/operator/filter';
 import Timer = NodeJS.Timer;
+import {ClientEvents} from "./ClientEvents";
 
 export class Circuit
 {
-    agentID: UUID;
     secureSessionID: UUID;
     sessionID: UUID;
     circuitCode: number;
     udpBlacklist: string[];
     timestamp: number;
-    seedCapability: string;
     client: Socket | null = null;
     port: number;
     ipAddress: string;
@@ -32,14 +32,33 @@ export class Circuit
             timeout: number
         }
     } = {};
+    receivedPackets: {
+        [key: number]: number
+    } = {};
+    private clientEvents: ClientEvents;
 
-    onPacketReceived: Subject<Packet>;
-    onAckReceived: Subject<number>;
+    private onPacketReceived: Subject<Packet>;
+    private onAckReceived: Subject<number>;
 
-    constructor()
+    constructor(clientEvents: ClientEvents)
     {
+        this.clientEvents = clientEvents;
         this.onPacketReceived = new Subject<Packet>();
         this.onAckReceived = new Subject<number>();
+    }
+
+    subscribeToMessages(ids: number[], callback: (packet: Packet) => void)
+    {
+        const lookupObject: {[key: number]: boolean} = {};
+        ids.forEach((id) =>
+        {
+            lookupObject[id] = true;
+        });
+
+        return this.onPacketReceived.filter((packet: Packet) =>
+        {
+            return lookupObject[packet.message.id] === true;
+        }).subscribe(callback);
     }
 
     sendMessage(message: MessageBase, flags: PacketFlags): number
@@ -130,19 +149,27 @@ export class Circuit
 
     shutdown()
     {
+        Object.keys(this.awaitingAck).forEach((sequenceNumber: string) =>
+        {
+            clearTimeout(this.awaitingAck[parseInt(sequenceNumber, 10)].timeout);
+            delete this.awaitingAck[parseInt(sequenceNumber, 10)];
+        });
+        Object.keys(this.receivedPackets).forEach((sequenceNumber: string) =>
+        {
+            const seq: number = parseInt(sequenceNumber, 10);
+            clearTimeout(this.receivedPackets[seq]);
+            delete this.receivedPackets[seq];
+        });
         if (this.client !== null)
         {
-            Object.keys(this.awaitingAck).forEach((sequenceNumber: string) =>
-            {
-                clearTimeout(this.awaitingAck[parseInt(sequenceNumber, 10)].timeout);
-                delete this.awaitingAck[parseInt(sequenceNumber, 10)];
-            });
             this.client.close();
             this.client = null;
+            this.onPacketReceived.complete();
+            this.onAckReceived.complete();
         }
     }
 
-    waitForMessage(id: Message, timeout: number): Promise<Packet>
+    waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => boolean): Promise<Packet>
     {
         return new Promise<Packet>((resolve, reject) =>
         {
@@ -162,9 +189,9 @@ export class Circuit
                 }
             }, timeout);
 
-            handleObj.subscription = this.onPacketReceived.subscribe((packet: Packet) =>
+            handleObj.subscription = this.subscribeToMessages([id], (packet: Packet) =>
                 {
-                    if (packet.message.id === id)
+                    if (packet.message.id === id && (filter === undefined || filter(packet)))
                     {
                         if (handleObj.timeout !== null)
                         {
@@ -192,20 +219,19 @@ export class Circuit
                     timeout: setTimeout(this.resend.bind(this, packet.sequenceNumber), 1000)
                 };
         }
-        let size = packet.getSize();
-        let dataToSend: Buffer = Buffer.allocUnsafe(size);
+        let dataToSend: Buffer = Buffer.allocUnsafe(packet.getSize());
         dataToSend = packet.writeToBuffer(dataToSend, 0);
         if (this.client !== null)
         {
-            console.log("Writing to "+this.ipAddress+":"+this.port);
             this.client.send(dataToSend, 0, dataToSend.length, this.port, this.ipAddress, (err, bytes) =>
             {
-                let resend = '';
+                /*let resend = '';
                 if (packet.packetFlags & PacketFlags.Resent)
                 {
                     resend = ' (resent)';
                 }
                 console.log('--> ' + packet.message.name + resend);
+                */
             })
         }
         else
@@ -235,11 +261,30 @@ export class Circuit
         this.sendMessage(msg, 0);
     }
 
+    expireReceivedPacket(sequenceNumber: number)
+    {
+        // Enough time has elapsed that we can forget about this packet
+        if (this.receivedPackets[sequenceNumber])
+        {
+            delete this.receivedPackets[sequenceNumber];
+        }
+    }
+
     receivedPacket(bytes: Buffer)
     {
         const packet = new Packet();
         packet.readFromBuffer(bytes, 0, this.ackReceived.bind(this), this.sendAck.bind(this));
-        console.log('<--- ' + packet.message.name);
+
+        if (this.receivedPackets[packet.sequenceNumber])
+        {
+            clearTimeout(this.receivedPackets[packet.sequenceNumber]);
+            this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
+            console.log('Ignoring duplicate packet: ' + packet.message.name);
+            return;
+        }
+        this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
+
+        //console.log('<--- ' + packet.message.name);
 
         if (packet.message.id === Message.PacketAck)
         {

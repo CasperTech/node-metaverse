@@ -57,16 +57,16 @@ export class InternalScriptMailMessage implements MessageBase
             Body: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['From'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlock['From'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjDataBlock['To'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['Subject'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlock['Subject'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjDataBlock['Body'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlock['Body'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.DataBlock = newObjDataBlock;
         return pos - startPos;

@@ -104,7 +104,7 @@ export class RegionPresenceResponseMessage implements MessageBase
             newObjRegionData['ValidUntil'] = buf.readDoubleLE(pos);
             pos += 8;
             varLength = buf.readUInt8(pos++);
-            newObjRegionData['Message'] = buf.slice(pos, pos + (varLength - 1));
+            newObjRegionData['Message'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.RegionData.push(newObjRegionData);
         }

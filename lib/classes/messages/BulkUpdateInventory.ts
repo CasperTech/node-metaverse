@@ -168,7 +168,7 @@ export class BulkUpdateInventoryMessage implements MessageBase
             pos += 16;
             newObjFolderData['Type'] = buf.readInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjFolderData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjFolderData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.FolderData.push(newObjFolderData);
         }
@@ -256,10 +256,10 @@ export class BulkUpdateInventoryMessage implements MessageBase
             newObjItemData['SalePrice'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjItemData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjItemData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjItemData['Description'] = buf.slice(pos, pos + (varLength - 1));
+            newObjItemData['Description'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjItemData['CreationDate'] = buf.readInt32LE(pos);
             pos += 4;

@@ -101,7 +101,7 @@ export class MoneyBalanceReplyMessage implements MessageBase
         newObjMoneyData['SquareMetersCommitted'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['Description'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMoneyData['Description'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         const newObjTransactionInfo: {
@@ -132,7 +132,7 @@ export class MoneyBalanceReplyMessage implements MessageBase
         newObjTransactionInfo['Amount'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjTransactionInfo['ItemDescription'] = buf.slice(pos, pos + (varLength - 1));
+        newObjTransactionInfo['ItemDescription'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.TransactionInfo = newObjTransactionInfo;
         return pos - startPos;

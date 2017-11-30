@@ -76,7 +76,7 @@ export class UpdateMuteListEntryMessage implements MessageBase
         newObjMuteData['MuteID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjMuteData['MuteName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMuteData['MuteName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjMuteData['MuteType'] = buf.readInt32LE(pos);
         pos += 4;

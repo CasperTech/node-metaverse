@@ -49,7 +49,7 @@ export class FeatureDisabledMessage implements MessageBase
             TransactionID: UUID.zero()
         };
         varLength = buf.readUInt8(pos++);
-        newObjFailureInfo['ErrorMessage'] = buf.slice(pos, pos + (varLength - 1));
+        newObjFailureInfo['ErrorMessage'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjFailureInfo['AgentID'] = new UUID(buf, pos);
         pos += 16;

@@ -53,7 +53,7 @@ export class LiveHelpGroupReplyMessage implements MessageBase
         newObjReplyData['GroupID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjReplyData['Selection'] = buf.slice(pos, pos + (varLength - 1));
+        newObjReplyData['Selection'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ReplyData = newObjReplyData;
         return pos - startPos;

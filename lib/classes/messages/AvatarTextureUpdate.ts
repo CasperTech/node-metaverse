@@ -98,7 +98,7 @@ export class AvatarTextureUpdateMessage implements MessageBase
             pos += 16;
             newObjWearableData['TextureIndex'] = buf.readUInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjWearableData['HostName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjWearableData['HostName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.WearableData.push(newObjWearableData);
         }

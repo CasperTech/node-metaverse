@@ -103,7 +103,7 @@ export class ScriptSensorRequestMessage implements MessageBase
         newObjRequester['SearchDir'] = new Quaternion(buf, pos);
         pos += 12;
         varLength = buf.readUInt8(pos++);
-        newObjRequester['SearchName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRequester['SearchName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjRequester['Type'] = buf.readInt32LE(pos);
         pos += 4;

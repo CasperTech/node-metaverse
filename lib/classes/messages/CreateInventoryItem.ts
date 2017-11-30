@@ -108,10 +108,10 @@ export class CreateInventoryItemMessage implements MessageBase
         newObjInventoryBlock['InvType'] = buf.readInt8(pos++);
         newObjInventoryBlock['WearableType'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjInventoryBlock['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInventoryBlock['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryBlock['Description'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInventoryBlock['Description'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.InventoryBlock = newObjInventoryBlock;
         return pos - startPos;

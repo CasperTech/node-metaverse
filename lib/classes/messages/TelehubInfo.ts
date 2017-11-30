@@ -68,7 +68,7 @@ export class TelehubInfoMessage implements MessageBase
         newObjTelehubBlock['ObjectID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjTelehubBlock['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjTelehubBlock['ObjectName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjTelehubBlock['TelehubPos'] = new Vector3(buf, pos, false);
         pos += 12;

@@ -55,10 +55,10 @@ export class ScriptTeleportRequestMessage implements MessageBase
             LookAt: Vector3.getZero()
         };
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['ObjectName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjData['SimPosition'] = new Vector3(buf, pos, false);
         pos += 12;

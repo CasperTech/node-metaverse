@@ -66,7 +66,7 @@ export class ParcelMediaUpdateMessage implements MessageBase
             MediaAutoScale: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlock['MediaURL'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlock['MediaURL'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjDataBlock['MediaID'] = new UUID(buf, pos);
         pos += 16;
@@ -86,10 +86,10 @@ export class ParcelMediaUpdateMessage implements MessageBase
             MediaLoop: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjDataBlockExtended['MediaType'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlockExtended['MediaType'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjDataBlockExtended['MediaDesc'] = buf.slice(pos, pos + (varLength - 1));
+        newObjDataBlockExtended['MediaDesc'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjDataBlockExtended['MediaWidth'] = buf.readInt32LE(pos);
         pos += 4;

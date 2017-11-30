@@ -97,7 +97,7 @@ export class UpdateInventoryFolderMessage implements MessageBase
             pos += 16;
             newObjFolderData['Type'] = buf.readInt8(pos++);
             varLength = buf.readUInt8(pos++);
-            newObjFolderData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjFolderData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.FolderData.push(newObjFolderData);
         }

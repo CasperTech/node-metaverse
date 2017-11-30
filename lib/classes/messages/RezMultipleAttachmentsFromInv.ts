@@ -154,10 +154,10 @@ export class RezMultipleAttachmentsFromInvMessage implements MessageBase
             newObjObjectData['NextOwnerMask'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Description'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['Description'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

@@ -59,7 +59,7 @@ export class TeleportProgressMessage implements MessageBase
         newObjInfo['TeleportFlags'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjInfo['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInfo['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Info = newObjInfo;
         return pos - startPos;

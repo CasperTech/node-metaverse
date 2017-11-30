@@ -78,7 +78,7 @@ export class MapNameRequestMessage implements MessageBase
             Name: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjNameData['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjNameData['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.NameData = newObjNameData;
         return pos - startPos;

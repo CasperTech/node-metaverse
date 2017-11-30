@@ -94,7 +94,7 @@ export class UpdateGroupInfoMessage implements MessageBase
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjGroupData['Charter'] = buf.slice(pos, pos + (varLength - 1));
+        newObjGroupData['Charter'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjGroupData['ShowInList'] = (buf.readUInt8(pos++) === 1);
         newObjGroupData['InsigniaID'] = new UUID(buf, pos);

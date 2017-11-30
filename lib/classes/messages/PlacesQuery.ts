@@ -94,13 +94,13 @@ export class PlacesQueryMessage implements MessageBase
             SimName: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['QueryText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjQueryData['QueryText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjQueryData['QueryFlags'] = buf.readUInt32LE(pos);
         pos += 4;
         newObjQueryData['Category'] = buf.readInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjQueryData['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjQueryData['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.QueryData = newObjQueryData;
         return pos - startPos;

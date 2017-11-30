@@ -46,7 +46,7 @@ export class MuteListUpdateMessage implements MessageBase
         newObjMuteData['AgentID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjMuteData['Filename'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMuteData['Filename'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.MuteData = newObjMuteData;
         return pos - startPos;

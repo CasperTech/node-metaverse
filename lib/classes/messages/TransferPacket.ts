@@ -69,7 +69,7 @@ export class TransferPacketMessage implements MessageBase
         pos += 4;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjTransferData['Data'] = buf.slice(pos, pos + (varLength - 1));
+        newObjTransferData['Data'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.TransferData = newObjTransferData;
         return pos - startPos;

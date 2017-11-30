@@ -65,7 +65,7 @@ export class LoadURLMessage implements MessageBase
             URL: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['ObjectName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjData['ObjectID'] = new UUID(buf, pos);
         pos += 16;
@@ -73,10 +73,10 @@ export class LoadURLMessage implements MessageBase
         pos += 16;
         newObjData['OwnerIsGroup'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjData['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['URL'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['URL'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

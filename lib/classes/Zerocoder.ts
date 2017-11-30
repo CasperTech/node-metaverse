@@ -54,7 +54,7 @@ export class Zerocoder
         }
         return newBuf;
     }
-    static Decode(buf: Buffer, start: number, end: number): Buffer
+    static Decode(buf: Buffer, start: number, end: number, tail: number): Buffer
     {
         // First, run through the data and calculate how many bytes have been compressed
         let bytes = 0;
@@ -67,7 +67,7 @@ export class Zerocoder
                 // Minus two bytes for the overhead
                 bytes += buf.readUInt8(i) - 2;
             }
-            else if (buf[i] === 0)
+            else if (buf[i] === 0 && i <= (end - tail))
             {
                 zero = true;
             }
@@ -88,7 +88,7 @@ export class Zerocoder
                     newBuf[newBufIndex++] = 0;
                 }
             }
-            else if (buf[i] === 0)
+            else if (buf[i] === 0 && i <= (end - tail))
             {
                 zero = true;
             }

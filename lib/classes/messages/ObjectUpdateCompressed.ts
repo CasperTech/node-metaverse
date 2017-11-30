@@ -89,7 +89,7 @@ export class ObjectUpdateCompressedMessage implements MessageBase
             pos += 4;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjObjectData['Data'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['Data'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

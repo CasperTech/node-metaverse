@@ -87,7 +87,7 @@ export class StartGroupProposalMessage implements MessageBase
         newObjProposalData['Duration'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjProposalData['ProposalText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjProposalData['ProposalText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ProposalData = newObjProposalData;
         return pos - startPos;

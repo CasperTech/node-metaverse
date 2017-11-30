@@ -30,7 +30,7 @@ export class Vector4 extends vec4
     {
         buf.writeFloatLE(this.x, pos);
         buf.writeFloatLE(this.y, pos + 4);
-        buf.writeFloatLE(this.x, pos + 8);
+        buf.writeFloatLE(this.z, pos + 8);
         buf.writeFloatLE(this.w, pos + 12);
     }
 }

@@ -85,7 +85,7 @@ export class ObjectNameMessage implements MessageBase
             newObjObjectData['LocalID'] = buf.readUInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjObjectData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjObjectData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ObjectData.push(newObjObjectData);
         }

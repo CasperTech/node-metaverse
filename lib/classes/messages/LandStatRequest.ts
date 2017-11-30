@@ -78,7 +78,7 @@ export class LandStatRequestMessage implements MessageBase
         newObjRequestData['RequestFlags'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjRequestData['Filter'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRequestData['Filter'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjRequestData['ParcelLocalID'] = buf.readInt32LE(pos);
         pos += 4;

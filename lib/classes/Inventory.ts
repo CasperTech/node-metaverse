@@ -1,4 +1,5 @@
 import {UUID} from './UUID';
+import {ClientEvents} from './ClientEvents';
 
 export class Inventory
 {
@@ -27,4 +28,10 @@ export class Inventory
     } = {
         skeleton: []
     };
+    private clientEvents: ClientEvents;
+
+    constructor(clientEvents: ClientEvents)
+    {
+        this.clientEvents = clientEvents;
+    }
 }

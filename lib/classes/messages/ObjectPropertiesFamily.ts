@@ -141,10 +141,10 @@ export class ObjectPropertiesFamilyMessage implements MessageBase
         newObjObjectData['LastOwnerID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjObjectData['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjObjectData['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjObjectData['Description'] = buf.slice(pos, pos + (varLength - 1));
+        newObjObjectData['Description'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ObjectData = newObjObjectData;
         return pos - startPos;

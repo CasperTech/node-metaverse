@@ -99,7 +99,7 @@ export class AgentMovementCompleteMessage implements MessageBase
         };
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjSimData['ChannelVersion'] = buf.slice(pos, pos + (varLength - 1));
+        newObjSimData['ChannelVersion'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.SimData = newObjSimData;
         return pos - startPos;

@@ -95,7 +95,7 @@ export class LogTextMessageMessage implements MessageBase
             pos += 4;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjDataBlock['Message'] = buf.slice(pos, pos + (varLength - 1));
+            newObjDataBlock['Message'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.DataBlock.push(newObjDataBlock);
         }

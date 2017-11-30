@@ -83,15 +83,15 @@ export class AvatarInterestsReplyMessage implements MessageBase
         newObjPropertiesData['WantToMask'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['WantToText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjPropertiesData['WantToText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjPropertiesData['SkillsMask'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['SkillsText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjPropertiesData['SkillsText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['LanguagesText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjPropertiesData['LanguagesText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.PropertiesData = newObjPropertiesData;
         return pos - startPos;

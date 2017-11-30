@@ -74,7 +74,7 @@ export class StartLureMessage implements MessageBase
         };
         newObjInfo['LureType'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjInfo['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInfo['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Info = newObjInfo;
         const count = buf.readUInt8(pos++);

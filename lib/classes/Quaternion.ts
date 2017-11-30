@@ -34,6 +34,6 @@ export class Quaternion extends quat
         const q: quat = this.normalize();
         buf.writeFloatLE(q.x, pos);
         buf.writeFloatLE(q.y, pos + 4);
-        buf.writeFloatLE(q.z, pos + 4);
+        buf.writeFloatLE(q.z, pos + 8);
     }
 }

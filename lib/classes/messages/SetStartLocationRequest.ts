@@ -75,7 +75,7 @@ export class SetStartLocationRequestMessage implements MessageBase
             LocationLookAt: Vector3.getZero()
         };
         varLength = buf.readUInt8(pos++);
-        newObjStartLocationData['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjStartLocationData['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjStartLocationData['LocationID'] = buf.readUInt32LE(pos);
         pos += 4;

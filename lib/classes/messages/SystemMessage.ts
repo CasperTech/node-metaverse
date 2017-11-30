@@ -70,7 +70,7 @@ export class SystemMessageMessage implements MessageBase
             Digest: Buffer.allocUnsafe(0)
         };
         varLength = buf.readUInt8(pos++);
-        newObjMethodData['Method'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMethodData['Method'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjMethodData['Invoice'] = new UUID(buf, pos);
         pos += 16;
@@ -87,7 +87,7 @@ export class SystemMessageMessage implements MessageBase
                 Parameter: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjParamList['Parameter'] = buf.slice(pos, pos + (varLength - 1));
+            newObjParamList['Parameter'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ParamList.push(newObjParamList);
         }

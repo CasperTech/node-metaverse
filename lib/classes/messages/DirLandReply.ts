@@ -109,7 +109,7 @@ export class DirLandReplyMessage implements MessageBase
             newObjQueryReplies['ParcelID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjQueryReplies['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjQueryReplies['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjQueryReplies['Auction'] = (buf.readUInt8(pos++) === 1);
             newObjQueryReplies['ForSale'] = (buf.readUInt8(pos++) === 1);

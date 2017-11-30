@@ -113,12 +113,12 @@ export class AvatarGroupsReplyMessage implements MessageBase
             pos += 8;
             newObjGroupData['AcceptNotices'] = (buf.readUInt8(pos++) === 1);
             varLength = buf.readUInt8(pos++);
-            newObjGroupData['GroupTitle'] = buf.slice(pos, pos + (varLength - 1));
+            newObjGroupData['GroupTitle'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjGroupData['GroupID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjGroupData['GroupName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjGroupData['GroupName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjGroupData['GroupInsigniaID'] = new UUID(buf, pos);
             pos += 16;

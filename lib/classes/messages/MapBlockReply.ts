@@ -114,7 +114,7 @@ export class MapBlockReplyMessage implements MessageBase
             newObjData['Y'] = buf.readUInt16LE(pos);
             pos += 2;
             varLength = buf.readUInt8(pos++);
-            newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
+            newObjData['Name'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjData['Access'] = buf.readUInt8(pos++);
             newObjData['RegionFlags'] = buf.readUInt32LE(pos);

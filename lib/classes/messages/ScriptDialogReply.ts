@@ -80,7 +80,7 @@ export class ScriptDialogReplyMessage implements MessageBase
         newObjData['ButtonIndex'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['ButtonLabel'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['ButtonLabel'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.Data = newObjData;
         return pos - startPos;

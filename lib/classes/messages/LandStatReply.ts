@@ -133,10 +133,10 @@ export class LandStatReplyMessage implements MessageBase
             newObjReportData['Score'] = buf.readFloatLE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjReportData['TaskName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjReportData['TaskName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt8(pos++);
-            newObjReportData['OwnerName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjReportData['OwnerName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ReportData.push(newObjReportData);
         }

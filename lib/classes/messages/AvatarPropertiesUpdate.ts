@@ -95,15 +95,15 @@ export class AvatarPropertiesUpdateMessage implements MessageBase
         pos += 16;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjPropertiesData['AboutText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjPropertiesData['AboutText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['FLAboutText'] = buf.slice(pos, pos + (varLength - 1));
+        newObjPropertiesData['FLAboutText'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjPropertiesData['AllowPublish'] = (buf.readUInt8(pos++) === 1);
         newObjPropertiesData['MaturePublish'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjPropertiesData['ProfileURL'] = buf.slice(pos, pos + (varLength - 1));
+        newObjPropertiesData['ProfileURL'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.PropertiesData = newObjPropertiesData;
         return pos - startPos;

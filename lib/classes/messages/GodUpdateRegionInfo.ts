@@ -107,7 +107,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
             RedirectGridY: 0
         };
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionInfo['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjRegionInfo['EstateID'] = buf.readUInt32LE(pos);
         pos += 4;

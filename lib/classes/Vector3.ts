@@ -45,13 +45,13 @@ export class Vector3 extends vec3
         {
             buf.writeDoubleLE(this.x, pos);
             buf.writeDoubleLE(this.y, pos + 8);
-            buf.writeDoubleLE(this.x, pos + 16);
+            buf.writeDoubleLE(this.z, pos + 16);
         }
         else
         {
             buf.writeFloatLE(this.x, pos);
             buf.writeFloatLE(this.y, pos + 4);
-            buf.writeFloatLE(this.x, pos + 8);
+            buf.writeFloatLE(this.z, pos + 8);
         }
     }
 }

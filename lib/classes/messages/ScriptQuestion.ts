@@ -69,10 +69,10 @@ export class ScriptQuestionMessage implements MessageBase
         newObjData['ItemID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['ObjectName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['ObjectOwner'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['ObjectOwner'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjData['Questions'] = buf.readInt32LE(pos);
         pos += 4;

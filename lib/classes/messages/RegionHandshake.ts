@@ -198,7 +198,7 @@ export class RegionHandshakeMessage implements MessageBase
         pos += 4;
         newObjRegionInfo['SimAccess'] = buf.readUInt8(pos++);
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionInfo['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjRegionInfo['SimOwner'] = new UUID(buf, pos);
         pos += 16;
@@ -268,13 +268,13 @@ export class RegionHandshakeMessage implements MessageBase
         newObjRegionInfo3['CPURatio'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo3['ColoName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionInfo3['ColoName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo3['ProductSKU'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionInfo3['ProductSKU'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjRegionInfo3['ProductName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionInfo3['ProductName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.RegionInfo3 = newObjRegionInfo3;
         const count = buf.readUInt8(pos++);

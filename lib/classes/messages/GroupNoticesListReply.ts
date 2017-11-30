@@ -109,11 +109,11 @@ export class GroupNoticesListReplyMessage implements MessageBase
             pos += 4;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjData['FromName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjData['FromName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjData['Subject'] = buf.slice(pos, pos + (varLength - 1));
+            newObjData['Subject'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjData['HasAttachment'] = (buf.readUInt8(pos++) === 1);
             newObjData['AssetType'] = buf.readUInt8(pos++);

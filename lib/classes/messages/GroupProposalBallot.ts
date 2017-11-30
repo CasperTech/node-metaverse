@@ -73,7 +73,7 @@ export class GroupProposalBallotMessage implements MessageBase
         newObjProposalData['GroupID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjProposalData['VoteCast'] = buf.slice(pos, pos + (varLength - 1));
+        newObjProposalData['VoteCast'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ProposalData = newObjProposalData;
         return pos - startPos;

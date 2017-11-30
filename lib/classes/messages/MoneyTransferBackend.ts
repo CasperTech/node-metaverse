@@ -117,7 +117,7 @@ export class MoneyTransferBackendMessage implements MessageBase
         newObjMoneyData['GridY'] = buf.readUInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjMoneyData['Description'] = buf.slice(pos, pos + (varLength - 1));
+        newObjMoneyData['Description'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.MoneyData = newObjMoneyData;
         return pos - startPos;

@@ -130,12 +130,12 @@ export class GroupMembersReplyMessage implements MessageBase
             newObjMemberData['Contribution'] = buf.readInt32LE(pos);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjMemberData['OnlineStatus'] = buf.slice(pos, pos + (varLength - 1));
+            newObjMemberData['OnlineStatus'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjMemberData['AgentPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
             pos += 8;
             varLength = buf.readUInt8(pos++);
-            newObjMemberData['Title'] = buf.slice(pos, pos + (varLength - 1));
+            newObjMemberData['Title'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             newObjMemberData['IsOwner'] = (buf.readUInt8(pos++) === 1);
             this.MemberData.push(newObjMemberData);

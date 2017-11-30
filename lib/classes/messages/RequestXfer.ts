@@ -71,7 +71,7 @@ export class RequestXferMessage implements MessageBase
         newObjXferID['ID'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
         pos += 8;
         varLength = buf.readUInt8(pos++);
-        newObjXferID['Filename'] = buf.slice(pos, pos + (varLength - 1));
+        newObjXferID['Filename'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjXferID['FilePath'] = buf.readUInt8(pos++);
         newObjXferID['DeleteOnCompletion'] = (buf.readUInt8(pos++) === 1);

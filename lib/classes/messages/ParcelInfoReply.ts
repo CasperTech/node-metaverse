@@ -127,10 +127,10 @@ export class ParcelInfoReplyMessage implements MessageBase
         newObjData['OwnerID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjData['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjData['Desc'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['Desc'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjData['ActualArea'] = buf.readInt32LE(pos);
         pos += 4;
@@ -144,7 +144,7 @@ export class ParcelInfoReplyMessage implements MessageBase
         newObjData['GlobalZ'] = buf.readFloatLE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjData['SimName'] = buf.slice(pos, pos + (varLength - 1));
+        newObjData['SimName'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjData['SnapshotID'] = new UUID(buf, pos);
         pos += 16;

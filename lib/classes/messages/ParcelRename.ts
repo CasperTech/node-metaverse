@@ -65,7 +65,7 @@ export class ParcelRenameMessage implements MessageBase
             newObjParcelData['ParcelID'] = new UUID(buf, pos);
             pos += 16;
             varLength = buf.readUInt8(pos++);
-            newObjParcelData['NewName'] = buf.slice(pos, pos + (varLength - 1));
+            newObjParcelData['NewName'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.ParcelData.push(newObjParcelData);
         }

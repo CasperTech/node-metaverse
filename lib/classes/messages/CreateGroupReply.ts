@@ -64,7 +64,7 @@ export class CreateGroupReplyMessage implements MessageBase
         pos += 16;
         newObjReplyData['Success'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjReplyData['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjReplyData['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ReplyData = newObjReplyData;
         return pos - startPos;

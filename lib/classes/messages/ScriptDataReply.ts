@@ -69,7 +69,7 @@ export class ScriptDataReplyMessage implements MessageBase
             pos += 8;
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjDataBlock['Reply'] = buf.slice(pos, pos + (varLength - 1));
+            newObjDataBlock['Reply'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.DataBlock.push(newObjDataBlock);
         }

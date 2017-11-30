@@ -297,7 +297,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         newObjAgentData['Aspect'] = buf.readFloatLE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjAgentData['Throttles'] = buf.slice(pos, pos + (varLength - 1));
+        newObjAgentData['Throttles'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjAgentData['LocomotionState'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -316,7 +316,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         newObjAgentData['AgentAccess'] = buf.readUInt8(pos++);
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjAgentData['AgentTextures'] = buf.slice(pos, pos + (varLength - 1));
+        newObjAgentData['AgentTextures'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjAgentData['ActiveGroupID'] = new UUID(buf, pos);
         pos += 16;
@@ -382,7 +382,7 @@ export class ChildAgentUpdateMessage implements MessageBase
             };
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjNVPairData['NVPairs'] = buf.slice(pos, pos + (varLength - 1));
+            newObjNVPairData['NVPairs'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.NVPairData.push(newObjNVPairData);
         }
@@ -436,7 +436,7 @@ export class ChildAgentUpdateMessage implements MessageBase
                 InventoryHost: Buffer.allocUnsafe(0)
             };
             varLength = buf.readUInt8(pos++);
-            newObjAgentInventoryHost['InventoryHost'] = buf.slice(pos, pos + (varLength - 1));
+            newObjAgentInventoryHost['InventoryHost'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.AgentInventoryHost.push(newObjAgentInventoryHost);
         }

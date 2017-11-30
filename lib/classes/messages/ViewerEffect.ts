@@ -111,7 +111,7 @@ export class ViewerEffectMessage implements MessageBase
             newObjEffect['Color'] = buf.slice(pos, pos + 4);
             pos += 4;
             varLength = buf.readUInt8(pos++);
-            newObjEffect['TypeData'] = buf.slice(pos, pos + (varLength - 1));
+            newObjEffect['TypeData'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.Effect.push(newObjEffect);
         }

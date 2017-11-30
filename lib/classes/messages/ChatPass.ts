@@ -92,7 +92,7 @@ export class ChatPassMessage implements MessageBase
         newObjChatData['OwnerID'] = new UUID(buf, pos);
         pos += 16;
         varLength = buf.readUInt8(pos++);
-        newObjChatData['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjChatData['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjChatData['SourceType'] = buf.readUInt8(pos++);
         newObjChatData['Type'] = buf.readUInt8(pos++);
@@ -101,7 +101,7 @@ export class ChatPassMessage implements MessageBase
         newObjChatData['SimAccess'] = buf.readUInt8(pos++);
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjChatData['Message'] = buf.slice(pos, pos + (varLength - 1));
+        newObjChatData['Message'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.ChatData = newObjChatData;
         return pos - startPos;

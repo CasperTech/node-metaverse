@@ -714,7 +714,7 @@ messages.forEach((message) =>
                         {
                             console.error("INVALID VARIABLE LENGTH: " + param.size);
                         }
-                        classString += spaces + '        newObj' + block.name + '[\'' + param.name + '\'] = buf.slice(pos, pos + (varLength - 1));\n';
+                        classString += spaces + '        newObj' + block.name + '[\'' + param.name + '\'] = buf.slice(pos, pos + varLength);\n';
                         classString += spaces + '        pos += varLength;\n';
                         break;
                     case 'LLVector4':

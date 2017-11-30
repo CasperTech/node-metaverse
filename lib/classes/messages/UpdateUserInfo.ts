@@ -64,7 +64,7 @@ export class UpdateUserInfoMessage implements MessageBase
         };
         newObjUserData['IMViaEMail'] = (buf.readUInt8(pos++) === 1);
         varLength = buf.readUInt8(pos++);
-        newObjUserData['DirectoryVisibility'] = buf.slice(pos, pos + (varLength - 1));
+        newObjUserData['DirectoryVisibility'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.UserData = newObjUserData;
         return pos - startPos;

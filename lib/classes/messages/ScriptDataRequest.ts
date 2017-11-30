@@ -74,7 +74,7 @@ export class ScriptDataRequestMessage implements MessageBase
             newObjDataBlock['RequestType'] = buf.readInt8(pos++);
             varLength = buf.readUInt16LE(pos);
             pos += 2;
-            newObjDataBlock['Request'] = buf.slice(pos, pos + (varLength - 1));
+            newObjDataBlock['Request'] = buf.slice(pos, pos + varLength);
             pos += varLength;
             this.DataBlock.push(newObjDataBlock);
         }

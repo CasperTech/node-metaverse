@@ -95,7 +95,7 @@ export class CrossedRegionMessage implements MessageBase
         pos += 8;
         varLength = buf.readUInt16LE(pos);
         pos += 2;
-        newObjRegionData['SeedCapability'] = buf.slice(pos, pos + (varLength - 1));
+        newObjRegionData['SeedCapability'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.RegionData = newObjRegionData;
         const newObjInfo: {

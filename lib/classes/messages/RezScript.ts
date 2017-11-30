@@ -211,10 +211,10 @@ export class RezScriptMessage implements MessageBase
         newObjInventoryBlock['SalePrice'] = buf.readInt32LE(pos);
         pos += 4;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryBlock['Name'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInventoryBlock['Name'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         varLength = buf.readUInt8(pos++);
-        newObjInventoryBlock['Description'] = buf.slice(pos, pos + (varLength - 1));
+        newObjInventoryBlock['Description'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         newObjInventoryBlock['CreationDate'] = buf.readInt32LE(pos);
         pos += 4;
