@@ -1,0 +1,16 @@
+/// <reference types="node" />
+import { MessageBase } from '../MessageBase';
+import { Message } from '../../enums/Message';
+export declare class ScriptControlChangeMessage implements MessageBase {
+    name: string;
+    messageFlags: number;
+    id: Message;
+    Data: {
+        TakeControls: boolean;
+        Controls: number;
+        PassToAgent: boolean;
+    }[];
+    getSize(): number;
+    writeToBuffer(buf: Buffer, pos: number): number;
+    readFromBuffer(buf: Buffer, pos: number): number;
+}
