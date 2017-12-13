@@ -18,7 +18,6 @@ const InventorySortOrder_1 = require("../enums/InventorySortOrder");
 const RezSingleAttachmentFromInv_1 = require("./messages/RezSingleAttachmentFromInv");
 const AttachmentPoint_1 = require("../enums/AttachmentPoint");
 const Utils_1 = require("./Utils");
-const AgentAnimation_1 = require("./messages/AgentAnimation");
 class Agent {
     constructor(clientEvents) {
         this.localID = 0;
@@ -89,29 +88,6 @@ class Agent {
                 });
             }
         }
-    }
-    animate(anim, run) {
-        const circuit = this.currentRegion.circuit;
-        const animPacket = new AgentAnimation_1.AgentAnimationMessage();
-        animPacket.AgentData = {
-            AgentID: this.agentID,
-            SessionID: circuit.sessionID
-        };
-        animPacket.PhysicalAvatarEventList = [];
-        animPacket.AnimationList = [];
-        anim.forEach((a) => {
-            animPacket.AnimationList.push({
-                AnimID: a,
-                StartAnim: run
-            });
-        });
-        return circuit.waitForAck(circuit.sendMessage(animPacket, PacketFlags_1.PacketFlags.Reliable), 10000);
-    }
-    startAnimations(anim) {
-        return this.animate(anim, true);
-    }
-    stopAnimations(anim) {
-        return this.animate(anim, false);
     }
     setInitialAppearance() {
         const circuit = this.currentRegion.circuit;

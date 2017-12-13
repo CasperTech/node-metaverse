@@ -4,17 +4,15 @@ import {Packet} from './Packet';
 import {Message} from '../enums/Message';
 import {ChatFromSimulatorMessage} from './messages/ChatFromSimulator';
 import {ImprovedInstantMessageMessage} from './messages/ImprovedInstantMessage';
-import {ChatType} from '../enums/ChatType';
 import {Utils} from './Utils';
-import {ChatFromViewerMessage} from './messages/ChatFromViewer';
-import {PacketFlags} from '../enums/PacketFlags';
 import {ChatEvent} from '../events/ChatEvent';
-import {UUID} from './UUID';
 import {InstantMessageDialog} from '../enums/InstantMessageDialog';
 import {LureEvent} from '../events/LureEvent';
 import {AlertMessageMessage} from './messages/AlertMessage';
 import {ClientEvents} from './ClientEvents';
-import {Vector3} from './Vector3';
+import {InstantMessageEvent} from '../events/InstantMessageEvent';
+import {ChatSourceType} from '../enums/ChatSourceType';
+import {InstantMessageEventFlags} from '../enums/InstantMessageEventFlags';
 
 export class Comms
 {
@@ -29,10 +27,10 @@ export class Comms
         this.agent = agent;
 
         this.circuit.subscribeToMessages([
-                Message.ImprovedInstantMessage,
-                Message.ChatFromSimulator,
-                Message.AlertMessage
-            ], (packet: Packet) =>
+            Message.ImprovedInstantMessage,
+            Message.ChatFromSimulator,
+            Message.AlertMessage
+        ], (packet: Packet) =>
         {
             switch (packet.message.id)
             {
@@ -41,7 +39,18 @@ export class Comms
                     switch (im.MessageBlock.Dialog)
                     {
                         case InstantMessageDialog.MessageFromAgent:
+                        {
+                            console.log(im);
+                            const imEvent = new InstantMessageEvent();
+                            imEvent.source = ChatSourceType.Agent;
+                            imEvent.from = im.AgentData.AgentID;
+                            imEvent.owner = im.AgentData.AgentID;
+                            imEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            imEvent.message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            imEvent.flags = InstantMessageEventFlags.normal;
+                            this.clientEvents.onInstantMessage.next(imEvent);
                             break;
+                        }
                         case InstantMessageDialog.MessageBox:
                             break;
                         case InstantMessageDialog.GroupInvitation:
@@ -59,15 +68,37 @@ export class Comms
                         case InstantMessageDialog.TaskInventoryDeclined:
                             break;
                         case InstantMessageDialog.MessageFromObject:
+                        {
+                            console.log(im);
+                            const imEvent = new InstantMessageEvent();
+                            imEvent.source = ChatSourceType.Object;
+                            imEvent.owner = im.AgentData.AgentID;
+                            imEvent.from = im.MessageBlock.ID;
+                            imEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            imEvent.message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            imEvent.flags = InstantMessageEventFlags.normal;
+                            this.clientEvents.onInstantMessage.next(imEvent);
                             break;
+                        }
                         case InstantMessageDialog.BusyAutoResponse:
+                        {
+                            const imEvent = new InstantMessageEvent();
+                            imEvent.source = ChatSourceType.Agent;
+                            imEvent.from = im.AgentData.AgentID;
+                            imEvent.owner = im.AgentData.AgentID;
+                            imEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            imEvent.message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            imEvent.flags = InstantMessageEventFlags.busyResponse;
+                            this.clientEvents.onInstantMessage.next(imEvent);
                             break;
+                        }
                         case InstantMessageDialog.ConsoleAndChatHistory:
                             break;
                         case InstantMessageDialog.RequestTeleport:
                             const lureEvent = new LureEvent();
                             const extraData = Utils.BufferToStringSimple(im.MessageBlock.BinaryBucket).split('|');
-                            lureEvent.fromName =  Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            lureEvent.from = im.AgentData.AgentID;
+                            lureEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                             lureEvent.lureMessage = Utils.BufferToStringSimple(im.MessageBlock.Message);
                             lureEvent.regionID = im.MessageBlock.RegionID;
                             lureEvent.position = im.MessageBlock.Position;
@@ -105,9 +136,29 @@ export class Comms
                         case InstantMessageDialog.FriendshipDeclined:
                             break;
                         case InstantMessageDialog.StartTyping:
+                        {
+                            const imEvent = new InstantMessageEvent();
+                            imEvent.source = ChatSourceType.Agent;
+                            imEvent.from = im.AgentData.AgentID;
+                            imEvent.owner = im.AgentData.AgentID;
+                            imEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            imEvent.message = '';
+                            imEvent.flags = InstantMessageEventFlags.startTyping;
+                            this.clientEvents.onInstantMessage.next(imEvent);
                             break;
+                        }
                         case InstantMessageDialog.StopTyping:
+                        {
+                            const imEvent = new InstantMessageEvent();
+                            imEvent.source = ChatSourceType.Agent;
+                            imEvent.from = im.AgentData.AgentID;
+                            imEvent.owner = im.AgentData.AgentID;
+                            imEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            imEvent.message = '';
+                            imEvent.flags = InstantMessageEventFlags.finishTyping;
+                            this.clientEvents.onInstantMessage.next(imEvent);
                             break;
+                        }
 
                     }
                     break;
@@ -130,128 +181,21 @@ export class Comms
                 case Message.AlertMessage:
                     const alertm = packet.message as AlertMessageMessage;
 
-                    let alertMessage = Utils.BufferToStringSimple(alertm.AlertData.Message);
+                    const alertMessage = Utils.BufferToStringSimple(alertm.AlertData.Message);
 
                     console.log('Alert message: ' + alertMessage);
-                    alertm.AlertInfo.forEach((info) => {
-                        let alertInfoMessage = Utils.BufferToStringSimple(info.Message);
+                    alertm.AlertInfo.forEach((info) =>
+                    {
+                        const alertInfoMessage = Utils.BufferToStringSimple(info.Message);
                         console.log('Alert info message: ' + alertInfoMessage);
                     });
                     break;
             }
         });
     }
-    nearbyChat(message: string, type: ChatType, channel?: number)
-    {
-        if (channel === undefined)
-        {
-            channel = 0;
-        }
-        const cfv = new ChatFromViewerMessage();
-        cfv.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        cfv.ChatData = {
-            Message: Utils.StringToBuffer(message),
-            Type: type,
-            Channel: channel
-        };
-        this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-    }
-    say(message: string, channel?: number)
-    {
-        this.nearbyChat(message, ChatType.Normal, channel);
-    }
-    whisper(message: string, channel?: number)
-    {
-        this.nearbyChat(message, ChatType.Whisper, channel);
-    }
-    shout(message: string, channel?: number)
-    {
-        this.nearbyChat(message, ChatType.Shout, channel);
-    }
-    startTypingLocal()
-    {
-        const cfv = new ChatFromViewerMessage();
-        cfv.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        cfv.ChatData = {
-            Message: Buffer.allocUnsafe(0),
-            Type: ChatType.StartTyping,
-            Channel: 0
-        };
-        this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-    }
-    stopTypingLocal()
-    {
-        const cfv = new ChatFromViewerMessage();
-        cfv.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        cfv.ChatData = {
-            Message: Buffer.allocUnsafe(0),
-            Type: ChatType.StopTyping,
-            Channel: 0
-        };
-        this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-    }
-    typeMessage(message: string)
-    {
-        this.startTypingLocal();
-        this.agent.startAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]).then(() =>
-        {
-            // Average four characters per second i guess?
-            const timeToWait = (message.length / 5) * 1000;
-            setTimeout(() =>
-            {
-                this.stopTypingLocal();
-                this.agent.stopAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]).then(() =>
-                {
-                    this.say(message);
-                });
-            }, timeToWait);
-        });
-    }
+
     shutdown()
     {
 
-    }
-    sendInstantMessage(to: UUID | string, message: string): Promise<void>
-    {
-        const circuit = this.circuit;
-        if (typeof to === 'string')
-        {
-            to = new UUID(to);
-        }
-        message += '\0';
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: to,
-            ParentEstateID: 0,
-            RegionID: UUID.zero(),
-            Position: Vector3.getZero(),
-            Offline: 0,
-            Dialog: 0,
-            ID: UUID.zero(),
-            Timestamp: 0,
-            FromAgentName: Utils.StringToBuffer(agentName),
-            Message: Utils.StringToBuffer(message),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
     }
 }

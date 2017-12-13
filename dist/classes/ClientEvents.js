@@ -4,8 +4,13 @@ const Subject_1 = require("rxjs/Subject");
 class ClientEvents {
     constructor() {
         this.onNearbyChat = new Subject_1.Subject();
+        this.onInstantMessage = new Subject_1.Subject();
+        this.onGroupInvite = new Subject_1.Subject();
+        this.onFriendRequest = new Subject_1.Subject();
         this.onLure = new Subject_1.Subject();
         this.onTeleportEvent = new Subject_1.Subject();
+        this.onDisconnected = new Subject_1.Subject();
+        this.onCircuitLatency = new Subject_1.Subject();
     }
 }
 exports.ClientEvents = ClientEvents;

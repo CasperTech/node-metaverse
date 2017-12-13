@@ -8,6 +8,9 @@ import {BVH} from './classes/BVH';
 
 import {AssetType} from './enums/AssetType';
 import {HTTPAssets} from './enums/HTTPAssets';
+import {InstantMessageEventFlags} from './enums/InstantMessageEventFlags';
+import {InstantMessageEvent} from './events/InstantMessageEvent';
+import {ChatSourceType} from './enums/ChatSourceType';
 
 export {
     Bot,
@@ -15,5 +18,8 @@ export {
     AssetType,
     HTTPAssets,
     ClientEvents,
-    BVH
+    BVH,
+    InstantMessageEvent,
+    InstantMessageEventFlags,
+    ChatSourceType
 };

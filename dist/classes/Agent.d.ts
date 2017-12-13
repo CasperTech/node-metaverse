@@ -60,8 +60,5 @@ export declare class Agent {
     sendAgentUpdate(): void;
     shutdown(): void;
     onAnimState(packet: Packet): void;
-    private animate(anim, run);
-    startAnimations(anim: UUID[]): Promise<void>;
-    stopAnimations(anim: UUID[]): Promise<void>;
     setInitialAppearance(): void;
 }

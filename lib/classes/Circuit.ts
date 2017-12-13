@@ -29,7 +29,8 @@ export class Circuit
     awaitingAck: {
         [key: number]: {
             packet: Packet,
-            timeout: number
+            timeout: number,
+            sent: number
         }
     } = {};
     receivedPackets: {
@@ -216,7 +217,8 @@ export class Circuit
             this.awaitingAck[packet.sequenceNumber] =
                 {
                     packet: packet,
-                    timeout: setTimeout(this.resend.bind(this, packet.sequenceNumber), 1000)
+                    timeout: setTimeout(this.resend.bind(this, packet.sequenceNumber), 1000),
+                    sent: new Date().getTime()
                 };
         }
         let dataToSend: Buffer = Buffer.allocUnsafe(packet.getSize());
@@ -259,6 +261,26 @@ export class Circuit
             }
         ];
         this.sendMessage(msg, 0);
+    }
+
+    getOldestUnacked(): number
+    {
+        let result = 0;
+        let oldest = -1;
+
+        const keys: string[] = Object.keys(this.awaitingAck);
+
+        keys.forEach((seqID: string) =>
+        {
+            const nSeq = parseInt(seqID, 10);
+            if (oldest === -1 || this.awaitingAck[nSeq].sent < oldest)
+            {
+                result = nSeq;
+                oldest = this.awaitingAck[nSeq].sent;
+            }
+        });
+
+        return result;
     }
 
     expireReceivedPacket(sequenceNumber: number)

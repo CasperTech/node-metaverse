@@ -1,0 +1,1 @@
+{"version":3,"file":"CommandsBase.js","sourceRoot":"","sources":["../../../lib/classes/commands/CommandsBase.ts"],"names":[],"mappings":";;AAKA;IAOI,YAAY,MAAc,EAAE,KAAY,EAAE,GAAQ;QAE9C,IAAI,CAAC,aAAa,GAAG,MAAM,CAAC;QAC5B,IAAI,CAAC,KAAK,GAAG,KAAK,CAAC;QACnB,IAAI,CAAC,GAAG,GAAG,GAAG,CAAC;QACf,IAAI,CAAC,OAAO,GAAG,IAAI,CAAC,aAAa,CAAC,OAAO,CAAC;IAC9C,CAAC;CACJ;AAdD,oCAcC"}
