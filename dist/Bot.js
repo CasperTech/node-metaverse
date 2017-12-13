@@ -320,10 +320,9 @@ class Bot {
                         case Message_1.Message.TeleportStart:
                             {
                                 const teleportStart = packet.message;
-                                const flags = teleportStart.Info.TeleportFlags;
                                 const tpEvent = new TeleportEvent_1.TeleportEvent();
-                                tpEvent.message = message;
-                                tpEvent.eventType = TeleportEventType_1.TeleportEventType.TeleportProgress;
+                                tpEvent.message = '';
+                                tpEvent.eventType = TeleportEventType_1.TeleportEventType.TeleportStarted;
                                 tpEvent.simIP = '';
                                 tpEvent.simPort = 0;
                                 tpEvent.seedCapability = '';
@@ -368,9 +367,6 @@ class Bot {
                                 const avatarAnimation = packet.message;
                                 break;
                             }
-                        default:
-                            console.log('Unrecognised message');
-                            break;
                     }
                 });
                 resolve();

@@ -122,7 +122,6 @@ class Agent {
         };
         circuit.sendMessage(wearablesRequest, PacketFlags_1.PacketFlags.Reliable);
         circuit.waitForMessage(Message_1.Message.AgentWearablesUpdate, 10000).then((packet) => {
-            console.log("Got agent wearables update");
             const wearables = packet.message;
             if (!this.wearables || wearables.AgentData.SerialNum > this.wearables.serialNumber) {
                 this.wearables = {
@@ -154,7 +153,6 @@ class Agent {
                             requestFolder
                         ]
                     };
-                    console.log("Requesting cap");
                     this.currentRegion.caps.capsRequestXML('FetchInventoryDescendents2', requestedFolders).then((folderContents) => {
                         const currentOutfitFolderContents = folderContents['folders'][0]['items'];
                         const wornObjects = this.currentRegion.objects.getObjectsByParent(this.localID);

@@ -70,6 +70,7 @@ class EventQueueClient {
                                         break;
                                     }
                                 default:
+                                    console.log('Unhandled event:');
                                     console.log(JSON.stringify(event, null, 4));
                             }
                         }
