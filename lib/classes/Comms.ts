@@ -66,7 +66,6 @@ export class Comms
                             break;
                         case InstantMessageDialog.RequestTeleport:
                             const lureEvent = new LureEvent();
-
                             const extraData = Utils.BufferToStringSimple(im.MessageBlock.BinaryBucket).split('|');
                             lureEvent.fromName =  Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                             lureEvent.lureMessage = Utils.BufferToStringSimple(im.MessageBlock.Message);

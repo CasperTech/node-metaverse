@@ -120,7 +120,6 @@ class Caps {
         return new Promise((resolve, reject) => {
             this.getCapability('ViewerAsset').then((url) => {
                 const assetURL = url + '/?' + type + '_id=' + uuid.toString();
-                console.log(assetURL);
                 request({
                     'uri': assetURL,
                     'rejectUnauthorized': false,
