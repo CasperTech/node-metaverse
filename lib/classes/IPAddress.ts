@@ -10,24 +10,38 @@ export class IPAddress
     }
     public toString = (): string =>
     {
-        return this.ip.toString();
+        try
+        {
+            return this.ip.toString();
+        }
+        catch (ignore)
+        {
+            return '';
+        }
     };
     constructor(buf?: Buffer | string, pos?: number)
     {
-        if (buf !== undefined && buf instanceof Buffer)
+        try
         {
-            if (pos !== undefined)
+            if (buf !== undefined && buf instanceof Buffer)
             {
-                const bytes = buf.slice(pos, 4);
-                this.ip = ipaddr.fromByteArray(bytes);
-            }
-            else
-            {
-                if (ipaddr.isValid(buf))
+                if (pos !== undefined)
                 {
-                    this.ip = ipaddr.parse(buf);
+                    const bytes = buf.slice(pos, 4);
+                    this.ip = ipaddr.fromByteArray(bytes);
+                }
+                else
+                {
+                    if (ipaddr.isValid(buf))
+                    {
+                        this.ip = ipaddr.parse(buf);
+                    }
                 }
             }
+        }
+        catch (ignore)
+        {
+            this.ip = ipaddr.parse('0.0.0.0');
         }
     }
     writeToBuffer(buf: Buffer, pos: number)

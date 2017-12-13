@@ -3,6 +3,7 @@ import {Vector3} from '../classes/Vector3';
 
 export class LureEvent
 {
+    from: UUID;
     fromName: string;
     lureMessage: string;
     regionID: UUID;

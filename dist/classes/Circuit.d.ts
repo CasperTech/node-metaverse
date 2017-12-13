@@ -22,6 +22,7 @@ export declare class Circuit {
         [key: number]: {
             packet: Packet;
             timeout: number;
+            sent: number;
         };
     };
     receivedPackets: {
@@ -41,6 +42,7 @@ export declare class Circuit {
     sendPacket(packet: Packet): void;
     ackReceived(sequenceNumber: number): void;
     sendAck(sequenceNumber: number): void;
+    getOldestUnacked(): number;
     expireReceivedPacket(sequenceNumber: number): void;
     receivedPacket(bytes: Buffer): void;
 }
