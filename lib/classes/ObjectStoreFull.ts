@@ -127,6 +127,18 @@ export class ObjectStoreFull implements IObjectStore
                         if (this.objects[localID].PCode === PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString())
                         {
                             this.agent.localID = localID;
+
+                            if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                            {
+                                Object.keys(this.objectsByParent).forEach((objParentID: string) =>
+                                {
+                                    const parent = parseInt(objParentID, 10);
+                                    if (parent !== this.agent.localID)
+                                    {
+                                        this.deleteObject(parent);
+                                    }
+                                });
+                            }
                         }
 
                         this.readExtraParams(objData.ExtraParams, 0, this.objects[localID]);
