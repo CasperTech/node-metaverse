@@ -24,7 +24,6 @@ class Comms {
                     switch (im.MessageBlock.Dialog) {
                         case InstantMessageDialog_1.InstantMessageDialog.MessageFromAgent:
                             {
-                                console.log(im);
                                 const imEvent = new InstantMessageEvent_1.InstantMessageEvent();
                                 imEvent.source = ChatSourceType_1.ChatSourceType.Agent;
                                 imEvent.from = im.AgentData.AgentID;
@@ -53,7 +52,6 @@ class Comms {
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.MessageFromObject:
                             {
-                                console.log(im);
                                 const imEvent = new InstantMessageEvent_1.InstantMessageEvent();
                                 imEvent.source = ChatSourceType_1.ChatSourceType.Object;
                                 imEvent.owner = im.AgentData.AgentID;

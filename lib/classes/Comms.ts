@@ -40,7 +40,6 @@ export class Comms
                     {
                         case InstantMessageDialog.MessageFromAgent:
                         {
-                            console.log(im);
                             const imEvent = new InstantMessageEvent();
                             imEvent.source = ChatSourceType.Agent;
                             imEvent.from = im.AgentData.AgentID;
@@ -69,7 +68,6 @@ export class Comms
                             break;
                         case InstantMessageDialog.MessageFromObject:
                         {
-                            console.log(im);
                             const imEvent = new InstantMessageEvent();
                             imEvent.source = ChatSourceType.Object;
                             imEvent.owner = im.AgentData.AgentID;

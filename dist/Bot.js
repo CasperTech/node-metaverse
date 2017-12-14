@@ -11,6 +11,7 @@ const RegionHandshakeReply_1 = require("./classes/messages/RegionHandshakeReply"
 const RegionProtocolFlags_1 = require("./enums/RegionProtocolFlags");
 const AgentDataUpdateRequest_1 = require("./classes/messages/AgentDataUpdateRequest");
 const TeleportEvent_1 = require("./events/TeleportEvent");
+const ClientEvents_1 = require("./classes/ClientEvents");
 const TeleportEventType_1 = require("./enums/TeleportEventType");
 const ClientCommands_1 = require("./classes/ClientCommands");
 const DisconnectEvent_1 = require("./events/DisconnectEvent");
@@ -20,14 +21,14 @@ class Bot {
         this.ping = null;
         this.pingNumber = 0;
         this.lastSuccessfulPing = 0;
-        this.clientEvents = null;
+        this.circuitSubscription = null;
+        this.clientEvents = new ClientEvents_1.ClientEvents();
         this.loginParams = login;
     }
     login() {
         return new Promise((resolve, reject) => {
-            const loginHandler = new LoginHandler_1.LoginHandler();
+            const loginHandler = new LoginHandler_1.LoginHandler(this.clientEvents);
             loginHandler.Login(this.loginParams).then((response) => {
-                this.clientEvents = response.clientEvents;
                 this.currentRegion = response.region;
                 this.agent = response.agent;
                 this.clientCommands = new ClientCommands_1.ClientCommands(response.region, response.agent, this);
@@ -41,6 +42,10 @@ class Bot {
         return new Promise((resolve, reject) => {
             this.currentRegion = region;
             this.clientCommands = new ClientCommands_1.ClientCommands(this.currentRegion, this.agent, this);
+            if (this.ping !== null) {
+                clearInterval(this.ping);
+                this.ping = null;
+            }
             this.connectToSim().then(() => {
                 resolve();
             }).catch((error) => {
@@ -63,6 +68,10 @@ class Bot {
             }).then(() => {
                 this.agent.shutdown();
                 this.currentRegion.shutdown();
+                if (this.circuitSubscription !== null) {
+                    this.circuitSubscription.unsubscribe();
+                    this.circuitSubscription = null;
+                }
                 delete this.currentRegion;
                 delete this.agent;
                 delete this.clientCommands;
@@ -151,6 +160,10 @@ class Bot {
                     if ((new Date().getTime() - this.lastSuccessfulPing) > 60000) {
                         this.agent.shutdown();
                         this.currentRegion.shutdown();
+                        if (this.circuitSubscription !== null) {
+                            this.circuitSubscription.unsubscribe();
+                            this.circuitSubscription = null;
+                        }
                         delete this.currentRegion;
                         delete this.agent;
                         delete this.clientCommands;
@@ -166,7 +179,7 @@ class Bot {
                         }
                     }
                 }, 5000);
-                circuit.subscribeToMessages([
+                this.circuitSubscription = circuit.subscribeToMessages([
                     Message_1.Message.TeleportFailed,
                     Message_1.Message.TeleportFinish,
                     Message_1.Message.TeleportLocal,
@@ -229,6 +242,10 @@ class Bot {
                                 const kickUser = packet.message;
                                 this.agent.shutdown();
                                 this.currentRegion.shutdown();
+                                if (this.circuitSubscription !== null) {
+                                    this.circuitSubscription.unsubscribe();
+                                    this.circuitSubscription = null;
+                                }
                                 delete this.currentRegion;
                                 delete this.agent;
                                 delete this.clientCommands;

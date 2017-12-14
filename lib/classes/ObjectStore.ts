@@ -15,18 +15,18 @@ import {Vector3} from './Vector3';
 import {CompressedFlags} from '../enums/CompressedFlags';
 import {ExtraParamType} from '../enums/ExtraParamType';
 import {Utils} from './Utils';
-import {SoundFlags} from '../enums/SoundFlags';
 import {PCode} from '../enums/PCode';
-import {NameValue} from "./NameValue";
-import {ClientEvents} from "./ClientEvents";
+import {NameValue} from './NameValue';
+import {ClientEvents} from './ClientEvents';
+import {KillObjectMessage} from './messages/KillObject';
 
 export class ObjectStore
 {
     private circuit: Circuit;
     private agent: Agent;
-    private objects: {[key: number]: GameObject} = {};
-    private objectsByUUID: {[key: string]: number} = {};
-    private objectsByParent: {[key: number]: number[]} = {};
+    private objects: { [key: number]: GameObject } = {};
+    private objectsByUUID: { [key: string]: number } = {};
+    private objectsByParent: { [key: number]: number[] } = {};
     private clientEvents: ClientEvents;
 
     constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents)
@@ -35,11 +35,12 @@ export class ObjectStore
         this.circuit = circuit;
         this.agent = agent;
         this.circuit.subscribeToMessages([
-           Message.ObjectUpdate,
-           Message.ObjectUpdateCached,
-           Message.ObjectUpdateCompressed,
-           Message.ImprovedTerseObjectUpdate,
-           Message.MultipleObjectUpdate
+            Message.ObjectUpdate,
+            Message.ObjectUpdateCached,
+            Message.ObjectUpdateCompressed,
+            Message.ImprovedTerseObjectUpdate,
+            Message.MultipleObjectUpdate,
+            Message.KillObject
         ], (packet: Packet) =>
         {
             switch (packet.message.id)
@@ -148,8 +149,8 @@ export class ObjectStore
                     objectUpdateCached.ObjectData.forEach((obj) =>
                     {
                         rmo.ObjectData.push({
-                           CacheMissType: 0,
-                           ID: obj.ID
+                            CacheMissType: 0,
+                            ID: obj.ID
                         });
                     });
                     circuit.sendMessage(rmo, 0);
@@ -342,9 +343,53 @@ export class ObjectStore
                     // TODO: multipleObjectUpdate
                     console.error('TODO: MultipleObjectUpdate');
                     break;
+                case Message.KillObject:
+                    const killObj = packet.message as KillObjectMessage;
+                    killObj.ObjectData.forEach((obj) =>
+                    {
+                        const objectID = obj.ID;
+                        this.deleteObject(objectID);
+                    });
+                    break;
             }
         });
     }
+
+    deleteObject(objectID: number)
+    {
+        if (this.objects[objectID])
+        {
+            // First, kill all children
+            if (this.objectsByParent[objectID])
+            {
+                this.objectsByParent[objectID].forEach((childObjID) =>
+                {
+                    this.deleteObject(childObjID);
+                });
+            }
+            delete this.objectsByParent[objectID];
+
+            // Now delete this object
+            const objct = this.objects[objectID];
+            const uuid = objct.FullID.toString();
+
+            if (this.objectsByUUID[uuid])
+            {
+                delete this.objectsByUUID[uuid];
+            }
+            const parentID = objct.ParentID;
+            if (this.objectsByParent[parentID])
+            {
+                const ind = this.objectsByParent[parentID].indexOf(objectID);
+                if (ind !== -1)
+                {
+                    this.objectsByParent[parentID].splice(ind, 1);
+                }
+            }
+            delete this.objects[objectID];
+        }
+    }
+
     readExtraParams(buf: Buffer, pos: number, o: GameObject): number
     {
         if (pos >= buf.length)
@@ -364,6 +409,7 @@ export class ObjectStore
         }
         return pos;
     }
+
     getObjectsByParent(parentID: number): GameObject[]
     {
         const list = this.objectsByParent[parentID];
@@ -378,9 +424,10 @@ export class ObjectStore
         });
         return result;
     }
-    parseNameValues(str: string): {[key: string]: NameValue}
+
+    parseNameValues(str: string): { [key: string]: NameValue }
     {
-        const nv: {[key: string]: NameValue} = {};
+        const nv: { [key: string]: NameValue } = {};
         const lines = str.split('\n');
         lines.forEach((line) =>
         {
@@ -389,7 +436,7 @@ export class ObjectStore
                 let kv = line.split(/[\t ]/);
                 if (kv.length > 5)
                 {
-                    for(let x = 5; x < kv.length; x++)
+                    for (let x = 5; x < kv.length; x++)
                     {
                         kv[4] += ' ' + kv[x];
                     }
@@ -413,6 +460,7 @@ export class ObjectStore
         });
         return nv;
     }
+
     shutdown()
     {
         this.objects = {};

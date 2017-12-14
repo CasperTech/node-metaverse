@@ -30,5 +30,5 @@ export declare class LoginResponse {
     private static toRegionHandle(x_global, y_global);
     private static parseVector3(str);
     private static parseHome(str);
-    constructor(json: any);
+    constructor(json: any, ce: ClientEvents);
 }
