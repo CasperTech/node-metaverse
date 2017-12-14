@@ -32,7 +32,11 @@ export class ObjectStoreLite implements IObjectStore
 
     constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
-        this.agent.localID = 0;
+        setInterval(() =>
+        {
+            console.log("Objects in store: " + Object.keys(this.objects).length);
+        }, 5000);
+        agent.localID = 0;
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
@@ -81,6 +85,7 @@ export class ObjectStoreLite implements IObjectStore
                         obj.FullID = objData.FullID;
                         obj.ParentID = objData.ParentID;
                         obj.OwnerID = objData.OwnerID;
+                        obj.PCode = objData.PCode;
 
                         this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
@@ -95,7 +100,30 @@ export class ObjectStoreLite implements IObjectStore
                                     const parent = parseInt(objParentID, 10);
                                     if (parent !== this.agent.localID)
                                     {
-                                        this.deleteObject(parent);
+                                        let foundAvatars = false;
+                                        this.objectsByParent[parent].forEach((objID) =>
+                                        {
+                                            if (this.objects[objID])
+                                            {
+                                                const o = this.objects[objID];
+                                                if (o.PCode === PCode.Avatar)
+                                                {
+                                                    foundAvatars = true;
+                                                }
+                                            }
+                                        });
+                                        if (this.objects[parent])
+                                        {
+                                            const o = this.objects[parent];
+                                            if (o.PCode === PCode.Avatar)
+                                            {
+                                                foundAvatars = true;
+                                            }
+                                        }
+                                        if (!foundAvatars)
+                                        {
+                                            this.deleteObject(parent);
+                                        }
                                     }
                                 });
                             }
@@ -111,7 +139,7 @@ export class ObjectStoreLite implements IObjectStore
                             this.objectsByParent[parentID].push(localID);
                         }
 
-                        if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                        if (objData.PCode !== PCode.Avatar && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
                         {
                             if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID)
                             {
@@ -161,6 +189,7 @@ export class ObjectStoreLite implements IObjectStore
                         }
                         const o = this.objects[localID];
                         o.ID = localID;
+                        o.PCode = pcode;
                         this.objectsByUUID[fullID.toString()] = localID;
                         o.FullID = fullID;
 
@@ -215,7 +244,7 @@ export class ObjectStoreLite implements IObjectStore
                             }
                             o.ParentID = newParentID;
                         }
-                        if (newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                        if (pcode !== PCode.Avatar && newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
                         {
                             if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID)
                             {

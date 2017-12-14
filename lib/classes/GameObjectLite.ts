@@ -1,6 +1,7 @@
 import {UUID} from './UUID';
 import {IGameObject} from './interfaces/IGameObject';
 import {NameValue} from './NameValue';
+import {PCode} from '../enums/PCode';
 
 export class GameObjectLite implements IGameObject
 {
@@ -10,6 +11,7 @@ export class GameObjectLite implements IGameObject
     OwnerID: UUID;
     IsAttachment: boolean;
     NameValue: {[key: string]: NameValue};
+    PCode: PCode;
     constructor()
     {
         this.IsAttachment = false;

@@ -14,6 +14,10 @@ class ObjectStoreLite {
         this.objects = {};
         this.objectsByUUID = {};
         this.objectsByParent = {};
+        setInterval(() => {
+            console.log("Objects in store: " + Object.keys(this.objects).length);
+        }, 5000);
+        agent.localID = 0;
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
@@ -55,6 +59,14 @@ class ObjectStoreLite {
                         this.objects[localID].NameValue = this.parseNameValues(Utils_1.Utils.BufferToStringSimple(objData.NameValue));
                         if (objData.PCode === PCode_1.PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString()) {
                             this.agent.localID = localID;
+                            if (this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                                Object.keys(this.objectsByParent).forEach((objParentID) => {
+                                    const parent = parseInt(objParentID, 10);
+                                    if (parent !== this.agent.localID) {
+                                        this.deleteObject(parent);
+                                    }
+                                });
+                            }
                         }
                         this.objectsByUUID[objData.FullID.toString()] = localID;
                         if (!this.objectsByParent[parentID]) {

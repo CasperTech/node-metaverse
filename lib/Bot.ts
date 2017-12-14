@@ -35,7 +35,7 @@ export class Bot
     private ping: Timer | null = null;
     private pingNumber = 0;
     private lastSuccessfulPing = 0;
-    private circuitSubscription: Subscription | null = null
+    private circuitSubscription: Subscription | null = null;
     private options: BotOptionFlags;
     public clientEvents: ClientEvents;
     public clientCommands: ClientCommands;

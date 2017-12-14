@@ -16,6 +16,7 @@ class ObjectStoreFull {
         this.objects = {};
         this.objectsByUUID = {};
         this.objectsByParent = {};
+        agent.localID = 0;
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
@@ -96,6 +97,14 @@ class ObjectStoreFull {
                         obj.JointAxisOrAnchor = objData.JointAxisOrAnchor;
                         if (this.objects[localID].PCode === PCode_1.PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString()) {
                             this.agent.localID = localID;
+                            if (this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                                Object.keys(this.objectsByParent).forEach((objParentID) => {
+                                    const parent = parseInt(objParentID, 10);
+                                    if (parent !== this.agent.localID) {
+                                        this.deleteObject(parent);
+                                    }
+                                });
+                            }
                         }
                         this.readExtraParams(objData.ExtraParams, 0, this.objects[localID]);
                         this.objects[localID].NameValue = this.parseNameValues(Utils_1.Utils.BufferToStringSimple(objData.NameValue));
