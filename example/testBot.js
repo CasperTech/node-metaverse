@@ -11,7 +11,7 @@ loginParameters.start = "last";
 
 const bot = new nmv.Bot(loginParameters);
 
-let resp = null;
+let isConnected = false;
 
 const master = 'd1cd5b71-6209-4595-9bf0-771bf689ce00';
 
@@ -44,6 +44,7 @@ bot.clientEvents.onInstantMessage.subscribe((IMEvent) =>
 
 bot.clientEvents.onDisconnected.subscribe((DisconnectEvent) =>
 {
+    isConnected = false;
     console.log("Disconnected from simulator: "+DisconnectEvent.message);
     if (!DisconnectEvent.requested)
     {
@@ -62,11 +63,11 @@ function connect()
     {
         console.log("Login complete");
 
-        //Establish circuit wit region
-        resp = response;
+        //Establish circuit with region
         return bot.connectToSim();
     }).then(() =>
     {
+        isConnected = true;
         // Do some stuff
         //bot.clientCommands.comms.typeLocalMessage('Never fear, I am here!', 2000);
         //bot.clientCommands.group.sendGroupNotice('503e8ef6-e119-ff5e-2524-24f290dd3867', 'Test', 'testy testy test');
@@ -74,6 +75,7 @@ function connect()
         // When it's time to go home, call bot.close();
     }).catch((error) =>
     {
+        isConnected = false;
         console.log("Error:");
         console.error(error);
         setTimeout(() =>
@@ -84,3 +86,38 @@ function connect()
 }
 
 connect();
+
+
+function exitHandler(options, err)
+{
+    if (isConnected)
+    {
+        console.log("Disconnecting");
+        bot.close().then(() =>
+        {
+            process.exit()
+        });
+        return;
+    }
+    if (err)
+    {
+        console.log(err.stack);
+    }
+    if (options.exit)
+    {
+        process.exit();
+    }
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
