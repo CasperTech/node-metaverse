@@ -13,6 +13,8 @@ import {PacketFlags} from '../../enums/PacketFlags';
 import {GridItemType} from '../../enums/GridItemType';
 import {RegionIDAndHandleReplyMessage} from '../messages/RegionIDAndHandleReply';
 import {CommandsBase} from './CommandsBase';
+import {AvatarPickerRequestMessage} from '../messages/AvatarPickerRequest';
+import {AvatarPickerReplyMessage} from '../messages/AvatarPickerReply';
 export class GridCommands extends CommandsBase
 {
     getRegionHandle(regionID: UUID): Promise<Long>
@@ -132,6 +134,72 @@ export class GridCommands extends CommandsBase
                 {
                     reject(err);
                 });
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+        });
+    }
+
+    name2Key(name: string): Promise<UUID>
+    {
+        const check = name.split('.');
+        if (check.length > 1)
+        {
+            name = check.join(' ');
+        }
+        else
+        {
+            name += ' resident';
+        }
+        name = name.toLowerCase();
+
+        const queryID = UUID.random();
+        return new Promise<UUID>((resolve, reject) =>
+        {
+            const aprm = new AvatarPickerRequestMessage();
+            aprm.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID,
+                QueryID: queryID
+            };
+            aprm.Data = {
+                Name: Utils.StringToBuffer(name)
+            };
+
+            this.circuit.sendMessage(aprm, PacketFlags.Reliable);
+            this.circuit.waitForMessage(Message.AvatarPickerReply, 10000, (packet: Packet): boolean =>
+            {
+                const apr = packet.message as AvatarPickerReplyMessage;
+                if (apr.AgentData.QueryID.toString() === queryID.toString())
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }).then((packet: Packet) =>
+            {
+                let found: UUID | null = null;
+                const apr = packet.message as AvatarPickerReplyMessage;
+                apr.Data.forEach((dataBlock) =>
+                {
+                    const resultName = (Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' + Utils.BufferToStringSimple(dataBlock.LastName)).toLowerCase();
+                    if (resultName === name)
+                    {
+                        found = dataBlock.AvatarID;
+                    }
+                });
+
+                if (found !== null)
+                {
+                    resolve(found);
+                }
+                else
+                {
+                    reject('Name not found')
+                }
             }).catch((err) =>
             {
                 reject(err);

@@ -23,11 +23,16 @@ class UUID {
             }
             else {
                 console.error('Can\'t accept UUIDs of type ' + typeof buf);
+                console.trace();
             }
         }
     }
     static zero() {
         return new UUID();
+    }
+    static random() {
+        const newUUID = uuid.v4();
+        return new UUID(newUUID);
     }
     setUUID(val) {
         const test = val.trim();

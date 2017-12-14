@@ -6,4 +6,5 @@ import { CommandsBase } from './CommandsBase';
 export declare class GridCommands extends CommandsBase {
     getRegionHandle(regionID: UUID): Promise<Long>;
     getRegionMapInfo(gridX: number, gridY: number): Promise<MapInfoReply>;
+    name2Key(name: string): Promise<UUID>;
 }

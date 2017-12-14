@@ -196,7 +196,16 @@ class Caps {
         return new Promise((resolve, reject) => {
             this.getCapability(capability).then((url) => {
                 this.request(url, LLSD.LLSD.formatXML(data), 'application/llsd+xml').then((body) => {
-                    resolve(LLSD.LLSD.parseXML(body));
+                    let result = null;
+                    try {
+                        result = LLSD.LLSD.parseXML(body);
+                    }
+                    catch (err) {
+                        console.error('Error parsing LLSD');
+                        console.error(body);
+                        reject(err);
+                    }
+                    resolve(result);
                 }).catch((err) => {
                     console.error(err);
                     reject(err);

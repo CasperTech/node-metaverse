@@ -8,6 +8,8 @@ const LureEvent_1 = require("../events/LureEvent");
 const InstantMessageEvent_1 = require("../events/InstantMessageEvent");
 const ChatSourceType_1 = require("../enums/ChatSourceType");
 const InstantMessageEventFlags_1 = require("../enums/InstantMessageEventFlags");
+const GroupInviteEvent_1 = require("../events/GroupInviteEvent");
+const GroupChatEvent_1 = require("../events/GroupChatEvent");
 class Comms {
     constructor(circuit, agent, clientEvents) {
         this.clientEvents = clientEvents;
@@ -37,6 +39,12 @@ class Comms {
                         case InstantMessageDialog_1.InstantMessageDialog.MessageBox:
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.GroupInvitation:
+                            const giEvent = new GroupInviteEvent_1.GroupInviteEvent();
+                            giEvent.from = im.AgentData.AgentID;
+                            giEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            giEvent.message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            giEvent.inviteID = im.MessageBlock.ID;
+                            this.clientEvents.onGroupInvite.next(giEvent);
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.InventoryOffered:
                             break;
@@ -139,6 +147,16 @@ class Comms {
                                 imEvent.message = '';
                                 imEvent.flags = InstantMessageEventFlags_1.InstantMessageEventFlags.finishTyping;
                                 this.clientEvents.onInstantMessage.next(imEvent);
+                                break;
+                            }
+                        case InstantMessageDialog_1.InstantMessageDialog.SessionSend:
+                            {
+                                const groupChatEvent = new GroupChatEvent_1.GroupChatEvent();
+                                groupChatEvent.from = im.AgentData.AgentID;
+                                groupChatEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                                groupChatEvent.groupID = im.MessageBlock.ID;
+                                groupChatEvent.message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
+                                this.clientEvents.onGroupChat.next(groupChatEvent);
                                 break;
                             }
                     }

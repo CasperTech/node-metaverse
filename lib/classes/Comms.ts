@@ -13,6 +13,8 @@ import {ClientEvents} from './ClientEvents';
 import {InstantMessageEvent} from '../events/InstantMessageEvent';
 import {ChatSourceType} from '../enums/ChatSourceType';
 import {InstantMessageEventFlags} from '../enums/InstantMessageEventFlags';
+import {GroupInviteEvent} from '../events/GroupInviteEvent';
+import {GroupChatEvent} from '../events/GroupChatEvent';
 
 export class Comms
 {
@@ -53,6 +55,12 @@ export class Comms
                         case InstantMessageDialog.MessageBox:
                             break;
                         case InstantMessageDialog.GroupInvitation:
+                            const giEvent = new GroupInviteEvent();
+                            giEvent.from = im.AgentData.AgentID;
+                            giEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            giEvent.message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            giEvent.inviteID = im.MessageBlock.ID;
+                            this.clientEvents.onGroupInvite.next(giEvent);
                             break;
                         case InstantMessageDialog.InventoryOffered:
                             break;
@@ -155,6 +163,16 @@ export class Comms
                             imEvent.message = '';
                             imEvent.flags = InstantMessageEventFlags.finishTyping;
                             this.clientEvents.onInstantMessage.next(imEvent);
+                            break;
+                        }
+                        case InstantMessageDialog.SessionSend:
+                        {
+                            const groupChatEvent = new GroupChatEvent();
+                            groupChatEvent.from = im.AgentData.AgentID;
+                            groupChatEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            groupChatEvent.groupID = im.MessageBlock.ID;
+                            groupChatEvent.message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            this.clientEvents.onGroupChat.next(groupChatEvent);
                             break;
                         }
 
