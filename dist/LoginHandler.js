@@ -35,7 +35,7 @@ class LoginHandler {
                     'first': params.firstName,
                     'last': params.lastName,
                     'passwd': '$1$' + crypto.createHash('md5').update(params.password.substr(0, 16)).digest('hex'),
-                    'start': 'home',
+                    'start': params.start,
                     'major': '0',
                     'minor': '0',
                     'patch': '1',
