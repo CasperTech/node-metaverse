@@ -8,6 +8,7 @@ import {ChatFromViewerMessage} from '../messages/ChatFromViewer';
 import {ChatType} from '../../enums/ChatType';
 import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
 import Timer = NodeJS.Timer;
+import {GroupInviteEvent} from '../../events/GroupInviteEvent';
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -33,7 +34,7 @@ export class CommunicationsCommands extends CommandsBase
             Offline: 1,
             Dialog: 0,
             ID: UUID.zero(),
-            Timestamp: 0,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
             FromAgentName: Utils.StringToBuffer(agentName),
             Message: Utils.StringToBuffer(message),
             BinaryBucket: Buffer.allocUnsafe(0)
@@ -134,7 +135,7 @@ export class CommunicationsCommands extends CommandsBase
             Offline: 0,
             Dialog: InstantMessageDialog.StartTyping,
             ID: UUID.zero(),
-            Timestamp: 0,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
             FromAgentName: Utils.StringToBuffer(agentName),
             Message: Utils.StringToBuffer(''),
             BinaryBucket: Buffer.allocUnsafe(0)
@@ -168,7 +169,67 @@ export class CommunicationsCommands extends CommandsBase
             Offline: 0,
             Dialog: InstantMessageDialog.StopTyping,
             ID: UUID.zero(),
-            Timestamp: 0,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils.StringToBuffer(agentName),
+            Message: Utils.StringToBuffer(''),
+            BinaryBucket: Buffer.allocUnsafe(0)
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
+        return circuit.waitForAck(sequenceNo, 10000);
+    }
+
+    acceptGroupInvite(event: GroupInviteEvent): Promise<void>
+    {
+        const circuit = this.circuit;
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: event.from,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: 0,
+            Dialog: InstantMessageDialog.GroupInvitationAccept,
+            ID: event.inviteID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils.StringToBuffer(agentName),
+            Message: Utils.StringToBuffer(''),
+            BinaryBucket: Buffer.allocUnsafe(0)
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
+        return circuit.waitForAck(sequenceNo, 10000);
+    }
+
+    rejectGroupInvite(event: GroupInviteEvent): Promise<void>
+    {
+        const circuit = this.circuit;
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: event.from,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: 0,
+            Dialog: InstantMessageDialog.GroupInvitationDecline,
+            ID: event.inviteID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
             FromAgentName: Utils.StringToBuffer(agentName),
             Message: Utils.StringToBuffer(''),
             BinaryBucket: Buffer.allocUnsafe(0)
@@ -242,6 +303,36 @@ export class CommunicationsCommands extends CommandsBase
                 });
             }, thinkingTime);
         });
+    }
+
+    sendGroupMessage(groupID: UUID, message: string): Promise<void>
+    {
+        const circuit = this.circuit;
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: groupID,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: 0,
+            Dialog: InstantMessageDialog.SessionSend,
+            ID: groupID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils.StringToBuffer(agentName),
+            Message: Utils.StringToBuffer(message),
+            BinaryBucket: Utils.StringToBuffer('')
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
+        return circuit.waitForAck(sequenceNo, 10000);
     }
 
     typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>

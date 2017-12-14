@@ -9,6 +9,11 @@ export class UUID
     {
         return new UUID();
     }
+    static random(): UUID
+    {
+        const newUUID = uuid.v4();
+        return new UUID(newUUID);
+    }
 
     constructor(buf?: Buffer | string, pos?: number)
     {
@@ -31,6 +36,7 @@ export class UUID
             else
             {
                 console.error('Can\'t accept UUIDs of type ' + typeof buf);
+                console.trace();
             }
         }
     }

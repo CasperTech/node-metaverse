@@ -245,7 +245,18 @@ export class Caps
             {
                 this.request(url, LLSD.LLSD.formatXML(data), 'application/llsd+xml').then((body: string) =>
                 {
-                    resolve(LLSD.LLSD.parseXML(body));
+                    let result: any = null;
+                    try
+                    {
+                        result = LLSD.LLSD.parseXML(body);
+                    }
+                    catch (err)
+                    {
+                        console.error('Error parsing LLSD');
+                        console.error(body);
+                        reject(err);
+                    }
+                    resolve(result);
                 }).catch((err) =>
                 {
                     console.error(err);

@@ -6,6 +6,7 @@ import {InstantMessageEvent} from '../events/InstantMessageEvent';
 import {GroupInviteEvent} from '../events/GroupInviteEvent';
 import {FriendRequestEvent} from '../events/FriendRequestEvent';
 import {DisconnectEvent} from '../events/DisconnectEvent';
+import {GroupChatEvent} from '../events/GroupChatEvent';
 
 export class ClientEvents
 {
@@ -17,4 +18,5 @@ export class ClientEvents
     onTeleportEvent: Subject<TeleportEvent> = new Subject<TeleportEvent>();
     onDisconnected: Subject<DisconnectEvent>  = new Subject<DisconnectEvent>();
     onCircuitLatency: Subject<number> = new Subject<number>();
+    onGroupChat: Subject<GroupChatEvent> = new Subject<GroupChatEvent>();
 }

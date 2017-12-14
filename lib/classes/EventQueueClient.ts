@@ -6,6 +6,9 @@ import {IPAddress} from './IPAddress';
 import {TeleportEvent} from '../events/TeleportEvent';
 import {ClientEvents} from './ClientEvents';
 import {TeleportEventType} from '../enums/TeleportEventType';
+import {GroupChatEvent} from '../events/GroupChatEvent';
+import {Utils} from './Utils';
+import {UUID} from './UUID';
 
 export class EventQueueClient
 {
@@ -250,6 +253,39 @@ export class EventQueueClient
                                     tpEvent.seedCapability = '';
 
                                     this.clientEvents.onTeleportEvent.next(tpEvent);
+                                    break;
+                                }
+                                case 'ChatterBoxInvitation':
+                                {
+                                    if (event['body'] && event['body']['instantmessage'] && event['body']['instantmessage']['message_params'] && event['body']['instantmessage']['message_params']['id'])
+                                    {
+                                        const messageParams = event['body']['instantmessage']['message_params'];
+                                        const imSessionID = messageParams['id'];
+                                        const requestedFolders = {
+                                            'method': 'accept invitation',
+                                            'session-id': imSessionID
+                                        };
+
+                                        const groupChatEvent = new GroupChatEvent();
+                                        groupChatEvent.from = new UUID(messageParams['from_id'].toString());
+                                        groupChatEvent.fromName = messageParams['from_name'];
+                                        groupChatEvent.groupID = new UUID(messageParams['id'].toString());
+                                        groupChatEvent.message = messageParams['message'];
+
+
+                                        this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((result: any) =>
+                                        {
+                                            this.clientEvents.onGroupChat.next(groupChatEvent);
+                                        }).catch((err) =>
+                                        {
+                                            console.error(err);
+                                        });
+                                    }
+                                    break;
+                                }
+                                case 'ChatterBoxSessionAgentListUpdates':
+                                {
+                                    // TODO
                                     break;
                                 }
                                 case 'TeleportFinish':

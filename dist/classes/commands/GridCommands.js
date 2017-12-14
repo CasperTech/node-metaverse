@@ -4,11 +4,13 @@ const MapInfoReply_1 = require("../../events/MapInfoReply");
 const RegionHandleRequest_1 = require("../messages/RegionHandleRequest");
 const Message_1 = require("../../enums/Message");
 const MapBlockRequest_1 = require("../messages/MapBlockRequest");
+const UUID_1 = require("../UUID");
 const MapItemRequest_1 = require("../messages/MapItemRequest");
 const Utils_1 = require("../Utils");
 const PacketFlags_1 = require("../../enums/PacketFlags");
 const GridItemType_1 = require("../../enums/GridItemType");
 const CommandsBase_1 = require("./CommandsBase");
+const AvatarPickerRequest_1 = require("../messages/AvatarPickerRequest");
 class GridCommands extends CommandsBase_1.CommandsBase {
     getRegionHandle(regionID) {
         return new Promise((resolve, reject) => {
@@ -104,6 +106,55 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 }).catch((err) => {
                     reject(err);
                 });
+            }).catch((err) => {
+                reject(err);
+            });
+        });
+    }
+    name2Key(name) {
+        const check = name.split('.');
+        if (check.length > 1) {
+            name = check.join(' ');
+        }
+        else {
+            name += ' resident';
+        }
+        name = name.toLowerCase();
+        const queryID = UUID_1.UUID.random();
+        return new Promise((resolve, reject) => {
+            const aprm = new AvatarPickerRequest_1.AvatarPickerRequestMessage();
+            aprm.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID,
+                QueryID: queryID
+            };
+            aprm.Data = {
+                Name: Utils_1.Utils.StringToBuffer(name)
+            };
+            this.circuit.sendMessage(aprm, PacketFlags_1.PacketFlags.Reliable);
+            this.circuit.waitForMessage(Message_1.Message.AvatarPickerReply, 10000, (packet) => {
+                const apr = packet.message;
+                if (apr.AgentData.QueryID.toString() === queryID.toString()) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }).then((packet) => {
+                let found = null;
+                const apr = packet.message;
+                apr.Data.forEach((dataBlock) => {
+                    const resultName = (Utils_1.Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' + Utils_1.Utils.BufferToStringSimple(dataBlock.LastName)).toLowerCase();
+                    if (resultName === name) {
+                        found = dataBlock.AvatarID;
+                    }
+                });
+                if (found !== null) {
+                    resolve(found);
+                }
+                else {
+                    reject('Name not found');
+                }
             }).catch((err) => {
                 reject(err);
             });

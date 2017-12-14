@@ -1,9 +1,9 @@
 import {UUID} from '../classes/UUID';
 
-export class GroupInviteEvent
+export class GroupChatEvent
 {
+    groupID: UUID;
     from: UUID;
     fromName: string;
     message: string;
-    inviteID: UUID;
 }

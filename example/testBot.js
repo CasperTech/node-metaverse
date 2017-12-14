@@ -62,6 +62,42 @@ bot.clientEvents.onDisconnected.subscribe((DisconnectEvent) =>
     }
 });
 
+bot.clientEvents.onGroupChat.subscribe((GroupChatEvent) =>
+{
+   console.log("Group chat: " + GroupChatEvent.fromName + ': ' + GroupChatEvent.message);
+   if (GroupChatEvent.message === 'marco')
+   {
+       console.log("Sending PONG");
+       bot.clientCommands.comms.sendGroupMessage(GroupChatEvent.groupID, 'polo');
+   }
+});
+
+bot.clientEvents.onGroupInvite.subscribe((GroupInviteEvent) =>
+{
+
+    console.log('Group invite from ' + GroupInviteEvent.fromName + ': '+GroupInviteEvent.message);
+
+    //Resolve avatar key
+    bot.clientCommands.grid.name2Key(GroupInviteEvent.fromName).then((key) =>
+    {
+        if (key.toString() === master)
+        {
+            console.log('Accepting');
+            bot.clientCommands.comms.acceptGroupInvite(GroupInviteEvent);
+        }
+        else
+        {
+            console.log('Unauthorised - rejecting');
+            bot.clientCommands.comms.rejectGroupInvite(GroupInviteEvent);
+        }
+    }).catch((err) =>
+    {
+        console.error(err);
+        console.log('Unknown avatar - rejecting');
+        bot.clientCommands.comms.rejectGroupInvite(GroupInviteEvent);
+    });
+});
+
 function connect()
 {
     console.log("Logging in..");
@@ -96,6 +132,10 @@ connect();
 
 function exitHandler(options, err)
 {
+    if (err)
+    {
+        console.log(err.stack);
+    }
     if (isConnected)
     {
         console.log("Disconnecting");
@@ -104,10 +144,6 @@ function exitHandler(options, err)
             process.exit()
         });
         return;
-    }
-    if (err)
-    {
-        console.log(err.stack);
     }
     if (options.exit)
     {
