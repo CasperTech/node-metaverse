@@ -35,7 +35,7 @@ export class ObjectStoreFull implements IObjectStore
 
     constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
-        this.agent.localID = 0;
+        agent.localID = 0;
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
@@ -136,7 +136,30 @@ export class ObjectStoreFull implements IObjectStore
                                     const parent = parseInt(objParentID, 10);
                                     if (parent !== this.agent.localID)
                                     {
-                                        this.deleteObject(parent);
+                                        let foundAvatars = false;
+                                        this.objectsByParent[parent].forEach((objID) =>
+                                        {
+                                            if (this.objects[objID])
+                                            {
+                                                const o = this.objects[objID];
+                                                if (o.PCode === PCode.Avatar)
+                                                {
+                                                    foundAvatars = true;
+                                                }
+                                            }
+                                        });
+                                        if (this.objects[parent])
+                                        {
+                                            const o = this.objects[parent];
+                                            if (o.PCode === PCode.Avatar)
+                                            {
+                                                foundAvatars = true;
+                                            }
+                                        }
+                                        if (!foundAvatars)
+                                        {
+                                            this.deleteObject(parent);
+                                        }
                                     }
                                 });
                             }
@@ -155,7 +178,7 @@ export class ObjectStoreFull implements IObjectStore
                             this.objectsByParent[parentID].push(localID);
                         }
 
-                        if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                        if (objData.PCode !== PCode.Avatar && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
                         {
                             if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID)
                             {
@@ -260,7 +283,7 @@ export class ObjectStoreFull implements IObjectStore
                             }
                             o.ParentID = newParentID;
                         }
-                        if (newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                        if (pcode !== PCode.Avatar && newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
                         {
                             if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID)
                             {
