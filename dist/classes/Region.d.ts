@@ -1,18 +1,20 @@
 import { Circuit } from './Circuit';
-import { ObjectStore } from './ObjectStore';
 import { Agent } from './Agent';
 import { Caps } from './Caps';
 import { Comms } from './Comms';
 import { ClientEvents } from './ClientEvents';
+import { IObjectStore } from './interfaces/IObjectStore';
+import { BotOptionFlags } from '../enums/BotOptionFlags';
 export declare class Region {
     xCoordinate: number;
     yCoordinate: number;
     circuit: Circuit;
-    objects: ObjectStore;
+    objects: IObjectStore;
     caps: Caps;
     comms: Comms;
     clientEvents: ClientEvents;
-    constructor(agent: Agent, clientEvents: ClientEvents);
+    options: BotOptionFlags;
+    constructor(agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags);
     activateCaps(seedURL: string): void;
     shutdown(): void;
 }

@@ -17,17 +17,18 @@ const ClientCommands_1 = require("./classes/ClientCommands");
 const DisconnectEvent_1 = require("./events/DisconnectEvent");
 const StartPingCheck_1 = require("./classes/messages/StartPingCheck");
 class Bot {
-    constructor(login) {
+    constructor(login, options) {
         this.ping = null;
         this.pingNumber = 0;
         this.lastSuccessfulPing = 0;
         this.circuitSubscription = null;
         this.clientEvents = new ClientEvents_1.ClientEvents();
         this.loginParams = login;
+        this.options = options;
     }
     login() {
         return new Promise((resolve, reject) => {
-            const loginHandler = new LoginHandler_1.LoginHandler(this.clientEvents);
+            const loginHandler = new LoginHandler_1.LoginHandler(this.clientEvents, this.options);
             loginHandler.Login(this.loginParams).then((response) => {
                 this.currentRegion = response.region;
                 this.agent = response.agent;

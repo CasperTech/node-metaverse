@@ -2,14 +2,20 @@ const nmv             = require('../dist/index');
 const loginParameters = new nmv.LoginParameters();
 
 const parameters = require('./loginParameters.json');
-const fs = require('fs');
 
 loginParameters.firstName = parameters.firstName;
 loginParameters.lastName = parameters.lastName;
 loginParameters.password = parameters.password;
 loginParameters.start = "last";
 
-const bot = new nmv.Bot(loginParameters);
+//const options = nmv.BotOptionFlags.None;
+
+// If you don't intend to use the object store (i.e you have no interest in inworld objects, textures, etc,
+// using ObjectStoreLite will drastically reduce the footprint
+//
+ const options = nmv.BotOptionFlags.LiteObjectStore;
+
+const bot = new nmv.Bot(loginParameters, options);
 
 let isConnected = false;
 

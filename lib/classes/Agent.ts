@@ -15,7 +15,6 @@ import {AgentFlags} from '../enums/AgentFlags';
 import {BuiltInAnimations} from '../enums/BuiltInAnimations';
 import * as LLSD from 'llsd';
 import {AssetType} from '../enums/AssetType';
-import {GameObject} from './Object';
 import {AgentWearablesRequestMessage} from './messages/AgentWearablesRequest';
 import {PacketFlags} from '../enums/PacketFlags';
 import {AgentWearablesUpdateMessage} from './messages/AgentWearablesUpdate';
@@ -25,6 +24,7 @@ import {AttachmentPoint} from '../enums/AttachmentPoint';
 import {Utils} from './Utils';
 import {AgentAnimationMessage} from './messages/AgentAnimation';
 import {ClientEvents} from './ClientEvents';
+import {IGameObject} from './interfaces/IGameObject';
 
 export class Agent
 {
@@ -208,11 +208,11 @@ export class Agent
                             if (item.type === 6)
                             {
                                 let found = false;
-                                wornObjects.forEach((obj: GameObject) =>
+                                wornObjects.forEach((obj: IGameObject) =>
                                 {
-                                    if (obj.NameValue['AttachItemID'])
+                                    if (obj.hasNameValueEntry('AttachItemID'))
                                     {
-                                        if (item['item_id'].toString() === obj.NameValue['AttachItemID'].value)
+                                        if (item['item_id'].toString() === obj.getNameValueEntry('AttachItemID'))
                                         {
                                             found = true;
                                         }

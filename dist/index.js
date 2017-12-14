@@ -18,4 +18,6 @@ const InstantMessageEvent_1 = require("./events/InstantMessageEvent");
 exports.InstantMessageEvent = InstantMessageEvent_1.InstantMessageEvent;
 const ChatSourceType_1 = require("./enums/ChatSourceType");
 exports.ChatSourceType = ChatSourceType_1.ChatSourceType;
+const BotOptionFlags_1 = require("./enums/BotOptionFlags");
+exports.BotOptionFlags = BotOptionFlags_1.BotOptionFlags;
 //# sourceMappingURL=index.js.map

@@ -3,6 +3,7 @@ import { Agent } from './Agent';
 import { Region } from './Region';
 import { LoginFlags } from '../enums/LoginFlags';
 import { ClientEvents } from './ClientEvents';
+import { BotOptionFlags } from '../enums/BotOptionFlags';
 export declare class LoginResponse {
     loginFlags: LoginFlags;
     loginMessage: string;
@@ -30,5 +31,5 @@ export declare class LoginResponse {
     private static toRegionHandle(x_global, y_global);
     private static parseVector3(str);
     private static parseHome(str);
-    constructor(json: any, ce: ClientEvents);
+    constructor(json: any, clientEvents: ClientEvents, options: BotOptionFlags);
 }

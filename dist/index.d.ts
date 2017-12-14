@@ -7,4 +7,5 @@ import { HTTPAssets } from './enums/HTTPAssets';
 import { InstantMessageEventFlags } from './enums/InstantMessageEventFlags';
 import { InstantMessageEvent } from './events/InstantMessageEvent';
 import { ChatSourceType } from './enums/ChatSourceType';
-export { Bot, LoginParameters, AssetType, HTTPAssets, ClientEvents, BVH, InstantMessageEvent, InstantMessageEventFlags, ChatSourceType };
+import { BotOptionFlags } from './enums/BotOptionFlags';
+export { Bot, LoginParameters, AssetType, HTTPAssets, ClientEvents, BVH, InstantMessageEvent, InstantMessageEventFlags, ChatSourceType, BotOptionFlags };

@@ -56,7 +56,7 @@ export class TeleportCommands extends CommandsBase
 
                         // Successful teleport! First, rip apart circuit
                         this.currentRegion.shutdown();
-                        const region: Region = new Region(this.agent, this.bot.clientEvents);
+                        const region: Region = new Region(this.agent, this.bot.clientEvents, this.currentRegion.options);
                         region.circuit.circuitCode = this.currentRegion.circuit.circuitCode;
                         region.circuit.secureSessionID = this.currentRegion.circuit.secureSessionID;
                         region.circuit.sessionID = this.currentRegion.circuit.sessionID;

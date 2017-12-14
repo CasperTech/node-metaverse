@@ -1,14 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Circuit_1 = require("./Circuit");
-const ObjectStore_1 = require("./ObjectStore");
 const Caps_1 = require("./Caps");
 const Comms_1 = require("./Comms");
+const ObjectStoreFull_1 = require("./ObjectStoreFull");
+const BotOptionFlags_1 = require("../enums/BotOptionFlags");
+const ObjectStoreLite_1 = require("./ObjectStoreLite");
 class Region {
-    constructor(agent, clientEvents) {
+    constructor(agent, clientEvents, options) {
+        this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = new Circuit_1.Circuit(clientEvents);
-        this.objects = new ObjectStore_1.ObjectStore(this.circuit, agent, clientEvents);
+        if (options & BotOptionFlags_1.BotOptionFlags.LiteObjectStore) {
+            this.objects = new ObjectStoreLite_1.ObjectStoreLite(this.circuit, agent, clientEvents);
+        }
+        else {
+            this.objects = new ObjectStoreFull_1.ObjectStoreFull(this.circuit, agent, clientEvents);
+        }
         this.comms = new Comms_1.Comms(this.circuit, agent, clientEvents);
     }
     activateCaps(seedURL) {

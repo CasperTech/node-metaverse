@@ -7,7 +7,7 @@ const LoginFlags_1 = require("../enums/LoginFlags");
 const Vector3_1 = require("./Vector3");
 const Long = require("long");
 class LoginResponse {
-    constructor(json, ce) {
+    constructor(json, clientEvents, options) {
         this.events = {
             categories: []
         };
@@ -15,9 +15,9 @@ class LoginResponse {
             categories: []
         };
         this.textures = {};
-        this.clientEvents = ce;
+        this.clientEvents = clientEvents;
         this.agent = new Agent_1.Agent(this.clientEvents);
-        this.region = new Region_1.Region(this.agent, this.clientEvents);
+        this.region = new Region_1.Region(this.agent, this.clientEvents, options);
         Object.keys(json).forEach((key) => {
             const val = json[key];
             switch (key) {

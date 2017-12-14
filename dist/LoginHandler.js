@@ -17,8 +17,9 @@ class LoginHandler {
         }
         return macAddress;
     }
-    constructor(ce) {
+    constructor(ce, options) {
         this.clientEvents = ce;
+        this.options = options;
     }
     Login(params) {
         return new Promise((resolve, reject) => {
@@ -69,7 +70,7 @@ class LoginHandler {
                         reject(new Error(value['message']));
                     }
                     else {
-                        const response = new LoginResponse_1.LoginResponse(value, this.clientEvents);
+                        const response = new LoginResponse_1.LoginResponse(value, this.clientEvents, this.options);
                         resolve(response);
                     }
                 }

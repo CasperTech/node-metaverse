@@ -9,22 +9,21 @@ import {MultipleObjectUpdateMessage} from './messages/MultipleObjectUpdate';
 import {RequestMultipleObjectsMessage} from './messages/RequestMultipleObjects';
 import {Agent} from './Agent';
 import {UUID} from './UUID';
-import {GameObject} from './Object';
-import {Quaternion} from './Quaternion';
-import {Vector3} from './Vector3';
 import {CompressedFlags} from '../enums/CompressedFlags';
 import {ExtraParamType} from '../enums/ExtraParamType';
 import {Utils} from './Utils';
 import {PCode} from '../enums/PCode';
-import {NameValue} from './NameValue';
 import {ClientEvents} from './ClientEvents';
 import {KillObjectMessage} from './messages/KillObject';
+import {IObjectStore} from './interfaces/IObjectStore';
+import {GameObjectLite} from './GameObjectLite';
+import {NameValue} from './NameValue';
 
-export class ObjectStore
+export class ObjectStoreLite implements IObjectStore
 {
     private circuit: Circuit;
     private agent: Agent;
-    private objects: { [key: number]: GameObject } = {};
+    private objects: { [key: number]: GameObjectLite } = {};
     private objectsByUUID: { [key: string]: number } = {};
     private objectsByParent: { [key: number]: number[] } = {};
     private clientEvents: ClientEvents;
@@ -70,62 +69,21 @@ export class ObjectStore
                         }
                         else
                         {
-                            this.objects[localID] = new GameObject();
+                            this.objects[localID] = new GameObjectLite();
                         }
 
                         const obj = this.objects[localID];
                         obj.ID = objData.ID;
-                        obj.State = objData.State;
                         obj.FullID = objData.FullID;
-                        obj.CRC = objData.CRC;
-                        obj.PCode = objData.PCode;
-                        obj.Material = objData.Material;
-                        obj.ClickAction = objData.ClickAction;
-                        obj.Scale = objData.Scale;
-                        obj.ObjectData = objData.ObjectData; // TODO: DECODE
                         obj.ParentID = objData.ParentID;
-                        obj.Flags = objData.UpdateFlags;
-                        obj.PathCurve = objData.PathCurve;
-                        obj.ProfileCurve = objData.ProfileCurve;
-                        obj.PathBegin = objData.PathBegin;
-                        obj.PathEnd = objData.PathEnd;
-                        obj.PathScaleX = objData.PathScaleX;
-                        obj.PathScaleY = objData.PathScaleY;
-                        obj.PathShearX = objData.PathShearX;
-                        obj.PathShearY = objData.PathShearY;
-                        obj.PathTwist = objData.PathTwist;
-                        obj.PathTwistBegin = objData.PathTwistBegin;
-                        obj.PathRadiusOffset = objData.PathRadiusOffset;
-                        obj.PathTaperX = objData.PathTaperX;
-                        obj.PathTaperY = objData.PathTaperY;
-                        obj.PathRevolutions = objData.PathRevolutions;
-                        obj.PathSkew = objData.PathSkew;
-                        obj.ProfileBegin = objData.ProfileBegin;
-                        obj.ProfileEnd = objData.ProfileEnd;
-                        obj.ProfileHollow = objData.ProfileHollow;
-                        obj.TextureEntry = objData.TextureEntry; // TODO: DECODE
-                        obj.TextureAnim = objData.TextureAnim;
-                        obj.Data = objData.Data; // TODO: DECODE
-                        obj.Text = Utils.BufferToStringSimple(objData.Text);
-                        obj.TextColor = objData.TextColor; // TODO: DECODE
-                        obj.MediaURL = Utils.BufferToStringSimple(objData.MediaURL);
-                        obj.PSBlock = objData.PSBlock;
-                        obj.Sound = objData.Sound;
                         obj.OwnerID = objData.OwnerID;
-                        obj.SoundGain = objData.Gain;
-                        obj.SoundFlags = objData.Flags;
-                        obj.SoundRadius = objData.Radius;
-                        obj.JointType = objData.JointType;
-                        obj.JointPivot = objData.JointPivot;
-                        obj.JointAxisOrAnchor = objData.JointAxisOrAnchor;
 
-                        if (this.objects[localID].PCode === PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString())
+                        this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
+
+                        if (objData.PCode === PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString())
                         {
                             this.agent.localID = localID;
                         }
-
-                        this.readExtraParams(objData.ExtraParams, 0, this.objects[localID]);
-                        this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
                         this.objectsByUUID[objData.FullID.toString()] = localID;
                         if (!this.objectsByParent[parentID])
@@ -173,24 +131,24 @@ export class ObjectStore
                         if (!this.objects[localID])
                         {
                             newObj = true;
-                            this.objects[localID] = new GameObject();
+                            this.objects[localID] = new GameObjectLite();
                         }
                         const o = this.objects[localID];
                         o.ID = localID;
                         this.objectsByUUID[fullID.toString()] = localID;
                         o.FullID = fullID;
-                        o.Flags = flags;
-                        o.PCode = pcode;
-                        o.State = buf.readUInt8(pos++);
-                        o.CRC = buf.readUInt32LE(pos);
+
+
+                        pos++;
+
                         pos = pos + 4;
-                        o.Material = buf.readUInt8(pos++);
-                        o.ClickAction = buf.readUInt8(pos++);
-                        o.Scale = new Vector3(buf, pos, false);
+                        pos++;
+                        pos++;
+
                         pos = pos + 12;
-                        o.Position = new Vector3(buf, pos, false);
+
                         pos = pos + 12;
-                        o.Rotation = new Quaternion(buf, pos);
+
                         pos = pos + 12;
                         const compressedflags: CompressedFlags = buf.readUInt32LE(pos);
                         pos = pos + 4;
@@ -199,7 +157,6 @@ export class ObjectStore
 
                         if (compressedflags & CompressedFlags.HasAngularVelocity)
                         {
-                            o.AngularVelocity = new Vector3(buf, pos, false);
                             pos = pos + 12;
                         }
                         if (compressedflags & CompressedFlags.HasParent)
@@ -234,11 +191,10 @@ export class ObjectStore
                         }
                         if (compressedflags & CompressedFlags.Tree)
                         {
-                            o.TreeSpecies = buf.readUInt8(pos++);
+                            pos++;
                         }
                         else if (compressedflags & CompressedFlags.ScratchPad)
                         {
-                            o.TreeSpecies = 0;
                             const scratchPadSize = buf.readUInt8(pos++);
                             // Ignore this data
                             pos = pos + scratchPadSize;
@@ -249,30 +205,18 @@ export class ObjectStore
                             const result = Utils.BufferToString(buf, pos);
 
                             pos += result.readLength;
-                            o.Text = result.result;
-                            o.TextColor = buf.slice(pos, pos + 4);
                             pos = pos + 4;
-                        }
-                        else
-                        {
-                            o.Text = '';
                         }
                         if (compressedflags & CompressedFlags.MediaURL)
                         {
                             const result = Utils.BufferToString(buf, pos);
 
                             pos += result.readLength;
-                            o.MediaURL = result.result;
                         }
                         if (compressedflags & CompressedFlags.HasParticles)
                         {
                             // TODO: Particle system block
-                            //console.log("HasParticles");
                             pos += 86;
-                        }
-                        else
-                        {
-                            //console.log("HasNoParticles");
                         }
 
                         // Extra params
@@ -280,12 +224,9 @@ export class ObjectStore
 
                         if (compressedflags & CompressedFlags.HasSound)
                         {
-                            o.Sound = new UUID(buf, pos);
                             pos = pos + 16;
-                            o.SoundGain = buf.readFloatLE(pos);
                             pos += 4;
-                            o.SoundFlags = buf.readUInt8(pos++);
-                            o.SoundRadius = buf.readFloatLE(pos);
+                            pos++;
                             pos = pos + 4;
                         }
                         if (compressedflags & CompressedFlags.HasNameValues)
@@ -294,30 +235,14 @@ export class ObjectStore
                             o.NameValue = this.parseNameValues(result.result);
                             pos += result.readLength;
                         }
-                        o.PathCurve = buf.readUInt8(pos++);
-                        o.PathBegin = buf.readUInt16LE(pos);
+                        pos++;
                         pos = pos + 2;
-                        o.PathEnd = buf.readUInt16LE(pos);
                         pos = pos + 2;
-                        o.PathScaleX = buf.readUInt8(pos++);
-                        o.PathScaleY = buf.readUInt8(pos++);
-                        o.PathShearX = buf.readUInt8(pos++);
-                        o.PathShearY = buf.readUInt8(pos++);
-                        o.PathTwist = buf.readUInt8(pos++);
-                        o.PathTwistBegin = buf.readUInt8(pos++);
-                        o.PathRadiusOffset = buf.readUInt8(pos++);
-                        o.PathTaperX = buf.readUInt8(pos++);
-                        o.PathTaperY = buf.readUInt8(pos++);
-                        o.PathRevolutions = buf.readUInt8(pos++);
-                        o.PathSkew = buf.readUInt8(pos++);
-                        o.ProfileCurve = buf.readUInt8(pos++);
-                        o.ProfileBegin = buf.readUInt16LE(pos);
+                        pos = pos + 12;
                         pos = pos + 2;
-                        o.ProfileEnd = buf.readUInt16LE(pos);
                         pos = pos + 2;
-                        o.ProfileHollow = buf.readUInt16LE(pos);
                         pos = pos + 2;
-                        let textureEntryLength = buf.readUInt32LE(pos);
+                        const textureEntryLength = buf.readUInt32LE(pos);
                         pos = pos + 4;
                         // TODO: Properly parse textureentry;
                         pos = pos + textureEntryLength;
@@ -390,7 +315,7 @@ export class ObjectStore
         }
     }
 
-    readExtraParams(buf: Buffer, pos: number, o: GameObject): number
+    readExtraParams(buf: Buffer, pos: number, o: GameObjectLite): number
     {
         if (pos >= buf.length)
         {
@@ -410,14 +335,14 @@ export class ObjectStore
         return pos;
     }
 
-    getObjectsByParent(parentID: number): GameObject[]
+    getObjectsByParent(parentID: number): GameObjectLite[]
     {
         const list = this.objectsByParent[parentID];
         if (list === undefined)
         {
             return [];
         }
-        const result: GameObject[] = [];
+        const result: GameObjectLite[] = [];
         list.forEach((localID) =>
         {
             result.push(this.objects[localID]);
@@ -453,7 +378,7 @@ export class ObjectStore
                 }
                 else
                 {
-                    console.log("namevalue unexpected length: " + kv.length);
+                    console.log('namevalue unexpected length: ' + kv.length);
                     console.log(kv);
                 }
             }
