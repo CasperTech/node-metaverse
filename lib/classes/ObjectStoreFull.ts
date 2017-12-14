@@ -21,6 +21,7 @@ import {KillObjectMessage} from './messages/KillObject';
 import {IObjectStore} from './interfaces/IObjectStore';
 import {GameObjectFull} from './GameObjectFull';
 import {IGameObject} from './interfaces/IGameObject';
+import {BotOptionFlags} from '../enums/BotOptionFlags';
 
 export class ObjectStoreFull implements IObjectStore
 {
@@ -30,9 +31,11 @@ export class ObjectStoreFull implements IObjectStore
     private objectsByUUID: { [key: string]: number } = {};
     private objectsByParent: { [key: number]: number[] } = {};
     private clientEvents: ClientEvents;
+    private options: BotOptionFlags;
 
-    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents)
+    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
+        this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
         this.agent = agent;
@@ -138,6 +141,16 @@ export class ObjectStoreFull implements IObjectStore
                         {
                             this.objectsByParent[parentID].push(localID);
                         }
+
+                        if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                        {
+                            if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID)
+                            {
+                                // Drop object
+                                this.deleteObject(localID);
+                                return;
+                            }
+                        }
                     });
                     break;
                 case Message.ObjectUpdateCached:
@@ -233,6 +246,15 @@ export class ObjectStoreFull implements IObjectStore
                                 this.objectsByParent[newParentID].push(localID);
                             }
                             o.ParentID = newParentID;
+                        }
+                        if (newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                        {
+                            if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID)
+                            {
+                                // Drop object
+                                this.deleteObject(localID);
+                                return;
+                            }
                         }
                         if (compressedflags & CompressedFlags.Tree)
                         {

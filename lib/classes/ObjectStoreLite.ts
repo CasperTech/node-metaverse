@@ -18,6 +18,7 @@ import {KillObjectMessage} from './messages/KillObject';
 import {IObjectStore} from './interfaces/IObjectStore';
 import {GameObjectLite} from './GameObjectLite';
 import {NameValue} from './NameValue';
+import {BotOptionFlags} from '../enums/BotOptionFlags';
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -27,9 +28,11 @@ export class ObjectStoreLite implements IObjectStore
     private objectsByUUID: { [key: string]: number } = {};
     private objectsByParent: { [key: number]: number[] } = {};
     private clientEvents: ClientEvents;
+    private options: BotOptionFlags;
 
-    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents)
+    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
+        this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
         this.agent = agent;
@@ -93,6 +96,16 @@ export class ObjectStoreLite implements IObjectStore
                         if (addToParentList)
                         {
                             this.objectsByParent[parentID].push(localID);
+                        }
+
+                        if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                        {
+                            if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID)
+                            {
+                                // Drop object
+                                this.deleteObject(localID);
+                                return;
+                            }
                         }
                     });
                     break;
@@ -188,6 +201,15 @@ export class ObjectStoreLite implements IObjectStore
                                 this.objectsByParent[newParentID].push(localID);
                             }
                             o.ParentID = newParentID;
+                        }
+                        if (newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                        {
+                            if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID)
+                            {
+                                // Drop object
+                                this.deleteObject(localID);
+                                return;
+                            }
                         }
                         if (compressedflags & CompressedFlags.Tree)
                         {

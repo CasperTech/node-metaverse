@@ -12,10 +12,10 @@ class Region {
         this.clientEvents = clientEvents;
         this.circuit = new Circuit_1.Circuit(clientEvents);
         if (options & BotOptionFlags_1.BotOptionFlags.LiteObjectStore) {
-            this.objects = new ObjectStoreLite_1.ObjectStoreLite(this.circuit, agent, clientEvents);
+            this.objects = new ObjectStoreLite_1.ObjectStoreLite(this.circuit, agent, clientEvents, options);
         }
         else {
-            this.objects = new ObjectStoreFull_1.ObjectStoreFull(this.circuit, agent, clientEvents);
+            this.objects = new ObjectStoreFull_1.ObjectStoreFull(this.circuit, agent, clientEvents, options);
         }
         this.comms = new Comms_1.Comms(this.circuit, agent, clientEvents);
     }

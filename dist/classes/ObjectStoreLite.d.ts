@@ -5,6 +5,7 @@ import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
 import { GameObjectLite } from './GameObjectLite';
 import { NameValue } from './NameValue';
+import { BotOptionFlags } from '../enums/BotOptionFlags';
 export declare class ObjectStoreLite implements IObjectStore {
     private circuit;
     private agent;
@@ -12,7 +13,8 @@ export declare class ObjectStoreLite implements IObjectStore {
     private objectsByUUID;
     private objectsByParent;
     private clientEvents;
-    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents);
+    private options;
+    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags);
     deleteObject(objectID: number): void;
     readExtraParams(buf: Buffer, pos: number, o: GameObjectLite): number;
     getObjectsByParent(parentID: number): GameObjectLite[];

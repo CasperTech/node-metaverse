@@ -8,11 +8,13 @@ const Utils_1 = require("./Utils");
 const PCode_1 = require("../enums/PCode");
 const GameObjectLite_1 = require("./GameObjectLite");
 const NameValue_1 = require("./NameValue");
+const BotOptionFlags_1 = require("../enums/BotOptionFlags");
 class ObjectStoreLite {
-    constructor(circuit, agent, clientEvents) {
+    constructor(circuit, agent, clientEvents, options) {
         this.objects = {};
         this.objectsByUUID = {};
         this.objectsByParent = {};
+        this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
         this.agent = agent;
@@ -60,6 +62,12 @@ class ObjectStoreLite {
                         }
                         if (addToParentList) {
                             this.objectsByParent[parentID].push(localID);
+                        }
+                        if (this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                            if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID) {
+                                this.deleteObject(localID);
+                                return;
+                            }
                         }
                     });
                     break;
@@ -136,6 +144,12 @@ class ObjectStoreLite {
                                     this.objectsByParent[newParentID].push(localID);
                                 }
                                 o.ParentID = newParentID;
+                            }
+                            if (newObj && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                                if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID) {
+                                    this.deleteObject(localID);
+                                    return;
+                                }
                             }
                             if (compressedflags & CompressedFlags_1.CompressedFlags.Tree) {
                                 pos++;
