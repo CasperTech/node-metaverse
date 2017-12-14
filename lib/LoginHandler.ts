@@ -2,10 +2,13 @@ import * as xmlrpc from 'xmlrpc';
 import * as crypto from 'crypto';
 import {LoginParameters} from './classes/LoginParameters';
 import {LoginResponse} from './classes/LoginResponse';
+import {ClientEvents} from './classes/ClientEvents';
 const uuid = require('uuid');
 
 export class LoginHandler
 {
+    private clientEvents: ClientEvents;
+
     static GenerateMAC(): string
     {
         const hexDigits = '0123456789ABCDEF';
@@ -22,6 +25,12 @@ export class LoginHandler
 
         return macAddress;
     }
+
+    constructor(ce: ClientEvents)
+    {
+        this.clientEvents = ce;
+    }
+
     Login(params: LoginParameters): Promise<LoginResponse>
     {
         return new Promise<LoginResponse>((resolve, reject) =>
@@ -38,7 +47,7 @@ export class LoginHandler
                     {
                         'first': params.firstName,
                         'last': params.lastName,
-                        'passwd': '$1$' + crypto.createHash('md5').update(params.password).digest('hex'),
+                        'passwd': '$1$' + crypto.createHash('md5').update(params.password.substr(0, 16)).digest('hex'),
                         'start': 'home',
                         'major': '0',
                         'minor': '0',
@@ -65,7 +74,7 @@ export class LoginHandler
                             'global-textures'
                         ]
                     }
-                ], function(error, value)
+                ], (error, value) =>
                 {
                     if (error)
                     {
@@ -79,9 +88,8 @@ export class LoginHandler
                         }
                         else
                         {
-                            const response = new LoginResponse(value);
+                            const response = new LoginResponse(value, this.clientEvents);
                             resolve(response);
-
                         }
                     }
                 }

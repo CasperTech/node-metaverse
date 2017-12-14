@@ -13,42 +13,54 @@ const bot = new nmv.Bot(loginParameters);
 
 let resp = null;
 
+const master = 'd1cd5b71-6209-4595-9bf0-771bf689ce00';
+
+bot.clientEvents.onLure.subscribe((lureEvent) =>
+{
+    bot.clientCommands.grid.getRegionMapInfo(lureEvent.gridX, lureEvent.gridY).then((regionInfo) =>
+    {
+        if (lureEvent.from.toString() === master)
+        {
+            console.log('Accepting teleport lure to ' + regionInfo.name + ' (' + regionInfo.avatars.length + ' avatar' + ((regionInfo.avatars.length === 1)?'':'s') + ' present) from ' + lureEvent.fromName + ' with message: ' + lureEvent.lureMessage);
+            bot.clientCommands.teleport.acceptTeleport(lureEvent);
+        }
+        else
+        {
+            console.log('Ignoring teleport lure to ' + regionInfo.name + ' (' + regionInfo.avatars.length + ' avatar' + ((regionInfo.avatars.length === 1)?'':'s') + ' present) from ' + lureEvent.fromName + ' with message: ' + lureEvent.lureMessage);
+        }
+    });
+});
+
+bot.clientEvents.onInstantMessage.subscribe((IMEvent) =>
+{
+    if (IMEvent.source === nmv.ChatSourceType.Agent)
+    {
+        if (!(IMEvent.flags & nmv.InstantMessageEventFlags.startTyping || IMEvent.flags & nmv.InstantMessageEventFlags.finishTyping))
+        {
+            bot.clientCommands.comms.typeInstantMessage(IMEvent.from, 'Thanks for the message! This account is a scripted agent (bot), so cannot reply to your query. Sorry!');
+        }
+    }
+});
+
+bot.clientEvents.onDisconnected.subscribe((DisconnectEvent) =>
+{
+    console.log("Disconnected from simulator: "+DisconnectEvent.message);
+    if (!DisconnectEvent.requested)
+    {
+        setTimeout(() =>
+        {
+            console.log("Reconnecting");
+            connect();
+        }, 5000)
+    }
+});
+
 function connect()
 {
+    console.log("Logging in..");
     bot.login().then((response) =>
     {
-        bot.clientEvents.onLure.subscribe((lureEvent) =>
-        {
-            bot.clientCommands.grid.getRegionMapInfo(lureEvent.gridX, lureEvent.gridY).then((regionInfo) =>
-            {
-                console.log('Auto-accepting teleport lure to ' + regionInfo.name + ' (' + regionInfo.avatars.length + ' avatar' + ((regionInfo.avatars.length === 1)?'':'s') + ' present) from ' + lureEvent.fromName + ' with message: ' + lureEvent.lureMessage);
-                //bot.clientCommands.teleport.acceptTeleport(lureEvent);
-            });
-        });
-
-        bot.clientEvents.onInstantMessage.subscribe((IMEvent) =>
-        {
-            if (IMEvent.source === nmv.ChatSourceType.Agent)
-            {
-                if (!(IMEvent.flags & nmv.InstantMessageEventFlags.startTyping || IMEvent.flags & nmv.InstantMessageEventFlags.finishTyping))
-                {
-                    bot.clientCommands.comms.typeInstantMessage(IMEvent.from, 'Thanks for the message! This account is a scripted agent (bot), so cannot reply to your query. Sorry!');
-                }
-            }
-        });
-
-        bot.clientEvents.onDisconnected.subscribe((DisconnectEvent) =>
-        {
-            console.log("Disconnected from simulator: "+DisconnectEvent.message);
-            if (!DisconnectEvent.requested)
-            {
-                setTimeout(() =>
-                {
-                    console.log("Reconnecting");
-                    connect();
-                }, 5000)
-            }
-        });
+        console.log("Login complete");
 
         //Establish circuit wit region
         resp = response;

@@ -88,9 +88,9 @@ export class LoginResponse
         return result;
     }
 
-    constructor(json: any)
+    constructor(json: any, ce: ClientEvents)
     {
-        this.clientEvents = new ClientEvents();
+        this.clientEvents = ce;
         this.agent = new Agent(this.clientEvents);
         this.region = new Region(this.agent, this.clientEvents);
         Object.keys(json).forEach((key: string) =>

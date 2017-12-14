@@ -17,6 +17,9 @@ class LoginHandler {
         }
         return macAddress;
     }
+    constructor(ce) {
+        this.clientEvents = ce;
+    }
     Login(params) {
         return new Promise((resolve, reject) => {
             const secureClientOptions = {
@@ -30,7 +33,7 @@ class LoginHandler {
                 {
                     'first': params.firstName,
                     'last': params.lastName,
-                    'passwd': '$1$' + crypto.createHash('md5').update(params.password).digest('hex'),
+                    'passwd': '$1$' + crypto.createHash('md5').update(params.password.substr(0, 16)).digest('hex'),
                     'start': 'home',
                     'major': '0',
                     'minor': '0',
@@ -57,7 +60,7 @@ class LoginHandler {
                         'global-textures'
                     ]
                 }
-            ], function (error, value) {
+            ], (error, value) => {
                 if (error) {
                     reject(error);
                 }
@@ -66,7 +69,7 @@ class LoginHandler {
                         reject(new Error(value['message']));
                     }
                     else {
-                        const response = new LoginResponse_1.LoginResponse(value);
+                        const response = new LoginResponse_1.LoginResponse(value, this.clientEvents);
                         resolve(response);
                     }
                 }

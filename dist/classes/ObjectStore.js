@@ -23,7 +23,8 @@ class ObjectStore {
             Message_1.Message.ObjectUpdateCached,
             Message_1.Message.ObjectUpdateCompressed,
             Message_1.Message.ImprovedTerseObjectUpdate,
-            Message_1.Message.MultipleObjectUpdate
+            Message_1.Message.MultipleObjectUpdate,
+            Message_1.Message.KillObject
         ], (packet) => {
             switch (packet.message.id) {
                 case Message_1.Message.ObjectUpdate:
@@ -269,8 +270,38 @@ class ObjectStore {
                     const multipleObjectUpdate = packet.message;
                     console.error('TODO: MultipleObjectUpdate');
                     break;
+                case Message_1.Message.KillObject:
+                    const killObj = packet.message;
+                    killObj.ObjectData.forEach((obj) => {
+                        const objectID = obj.ID;
+                        this.deleteObject(objectID);
+                    });
+                    break;
             }
         });
+    }
+    deleteObject(objectID) {
+        if (this.objects[objectID]) {
+            if (this.objectsByParent[objectID]) {
+                this.objectsByParent[objectID].forEach((childObjID) => {
+                    this.deleteObject(childObjID);
+                });
+            }
+            delete this.objectsByParent[objectID];
+            const objct = this.objects[objectID];
+            const uuid = objct.FullID.toString();
+            if (this.objectsByUUID[uuid]) {
+                delete this.objectsByUUID[uuid];
+            }
+            const parentID = objct.ParentID;
+            if (this.objectsByParent[parentID]) {
+                const ind = this.objectsByParent[parentID].indexOf(objectID);
+                if (ind !== -1) {
+                    this.objectsByParent[parentID].splice(ind, 1);
+                }
+            }
+            delete this.objects[objectID];
+        }
     }
     readExtraParams(buf, pos, o) {
         if (pos >= buf.length) {

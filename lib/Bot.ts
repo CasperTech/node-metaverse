@@ -24,6 +24,7 @@ import {KickUserMessage} from './classes/messages/KickUser';
 import {StartPingCheckMessage} from './classes/messages/StartPingCheck';
 import {CompletePingCheckMessage} from './classes/messages/CompletePingCheck';
 import Timer = NodeJS.Timer;
+import {Subscription} from 'rxjs/Subscription';
 
 export class Bot
 {
@@ -33,11 +34,13 @@ export class Bot
     private ping: Timer | null = null;
     private pingNumber = 0;
     private lastSuccessfulPing = 0;
-    public clientEvents: ClientEvents | null = null;
+    private circuitSubscription: Subscription | null = null
+    public clientEvents: ClientEvents;
     public clientCommands: ClientCommands;
 
     constructor(login: LoginParameters)
     {
+        this.clientEvents = new ClientEvents();
         this.loginParams = login;
     }
 
@@ -45,10 +48,9 @@ export class Bot
     {
         return new Promise((resolve, reject) =>
         {
-            const loginHandler = new LoginHandler();
+            const loginHandler = new LoginHandler(this.clientEvents);
             loginHandler.Login(this.loginParams).then((response: LoginResponse) =>
             {
-                this.clientEvents = response.clientEvents;
                 this.currentRegion = response.region;
                 this.agent = response.agent;
                 this.clientCommands = new ClientCommands(response.region, response.agent, this);
@@ -66,6 +68,11 @@ export class Bot
         {
             this.currentRegion = region;
             this.clientCommands = new ClientCommands(this.currentRegion, this.agent, this);
+            if (this.ping !== null)
+            {
+                clearInterval(this.ping);
+                this.ping = null;
+            }
             this.connectToSim().then(() =>
             {
                 resolve();
@@ -97,6 +104,11 @@ export class Bot
             {
                 this.agent.shutdown();
                 this.currentRegion.shutdown();
+                if (this.circuitSubscription !== null)
+                {
+                    this.circuitSubscription.unsubscribe();
+                    this.circuitSubscription = null;
+                }
                 delete this.currentRegion;
                 delete this.agent;
                 delete this.clientCommands;
@@ -208,6 +220,11 @@ export class Bot
                         // We're dead, jim
                         this.agent.shutdown();
                         this.currentRegion.shutdown();
+                        if (this.circuitSubscription !== null)
+                        {
+                            this.circuitSubscription.unsubscribe();
+                            this.circuitSubscription = null;
+                        }
                         delete this.currentRegion;
                         delete this.agent;
                         delete this.clientCommands;
@@ -228,7 +245,7 @@ export class Bot
 
                 }, 5000);
 
-                circuit.subscribeToMessages(
+                this.circuitSubscription = circuit.subscribeToMessages(
                    [
                        Message.TeleportFailed,
                        Message.TeleportFinish,
@@ -305,6 +322,11 @@ export class Bot
                                 const kickUser = packet.message as KickUserMessage;
                                 this.agent.shutdown();
                                 this.currentRegion.shutdown();
+                                if (this.circuitSubscription !== null)
+                                {
+                                    this.circuitSubscription.unsubscribe();
+                                    this.circuitSubscription = null;
+                                }
                                 delete this.currentRegion;
                                 delete this.agent;
                                 delete this.clientCommands;

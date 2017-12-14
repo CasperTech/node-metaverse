@@ -9,7 +9,8 @@ export declare class Bot {
     private ping;
     private pingNumber;
     private lastSuccessfulPing;
-    clientEvents: ClientEvents | null;
+    private circuitSubscription;
+    clientEvents: ClientEvents;
     clientCommands: ClientCommands;
     constructor(login: LoginParameters);
     login(): Promise<{}>;
