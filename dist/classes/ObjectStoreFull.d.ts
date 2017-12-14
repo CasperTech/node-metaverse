@@ -6,6 +6,7 @@ import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
 import { GameObjectFull } from './GameObjectFull';
 import { IGameObject } from './interfaces/IGameObject';
+import { BotOptionFlags } from '../enums/BotOptionFlags';
 export declare class ObjectStoreFull implements IObjectStore {
     private circuit;
     private agent;
@@ -13,7 +14,8 @@ export declare class ObjectStoreFull implements IObjectStore {
     private objectsByUUID;
     private objectsByParent;
     private clientEvents;
-    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents);
+    private options;
+    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags);
     deleteObject(objectID: number): void;
     readExtraParams(buf: Buffer, pos: number, o: GameObjectFull): number;
     getObjectsByParent(parentID: number): IGameObject[];

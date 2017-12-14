@@ -26,11 +26,11 @@ export class Region
         this.circuit = new Circuit(clientEvents);
         if (options & BotOptionFlags.LiteObjectStore)
         {
-            this.objects = new ObjectStoreLite(this.circuit, agent, clientEvents);
+            this.objects = new ObjectStoreLite(this.circuit, agent, clientEvents, options);
         }
         else
         {
-            this.objects = new ObjectStoreFull(this.circuit, agent, clientEvents);
+            this.objects = new ObjectStoreFull(this.circuit, agent, clientEvents, options);
         }
         this.comms = new Comms(this.circuit, agent, clientEvents);
     }

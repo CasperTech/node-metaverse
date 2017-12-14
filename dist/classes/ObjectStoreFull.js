@@ -10,11 +10,13 @@ const Utils_1 = require("./Utils");
 const PCode_1 = require("../enums/PCode");
 const NameValue_1 = require("./NameValue");
 const GameObjectFull_1 = require("./GameObjectFull");
+const BotOptionFlags_1 = require("../enums/BotOptionFlags");
 class ObjectStoreFull {
-    constructor(circuit, agent, clientEvents) {
+    constructor(circuit, agent, clientEvents, options) {
         this.objects = {};
         this.objectsByUUID = {};
         this.objectsByParent = {};
+        this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
         this.agent = agent;
@@ -104,6 +106,12 @@ class ObjectStoreFull {
                         if (addToParentList) {
                             this.objectsByParent[parentID].push(localID);
                         }
+                        if (this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                            if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID) {
+                                this.deleteObject(localID);
+                                return;
+                            }
+                        }
                     });
                     break;
                 case Message_1.Message.ObjectUpdateCached:
@@ -186,6 +194,12 @@ class ObjectStoreFull {
                                     this.objectsByParent[newParentID].push(localID);
                                 }
                                 o.ParentID = newParentID;
+                            }
+                            if (newObj && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                                if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID) {
+                                    this.deleteObject(localID);
+                                    return;
+                                }
                             }
                             if (compressedflags & CompressedFlags_1.CompressedFlags.Tree) {
                                 o.TreeSpecies = buf.readUInt8(pos++);

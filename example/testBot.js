@@ -13,7 +13,7 @@ loginParameters.start = "last";
 // If you don't intend to use the object store (i.e you have no interest in inworld objects, textures, etc,
 // using ObjectStoreLite will drastically reduce the footprint
 //
- const options = nmv.BotOptionFlags.LiteObjectStore;
+const options = nmv.BotOptionFlags.LiteObjectStore | nmv.BotOptionFlags.StoreMyAttachmentsOnly;
 
 const bot = new nmv.Bot(loginParameters, options);
 
