@@ -35,6 +35,7 @@ export class ObjectStoreFull implements IObjectStore
 
     constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
+        this.agent.localID = 0;
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
