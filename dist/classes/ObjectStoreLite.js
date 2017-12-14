@@ -14,9 +14,6 @@ class ObjectStoreLite {
         this.objects = {};
         this.objectsByUUID = {};
         this.objectsByParent = {};
-        setInterval(() => {
-            console.log("Objects in store: " + Object.keys(this.objects).length);
-        }, 5000);
         agent.localID = 0;
         this.options = options;
         this.clientEvents = clientEvents;
@@ -56,6 +53,7 @@ class ObjectStoreLite {
                         obj.FullID = objData.FullID;
                         obj.ParentID = objData.ParentID;
                         obj.OwnerID = objData.OwnerID;
+                        obj.PCode = objData.PCode;
                         this.objects[localID].NameValue = this.parseNameValues(Utils_1.Utils.BufferToStringSimple(objData.NameValue));
                         if (objData.PCode === PCode_1.PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString()) {
                             this.agent.localID = localID;
@@ -63,7 +61,24 @@ class ObjectStoreLite {
                                 Object.keys(this.objectsByParent).forEach((objParentID) => {
                                     const parent = parseInt(objParentID, 10);
                                     if (parent !== this.agent.localID) {
-                                        this.deleteObject(parent);
+                                        let foundAvatars = false;
+                                        this.objectsByParent[parent].forEach((objID) => {
+                                            if (this.objects[objID]) {
+                                                const o = this.objects[objID];
+                                                if (o.PCode === PCode_1.PCode.Avatar) {
+                                                    foundAvatars = true;
+                                                }
+                                            }
+                                        });
+                                        if (this.objects[parent]) {
+                                            const o = this.objects[parent];
+                                            if (o.PCode === PCode_1.PCode.Avatar) {
+                                                foundAvatars = true;
+                                            }
+                                        }
+                                        if (!foundAvatars) {
+                                            this.deleteObject(parent);
+                                        }
                                     }
                                 });
                             }
@@ -75,7 +90,7 @@ class ObjectStoreLite {
                         if (addToParentList) {
                             this.objectsByParent[parentID].push(localID);
                         }
-                        if (this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                        if (objData.PCode !== PCode_1.PCode.Avatar && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
                             if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID) {
                                 this.deleteObject(localID);
                                 return;
@@ -118,6 +133,7 @@ class ObjectStoreLite {
                             }
                             const o = this.objects[localID];
                             o.ID = localID;
+                            o.PCode = pcode;
                             this.objectsByUUID[fullID.toString()] = localID;
                             o.FullID = fullID;
                             pos++;
@@ -157,7 +173,7 @@ class ObjectStoreLite {
                                 }
                                 o.ParentID = newParentID;
                             }
-                            if (newObj && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                            if (pcode !== PCode_1.PCode.Avatar && newObj && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
                                 if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID) {
                                     this.deleteObject(localID);
                                     return;
