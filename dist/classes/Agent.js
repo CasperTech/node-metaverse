@@ -136,8 +136,8 @@ class Agent {
                             if (item.type === 6) {
                                 let found = false;
                                 wornObjects.forEach((obj) => {
-                                    if (obj.NameValue['AttachItemID']) {
-                                        if (item['item_id'].toString() === obj.NameValue['AttachItemID'].value) {
+                                    if (obj.hasNameValueEntry('AttachItemID')) {
+                                        if (item['item_id'].toString() === obj.getNameValueEntry('AttachItemID')) {
                                             found = true;
                                         }
                                     }

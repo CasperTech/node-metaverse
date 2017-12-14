@@ -5,6 +5,7 @@ import {LoginFlags} from '../enums/LoginFlags';
 import {Vector3} from './Vector3';
 import Long = require('long');
 import {ClientEvents} from './ClientEvents';
+import {BotOptionFlags} from '../enums/BotOptionFlags';
 
 export class LoginResponse
 {
@@ -88,11 +89,11 @@ export class LoginResponse
         return result;
     }
 
-    constructor(json: any, ce: ClientEvents)
+    constructor(json: any, clientEvents: ClientEvents, options: BotOptionFlags)
     {
-        this.clientEvents = ce;
+        this.clientEvents = clientEvents;
         this.agent = new Agent(this.clientEvents);
-        this.region = new Region(this.agent, this.clientEvents);
+        this.region = new Region(this.agent, this.clientEvents, options);
         Object.keys(json).forEach((key: string) =>
         {
             const val: any = json[key];

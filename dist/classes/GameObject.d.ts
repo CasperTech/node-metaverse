@@ -1,13 +1,12 @@
-import {Vector3} from './Vector3';
-import {UUID} from './UUID';
-import {PCode} from '../enums/PCode';
-import {Quaternion} from './Quaternion';
-import {Tree} from '../enums/Tree';
-import {SoundFlags} from '../enums/SoundFlags';
-import {NameValue} from './NameValue';
-
-export class GameObject
-{
+/// <reference types="node" />
+import { Vector3 } from './Vector3';
+import { UUID } from './UUID';
+import { PCode } from '../enums/PCode';
+import { Quaternion } from './Quaternion';
+import { Tree } from '../enums/Tree';
+import { SoundFlags } from '../enums/SoundFlags';
+import { NameValue } from './NameValue';
+export declare class GameObject {
     ID: number;
     State: number;
     FullID: UUID;
@@ -58,17 +57,8 @@ export class GameObject
     SoundFlags: SoundFlags;
     SoundRadius: number;
     IsAttachment: boolean;
-    NameValue: {[key: string]: NameValue};
-    constructor()
-    {
-        this.Position = Vector3.getZero();
-        this.Rotation = Quaternion.getIdentity();
-        this.IsAttachment = false;
-        this.NameValue = {};
-        this.AngularVelocity = Vector3.getZero();
-        this.TreeSpecies = 0;
-        this.SoundFlags = 0;
-        this.SoundRadius = 1.0;
-        this.SoundGain = 1.0;
-    }
+    NameValue: {
+        [key: string]: NameValue;
+    };
+    constructor();
 }

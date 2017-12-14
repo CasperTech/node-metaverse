@@ -25,6 +25,7 @@ import {StartPingCheckMessage} from './classes/messages/StartPingCheck';
 import {CompletePingCheckMessage} from './classes/messages/CompletePingCheck';
 import Timer = NodeJS.Timer;
 import {Subscription} from 'rxjs/Subscription';
+import {BotOptionFlags} from './enums/BotOptionFlags';
 
 export class Bot
 {
@@ -35,20 +36,23 @@ export class Bot
     private pingNumber = 0;
     private lastSuccessfulPing = 0;
     private circuitSubscription: Subscription | null = null
+    private options: BotOptionFlags;
     public clientEvents: ClientEvents;
     public clientCommands: ClientCommands;
 
-    constructor(login: LoginParameters)
+
+    constructor(login: LoginParameters, options: BotOptionFlags)
     {
         this.clientEvents = new ClientEvents();
         this.loginParams = login;
+        this.options = options;
     }
 
     login()
     {
         return new Promise((resolve, reject) =>
         {
-            const loginHandler = new LoginHandler(this.clientEvents);
+            const loginHandler = new LoginHandler(this.clientEvents, this.options);
             loginHandler.Login(this.loginParams).then((response: LoginResponse) =>
             {
                 this.currentRegion = response.region;

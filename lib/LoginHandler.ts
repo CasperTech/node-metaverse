@@ -3,11 +3,13 @@ import * as crypto from 'crypto';
 import {LoginParameters} from './classes/LoginParameters';
 import {LoginResponse} from './classes/LoginResponse';
 import {ClientEvents} from './classes/ClientEvents';
+import {BotOptionFlags} from './enums/BotOptionFlags';
 const uuid = require('uuid');
 
 export class LoginHandler
 {
     private clientEvents: ClientEvents;
+    private options: BotOptionFlags;
 
     static GenerateMAC(): string
     {
@@ -26,9 +28,10 @@ export class LoginHandler
         return macAddress;
     }
 
-    constructor(ce: ClientEvents)
+    constructor(ce: ClientEvents, options: BotOptionFlags)
     {
         this.clientEvents = ce;
+        this.options = options;
     }
 
     Login(params: LoginParameters): Promise<LoginResponse>
@@ -88,7 +91,7 @@ export class LoginHandler
                         }
                         else
                         {
-                            const response = new LoginResponse(value, this.clientEvents);
+                            const response = new LoginResponse(value, this.clientEvents, this.options);
                             resolve(response);
                         }
                     }

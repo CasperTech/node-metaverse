@@ -11,6 +11,7 @@ import {HTTPAssets} from './enums/HTTPAssets';
 import {InstantMessageEventFlags} from './enums/InstantMessageEventFlags';
 import {InstantMessageEvent} from './events/InstantMessageEvent';
 import {ChatSourceType} from './enums/ChatSourceType';
+import {BotOptionFlags} from './enums/BotOptionFlags';
 
 export {
     Bot,
@@ -21,5 +22,6 @@ export {
     BVH,
     InstantMessageEvent,
     InstantMessageEventFlags,
-    ChatSourceType
+    ChatSourceType,
+    BotOptionFlags
 };

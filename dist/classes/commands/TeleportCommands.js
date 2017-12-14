@@ -40,7 +40,7 @@ class TeleportCommands extends CommandsBase_1.CommandsBase {
                             return;
                         }
                         this.currentRegion.shutdown();
-                        const region = new Region_1.Region(this.agent, this.bot.clientEvents);
+                        const region = new Region_1.Region(this.agent, this.bot.clientEvents, this.currentRegion.options);
                         region.circuit.circuitCode = this.currentRegion.circuit.circuitCode;
                         region.circuit.secureSessionID = this.currentRegion.circuit.secureSessionID;
                         region.circuit.sessionID = this.currentRegion.circuit.sessionID;
