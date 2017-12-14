@@ -32,10 +32,6 @@ export class ObjectStoreLite implements IObjectStore
 
     constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
-        setInterval(() =>
-        {
-            console.log("Objects in store: " + Object.keys(this.objects).length);
-        }, 5000);
         agent.localID = 0;
         this.options = options;
         this.clientEvents = clientEvents;

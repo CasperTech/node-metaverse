@@ -101,7 +101,24 @@ class ObjectStoreFull {
                                 Object.keys(this.objectsByParent).forEach((objParentID) => {
                                     const parent = parseInt(objParentID, 10);
                                     if (parent !== this.agent.localID) {
-                                        this.deleteObject(parent);
+                                        let foundAvatars = false;
+                                        this.objectsByParent[parent].forEach((objID) => {
+                                            if (this.objects[objID]) {
+                                                const o = this.objects[objID];
+                                                if (o.PCode === PCode_1.PCode.Avatar) {
+                                                    foundAvatars = true;
+                                                }
+                                            }
+                                        });
+                                        if (this.objects[parent]) {
+                                            const o = this.objects[parent];
+                                            if (o.PCode === PCode_1.PCode.Avatar) {
+                                                foundAvatars = true;
+                                            }
+                                        }
+                                        if (!foundAvatars) {
+                                            this.deleteObject(parent);
+                                        }
                                     }
                                 });
                             }
@@ -115,7 +132,7 @@ class ObjectStoreFull {
                         if (addToParentList) {
                             this.objectsByParent[parentID].push(localID);
                         }
-                        if (this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                        if (objData.PCode !== PCode_1.PCode.Avatar && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
                             if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID) {
                                 this.deleteObject(localID);
                                 return;
@@ -204,7 +221,7 @@ class ObjectStoreFull {
                                 }
                                 o.ParentID = newParentID;
                             }
-                            if (newObj && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                            if (pcode !== PCode_1.PCode.Avatar && newObj && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
                                 if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID) {
                                     this.deleteObject(localID);
                                     return;
