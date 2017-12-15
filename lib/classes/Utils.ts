@@ -131,4 +131,12 @@ export class Utils
         const buff = new Buffer(str, 'base64');
         return buff.toString('utf8');
     }
+    static HexToLong(hex: string)
+    {
+        while (hex.length < 16)
+        {
+            hex = '0' + hex;
+        }
+        return new Long(parseInt(hex.substr(8), 16), parseInt(hex.substr(0, 8), 16));
+    }
 }

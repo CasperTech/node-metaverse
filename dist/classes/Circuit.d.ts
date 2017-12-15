@@ -8,6 +8,7 @@ import { Message } from '../enums/Message';
 import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/filter';
 import { ClientEvents } from "./ClientEvents";
+import { FilterResponse } from '../enums/FilterResponse';
 export declare class Circuit {
     secureSessionID: UUID;
     sessionID: UUID;
@@ -38,7 +39,7 @@ export declare class Circuit {
     waitForAck(ack: number, timeout: number): Promise<void>;
     init(): void;
     shutdown(): void;
-    waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => boolean): Promise<Packet>;
+    waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<Packet>;
     sendPacket(packet: Packet): void;
     ackReceived(sequenceNumber: number): void;
     sendAck(sequenceNumber: number): void;

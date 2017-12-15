@@ -13,6 +13,7 @@ import {Subject} from 'rxjs/Subject';
 import 'rxjs/add/operator/filter';
 import Timer = NodeJS.Timer;
 import {ClientEvents} from "./ClientEvents";
+import {FilterResponse} from '../enums/FilterResponse';
 
 export class Circuit
 {
@@ -170,7 +171,7 @@ export class Circuit
         }
     }
 
-    waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => boolean): Promise<Packet>
+    waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<Packet>
     {
         return new Promise<Packet>((resolve, reject) =>
         {
@@ -181,32 +182,60 @@ export class Circuit
                 timeout: null,
                 subscription: null
             };
-            handleObj.timeout = setTimeout(() =>
+
+            const timeoutFunc = () =>
             {
                 if (handleObj.subscription !== null)
                 {
                     handleObj.subscription.unsubscribe();
                     reject(new Error('Timeout'));
                 }
-            }, timeout);
+            };
+
+            handleObj.timeout = setTimeout(timeoutFunc, timeout);
 
             handleObj.subscription = this.subscribeToMessages([id], (packet: Packet) =>
+            {
+                let finish = false;
+                if (packet.message.id === id)
                 {
-                    if (packet.message.id === id && (filter === undefined || filter(packet)))
+                    if (filter === undefined)
                     {
-                        if (handleObj.timeout !== null)
-                        {
-                            clearTimeout(handleObj.timeout);
-                            handleObj.timeout = null;
-                        }
-                        if (handleObj.subscription !== null)
-                        {
-                            handleObj.subscription.unsubscribe();
-                            handleObj.subscription = null;
-                        }
-                        resolve(packet);
+                        finish = true;
                     }
-                });
+                    else
+                    {
+                        const filterResult = filter(packet);
+                        if (filterResult === FilterResponse.Finish)
+                        {
+                            finish = true;
+                        }
+                        else if (filterResult === FilterResponse.Match)
+                        {
+                            // Extend
+                            if (handleObj.timeout !== null)
+                            {
+                                clearTimeout(handleObj.timeout);
+                            }
+                            handleObj.timeout = setTimeout(timeoutFunc, timeout);
+                        }
+                    }
+                }
+                if (finish)
+                {
+                    if (handleObj.timeout !== null)
+                    {
+                        clearTimeout(handleObj.timeout);
+                        handleObj.timeout = null;
+                    }
+                    if (handleObj.subscription !== null)
+                    {
+                        handleObj.subscription.unsubscribe();
+                        handleObj.subscription = null;
+                    }
+                    resolve(packet);
+                }
+            });
         });
     }
 

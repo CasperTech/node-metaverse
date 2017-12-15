@@ -1,7 +1,6 @@
 import { CommandsBase } from './CommandsBase';
 import { UUID } from '../UUID';
 import { ChatType } from '../../enums/ChatType';
-import { GroupInviteEvent } from '../../events/GroupInviteEvent';
 export declare class CommunicationsCommands extends CommandsBase {
     sendInstantMessage(to: UUID | string, message: string): Promise<void>;
     nearbyChat(message: string, type: ChatType, channel?: number): Promise<void>;
@@ -12,10 +11,8 @@ export declare class CommunicationsCommands extends CommandsBase {
     stopTypingLocal(): Promise<void>;
     startTypingIM(to: UUID | string): Promise<void>;
     stopTypingIM(to: UUID | string): Promise<void>;
-    acceptGroupInvite(event: GroupInviteEvent): Promise<void>;
-    rejectGroupInvite(event: GroupInviteEvent): Promise<void>;
     typeInstantMessage(to: UUID | string, message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>;
-    startGroupSession(sessionID: UUID | string, message: string): Promise<void>;
-    sendGroupMessage(groupID: UUID | string, message: string): Promise<void>;
     typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>;
+    startGroupChatSession(sessionID: UUID | string, message: string): Promise<void>;
+    sendGroupMessage(groupID: UUID | string, message: string): Promise<void>;
 }

@@ -26,6 +26,7 @@ import {CompletePingCheckMessage} from './classes/messages/CompletePingCheck';
 import Timer = NodeJS.Timer;
 import {Subscription} from 'rxjs/Subscription';
 import {BotOptionFlags} from './enums/BotOptionFlags';
+import {FilterResponse} from './enums/FilterResponse';
 
 export class Bot
 {
@@ -200,7 +201,7 @@ export class Bot
                     circuit.waitForMessage(Message.CompletePingCheck, 10000, ((pingData: {
                         pingID: number,
                         timeSent: number
-                    }, packet: Packet): boolean =>
+                    }, packet: Packet): FilterResponse =>
                     {
                         const cpc = packet.message as CompletePingCheckMessage;
                         if (cpc.PingID.PingID === pingData.pingID)
@@ -211,9 +212,9 @@ export class Bot
                             {
                                 this.clientEvents.onCircuitLatency.next(pingTime);
                             }
-                            return true;
+                            return FilterResponse.Finish;
                         }
-                        return false;
+                        return FilterResponse.NoMatch;
                     }).bind(this, {
                         pingID: this.pingNumber,
                         timeSent: new Date().getTime()

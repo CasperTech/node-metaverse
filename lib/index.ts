@@ -12,6 +12,7 @@ import {InstantMessageEventFlags} from './enums/InstantMessageEventFlags';
 import {InstantMessageEvent} from './events/InstantMessageEvent';
 import {ChatSourceType} from './enums/ChatSourceType';
 import {BotOptionFlags} from './enums/BotOptionFlags';
+import {UUID} from './classes/UUID';
 
 export {
     Bot,
@@ -23,5 +24,6 @@ export {
     InstantMessageEvent,
     InstantMessageEventFlags,
     ChatSourceType,
-    BotOptionFlags
+    BotOptionFlags,
+    UUID
 };

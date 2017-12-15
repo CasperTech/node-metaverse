@@ -72,15 +72,15 @@ class EventQueueClient {
                                         if (event['body'] && event['body']['instantmessage'] && event['body']['instantmessage']['message_params'] && event['body']['instantmessage']['message_params']['id']) {
                                             const messageParams = event['body']['instantmessage']['message_params'];
                                             const imSessionID = messageParams['id'];
-                                            const requestedFolders = {
-                                                'method': 'accept invitation',
-                                                'session-id': imSessionID
-                                            };
                                             const groupChatEvent = new GroupChatEvent_1.GroupChatEvent();
                                             groupChatEvent.from = new UUID_1.UUID(messageParams['from_id'].toString());
                                             groupChatEvent.fromName = messageParams['from_name'];
                                             groupChatEvent.groupID = new UUID_1.UUID(messageParams['id'].toString());
                                             groupChatEvent.message = messageParams['message'];
+                                            const requestedFolders = {
+                                                'method': 'accept invitation',
+                                                'session-id': imSessionID
+                                            };
                                             this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((result) => {
                                                 this.agent.addChatSession(groupChatEvent.groupID);
                                                 const gcsje = new GroupChatSessionJoinEvent_1.GroupChatSessionJoinEvent();

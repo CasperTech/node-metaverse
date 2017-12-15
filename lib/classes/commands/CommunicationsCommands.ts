@@ -8,8 +8,6 @@ import {ChatFromViewerMessage} from '../messages/ChatFromViewer';
 import {ChatType} from '../../enums/ChatType';
 import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
 import Timer = NodeJS.Timer;
-import {GroupInviteEvent} from '../../events/GroupInviteEvent';
-import * as LLSD from 'llsd';
 import {GroupChatSessionJoinEvent} from '../../events/GroupChatSessionJoinEvent';
 
 export class CommunicationsCommands extends CommandsBase
@@ -183,66 +181,6 @@ export class CommunicationsCommands extends CommandsBase
         return circuit.waitForAck(sequenceNo, 10000);
     }
 
-    acceptGroupInvite(event: GroupInviteEvent): Promise<void>
-    {
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: event.from,
-            ParentEstateID: 0,
-            RegionID: UUID.zero(),
-            Position: Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog.GroupInvitationAccept,
-            ID: event.inviteID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils.StringToBuffer(agentName),
-            Message: Utils.StringToBuffer(''),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
-    }
-
-    rejectGroupInvite(event: GroupInviteEvent): Promise<void>
-    {
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: event.from,
-            ParentEstateID: 0,
-            RegionID: UUID.zero(),
-            Position: Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog.GroupInvitationDecline,
-            ID: event.inviteID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils.StringToBuffer(agentName),
-            Message: Utils.StringToBuffer(''),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
-    }
-
     typeInstantMessage(to: UUID | string, message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
@@ -307,7 +245,61 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    startGroupSession(sessionID: UUID | string, message: string): Promise<void>
+    typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            if (thinkingTime === undefined)
+            {
+                thinkingTime = 0;
+            }
+            setTimeout(() =>
+            {
+                this.startTypingLocal().then(() =>
+                {
+                    this.bot.clientCommands.agent.startAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]).then(() =>
+                    {
+                        if (charactersPerSecond === undefined)
+                        {
+                            charactersPerSecond = 5;
+                        }
+
+                        const timeToWait = (message.length / charactersPerSecond) * 1000;
+                        setTimeout(() =>
+                        {
+                            this.stopTypingLocal().then(() =>
+                            {
+                                this.bot.clientCommands.agent.stopAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]).then(() =>
+                                {
+                                    this.say(message).then(() =>
+                                    {
+                                        resolve();
+                                    }).catch((err) =>
+                                    {
+                                        reject(err);
+                                    });
+                                }).catch((err) =>
+                                {
+                                    reject(err);
+                                });
+                            }).catch((err) =>
+                            {
+                                reject(err);
+                            });
+                        }, timeToWait);
+                    }).catch((err) =>
+                    {
+                        reject(err);
+                    });
+                }).catch((err) =>
+                {
+                    reject(err);
+                });
+            }, thinkingTime);
+        });
+    }
+
+    startGroupChatSession(sessionID: UUID | string, message: string): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
@@ -370,7 +362,7 @@ export class CommunicationsCommands extends CommandsBase
     {
         return new Promise<void>((resolve, reject) =>
         {
-            this.startGroupSession(groupID, message).then(() =>
+            this.startGroupChatSession(groupID, message).then(() =>
             {
                 if (typeof groupID === 'string')
                 {
@@ -406,56 +398,6 @@ export class CommunicationsCommands extends CommandsBase
             {
                 reject(err);
             });
-        });
-    }
-
-    typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>
-    {
-        return new Promise<void>((resolve, reject) =>
-        {
-            if (thinkingTime === undefined)
-            {
-                thinkingTime = 0;
-            }
-            setTimeout(() =>
-            {
-                this.startTypingLocal().then(() =>
-                {
-                    this.bot.clientCommands.agent.startAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]).then(() =>
-                    {
-                        if (charactersPerSecond === undefined)
-                        {
-                            charactersPerSecond = 5;
-                        }
-
-                        const timeToWait = (message.length / charactersPerSecond) * 1000;
-                        setTimeout(() =>
-                        {
-                            this.stopTypingLocal().then(() =>
-                            {
-                                this.bot.clientCommands.agent.stopAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]).then(() =>
-                                {
-                                    this.say(message).then(() =>
-                                    {
-                                        resolve();
-                                    }).catch((err) =>
-                                    {
-                                        reject(err);
-                                    });
-                                }).catch((err) => {
-                                    reject(err);
-                                });
-                            }).catch((err) => {
-                                reject(err);
-                            });
-                        }, timeToWait);
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                }).catch((err) => {
-                    reject(err);
-                });
-            }, thinkingTime);
         });
     }
 }
