@@ -257,7 +257,7 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
             }, thinkingTime);
         });
     }
-    startChatSession(sessionID) {
+    startGroupSession(sessionID, message) {
         return new Promise((resolve, reject) => {
             if (typeof sessionID === 'string') {
                 sessionID = new UUID_1.UUID(sessionID);
@@ -284,7 +284,7 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
                     ID: sessionID,
                     Timestamp: Math.floor(new Date().getTime() / 1000),
                     FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-                    Message: Utils_1.Utils.StringToBuffer(''),
+                    Message: Utils_1.Utils.StringToBuffer(message),
                     BinaryBucket: Utils_1.Utils.StringToBuffer('')
                 };
                 im.EstateBlock = {
@@ -307,8 +307,7 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
     }
     sendGroupMessage(groupID, message) {
         return new Promise((resolve, reject) => {
-            this.startChatSession(groupID).then(() => {
-                console.log('Session joined');
+            this.startGroupSession(groupID, message).then(() => {
                 if (typeof groupID === 'string') {
                     groupID = new UUID_1.UUID(groupID);
                 }
