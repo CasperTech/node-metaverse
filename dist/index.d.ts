@@ -8,4 +8,5 @@ import { InstantMessageEventFlags } from './enums/InstantMessageEventFlags';
 import { InstantMessageEvent } from './events/InstantMessageEvent';
 import { ChatSourceType } from './enums/ChatSourceType';
 import { BotOptionFlags } from './enums/BotOptionFlags';
-export { Bot, LoginParameters, AssetType, HTTPAssets, ClientEvents, BVH, InstantMessageEvent, InstantMessageEventFlags, ChatSourceType, BotOptionFlags };
+import { UUID } from './classes/UUID';
+export { Bot, LoginParameters, AssetType, HTTPAssets, ClientEvents, BVH, InstantMessageEvent, InstantMessageEventFlags, ChatSourceType, BotOptionFlags, UUID };

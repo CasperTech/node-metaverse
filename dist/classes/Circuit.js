@@ -8,6 +8,7 @@ const Message_1 = require("../enums/Message");
 const CompletePingCheck_1 = require("./messages/CompletePingCheck");
 const Subject_1 = require("rxjs/Subject");
 require("rxjs/add/operator/filter");
+const FilterResponse_1 = require("../enums/FilterResponse");
 class Circuit {
     constructor(clientEvents) {
         this.client = null;
@@ -107,14 +108,33 @@ class Circuit {
                 timeout: null,
                 subscription: null
             };
-            handleObj.timeout = setTimeout(() => {
+            const timeoutFunc = () => {
                 if (handleObj.subscription !== null) {
                     handleObj.subscription.unsubscribe();
                     reject(new Error('Timeout'));
                 }
-            }, timeout);
+            };
+            handleObj.timeout = setTimeout(timeoutFunc, timeout);
             handleObj.subscription = this.subscribeToMessages([id], (packet) => {
-                if (packet.message.id === id && (filter === undefined || filter(packet))) {
+                let finish = false;
+                if (packet.message.id === id) {
+                    if (filter === undefined) {
+                        finish = true;
+                    }
+                    else {
+                        const filterResult = filter(packet);
+                        if (filterResult === FilterResponse_1.FilterResponse.Finish) {
+                            finish = true;
+                        }
+                        else if (filterResult === FilterResponse_1.FilterResponse.Match) {
+                            if (handleObj.timeout !== null) {
+                                clearTimeout(handleObj.timeout);
+                            }
+                            handleObj.timeout = setTimeout(timeoutFunc, timeout);
+                        }
+                    }
+                }
+                if (finish) {
                     if (handleObj.timeout !== null) {
                         clearTimeout(handleObj.timeout);
                         handleObj.timeout = null;

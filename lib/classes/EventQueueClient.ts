@@ -280,10 +280,7 @@ export class EventQueueClient
                                     {
                                         const messageParams = event['body']['instantmessage']['message_params'];
                                         const imSessionID = messageParams['id'];
-                                        const requestedFolders = {
-                                            'method': 'accept invitation',
-                                            'session-id': imSessionID
-                                        };
+
 
                                         const groupChatEvent = new GroupChatEvent();
                                         groupChatEvent.from = new UUID(messageParams['from_id'].toString());
@@ -291,7 +288,10 @@ export class EventQueueClient
                                         groupChatEvent.groupID = new UUID(messageParams['id'].toString());
                                         groupChatEvent.message = messageParams['message'];
 
-
+                                        const requestedFolders = {
+                                            'method': 'accept invitation',
+                                            'session-id': imSessionID
+                                        };
                                         this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((result: any) =>
                                         {
                                             this.agent.addChatSession(groupChatEvent.groupID);

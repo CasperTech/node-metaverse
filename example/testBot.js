@@ -141,6 +141,47 @@ function connect()
         //bot.clientCommands.comms.typeLocalMessage('Never fear, I am here!', 2000);
         //bot.clientCommands.group.sendGroupNotice('503e8ef6-e119-ff5e-2524-24f290dd3867', 'Test', 'testy testy test');
 
+        // Group invite example
+        // Just omit the role parameter for "everyone" role
+        //
+        // bot.clientCommands.group.sendGroupInvite("c6424e05-6e2c-fb03-220b-ca7904d11e04", "d1cd5b71-6209-4595-9bf0-771bf689ce00");
+
+        // Advanced group invite example
+        //
+        // Retrieve group roles
+
+        const userToInvite = new nmv.UUID("d1cd5b71-6209-4595-9bf0-771bf689ce00");
+        const groupID = new nmv.UUID("c6424e05-6e2c-fb03-220b-ca7904d11e04");
+
+        bot.clientCommands.group.getGroupRoles(groupID).then((roles) =>
+        {
+            roles.forEach((role) =>
+            {
+                if (role.Name === 'Officers')
+                {
+                    bot.clientCommands.group.getMemberList(groupID).then((members) =>
+                    {
+                        let found = true;
+                        members.forEach((member) =>
+                        {
+                            if (member.AgentID.toString() === userToInvite.toString())
+                            {
+                                found = true;
+                            }
+                        });
+                        if (found)
+                        {
+                            console.log("User already in group, skipping invite");
+                        }
+                        else
+                        {
+                            bot.clientCommands.group.sendGroupInvite(groupID, userToInvite , role.RoleID);
+                        }
+                    });
+                }
+            });
+        });
+
         // When it's time to go home, call bot.close();
     }).catch((error) =>
     {

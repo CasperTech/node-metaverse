@@ -16,6 +16,7 @@ const TeleportEventType_1 = require("./enums/TeleportEventType");
 const ClientCommands_1 = require("./classes/ClientCommands");
 const DisconnectEvent_1 = require("./events/DisconnectEvent");
 const StartPingCheck_1 = require("./classes/messages/StartPingCheck");
+const FilterResponse_1 = require("./enums/FilterResponse");
 class Bot {
     constructor(login, options) {
         this.ping = null;
@@ -151,9 +152,9 @@ class Bot {
                             if (this.clientEvents !== null) {
                                 this.clientEvents.onCircuitLatency.next(pingTime);
                             }
-                            return true;
+                            return FilterResponse_1.FilterResponse.Finish;
                         }
-                        return false;
+                        return FilterResponse_1.FilterResponse.NoMatch;
                     }).bind(this, {
                         pingID: this.pingNumber,
                         timeSent: new Date().getTime()

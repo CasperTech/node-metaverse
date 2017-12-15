@@ -20,4 +20,6 @@ const ChatSourceType_1 = require("./enums/ChatSourceType");
 exports.ChatSourceType = ChatSourceType_1.ChatSourceType;
 const BotOptionFlags_1 = require("./enums/BotOptionFlags");
 exports.BotOptionFlags = BotOptionFlags_1.BotOptionFlags;
+const UUID_1 = require("./classes/UUID");
+exports.UUID = UUID_1.UUID;
 //# sourceMappingURL=index.js.map

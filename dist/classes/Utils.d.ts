@@ -13,4 +13,5 @@ export declare class Utils {
     static UInt16ToFloat(val: number, lower: number, upper: number): number;
     static Base64EncodeString(str: string): string;
     static Base64DecodeString(str: string): string;
+    static HexToLong(hex: string): Long;
 }

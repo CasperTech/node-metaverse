@@ -15,6 +15,7 @@ import {RegionIDAndHandleReplyMessage} from '../messages/RegionIDAndHandleReply'
 import {CommandsBase} from './CommandsBase';
 import {AvatarPickerRequestMessage} from '../messages/AvatarPickerRequest';
 import {AvatarPickerReplyMessage} from '../messages/AvatarPickerReply';
+import {FilterResponse} from '../../enums/FilterResponse';
 export class GridCommands extends CommandsBase
 {
     getRegionHandle(regionID: UUID): Promise<Long>
@@ -27,10 +28,17 @@ export class GridCommands extends CommandsBase
                 RegionID: regionID,
             };
             circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForMessage(Message.RegionIDAndHandleReply, 10000, (packet: Packet) =>
+            circuit.waitForMessage(Message.RegionIDAndHandleReply, 10000, (packet: Packet): FilterResponse =>
             {
                 const filterMsg = packet.message as RegionIDAndHandleReplyMessage;
-                return (filterMsg.ReplyBlock.RegionID.toString() === regionID.toString());
+                if (filterMsg.ReplyBlock.RegionID.toString() === regionID.toString())
+                {
+                    return FilterResponse.Finish;
+                }
+                else
+                {
+                    return FilterResponse.NoMatch;
+                }
             }).then((packet: Packet) =>
             {
                 const responseMsg = packet.message as RegionIDAndHandleReplyMessage;
@@ -60,7 +68,7 @@ export class GridCommands extends CommandsBase
                 MaxY: (gridY / 256)
             };
             circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForMessage(Message.MapBlockReply, 10000, (packet: Packet) =>
+            circuit.waitForMessage(Message.MapBlockReply, 10000, (packet: Packet): FilterResponse =>
             {
                 const filterMsg = packet.message as MapBlockReplyMessage;
                 let found = false;
@@ -71,7 +79,11 @@ export class GridCommands extends CommandsBase
                         found = true;
                     }
                 });
-                return found;
+                if (found)
+                {
+                    return FilterResponse.Finish;
+                }
+                return FilterResponse.NoMatch;
             }).then((packet: Packet) =>
             {
                 const responseMsg = packet.message as MapBlockReplyMessage;
@@ -106,7 +118,7 @@ export class GridCommands extends CommandsBase
                 const minY = Math.floor(gridY / 256) * 256;
                 const maxY = minY + 256;
                 response.avatars = [];
-                circuit.waitForMessage(Message.MapItemReply, 10000, (packet: Packet) =>
+                circuit.waitForMessage(Message.MapItemReply, 10000, (packet: Packet): FilterResponse =>
                 {
                     const filterMsg = packet.message as MapItemReplyMessage;
                     let found = false;
@@ -118,7 +130,14 @@ export class GridCommands extends CommandsBase
                             found = true;
                         }
                     });
-                    return found;
+                    if (found)
+                    {
+                        return FilterResponse.Finish;
+                    }
+                    else
+                    {
+                        return FilterResponse.NoMatch;
+                    }
                 }).then((packet2: Packet) =>
                 {
                     const responseMsg2 = packet2.message as MapItemReplyMessage;
@@ -168,16 +187,16 @@ export class GridCommands extends CommandsBase
             };
 
             this.circuit.sendMessage(aprm, PacketFlags.Reliable);
-            this.circuit.waitForMessage(Message.AvatarPickerReply, 10000, (packet: Packet): boolean =>
+            this.circuit.waitForMessage(Message.AvatarPickerReply, 10000, (packet: Packet): FilterResponse =>
             {
                 const apr = packet.message as AvatarPickerReplyMessage;
                 if (apr.AgentData.QueryID.toString() === queryID.toString())
                 {
-                    return true;
+                    return FilterResponse.Finish;
                 }
                 else
                 {
-                    return false;
+                    return FilterResponse.NoMatch;
                 }
             }).then((packet: Packet) =>
             {

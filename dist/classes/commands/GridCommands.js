@@ -11,6 +11,7 @@ const PacketFlags_1 = require("../../enums/PacketFlags");
 const GridItemType_1 = require("../../enums/GridItemType");
 const CommandsBase_1 = require("./CommandsBase");
 const AvatarPickerRequest_1 = require("../messages/AvatarPickerRequest");
+const FilterResponse_1 = require("../../enums/FilterResponse");
 class GridCommands extends CommandsBase_1.CommandsBase {
     getRegionHandle(regionID) {
         return new Promise((resolve, reject) => {
@@ -22,7 +23,12 @@ class GridCommands extends CommandsBase_1.CommandsBase {
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
             circuit.waitForMessage(Message_1.Message.RegionIDAndHandleReply, 10000, (packet) => {
                 const filterMsg = packet.message;
-                return (filterMsg.ReplyBlock.RegionID.toString() === regionID.toString());
+                if (filterMsg.ReplyBlock.RegionID.toString() === regionID.toString()) {
+                    return FilterResponse_1.FilterResponse.Finish;
+                }
+                else {
+                    return FilterResponse_1.FilterResponse.NoMatch;
+                }
             }).then((packet) => {
                 const responseMsg = packet.message;
                 resolve(responseMsg.ReplyBlock.RegionHandle);
@@ -56,7 +62,10 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                         found = true;
                     }
                 });
-                return found;
+                if (found) {
+                    return FilterResponse_1.FilterResponse.Finish;
+                }
+                return FilterResponse_1.FilterResponse.NoMatch;
             }).then((packet) => {
                 const responseMsg = packet.message;
                 responseMsg.Data.forEach((data) => {
@@ -93,7 +102,12 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                             found = true;
                         }
                     });
-                    return found;
+                    if (found) {
+                        return FilterResponse_1.FilterResponse.Finish;
+                    }
+                    else {
+                        return FilterResponse_1.FilterResponse.NoMatch;
+                    }
                 }).then((packet2) => {
                     const responseMsg2 = packet2.message;
                     responseMsg2.Data.forEach((data) => {
@@ -135,10 +149,10 @@ class GridCommands extends CommandsBase_1.CommandsBase {
             this.circuit.waitForMessage(Message_1.Message.AvatarPickerReply, 10000, (packet) => {
                 const apr = packet.message;
                 if (apr.AgentData.QueryID.toString() === queryID.toString()) {
-                    return true;
+                    return FilterResponse_1.FilterResponse.Finish;
                 }
                 else {
-                    return false;
+                    return FilterResponse_1.FilterResponse.NoMatch;
                 }
             }).then((packet) => {
                 let found = null;
