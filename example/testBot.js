@@ -159,6 +159,8 @@ function connect()
             {
                 if (role.Name === 'Officers')
                 {
+                    // IMPORTANT: IN PRODUCTION, IT IS HIGHLY RECOMMENDED TO CACHE THIS LIST.
+                    //
                     bot.clientCommands.group.getMemberList(groupID).then((members) =>
                     {
                         let found = true;
