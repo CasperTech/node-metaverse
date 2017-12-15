@@ -135,6 +135,7 @@ function connect()
         return bot.connectToSim();
     }).then(() =>
     {
+        console.log("Connected to simulator");
         isConnected = true;
         // Do some stuff
         //bot.clientCommands.comms.typeLocalMessage('Never fear, I am here!', 2000);

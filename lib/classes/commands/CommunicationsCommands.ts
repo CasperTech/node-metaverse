@@ -307,7 +307,7 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    startChatSession(sessionID: UUID | string): Promise<void>
+    startGroupSession(sessionID: UUID | string, message: string): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
@@ -339,7 +339,7 @@ export class CommunicationsCommands extends CommandsBase
                     ID: sessionID,
                     Timestamp: Math.floor(new Date().getTime() / 1000),
                     FromAgentName: Utils.StringToBuffer(agentName),
-                    Message: Utils.StringToBuffer(''),
+                    Message: Utils.StringToBuffer(message),
                     BinaryBucket: Utils.StringToBuffer('')
                 };
                 im.EstateBlock = {
@@ -352,6 +352,7 @@ export class CommunicationsCommands extends CommandsBase
                         if (event.success)
                         {
                             waitForJoin.unsubscribe();
+
                             resolve();
                         }
                         else
@@ -369,9 +370,8 @@ export class CommunicationsCommands extends CommandsBase
     {
         return new Promise<void>((resolve, reject) =>
         {
-            this.startChatSession(groupID).then(() =>
+            this.startGroupSession(groupID, message).then(() =>
             {
-                console.log('Session joined');
                 if (typeof groupID === 'string')
                 {
                     groupID = new UUID(groupID);
