@@ -226,6 +226,7 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
                 this.startTypingIM(to).then(() => {
                     typeTimer = setInterval(() => {
                         this.startTypingIM(to).catch(() => {
+                            // ignore
                         });
                     }, 5000);
                     if (charactersPerSecond === undefined) {
@@ -258,6 +259,9 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
         });
     }
     sendGroupMessage(groupID, message) {
+        if (typeof groupID === 'string') {
+            groupID = new UUID_1.UUID(groupID);
+        }
         const circuit = this.circuit;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();

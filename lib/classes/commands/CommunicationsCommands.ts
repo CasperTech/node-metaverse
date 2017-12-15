@@ -305,8 +305,12 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    sendGroupMessage(groupID: UUID, message: string): Promise<void>
+    sendGroupMessage(groupID: UUID | string, message: string): Promise<void>
     {
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
         const circuit = this.circuit;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
