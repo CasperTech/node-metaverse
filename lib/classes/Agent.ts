@@ -36,6 +36,7 @@ export class Agent
     regionAccess: string;
     agentAccess: string;
     currentRegion: Region;
+    chatSessions: string[] = [];
     controlFlags: ControlFlags = 0;
     openID: {
         'token'?: string,
@@ -78,6 +79,25 @@ export class Agent
     {
         this.inventory = new Inventory(clientEvents);
         this.clientEvents = clientEvents;
+    }
+
+    addChatSession(uuid: UUID)
+    {
+        const str = uuid.toString();
+        if (this.chatSessions.indexOf(str) === -1)
+        {
+            this.chatSessions.push(str);
+        }
+    }
+
+    hasChatSession(uuid: UUID): boolean
+    {
+        const str = uuid.toString();
+        if (this.chatSessions.indexOf(str) === -1)
+        {
+            return false;
+        }
+        return true;
     }
 
     setCurrentRegion(region: Region)

@@ -36,7 +36,6 @@ export class UUID
             else
             {
                 console.error('Can\'t accept UUIDs of type ' + typeof buf);
-                console.trace();
             }
         }
     }

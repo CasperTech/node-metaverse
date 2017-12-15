@@ -9,6 +9,8 @@ import {TeleportEventType} from '../enums/TeleportEventType';
 import {GroupChatEvent} from '../events/GroupChatEvent';
 import {Utils} from './Utils';
 import {UUID} from './UUID';
+import {Agent} from './Agent';
+import {GroupChatSessionJoinEvent} from '../events/GroupChatSessionJoinEvent';
 
 export class EventQueueClient
 {
@@ -17,9 +19,11 @@ export class EventQueueClient
     done = false;
     currentRequest: request.Request | null = null;
     private clientEvents: ClientEvents;
+    private agent: Agent;
 
-    constructor(caps: Caps, clientEvents: ClientEvents)
+    constructor(agent: Agent, caps: Caps, clientEvents: ClientEvents)
     {
+        this.agent = agent;
         this.clientEvents = clientEvents;
         this.caps = caps;
         this.Get();
@@ -255,6 +259,21 @@ export class EventQueueClient
                                     this.clientEvents.onTeleportEvent.next(tpEvent);
                                     break;
                                 }
+                                case "ChatterBoxSessionStartReply":
+                                {
+                                    if (event['body'])
+                                    {
+                                        const gcsje = new GroupChatSessionJoinEvent();
+                                        gcsje.sessionID = new UUID(event['body']['session_id'].toString());
+                                        gcsje.success = event['body']['success'];
+                                        if (gcsje.success)
+                                        {
+                                            this.agent.addChatSession(gcsje.sessionID);
+                                        }
+                                        this.clientEvents.onGroupChatSessionJoin.next(gcsje);
+                                    }
+                                    break;
+                                }
                                 case 'ChatterBoxInvitation':
                                 {
                                     if (event['body'] && event['body']['instantmessage'] && event['body']['instantmessage']['message_params'] && event['body']['instantmessage']['message_params']['id'])
@@ -275,6 +294,12 @@ export class EventQueueClient
 
                                         this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((result: any) =>
                                         {
+                                            this.agent.addChatSession(groupChatEvent.groupID);
+
+                                            const gcsje = new GroupChatSessionJoinEvent();
+                                            gcsje.sessionID = groupChatEvent.groupID;
+                                            gcsje.success = true;
+                                            this.clientEvents.onGroupChatSessionJoin.next(gcsje);
                                             this.clientEvents.onGroupChat.next(groupChatEvent);
                                         }).catch((err) =>
                                         {

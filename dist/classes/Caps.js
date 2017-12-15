@@ -5,11 +5,12 @@ const request = require("request");
 const Subject_1 = require("rxjs/Subject");
 const EventQueueClient_1 = require("./EventQueueClient");
 class Caps {
-    constructor(region, seedURL, clientEvents) {
+    constructor(agent, region, seedURL, clientEvents) {
         this.onGotSeedCap = new Subject_1.Subject();
         this.gotSeedCap = false;
         this.capabilities = {};
         this.eventQueueClient = null;
+        this.agent = agent;
         this.clientEvents = clientEvents;
         this.region = region;
         const req = [];
@@ -109,7 +110,7 @@ class Caps {
                 if (this.eventQueueClient !== null) {
                     this.eventQueueClient.shutdown();
                 }
-                this.eventQueueClient = new EventQueueClient_1.EventQueueClient(this, this.clientEvents);
+                this.eventQueueClient = new EventQueueClient_1.EventQueueClient(this.agent, this, this.clientEvents);
             }
         }).catch((err) => {
             console.error('Error getting seed capability');

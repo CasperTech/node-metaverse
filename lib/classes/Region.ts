@@ -18,9 +18,11 @@ export class Region
     comms: Comms;
     clientEvents: ClientEvents;
     options: BotOptionFlags;
+    agent: Agent;
 
     constructor(agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
+        this.agent = agent;
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = new Circuit(clientEvents);
@@ -36,7 +38,7 @@ export class Region
     }
     activateCaps(seedURL: string)
     {
-        this.caps = new Caps(this, seedURL, this.clientEvents);
+        this.caps = new Caps(this.agent, this, seedURL, this.clientEvents);
     }
     shutdown()
     {

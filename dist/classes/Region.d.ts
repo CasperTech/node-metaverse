@@ -14,6 +14,7 @@ export declare class Region {
     comms: Comms;
     clientEvents: ClientEvents;
     options: BotOptionFlags;
+    agent: Agent;
     constructor(agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags);
     activateCaps(seedURL: string): void;
     shutdown(): void;

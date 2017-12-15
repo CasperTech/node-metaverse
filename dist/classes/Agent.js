@@ -21,6 +21,7 @@ const Utils_1 = require("./Utils");
 class Agent {
     constructor(clientEvents) {
         this.localID = 0;
+        this.chatSessions = [];
         this.controlFlags = 0;
         this.openID = {};
         this.buddyList = [];
@@ -30,6 +31,19 @@ class Agent {
         this.agentUpdateTimer = null;
         this.inventory = new Inventory_1.Inventory(clientEvents);
         this.clientEvents = clientEvents;
+    }
+    addChatSession(uuid) {
+        const str = uuid.toString();
+        if (this.chatSessions.indexOf(str) === -1) {
+            this.chatSessions.push(str);
+        }
+    }
+    hasChatSession(uuid) {
+        const str = uuid.toString();
+        if (this.chatSessions.indexOf(str) === -1) {
+            return false;
+        }
+        return true;
     }
     setCurrentRegion(region) {
         this.currentRegion = region;

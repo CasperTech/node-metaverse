@@ -8,6 +8,7 @@ const BotOptionFlags_1 = require("../enums/BotOptionFlags");
 const ObjectStoreLite_1 = require("./ObjectStoreLite");
 class Region {
     constructor(agent, clientEvents, options) {
+        this.agent = agent;
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = new Circuit_1.Circuit(clientEvents);
@@ -20,7 +21,7 @@ class Region {
         this.comms = new Comms_1.Comms(this.circuit, agent, clientEvents);
     }
     activateCaps(seedURL) {
-        this.caps = new Caps_1.Caps(this, seedURL, this.clientEvents);
+        this.caps = new Caps_1.Caps(this.agent, this, seedURL, this.clientEvents);
     }
     shutdown() {
         this.comms.shutdown();

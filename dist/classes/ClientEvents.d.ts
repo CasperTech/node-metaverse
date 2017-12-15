@@ -7,6 +7,7 @@ import { GroupInviteEvent } from '../events/GroupInviteEvent';
 import { FriendRequestEvent } from '../events/FriendRequestEvent';
 import { DisconnectEvent } from '../events/DisconnectEvent';
 import { GroupChatEvent } from '../events/GroupChatEvent';
+import { GroupChatSessionJoinEvent } from '../events/GroupChatSessionJoinEvent';
 export declare class ClientEvents {
     onNearbyChat: Subject<ChatEvent>;
     onInstantMessage: Subject<InstantMessageEvent>;
@@ -17,4 +18,5 @@ export declare class ClientEvents {
     onDisconnected: Subject<DisconnectEvent>;
     onCircuitLatency: Subject<number>;
     onGroupChat: Subject<GroupChatEvent>;
+    onGroupChatSessionJoin: Subject<GroupChatSessionJoinEvent>;
 }

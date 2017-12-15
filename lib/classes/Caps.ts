@@ -7,6 +7,7 @@ import {EventQueueClient} from './EventQueueClient';
 import {UUID} from './UUID';
 import {HTTPAssets} from '../enums/HTTPAssets';
 import {ClientEvents} from "./ClientEvents";
+import {Agent} from './Agent';
 
 export class Caps
 {
@@ -15,10 +16,12 @@ export class Caps
     private gotSeedCap: boolean = false;
     private capabilities: { [key: string]: string } = {};
     private clientEvents: ClientEvents;
+    private agent: Agent;
     eventQueueClient: EventQueueClient | null = null;
 
-    constructor(region: Region, seedURL: string, clientEvents: ClientEvents)
+    constructor(agent: Agent, region: Region, seedURL: string, clientEvents: ClientEvents)
     {
+        this.agent = agent;
         this.clientEvents = clientEvents;
         this.region = region;
         const req: string[] = [];
@@ -122,7 +125,7 @@ export class Caps
                 {
                     this.eventQueueClient.shutdown();
                 }
-                this.eventQueueClient = new EventQueueClient(this, this.clientEvents);
+                this.eventQueueClient = new EventQueueClient(this.agent, this, this.clientEvents);
             }
         }).catch((err) =>
         {

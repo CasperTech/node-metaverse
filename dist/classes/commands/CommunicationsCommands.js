@@ -226,7 +226,6 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
                 this.startTypingIM(to).then(() => {
                     typeTimer = setInterval(() => {
                         this.startTypingIM(to).catch(() => {
-                            // ignore
                         });
                     }, 5000);
                     if (charactersPerSecond === undefined) {
@@ -258,36 +257,91 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
             }, thinkingTime);
         });
     }
+    startChatSession(sessionID) {
+        return new Promise((resolve, reject) => {
+            if (typeof sessionID === 'string') {
+                sessionID = new UUID_1.UUID(sessionID);
+            }
+            if (this.agent.hasChatSession(sessionID)) {
+                resolve();
+            }
+            else {
+                const circuit = this.circuit;
+                const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+                const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+                im.AgentData = {
+                    AgentID: this.agent.agentID,
+                    SessionID: circuit.sessionID
+                };
+                im.MessageBlock = {
+                    FromGroup: false,
+                    ToAgentID: sessionID,
+                    ParentEstateID: 0,
+                    RegionID: UUID_1.UUID.zero(),
+                    Position: Vector3_1.Vector3.getZero(),
+                    Offline: 0,
+                    Dialog: InstantMessageDialog_1.InstantMessageDialog.SessionGroupStart,
+                    ID: sessionID,
+                    Timestamp: Math.floor(new Date().getTime() / 1000),
+                    FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                    Message: Utils_1.Utils.StringToBuffer(''),
+                    BinaryBucket: Utils_1.Utils.StringToBuffer('')
+                };
+                im.EstateBlock = {
+                    EstateID: 0
+                };
+                const waitForJoin = this.currentRegion.clientEvents.onGroupChatSessionJoin.subscribe((event) => {
+                    if (event.sessionID.toString() === sessionID.toString()) {
+                        if (event.success) {
+                            waitForJoin.unsubscribe();
+                            resolve();
+                        }
+                        else {
+                            reject();
+                        }
+                    }
+                });
+                const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            }
+        });
+    }
     sendGroupMessage(groupID, message) {
-        if (typeof groupID === 'string') {
-            groupID = new UUID_1.UUID(groupID);
-        }
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: groupID,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog_1.InstantMessageDialog.SessionSend,
-            ID: groupID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(message),
-            BinaryBucket: Utils_1.Utils.StringToBuffer('')
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return new Promise((resolve, reject) => {
+            this.startChatSession(groupID).then(() => {
+                console.log('Session joined');
+                if (typeof groupID === 'string') {
+                    groupID = new UUID_1.UUID(groupID);
+                }
+                const circuit = this.circuit;
+                const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+                const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+                im.AgentData = {
+                    AgentID: this.agent.agentID,
+                    SessionID: circuit.sessionID
+                };
+                im.MessageBlock = {
+                    FromGroup: false,
+                    ToAgentID: groupID,
+                    ParentEstateID: 0,
+                    RegionID: UUID_1.UUID.zero(),
+                    Position: Vector3_1.Vector3.getZero(),
+                    Offline: 0,
+                    Dialog: InstantMessageDialog_1.InstantMessageDialog.SessionSend,
+                    ID: groupID,
+                    Timestamp: Math.floor(new Date().getTime() / 1000),
+                    FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                    Message: Utils_1.Utils.StringToBuffer(message),
+                    BinaryBucket: Utils_1.Utils.StringToBuffer('')
+                };
+                im.EstateBlock = {
+                    EstateID: 0
+                };
+                const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+                return circuit.waitForAck(sequenceNo, 10000);
+            }).catch((err) => {
+                reject(err);
+            });
+        });
     }
     typeLocalMessage(message, thinkingTime, charactersPerSecond) {
         return new Promise((resolve, reject) => {
