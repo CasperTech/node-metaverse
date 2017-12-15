@@ -2,6 +2,7 @@ const nmv             = require('../dist/index');
 const loginParameters = new nmv.LoginParameters();
 
 const parameters = require('./loginParameters.json');
+const uuid = require('uuid');
 
 loginParameters.firstName = parameters.firstName;
 loginParameters.lastName = parameters.lastName;
@@ -20,6 +21,8 @@ const bot = new nmv.Bot(loginParameters, options);
 let isConnected = false;
 
 const master = 'd1cd5b71-6209-4595-9bf0-771bf689ce00';
+
+let loginResponse = null;
 
 bot.clientEvents.onLure.subscribe((lureEvent) =>
 {
@@ -62,13 +65,35 @@ bot.clientEvents.onDisconnected.subscribe((DisconnectEvent) =>
     }
 });
 
+let pings = {};
+
 bot.clientEvents.onGroupChat.subscribe((GroupChatEvent) =>
 {
    console.log("Group chat: " + GroupChatEvent.fromName + ': ' + GroupChatEvent.message);
-   if (GroupChatEvent.message === 'marco')
+   if (GroupChatEvent.message === '!ping')
    {
-       console.log("Sending PONG");
-       bot.clientCommands.comms.sendGroupMessage(GroupChatEvent.groupID, 'polo');
+       let ping = uuid.v4();
+       pings[ping] = Math.floor(new Date().getTime());
+       bot.clientCommands.comms.sendGroupMessage(GroupChatEvent.groupID, 'ping '+ping);
+   }
+   else if (GroupChatEvent.from.toString() === loginResponse.agent.agentID.toString())
+   {
+       if (GroupChatEvent.message.substr(0, 5) === 'ping ')
+       {
+           const pingID = GroupChatEvent.message.substr(5);
+           if (pings[pingID])
+           {
+               console.log("found ping");
+               const time = (new Date().getTime()) - pings[pingID];
+               delete pings[pingID];
+               bot.clientCommands.comms.sendGroupMessage(GroupChatEvent.groupID, 'Chat lag: ' + time + 'ms');
+           }
+           else
+           {
+               console.log("ping not found |"+pingID+"|");
+           }
+       }
+
    }
 });
 
@@ -103,6 +128,7 @@ function connect()
     console.log("Logging in..");
     bot.login().then((response) =>
     {
+        loginResponse = response;
         console.log("Login complete");
 
         //Establish circuit with region

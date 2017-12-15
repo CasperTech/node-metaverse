@@ -4,14 +4,16 @@ import { EventQueueClient } from './EventQueueClient';
 import { UUID } from './UUID';
 import { HTTPAssets } from '../enums/HTTPAssets';
 import { ClientEvents } from "./ClientEvents";
+import { Agent } from './Agent';
 export declare class Caps {
     private region;
     private onGotSeedCap;
     private gotSeedCap;
     private capabilities;
     private clientEvents;
+    private agent;
     eventQueueClient: EventQueueClient | null;
-    constructor(region: Region, seedURL: string, clientEvents: ClientEvents);
+    constructor(agent: Agent, region: Region, seedURL: string, clientEvents: ClientEvents);
     downloadAsset(uuid: UUID, type: HTTPAssets): Promise<Buffer>;
     request(url: string, data: string | Buffer, contentType: string): Promise<string>;
     waitForSeedCapability(): Promise<void>;

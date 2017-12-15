@@ -9,6 +9,8 @@ import {ChatType} from '../../enums/ChatType';
 import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
 import Timer = NodeJS.Timer;
 import {GroupInviteEvent} from '../../events/GroupInviteEvent';
+import * as LLSD from 'llsd';
+import {GroupChatSessionJoinEvent} from '../../events/GroupChatSessionJoinEvent';
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -305,38 +307,106 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
+    startChatSession(sessionID: UUID | string): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            if (typeof sessionID === 'string')
+            {
+                sessionID = new UUID(sessionID);
+            }
+            if (this.agent.hasChatSession(sessionID))
+            {
+                resolve();
+            }
+            else
+            {
+                const circuit = this.circuit;
+                const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+                const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+                im.AgentData = {
+                    AgentID: this.agent.agentID,
+                    SessionID: circuit.sessionID
+                };
+                im.MessageBlock = {
+                    FromGroup: false,
+                    ToAgentID: sessionID,
+                    ParentEstateID: 0,
+                    RegionID: UUID.zero(),
+                    Position: Vector3.getZero(),
+                    Offline: 0,
+                    Dialog: InstantMessageDialog.SessionGroupStart,
+                    ID: sessionID,
+                    Timestamp: Math.floor(new Date().getTime() / 1000),
+                    FromAgentName: Utils.StringToBuffer(agentName),
+                    Message: Utils.StringToBuffer(''),
+                    BinaryBucket: Utils.StringToBuffer('')
+                };
+                im.EstateBlock = {
+                    EstateID: 0
+                };
+                const waitForJoin = this.currentRegion.clientEvents.onGroupChatSessionJoin.subscribe((event: GroupChatSessionJoinEvent) =>
+                {
+                    if (event.sessionID.toString() === sessionID.toString())
+                    {
+                        if (event.success)
+                        {
+                            waitForJoin.unsubscribe();
+                            resolve();
+                        }
+                        else
+                        {
+                            reject();
+                        }
+                    }
+                });
+                const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
+            }
+        });
+    }
+
     sendGroupMessage(groupID: UUID | string, message: string): Promise<void>
     {
-        if (typeof groupID === 'string')
+        return new Promise<void>((resolve, reject) =>
         {
-            groupID = new UUID(groupID);
-        }
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: groupID,
-            ParentEstateID: 0,
-            RegionID: UUID.zero(),
-            Position: Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog.SessionSend,
-            ID: groupID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils.StringToBuffer(agentName),
-            Message: Utils.StringToBuffer(message),
-            BinaryBucket: Utils.StringToBuffer('')
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+            this.startChatSession(groupID).then(() =>
+            {
+                console.log('Session joined');
+                if (typeof groupID === 'string')
+                {
+                    groupID = new UUID(groupID);
+                }
+                const circuit = this.circuit;
+                const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+                const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+                im.AgentData = {
+                    AgentID: this.agent.agentID,
+                    SessionID: circuit.sessionID
+                };
+                im.MessageBlock = {
+                    FromGroup: false,
+                    ToAgentID: groupID,
+                    ParentEstateID: 0,
+                    RegionID: UUID.zero(),
+                    Position: Vector3.getZero(),
+                    Offline: 0,
+                    Dialog: InstantMessageDialog.SessionSend,
+                    ID: groupID,
+                    Timestamp: Math.floor(new Date().getTime() / 1000),
+                    FromAgentName: Utils.StringToBuffer(agentName),
+                    Message: Utils.StringToBuffer(message),
+                    BinaryBucket: Utils.StringToBuffer('')
+                };
+                im.EstateBlock = {
+                    EstateID: 0
+                };
+                const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
+                return circuit.waitForAck(sequenceNo, 10000);
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+        });
     }
 
     typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>

@@ -12,6 +12,7 @@ class ClientEvents {
         this.onDisconnected = new Subject_1.Subject();
         this.onCircuitLatency = new Subject_1.Subject();
         this.onGroupChat = new Subject_1.Subject();
+        this.onGroupChatSessionJoin = new Subject_1.Subject();
     }
 }
 exports.ClientEvents = ClientEvents;

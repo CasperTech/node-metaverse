@@ -17,6 +17,7 @@ export declare class Agent {
     regionAccess: string;
     agentAccess: string;
     currentRegion: Region;
+    chatSessions: string[];
     controlFlags: ControlFlags;
     openID: {
         'token'?: string;
@@ -55,6 +56,8 @@ export declare class Agent {
     agentUpdateTimer: number | null;
     private clientEvents;
     constructor(clientEvents: ClientEvents);
+    addChatSession(uuid: UUID): void;
+    hasChatSession(uuid: UUID): boolean;
     setCurrentRegion(region: Region): void;
     circuitActive(): void;
     sendAgentUpdate(): void;

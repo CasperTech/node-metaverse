@@ -8,10 +8,12 @@ const TeleportEvent_1 = require("../events/TeleportEvent");
 const TeleportEventType_1 = require("../enums/TeleportEventType");
 const GroupChatEvent_1 = require("../events/GroupChatEvent");
 const UUID_1 = require("./UUID");
+const GroupChatSessionJoinEvent_1 = require("../events/GroupChatSessionJoinEvent");
 class EventQueueClient {
-    constructor(caps, clientEvents) {
+    constructor(agent, caps, clientEvents) {
         this.done = false;
         this.currentRequest = null;
+        this.agent = agent;
         this.clientEvents = clientEvents;
         this.caps = caps;
         this.Get();
@@ -52,6 +54,19 @@ class EventQueueClient {
                                         this.clientEvents.onTeleportEvent.next(tpEvent);
                                         break;
                                     }
+                                case "ChatterBoxSessionStartReply":
+                                    {
+                                        if (event['body']) {
+                                            const gcsje = new GroupChatSessionJoinEvent_1.GroupChatSessionJoinEvent();
+                                            gcsje.sessionID = new UUID_1.UUID(event['body']['session_id'].toString());
+                                            gcsje.success = event['body']['success'];
+                                            if (gcsje.success) {
+                                                this.agent.addChatSession(gcsje.sessionID);
+                                            }
+                                            this.clientEvents.onGroupChatSessionJoin.next(gcsje);
+                                        }
+                                        break;
+                                    }
                                 case 'ChatterBoxInvitation':
                                     {
                                         if (event['body'] && event['body']['instantmessage'] && event['body']['instantmessage']['message_params'] && event['body']['instantmessage']['message_params']['id']) {
@@ -67,6 +82,11 @@ class EventQueueClient {
                                             groupChatEvent.groupID = new UUID_1.UUID(messageParams['id'].toString());
                                             groupChatEvent.message = messageParams['message'];
                                             this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((result) => {
+                                                this.agent.addChatSession(groupChatEvent.groupID);
+                                                const gcsje = new GroupChatSessionJoinEvent_1.GroupChatSessionJoinEvent();
+                                                gcsje.sessionID = groupChatEvent.groupID;
+                                                gcsje.success = true;
+                                                this.clientEvents.onGroupChatSessionJoin.next(gcsje);
                                                 this.clientEvents.onGroupChat.next(groupChatEvent);
                                             }).catch((err) => {
                                                 console.error(err);
