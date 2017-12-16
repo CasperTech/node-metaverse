@@ -184,6 +184,16 @@ function connect()
             });
         });
 
+        setTimeout(() =>  // TODO: This 5 second delay is a fudge. We need to wait for the eventqueue to start properly
+        {
+            bot.clientCommands.teleport.teleportTo('Izanagi', new nmv.Vector3([128, 128, 20]), new nmv.Vector3([0, 1.0, 0])).then(() =>
+            {
+                console.log("Teleport completed");
+            }).catch((err) => {
+                console.error(err);
+            });
+        }, 5000);
+
         // When it's time to go home, call bot.close();
     }).catch((error) =>
     {

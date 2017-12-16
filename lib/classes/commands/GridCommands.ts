@@ -1,7 +1,6 @@
 import {MapInfoReply} from '../../events/MapInfoReply';
 import {Packet} from '../Packet';
 import * as Long from 'long';
-import {RegionHandleRequestMessage} from '../messages/RegionHandleRequest';
 import {MapItemReplyMessage} from '../messages/MapItemReply';
 import {Message} from '../../enums/Message';
 import {MapBlockReplyMessage} from '../messages/MapBlockReply';
@@ -11,42 +10,78 @@ import {MapItemRequestMessage} from '../messages/MapItemRequest';
 import {Utils} from '../Utils';
 import {PacketFlags} from '../../enums/PacketFlags';
 import {GridItemType} from '../../enums/GridItemType';
-import {RegionIDAndHandleReplyMessage} from '../messages/RegionIDAndHandleReply';
 import {CommandsBase} from './CommandsBase';
 import {AvatarPickerRequestMessage} from '../messages/AvatarPickerRequest';
 import {AvatarPickerReplyMessage} from '../messages/AvatarPickerReply';
 import {FilterResponse} from '../../enums/FilterResponse';
+import {MapNameRequestMessage} from '../messages/MapNameRequest';
+import {GridLayerType} from '../../enums/GridLayerType';
+import {RegionInfoReply} from '../../events/RegionInfoReply';
 export class GridCommands extends CommandsBase
 {
-    getRegionHandle(regionID: UUID): Promise<Long>
+    getRegionByName(regionName: string)
     {
-        return new Promise<Long>((resolve, reject) =>
+        return new Promise<RegionInfoReply>((resolve, reject) =>
         {
             const circuit = this.currentRegion.circuit;
-            const msg: RegionHandleRequestMessage = new RegionHandleRequestMessage();
-            msg.RequestBlock = {
-                RegionID: regionID,
+            const response = new MapInfoReply();
+            const msg: MapNameRequestMessage = new MapNameRequestMessage();
+            msg.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID,
+                Flags: GridLayerType.Objects,
+                EstateID: 0,
+                Godlike: false
+            };
+            msg.NameData = {
+                Name: Utils.StringToBuffer(regionName)
             };
             circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForMessage(Message.RegionIDAndHandleReply, 10000, (packet: Packet): FilterResponse =>
+            circuit.waitForMessage(Message.MapBlockReply, 10000, (packet: Packet): FilterResponse =>
             {
-                const filterMsg = packet.message as RegionIDAndHandleReplyMessage;
-                if (filterMsg.ReplyBlock.RegionID.toString() === regionID.toString())
+                const filterMsg = packet.message as MapBlockReplyMessage;
+                let found = false;
+                filterMsg.Data.forEach((region) =>
+                {
+                    const name = Utils.BufferToStringSimple(region.Name);
+                    if (name.trim().toLowerCase() === regionName.trim().toLowerCase())
+                    {
+                        found = true;
+                    }
+                });
+                if (found)
                 {
                     return FilterResponse.Finish;
                 }
-                else
-                {
-                    return FilterResponse.NoMatch;
-                }
+                return FilterResponse.NoMatch;
             }).then((packet: Packet) =>
             {
-                const responseMsg = packet.message as RegionIDAndHandleReplyMessage;
-                resolve(responseMsg.ReplyBlock.RegionHandle);
+                const responseMsg = packet.message as MapBlockReplyMessage;
+                responseMsg.Data.forEach((region) =>
+                {
+                    const name = Utils.BufferToStringSimple(region.Name);
+                    if (name.trim().toLowerCase() === regionName.trim().toLowerCase() && !(region.X === 0 && region.Y === 0))
+                    {
+                        const reply = new RegionInfoReply();
+                        reply.access = region.Access;
+                        reply.X = region.X;
+                        reply.Y = region.Y;
+                        reply.name = name;
+                        reply.regionFlags = region.RegionFlags;
+                        reply.waterHeight = region.WaterHeight;
+                        reply.agents = region.Agents;
+                        reply.mapImageID = region.MapImageID;
+
+                        reply.handle = Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256);
+                        resolve(reply);
+                    }
+                });
+            }).catch((err) =>
+            {
+                reject(err);
             });
         });
     }
-
     getRegionMapInfo(gridX: number, gridY: number): Promise<MapInfoReply>
     {
         return new Promise<MapInfoReply>((resolve, reject) =>
@@ -59,7 +94,7 @@ export class GridCommands extends CommandsBase
                 SessionID: circuit.sessionID,
                 Flags: 65536,
                 EstateID: 0,
-                Godlike: true
+                Godlike: false
             };
             msg.PositionData = {
                 MinX: (gridX / 256),

@@ -22,4 +22,6 @@ const BotOptionFlags_1 = require("./enums/BotOptionFlags");
 exports.BotOptionFlags = BotOptionFlags_1.BotOptionFlags;
 const UUID_1 = require("./classes/UUID");
 exports.UUID = UUID_1.UUID;
+const Vector3_1 = require("./classes/Vector3");
+exports.Vector3 = Vector3_1.Vector3;
 //# sourceMappingURL=index.js.map

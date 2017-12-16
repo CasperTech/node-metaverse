@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const MapInfoReply_1 = require("../../events/MapInfoReply");
-const RegionHandleRequest_1 = require("../messages/RegionHandleRequest");
 const Message_1 = require("../../enums/Message");
 const MapBlockRequest_1 = require("../messages/MapBlockRequest");
 const UUID_1 = require("../UUID");
@@ -12,26 +11,59 @@ const GridItemType_1 = require("../../enums/GridItemType");
 const CommandsBase_1 = require("./CommandsBase");
 const AvatarPickerRequest_1 = require("../messages/AvatarPickerRequest");
 const FilterResponse_1 = require("../../enums/FilterResponse");
+const MapNameRequest_1 = require("../messages/MapNameRequest");
+const GridLayerType_1 = require("../../enums/GridLayerType");
+const RegionInfoReply_1 = require("../../events/RegionInfoReply");
 class GridCommands extends CommandsBase_1.CommandsBase {
-    getRegionHandle(regionID) {
+    getRegionByName(regionName) {
         return new Promise((resolve, reject) => {
             const circuit = this.currentRegion.circuit;
-            const msg = new RegionHandleRequest_1.RegionHandleRequestMessage();
-            msg.RequestBlock = {
-                RegionID: regionID,
+            const response = new MapInfoReply_1.MapInfoReply();
+            const msg = new MapNameRequest_1.MapNameRequestMessage();
+            msg.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID,
+                Flags: GridLayerType_1.GridLayerType.Objects,
+                EstateID: 0,
+                Godlike: false
+            };
+            msg.NameData = {
+                Name: Utils_1.Utils.StringToBuffer(regionName)
             };
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
-            circuit.waitForMessage(Message_1.Message.RegionIDAndHandleReply, 10000, (packet) => {
+            circuit.waitForMessage(Message_1.Message.MapBlockReply, 10000, (packet) => {
                 const filterMsg = packet.message;
-                if (filterMsg.ReplyBlock.RegionID.toString() === regionID.toString()) {
+                let found = false;
+                filterMsg.Data.forEach((region) => {
+                    const name = Utils_1.Utils.BufferToStringSimple(region.Name);
+                    if (name.trim().toLowerCase() === regionName.trim().toLowerCase()) {
+                        found = true;
+                    }
+                });
+                if (found) {
                     return FilterResponse_1.FilterResponse.Finish;
                 }
-                else {
-                    return FilterResponse_1.FilterResponse.NoMatch;
-                }
+                return FilterResponse_1.FilterResponse.NoMatch;
             }).then((packet) => {
                 const responseMsg = packet.message;
-                resolve(responseMsg.ReplyBlock.RegionHandle);
+                responseMsg.Data.forEach((region) => {
+                    const name = Utils_1.Utils.BufferToStringSimple(region.Name);
+                    if (name.trim().toLowerCase() === regionName.trim().toLowerCase() && !(region.X === 0 && region.Y === 0)) {
+                        const reply = new RegionInfoReply_1.RegionInfoReply();
+                        reply.access = region.Access;
+                        reply.X = region.X;
+                        reply.Y = region.Y;
+                        reply.name = name;
+                        reply.regionFlags = region.RegionFlags;
+                        reply.waterHeight = region.WaterHeight;
+                        reply.agents = region.Agents;
+                        reply.mapImageID = region.MapImageID;
+                        reply.handle = Utils_1.Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256);
+                        resolve(reply);
+                    }
+                });
+            }).catch((err) => {
+                reject(err);
             });
         });
     }
@@ -45,7 +77,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 SessionID: circuit.sessionID,
                 Flags: 65536,
                 EstateID: 0,
-                Godlike: true
+                Godlike: false
             };
             msg.PositionData = {
                 MinX: (gridX / 256),
