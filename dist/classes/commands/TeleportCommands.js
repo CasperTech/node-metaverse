@@ -6,18 +6,10 @@ const TeleportEventType_1 = require("../../enums/TeleportEventType");
 const PacketFlags_1 = require("../../enums/PacketFlags");
 const TeleportLureRequest_1 = require("../messages/TeleportLureRequest");
 const TeleportFlags_1 = require("../../enums/TeleportFlags");
+const TeleportLocationRequest_1 = require("../messages/TeleportLocationRequest");
 class TeleportCommands extends CommandsBase_1.CommandsBase {
-    acceptTeleport(lure) {
+    awaitTeleportEvent() {
         return new Promise((resolve, reject) => {
-            const circuit = this.currentRegion.circuit;
-            const tlr = new TeleportLureRequest_1.TeleportLureRequestMessage();
-            tlr.Info = {
-                AgentID: this.agent.agentID,
-                SessionID: circuit.sessionID,
-                LureID: lure.lureID,
-                TeleportFlags: TeleportFlags_1.TeleportFlags.ViaLure
-            };
-            circuit.sendMessage(tlr, PacketFlags_1.PacketFlags.Reliable);
             if (this.currentRegion.caps.eventQueueClient) {
                 if (this.bot.clientEvents === null) {
                     reject(new Error('ClientEvents is null'));
@@ -58,6 +50,60 @@ class TeleportCommands extends CommandsBase_1.CommandsBase {
                     }
                 });
             }
+            else {
+                reject(new Error('EventQueue not ready'));
+            }
+        });
+    }
+    acceptTeleport(lure) {
+        return new Promise((resolve, reject) => {
+            const circuit = this.currentRegion.circuit;
+            const tlr = new TeleportLureRequest_1.TeleportLureRequestMessage();
+            tlr.Info = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID,
+                LureID: lure.lureID,
+                TeleportFlags: TeleportFlags_1.TeleportFlags.ViaLure
+            };
+            circuit.sendMessage(tlr, PacketFlags_1.PacketFlags.Reliable);
+            this.awaitTeleportEvent().then((event) => {
+                resolve(event);
+            }).catch((err) => {
+                reject(err);
+            });
+        });
+    }
+    teleportToHandle(handle, position, lookAt) {
+        return new Promise((resolve, reject) => {
+            const rtm = new TeleportLocationRequest_1.TeleportLocationRequestMessage();
+            rtm.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            rtm.Info = {
+                LookAt: lookAt,
+                Position: position,
+                RegionHandle: handle
+            };
+            this.circuit.sendMessage(rtm, PacketFlags_1.PacketFlags.Reliable);
+            this.awaitTeleportEvent().then((event) => {
+                resolve(event);
+            }).catch((err) => {
+                reject(err);
+            });
+        });
+    }
+    teleportTo(regionName, position, lookAt) {
+        return new Promise((resolve, reject) => {
+            this.bot.clientCommands.grid.getRegionByName(regionName).then((region) => {
+                this.teleportToHandle(region.handle, position, lookAt).then((event) => {
+                    resolve(event);
+                }).catch((err) => {
+                    reject(err);
+                });
+            }).catch((err) => {
+                reject(err);
+            });
         });
     }
 }

@@ -6,22 +6,17 @@ import {TeleportEvent} from '../../events/TeleportEvent';
 import {PacketFlags} from '../../enums/PacketFlags';
 import {TeleportLureRequestMessage} from '../messages/TeleportLureRequest';
 import {TeleportFlags} from '../../enums/TeleportFlags';
+import {Vector3} from '../Vector3';
+import {RegionInfoReply} from '../../events/RegionInfoReply';
+import {TeleportLocationRequestMessage} from '../messages/TeleportLocationRequest';
+import * as Long from 'long';
 
 export class TeleportCommands extends CommandsBase
 {
-    acceptTeleport(lure: LureEvent): Promise<TeleportEvent>
+    private awaitTeleportEvent(): Promise<TeleportEvent>
     {
         return new Promise<TeleportEvent>((resolve, reject) =>
         {
-            const circuit = this.currentRegion.circuit;
-            const tlr = new TeleportLureRequestMessage();
-            tlr.Info = {
-                AgentID: this.agent.agentID,
-                SessionID: circuit.sessionID,
-                LureID: lure.lureID,
-                TeleportFlags: TeleportFlags.ViaLure
-            };
-            circuit.sendMessage(tlr, PacketFlags.Reliable);
             if (this.currentRegion.caps.eventQueueClient)
             {
                 if (this.bot.clientEvents === null)
@@ -77,6 +72,78 @@ export class TeleportCommands extends CommandsBase
                     }
                 });
             }
+            else
+            {
+                reject(new Error('EventQueue not ready'));
+            }
+        });
+    }
+
+    acceptTeleport(lure: LureEvent): Promise<TeleportEvent>
+    {
+        return new Promise<TeleportEvent>((resolve, reject) =>
+        {
+            const circuit = this.currentRegion.circuit;
+            const tlr = new TeleportLureRequestMessage();
+            tlr.Info = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID,
+                LureID: lure.lureID,
+                TeleportFlags: TeleportFlags.ViaLure
+            };
+            circuit.sendMessage(tlr, PacketFlags.Reliable);
+            this.awaitTeleportEvent().then((event: TeleportEvent) =>
+            {
+                resolve(event);
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+        });
+    }
+
+    teleportToHandle(handle: Long, position: Vector3, lookAt: Vector3)
+    {
+        return new Promise<TeleportEvent>((resolve, reject) =>
+        {
+            const rtm = new TeleportLocationRequestMessage();
+            rtm.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            rtm.Info = {
+                LookAt: lookAt,
+                Position: position,
+                RegionHandle: handle
+            };
+            this.circuit.sendMessage(rtm, PacketFlags.Reliable);
+            this.awaitTeleportEvent().then((event: TeleportEvent) =>
+            {
+                resolve(event);
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+        });
+    }
+
+    teleportTo(regionName: string, position: Vector3, lookAt: Vector3)
+    {
+        return new Promise<TeleportEvent>((resolve, reject) =>
+        {
+            this.bot.clientCommands.grid.getRegionByName(regionName).then((region: RegionInfoReply) =>
+            {
+                this.teleportToHandle(region.handle, position, lookAt).then((event: TeleportEvent) =>
+                {
+                    resolve(event);
+                }).catch((err) =>
+                {
+                    reject(err);
+                })
+            }).catch((err) =>
+            {
+                reject(err);
+            });
         });
     }
 }

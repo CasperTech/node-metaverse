@@ -9,4 +9,5 @@ import { InstantMessageEvent } from './events/InstantMessageEvent';
 import { ChatSourceType } from './enums/ChatSourceType';
 import { BotOptionFlags } from './enums/BotOptionFlags';
 import { UUID } from './classes/UUID';
-export { Bot, LoginParameters, AssetType, HTTPAssets, ClientEvents, BVH, InstantMessageEvent, InstantMessageEventFlags, ChatSourceType, BotOptionFlags, UUID };
+import { Vector3 } from './classes/Vector3';
+export { Bot, LoginParameters, AssetType, HTTPAssets, ClientEvents, BVH, InstantMessageEvent, InstantMessageEventFlags, ChatSourceType, BotOptionFlags, UUID, Vector3 };

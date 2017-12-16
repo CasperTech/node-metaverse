@@ -1,10 +1,9 @@
-/// <reference types="long" />
 import { MapInfoReply } from '../../events/MapInfoReply';
-import * as Long from 'long';
 import { UUID } from '../UUID';
 import { CommandsBase } from './CommandsBase';
+import { RegionInfoReply } from '../../events/RegionInfoReply';
 export declare class GridCommands extends CommandsBase {
-    getRegionHandle(regionID: UUID): Promise<Long>;
+    getRegionByName(regionName: string): Promise<RegionInfoReply>;
     getRegionMapInfo(gridX: number, gridY: number): Promise<MapInfoReply>;
     name2Key(name: string): Promise<UUID>;
 }
