@@ -13,6 +13,9 @@
     "build": "tsc --removeComments",
     "run": "node -r source-map-support/register example/testBot.js"
   },
+  "engines" : {
+    "node" : ">=6.0"
+  },
   "author": "CasperTech Ltd",
   "license": "MIT",
   "repository": {
