@@ -1,5 +1,5 @@
 {
-  "name": "node-metaverse",
+  "name": "@caspertech/node-metaverse",
   "version": "0.0.1",
   "description": "A node.js interface for Second Life.",
   "main": "dist/index.js",
@@ -10,7 +10,7 @@
     "run": "node -r source-map-support/register example/testBot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "CasperTech Ltd",
   "license": "Creative Commons Attribution 4.0 International",
   "devDependencies": {
     "@types/mocha": "^2.2.44",
