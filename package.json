@@ -15,7 +15,7 @@
   "repository" : { 
       "type" : "git", 
       "url" : "https://github.com/CasperTech/node-metaverse.git"
-  }
+  },
   "devDependencies": {
     "@types/mocha": "^2.2.44",
     "@types/node": "^8.0.53",
