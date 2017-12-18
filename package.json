@@ -5,25 +5,29 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "setup": "npm install",
     "prepublish": "npm run build",
+    "test-only": "mocha test/",
+    "pretest": "npm run build",
+    "test": "npm run test-only",
     "build": "tsc --removeComments",
-    "run": "node -r source-map-support/register example/testBot.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "run": "node -r source-map-support/register example/testBot.js"
   },
   "author": "CasperTech Ltd",
   "license": "MIT",
-  "repository" : { 
-      "type" : "git", 
-      "url" : "https://github.com/CasperTech/node-metaverse.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CasperTech/node-metaverse.git"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.44",
     "@types/node": "^8.0.53",
+    "mocha": "^4.0.1",
+    "source-map-support": "^0.5.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",
     "tslint-eslint-rules": "^4.1.1",
-    "typescript": "^2.6.1",
-    "source-map-support": "^0.5.0"
+    "typescript": "^2.6.1"
   },
   "dependencies": {
     "@types/long": "^3.0.32",

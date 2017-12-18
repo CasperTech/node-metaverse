@@ -1,1 +1,9 @@
+tsconfig.json
+tslint.json
+.travis.yml
 lib/
+tools/
+example/
+docs/
+test/
+.npmignore
