@@ -3,6 +3,7 @@
 > A node.js interface for Second Life.
 
 [![npm version](https://badge.fury.io/js/%40caspertech%2Fnode-metaverse.svg)](https://badge.fury.io/js/%40caspertech%2Fnode-metaverse)
+[![Build Status](https://travis-ci.org/CasperTech/node-metaverse.svg?branch=master)](https://travis-ci.org/CasperTech/node-metaverse)
 
 ## Install
 
