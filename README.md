@@ -6,6 +6,7 @@
 [![Build Status](https://travis-ci.org/CasperTech/node-metaverse.svg?branch=master)](https://travis-ci.org/CasperTech/node-metaverse)
 [![NSP Status](https://nodesecurity.io/orgs/caspertech-ltd/projects/7628bddf-1138-402b-b4d4-2c6353a55266/badge)](https://nodesecurity.io/orgs/caspertech-ltd/projects/7628bddf-1138-402b-b4d4-2c6353a55266)
 [![Node version](https://img.shields.io/node/v/@caspertech/node-metaverse.svg?style=flat)](http://nodejs.org/download/)
+[![Dependencies](https://david-dm.org/CasperTech/node-metaverse.svg)](https://david-dm.org/CasperTech/node-metaverse.svg)
 
 ## Install
 
