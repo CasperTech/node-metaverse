@@ -9,7 +9,7 @@
 ## Install
 
 ```bash
-npm i -S @caspertech/node-metaverse
+npm install --save @caspertech/node-metaverse
 ```
 
 ## Usage
