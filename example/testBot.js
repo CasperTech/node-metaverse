@@ -51,6 +51,34 @@ bot.clientEvents.onInstantMessage.subscribe((IMEvent) =>
     }
 });
 
+bot.clientEvents.onFriendRequest.subscribe((event) =>
+{
+    if (event.from.toString() === master)
+    {
+        console.log("Accepting friend request from " + event.fromName);
+        bot.clientCommands.comms.acceptFriendRequest(event);
+    }
+    else
+    {
+        console.log("Rejecting friend request from " + event.fromName);
+        bot.clientCommands.comms.rejectFriendRequest(event);
+    }
+});
+
+bot.clientEvents.onInventoryOffered.subscribe((event) =>
+{
+    if (event.from.toString() === master)
+    {
+        console.log("Accepting inventory offer from " + event.fromName);
+        bot.clientCommands.comms.acceptInventoryOffer(event);
+    }
+    else
+    {
+        console.log("Rejecting inventory offer from " + event.fromName);
+        bot.clientCommands.comms.rejectInventoryOffer(event);
+    }
+});
+
 bot.clientEvents.onDisconnected.subscribe((DisconnectEvent) =>
 {
     isConnected = false;

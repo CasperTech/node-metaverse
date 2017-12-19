@@ -1,11 +1,12 @@
 import {UUID} from './UUID';
 import {ClientEvents} from './ClientEvents';
+import {AssetType} from '../enums/AssetType';
 
 export class Inventory
 {
     main: {
         skeleton: {
-            typeDefault: number,
+            typeDefault: AssetType,
             version: number,
             name: string,
             folderID: UUID,
@@ -33,5 +34,25 @@ export class Inventory
     constructor(clientEvents: ClientEvents)
     {
         this.clientEvents = clientEvents;
+    }
+    findFolderForType(type: AssetType): UUID
+    {
+        if (this.main.root === undefined)
+        {
+            return UUID.zero();
+        }
+        if (type === AssetType.Folder)
+        {
+            return this.main.root;
+        }
+        let found = UUID.zero();
+        this.main.skeleton.forEach((folder) =>
+        {
+            if (folder.typeDefault === type)
+            {
+                found = folder.folderID;
+            }
+        });
+        return found;
     }
 }

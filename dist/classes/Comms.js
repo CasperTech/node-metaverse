@@ -10,6 +10,8 @@ const ChatSourceType_1 = require("../enums/ChatSourceType");
 const InstantMessageEventFlags_1 = require("../enums/InstantMessageEventFlags");
 const GroupInviteEvent_1 = require("../events/GroupInviteEvent");
 const GroupChatEvent_1 = require("../events/GroupChatEvent");
+const FriendRequestEvent_1 = require("../events/FriendRequestEvent");
+const InventoryOfferedEvent_1 = require("../events/InventoryOfferedEvent");
 class Comms {
     constructor(circuit, agent, clientEvents) {
         this.clientEvents = clientEvents;
@@ -47,13 +49,36 @@ class Comms {
                             this.clientEvents.onGroupInvite.next(giEvent);
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.InventoryOffered:
-                            break;
+                            {
+                                const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                                const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
+                                const ioEvent = new InventoryOfferedEvent_1.InventoryOfferedEvent();
+                                ioEvent.from = im.AgentData.AgentID;
+                                ioEvent.fromName = fromName;
+                                ioEvent.message = message;
+                                ioEvent.requestID = im.MessageBlock.ID;
+                                ioEvent.source = ChatSourceType_1.ChatSourceType.Agent;
+                                this.clientEvents.onInventoryOffered.next(ioEvent);
+                                break;
+                            }
                         case InstantMessageDialog_1.InstantMessageDialog.InventoryAccepted:
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.InventoryDeclined:
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.TaskInventoryOffered:
-                            break;
+                            {
+                                const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                                const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
+                                const ioEvent = new InventoryOfferedEvent_1.InventoryOfferedEvent();
+                                ioEvent.from = im.AgentData.AgentID;
+                                ioEvent.fromName = fromName;
+                                ioEvent.message = message;
+                                ioEvent.requestID = im.MessageBlock.ID;
+                                ioEvent.source = ChatSourceType_1.ChatSourceType.Object;
+                                ioEvent.type = im.MessageBlock.BinaryBucket.readUInt8(0);
+                                this.clientEvents.onInventoryOffered.next(ioEvent);
+                                break;
+                            }
                         case InstantMessageDialog_1.InstantMessageDialog.TaskInventoryAccepted:
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.TaskInventoryDeclined:
@@ -120,7 +145,17 @@ class Comms {
                         case InstantMessageDialog_1.InstantMessageDialog.GroupNoticeRequested:
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.FriendshipOffered:
-                            break;
+                            {
+                                const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                                const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
+                                const frEvent = new FriendRequestEvent_1.FriendRequestEvent();
+                                frEvent.from = im.AgentData.AgentID;
+                                frEvent.fromName = fromName;
+                                frEvent.message = message;
+                                frEvent.requestID = im.MessageBlock.ID;
+                                this.clientEvents.onFriendRequest.next(frEvent);
+                                break;
+                            }
                         case InstantMessageDialog_1.InstantMessageDialog.FriendshipAccepted:
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.FriendshipDeclined:
