@@ -358,9 +358,9 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    sendGroupMessage(groupID: UUID | string, message: string): Promise<void>
+    sendGroupMessage(groupID: UUID | string, message: string): Promise<number>
     {
-        return new Promise<void>((resolve, reject) =>
+        return new Promise<number>((resolve, reject) =>
         {
             this.startGroupChatSession(groupID, message).then(() =>
             {
@@ -393,7 +393,10 @@ export class CommunicationsCommands extends CommandsBase
                     EstateID: 0
                 };
                 const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-                return circuit.waitForAck(sequenceNo, 10000);
+                return this.circuit.waitForAck(sequenceNo, 10000);
+            }).then(() =>
+            {
+                resolve(this.bot.clientCommands.group.getSessionAgentCount(groupID))
             }).catch((err) =>
             {
                 reject(err);

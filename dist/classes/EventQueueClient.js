@@ -9,6 +9,7 @@ const TeleportEventType_1 = require("../enums/TeleportEventType");
 const GroupChatEvent_1 = require("../events/GroupChatEvent");
 const UUID_1 = require("./UUID");
 const GroupChatSessionJoinEvent_1 = require("../events/GroupChatSessionJoinEvent");
+const GroupChatSessionAgentListEvent_1 = require("../events/GroupChatSessionAgentListEvent");
 class EventQueueClient {
     constructor(agent, caps, clientEvents) {
         this.done = false;
@@ -96,6 +97,26 @@ class EventQueueClient {
                                     }
                                 case 'ChatterBoxSessionAgentListUpdates':
                                     {
+                                        if (event['body']) {
+                                            if (event['body']['agent_updates']) {
+                                                Object.keys(event['body']['agent_updates']).forEach((agentUpdate) => {
+                                                    const updObj = event['body']['agent_updates'][agentUpdate];
+                                                    const gcsale = new GroupChatSessionAgentListEvent_1.GroupChatSessionAgentListEvent();
+                                                    gcsale.agentID = new UUID_1.UUID(agentUpdate);
+                                                    gcsale.groupID = new UUID_1.UUID(event['body']['session_id'].toString());
+                                                    gcsale.canVoiceChat = false;
+                                                    gcsale.isModerator = false;
+                                                    gcsale.entered = (updObj['transition'] === 'ENTER');
+                                                    if (updObj['can_voice_chat'] === true) {
+                                                        gcsale.canVoiceChat = true;
+                                                    }
+                                                    if (updObj['is_moderator'] === true) {
+                                                        gcsale.isModerator = true;
+                                                    }
+                                                    this.clientEvents.onGroupChatAgentListUpdate.next(gcsale);
+                                                });
+                                            }
+                                        }
                                         break;
                                     }
                                 case 'TeleportFinish':

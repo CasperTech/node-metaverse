@@ -21,7 +21,7 @@ const Utils_1 = require("./Utils");
 class Agent {
     constructor(clientEvents) {
         this.localID = 0;
-        this.chatSessions = [];
+        this.chatSessions = {};
         this.controlFlags = 0;
         this.openID = {};
         this.buddyList = [];
@@ -31,16 +31,41 @@ class Agent {
         this.agentUpdateTimer = null;
         this.inventory = new Inventory_1.Inventory(clientEvents);
         this.clientEvents = clientEvents;
+        this.clientEvents.onGroupChatAgentListUpdate.subscribe((event) => {
+            const str = event.groupID.toString();
+            if (this.chatSessions[str] === undefined) {
+                this.chatSessions[str] = {};
+            }
+            const agent = event.agentID.toString();
+            if (event.entered) {
+                this.chatSessions[str][agent] = {
+                    hasVoice: event.canVoiceChat,
+                    isModerator: event.isModerator
+                };
+            }
+            else {
+                delete this.chatSessions[str][agent];
+            }
+        });
+    }
+    getSessionAgentCount(uuid) {
+        const str = uuid.toString();
+        if (this.chatSessions[str] === undefined) {
+            return 0;
+        }
+        else {
+            return Object.keys(this.chatSessions[str]).length;
+        }
     }
     addChatSession(uuid) {
         const str = uuid.toString();
-        if (this.chatSessions.indexOf(str) === -1) {
-            this.chatSessions.push(str);
+        if (this.chatSessions[str] === undefined) {
+            this.chatSessions[str] = {};
         }
     }
     hasChatSession(uuid) {
         const str = uuid.toString();
-        if (this.chatSessions.indexOf(str) === -1) {
+        if (this.chatSessions[str] === undefined) {
             return false;
         }
         return true;

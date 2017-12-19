@@ -14,5 +14,5 @@ export declare class CommunicationsCommands extends CommandsBase {
     typeInstantMessage(to: UUID | string, message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>;
     typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>;
     startGroupChatSession(sessionID: UUID | string, message: string): Promise<void>;
-    sendGroupMessage(groupID: UUID | string, message: string): Promise<void>;
+    sendGroupMessage(groupID: UUID | string, message: string): Promise<number>;
 }

@@ -13,6 +13,7 @@ class ClientEvents {
         this.onCircuitLatency = new Subject_1.Subject();
         this.onGroupChat = new Subject_1.Subject();
         this.onGroupChatSessionJoin = new Subject_1.Subject();
+        this.onGroupChatAgentListUpdate = new Subject_1.Subject();
     }
 }
 exports.ClientEvents = ClientEvents;

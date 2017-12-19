@@ -25,6 +25,7 @@ import {Utils} from './Utils';
 import {AgentAnimationMessage} from './messages/AgentAnimation';
 import {ClientEvents} from './ClientEvents';
 import {IGameObject} from './interfaces/IGameObject';
+import {GroupChatSessionAgentListEvent} from '../events/GroupChatSessionAgentListEvent';
 
 export class Agent
 {
@@ -36,7 +37,12 @@ export class Agent
     regionAccess: string;
     agentAccess: string;
     currentRegion: Region;
-    chatSessions: string[] = [];
+    chatSessions: {[key: string]: {
+            [key: string]: {
+                hasVoice: boolean,
+                isModerator: boolean
+            }
+        }} = {};
     controlFlags: ControlFlags = 0;
     openID: {
         'token'?: string,
@@ -79,21 +85,56 @@ export class Agent
     {
         this.inventory = new Inventory(clientEvents);
         this.clientEvents = clientEvents;
+        this.clientEvents.onGroupChatAgentListUpdate.subscribe((event: GroupChatSessionAgentListEvent) =>
+        {
+            const str = event.groupID.toString();
+            if (this.chatSessions[str] === undefined)
+            {
+                this.chatSessions[str] = {};
+            }
+
+            const agent = event.agentID.toString();
+
+            if (event.entered)
+            {
+                this.chatSessions[str][agent] = {
+                    hasVoice: event.canVoiceChat,
+                    isModerator: event.isModerator
+                }
+            }
+            else
+            {
+                delete this.chatSessions[str][agent];
+            }
+        });
+    }
+
+    getSessionAgentCount(uuid: UUID): number
+    {
+        const str = uuid.toString();
+        if (this.chatSessions[str] === undefined)
+        {
+            return 0;
+        }
+        else
+        {
+            return Object.keys(this.chatSessions[str]).length;
+        }
     }
 
     addChatSession(uuid: UUID)
     {
         const str = uuid.toString();
-        if (this.chatSessions.indexOf(str) === -1)
+        if (this.chatSessions[str] === undefined)
         {
-            this.chatSessions.push(str);
+            this.chatSessions[str] = {};
         }
     }
 
     hasChatSession(uuid: UUID): boolean
     {
         const str = uuid.toString();
-        if (this.chatSessions.indexOf(str) === -1)
+        if (this.chatSessions[str] === undefined)
         {
             return false;
         }

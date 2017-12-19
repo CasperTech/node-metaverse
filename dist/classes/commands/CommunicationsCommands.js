@@ -316,7 +316,9 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
                     EstateID: 0
                 };
                 const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-                return circuit.waitForAck(sequenceNo, 10000);
+                return this.circuit.waitForAck(sequenceNo, 10000);
+            }).then(() => {
+                resolve(this.bot.clientCommands.group.getSessionAgentCount(groupID));
             }).catch((err) => {
                 reject(err);
             });

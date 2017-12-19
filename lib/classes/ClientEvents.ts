@@ -8,6 +8,7 @@ import {FriendRequestEvent} from '../events/FriendRequestEvent';
 import {DisconnectEvent} from '../events/DisconnectEvent';
 import {GroupChatEvent} from '../events/GroupChatEvent';
 import {GroupChatSessionJoinEvent} from '../events/GroupChatSessionJoinEvent';
+import {GroupChatSessionAgentListEvent} from '../events/GroupChatSessionAgentListEvent';
 
 export class ClientEvents
 {
@@ -21,4 +22,5 @@ export class ClientEvents
     onCircuitLatency: Subject<number> = new Subject<number>();
     onGroupChat: Subject<GroupChatEvent> = new Subject<GroupChatEvent>();
     onGroupChatSessionJoin: Subject<GroupChatSessionJoinEvent> = new Subject<GroupChatSessionJoinEvent>();
+    onGroupChatAgentListUpdate: Subject<GroupChatSessionAgentListEvent> = new Subject<GroupChatSessionAgentListEvent>();
 }

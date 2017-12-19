@@ -77,6 +77,12 @@ class GroupCommands extends CommandsBase_1.CommandsBase {
         const sequenceNo = this.circuit.sendMessage(igr, PacketFlags_1.PacketFlags.Reliable);
         return this.circuit.waitForAck(sequenceNo, 10000);
     }
+    getSessionAgentCount(sessionID) {
+        if (typeof sessionID === 'string') {
+            sessionID = new UUID_1.UUID(sessionID);
+        }
+        return this.agent.getSessionAgentCount(sessionID);
+    }
     sendGroupInvite(groupID, to, role) {
         const sendTo = [{
                 avatarID: to,

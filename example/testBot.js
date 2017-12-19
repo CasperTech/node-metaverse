@@ -74,7 +74,10 @@ bot.clientEvents.onGroupChat.subscribe((GroupChatEvent) =>
    {
        let ping = uuid.v4();
        pings[ping] = Math.floor(new Date().getTime());
-       bot.clientCommands.comms.sendGroupMessage(GroupChatEvent.groupID, 'ping '+ping);
+       bot.clientCommands.comms.sendGroupMessage(GroupChatEvent.groupID, 'ping '+ping).then((memberCount) =>
+       {
+           console.log('Group message sent to ' + memberCount + ' members');
+       });
    }
    else if (GroupChatEvent.from.toString() === loginResponse.agent.agentID.toString())
    {
