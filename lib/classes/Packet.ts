@@ -96,6 +96,10 @@ export class Packet
             this.extraHeader = Buffer.allocUnsafe(0);
         }
         let appendedAcks = 0;
+        if (this.packetFlags & PacketFlags.Ack)
+        {
+            appendedAcks = buf.readUInt8(buf.length - 1);
+        }
         if (this.packetFlags & PacketFlags.Zerocoded)
         {
             // Annoyingly, the AppendedAcks aren't zerocoded so we need to stop decode early
@@ -104,7 +108,6 @@ export class Packet
             {
                 // Final byte in the packet contains the number of Acks
                 tail = 1;
-                appendedAcks = buf.readUInt8(buf.length - 1);
                 if (appendedAcks > 0)
                 {
                     tail += appendedAcks * 4;
