@@ -6,6 +6,7 @@ import {Vector3} from './Vector3';
 import Long = require('long');
 import {ClientEvents} from './ClientEvents';
 import {BotOptionFlags} from '../enums/BotOptionFlags';
+import {InventoryFolder} from './InventoryFolder';
 
 export class LoginResponse
 {
@@ -102,50 +103,54 @@ export class LoginResponse
                 case 'inventory-skeleton':
                     val.forEach((item: any) =>
                     {
-                        const skeletonItem: {
-                            typeDefault: number,
-                            version: number,
-                            name: string,
-                            folderID: UUID,
-                            parentID: UUID
-                        } = {
-                            typeDefault: parseInt(item['type_default'], 10),
-                            version: parseInt(item['version'], 10),
-                            name: String(item['name']),
-                            folderID: new UUID(item['folder_id']),
-                            parentID: new UUID(item['parent_id'])
-                        };
-                        this.agent.inventory.main.skeleton.push(skeletonItem);
+                        const folder = new InventoryFolder(this.agent.inventory.main);
+                        folder.typeDefault = parseInt(item['type_default'], 10);
+                        folder.version = parseInt(item['version'], 10);
+                        folder.name = String(item['name']);
+                        folder.folderID = new UUID(item['folder_id']);
+                        folder.parentID = new UUID(item['parent_id']);
+                        this.agent.inventory.main.skeleton[folder.folderID.toString()] = folder;
                     });
                     break;
                 case 'inventory-skel-lib':
                     val.forEach((item: any) =>
                     {
-                        const skeletonItem: {
-                            typeDefault: number,
-                            version: number,
-                            name: string,
-                            folderID: UUID,
-                            parentID: UUID
-                        } = {
-                            typeDefault: parseInt(item['type_default'], 10),
-                            version: parseInt(item['version'], 10),
-                            name: String(item['name']),
-                            folderID: new UUID(item['folder_id']),
-                            parentID: new UUID(item['parent_id'])
-                        };
-                        this.agent.inventory.library.skeleton.push(skeletonItem);
+                        const folder = new InventoryFolder(this.agent.inventory.library);
+                        folder.typeDefault = parseInt(item['type_default'], 10);
+                        folder.version = parseInt(item['version'], 10);
+                        folder.name = String(item['name']);
+                        folder.folderID = new UUID(item['folder_id']);
+                        folder.parentID = new UUID(item['parent_id']);
+                        this.agent.inventory.library.skeleton[folder.folderID.toString()] = folder;
                     });
                     break;
                 case 'inventory-root':
+                {
                     this.agent.inventory.main.root = new UUID(val[0]['folder_id']);
+                    const folder = new InventoryFolder(this.agent.inventory.main);
+                    folder.typeDefault = 0;
+                    folder.version = 0;
+                    folder.name = 'root';
+                    folder.folderID = new UUID(val[0]['folder_id']);
+                    folder.parentID = UUID.zero();
+                    this.agent.inventory.main.skeleton[folder.folderID.toString()] = folder;
                     break;
+                }
                 case 'inventory-lib-owner':
                     this.agent.inventory.library.owner = new UUID(val[0]['agent_id']);
                     break;
                 case 'inventory-lib-root':
+                {
                     this.agent.inventory.library.root = new UUID(val[0]['folder_id']);
+                    const folder = new InventoryFolder(this.agent.inventory.library);
+                    folder.typeDefault = 0;
+                    folder.version = 0;
+                    folder.name = 'root';
+                    folder.folderID = new UUID(val[0]['folder_id']);
+                    folder.parentID = UUID.zero();
+                    this.agent.inventory.library.skeleton[folder.folderID.toString()] = folder;
                     break;
+                }
                 case 'agent_access_max':
                     this.agent.accessMax = String(val);
                     break;

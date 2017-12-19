@@ -9,6 +9,7 @@ import { GridCommands } from './commands/GridCommands';
 import { CommunicationsCommands } from './commands/CommunicationsCommands';
 import { AgentCommands } from './commands/AgentCommands';
 import { GroupCommands } from './commands/GroupCommands';
+import { InventoryCommands } from './commands/InventoryCommands';
 export declare class ClientCommands {
     network: NetworkCommands;
     asset: AssetCommands;
@@ -18,5 +19,6 @@ export declare class ClientCommands {
     comms: CommunicationsCommands;
     agent: AgentCommands;
     group: GroupCommands;
+    inventory: InventoryCommands;
     constructor(region: Region, agent: Agent, bot: Bot);
 }
