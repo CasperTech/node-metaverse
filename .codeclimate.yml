@@ -1,3 +1,0 @@
-exclude_patterns:
-- "!lib/classes/messages"
-- "!lib/classes/MessageClasses.ts"
