@@ -98,6 +98,15 @@ export class GroupCommands extends CommandsBase
         return this.circuit.waitForAck(sequenceNo, 10000);
     }
 
+    getSessionAgentCount(sessionID: UUID | string): number
+    {
+        if (typeof sessionID === 'string')
+        {
+            sessionID = new UUID(sessionID);
+        }
+        return this.agent.getSessionAgentCount(sessionID);
+    }
+
     sendGroupInvite(groupID: UUID | string, to: UUID | string, role: UUID | string | undefined): Promise<void>
     {
         const sendTo = [{

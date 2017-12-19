@@ -9,6 +9,7 @@ export declare class GroupCommands extends CommandsBase {
         avatarID: UUID | string;
         roleID: UUID | string | undefined;
     }[]): Promise<void>;
+    getSessionAgentCount(sessionID: UUID | string): number;
     sendGroupInvite(groupID: UUID | string, to: UUID | string, role: UUID | string | undefined): Promise<void>;
     acceptGroupInvite(event: GroupInviteEvent): Promise<void>;
     rejectGroupInvite(event: GroupInviteEvent): Promise<void>;

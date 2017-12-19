@@ -17,7 +17,14 @@ export declare class Agent {
     regionAccess: string;
     agentAccess: string;
     currentRegion: Region;
-    chatSessions: string[];
+    chatSessions: {
+        [key: string]: {
+            [key: string]: {
+                hasVoice: boolean;
+                isModerator: boolean;
+            };
+        };
+    };
     controlFlags: ControlFlags;
     openID: {
         'token'?: string;
@@ -56,6 +63,7 @@ export declare class Agent {
     agentUpdateTimer: number | null;
     private clientEvents;
     constructor(clientEvents: ClientEvents);
+    getSessionAgentCount(uuid: UUID): number;
     addChatSession(uuid: UUID): void;
     hasChatSession(uuid: UUID): boolean;
     setCurrentRegion(region: Region): void;

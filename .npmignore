@@ -5,5 +5,7 @@ lib/
 tools/
 example/
 docs/
-test/
+dist/tests/
 .npmignore
+.gitignore
+caspertech-node-metaverse-*.tgz
