@@ -17,6 +17,7 @@ import {GroupInviteEvent} from '../events/GroupInviteEvent';
 import {GroupChatEvent} from '../events/GroupChatEvent';
 import {FriendRequestEvent} from '../events/FriendRequestEvent';
 import {InventoryOfferedEvent} from '../events/InventoryOfferedEvent';
+import {FriendResponseEvent} from '../events/FriendshipResponseEvent';
 
 export class Comms
 {
@@ -177,9 +178,31 @@ export class Comms
                             break;
                         }
                         case InstantMessageDialog.FriendshipAccepted:
+                        {
+                            const fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            const message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            const frEvent = new FriendResponseEvent();
+                            frEvent.from = im.AgentData.AgentID;
+                            frEvent.fromName = fromName;
+                            frEvent.message = message;
+                            frEvent.requestID = im.MessageBlock.ID;
+                            frEvent.accepted = true;
+                            this.clientEvents.onFriendResponse.next(frEvent);
                             break;
+                        }
                         case InstantMessageDialog.FriendshipDeclined:
+                        {
+                            const fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            const message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            const frEvent = new FriendResponseEvent();
+                            frEvent.from = im.AgentData.AgentID;
+                            frEvent.fromName = fromName;
+                            frEvent.message = message;
+                            frEvent.requestID = im.MessageBlock.ID;
+                            frEvent.accepted = false;
+                            this.clientEvents.onFriendResponse.next(frEvent);
                             break;
+                        }
                         case InstantMessageDialog.StartTyping:
                         {
                             const imEvent = new InstantMessageEvent();

@@ -10,6 +10,7 @@ import {GroupChatEvent} from '../events/GroupChatEvent';
 import {GroupChatSessionJoinEvent} from '../events/GroupChatSessionJoinEvent';
 import {GroupChatSessionAgentListEvent} from '../events/GroupChatSessionAgentListEvent';
 import {InventoryOfferedEvent} from '../events/InventoryOfferedEvent';
+import {FriendResponseEvent} from '../events/FriendshipResponseEvent';
 
 export class ClientEvents
 {
@@ -25,4 +26,5 @@ export class ClientEvents
     onGroupChat: Subject<GroupChatEvent> = new Subject<GroupChatEvent>();
     onGroupChatSessionJoin: Subject<GroupChatSessionJoinEvent> = new Subject<GroupChatSessionJoinEvent>();
     onGroupChatAgentListUpdate: Subject<GroupChatSessionAgentListEvent> = new Subject<GroupChatSessionAgentListEvent>();
+    onFriendResponse: Subject<FriendResponseEvent> = new Subject<FriendResponseEvent>();
 }
