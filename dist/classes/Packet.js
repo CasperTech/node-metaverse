@@ -75,11 +75,13 @@ class Packet {
             this.extraHeader = Buffer.allocUnsafe(0);
         }
         let appendedAcks = 0;
+        if (this.packetFlags & PacketFlags_1.PacketFlags.Ack) {
+            appendedAcks = buf.readUInt8(buf.length - 1);
+        }
         if (this.packetFlags & PacketFlags_1.PacketFlags.Zerocoded) {
             let tail = 0;
             if (this.packetFlags & PacketFlags_1.PacketFlags.Ack) {
                 tail = 1;
-                appendedAcks = buf.readUInt8(buf.length - 1);
                 if (appendedAcks > 0) {
                     tail += appendedAcks * 4;
                 }
