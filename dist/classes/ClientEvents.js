@@ -7,6 +7,7 @@ class ClientEvents {
         this.onInstantMessage = new Subject_1.Subject();
         this.onGroupInvite = new Subject_1.Subject();
         this.onFriendRequest = new Subject_1.Subject();
+        this.onInventoryOffered = new Subject_1.Subject();
         this.onLure = new Subject_1.Subject();
         this.onTeleportEvent = new Subject_1.Subject();
         this.onDisconnected = new Subject_1.Subject();

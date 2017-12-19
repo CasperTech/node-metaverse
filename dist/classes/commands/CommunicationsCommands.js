@@ -9,6 +9,10 @@ const Vector3_1 = require("../Vector3");
 const ChatFromViewer_1 = require("../messages/ChatFromViewer");
 const ChatType_1 = require("../../enums/ChatType");
 const InstantMessageDialog_1 = require("../../enums/InstantMessageDialog");
+const AcceptFriendship_1 = require("../messages/AcceptFriendship");
+const AssetType_1 = require("../../enums/AssetType");
+const DeclineFriendship_1 = require("../messages/DeclineFriendship");
+const ChatSourceType_1 = require("../../enums/ChatSourceType");
 class CommunicationsCommands extends CommandsBase_1.CommandsBase {
     sendInstantMessage(to, message) {
         const circuit = this.circuit;
@@ -284,6 +288,80 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
                 const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
             }
         });
+    }
+    acceptFriendRequest(event) {
+        const accept = new AcceptFriendship_1.AcceptFriendshipMessage();
+        accept.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        accept.TransactionBlock = {
+            TransactionID: event.requestID
+        };
+        accept.FolderData = [];
+        accept.FolderData.push({
+            'FolderID': this.agent.inventory.findFolderForType(AssetType_1.AssetType.CallingCard)
+        });
+        const sequenceNo = this.circuit.sendMessage(accept, PacketFlags_1.PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceNo, 10000);
+    }
+    respondToInventoryOffer(event, response) {
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+        const folder = this.agent.inventory.findFolderForType(event.type);
+        const binary = Buffer.allocUnsafe(16);
+        folder.writeToBuffer(binary, 0);
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: event.from,
+            ParentEstateID: 0,
+            RegionID: UUID_1.UUID.zero(),
+            Position: Vector3_1.Vector3.getZero(),
+            Offline: 0,
+            Dialog: response,
+            ID: event.requestID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+            Message: Utils_1.Utils.StringToBuffer(''),
+            BinaryBucket: binary
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        const sequenceNo = this.circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceNo, 10000);
+    }
+    acceptInventoryOffer(event) {
+        if (event.source === ChatSourceType_1.ChatSourceType.Object) {
+            return this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.TaskInventoryAccepted);
+        }
+        else {
+            return this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.InventoryAccepted);
+        }
+    }
+    rejectInventoryOffer(event) {
+        if (event.source === ChatSourceType_1.ChatSourceType.Object) {
+            return this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.TaskInventoryDeclined);
+        }
+        else {
+            return this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.InventoryDeclined);
+        }
+    }
+    rejectFriendRequest(event) {
+        const reject = new DeclineFriendship_1.DeclineFriendshipMessage();
+        reject.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        reject.TransactionBlock = {
+            TransactionID: event.requestID
+        };
+        const sequenceNo = this.circuit.sendMessage(reject, PacketFlags_1.PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceNo, 10000);
     }
     sendGroupMessage(groupID, message) {
         return new Promise((resolve, reject) => {

@@ -9,6 +9,7 @@ import {DisconnectEvent} from '../events/DisconnectEvent';
 import {GroupChatEvent} from '../events/GroupChatEvent';
 import {GroupChatSessionJoinEvent} from '../events/GroupChatSessionJoinEvent';
 import {GroupChatSessionAgentListEvent} from '../events/GroupChatSessionAgentListEvent';
+import {InventoryOfferedEvent} from '../events/InventoryOfferedEvent';
 
 export class ClientEvents
 {
@@ -16,6 +17,7 @@ export class ClientEvents
     onInstantMessage: Subject<InstantMessageEvent> = new Subject<InstantMessageEvent>();
     onGroupInvite: Subject<GroupInviteEvent> = new Subject<GroupInviteEvent>();
     onFriendRequest: Subject<FriendRequestEvent> = new Subject<FriendRequestEvent>();
+    onInventoryOffered: Subject<InventoryOfferedEvent> = new Subject<InventoryOfferedEvent>();
     onLure: Subject<LureEvent> = new Subject<LureEvent>();
     onTeleportEvent: Subject<TeleportEvent> = new Subject<TeleportEvent>();
     onDisconnected: Subject<DisconnectEvent>  = new Subject<DisconnectEvent>();
