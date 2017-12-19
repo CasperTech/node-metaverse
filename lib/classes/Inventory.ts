@@ -1,39 +1,61 @@
 import {UUID} from './UUID';
 import {ClientEvents} from './ClientEvents';
 import {AssetType} from '../enums/AssetType';
+import {InventoryFolder} from './InventoryFolder';
+import uuid = require('uuid');
 
 export class Inventory
 {
     main: {
-        skeleton: {
-            typeDefault: AssetType,
-            version: number,
-            name: string,
-            folderID: UUID,
-            parentID: UUID
-        }[],
+        skeleton:  {[key: string]: InventoryFolder},
         root?: UUID
     } = {
-        skeleton: []
+        skeleton: {}
     };
     library: {
         owner?: UUID,
-        skeleton: {
-            typeDefault: number,
-            version: number,
-            name: string,
-            folderID: UUID,
-            parentID: UUID
-        }[],
+        skeleton: {[key: string]: InventoryFolder},
         root?: UUID
     } = {
-        skeleton: []
+        skeleton: {}
     };
     private clientEvents: ClientEvents;
 
     constructor(clientEvents: ClientEvents)
     {
         this.clientEvents = clientEvents;
+    }
+    getRootFolderLibrary(): InventoryFolder
+    {
+        if (this.library.root === undefined)
+        {
+            return new InventoryFolder(this.library);
+        }
+        const uuidStr = this.library.root.toString();
+        if (this.library.skeleton[uuidStr])
+        {
+            return this.library.skeleton[uuidStr];
+        }
+        else
+        {
+            return new InventoryFolder(this.library);
+        }
+    }
+    getRootFolderMain(): InventoryFolder
+    {
+        if (this.main.root === undefined)
+        {
+            return new InventoryFolder(this.main);
+        }
+        const uuidStr = this.main.root.toString();
+        if (this.main.skeleton[uuidStr])
+        {
+            return this.main.skeleton[uuidStr];
+        }
+        else
+        {
+            return new InventoryFolder(this.main);
+        }
     }
     findFolderForType(type: AssetType): UUID
     {
@@ -46,8 +68,9 @@ export class Inventory
             return this.main.root;
         }
         let found = UUID.zero();
-        this.main.skeleton.forEach((folder) =>
+        Object.keys(this.main.skeleton).forEach((uuid) =>
         {
+            const folder = this.main.skeleton[uuid];
             if (folder.typeDefault === type)
             {
                 found = folder.folderID;

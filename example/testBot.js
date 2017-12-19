@@ -194,7 +194,7 @@ function connect()
         // Retrieve group roles
 
         const userToInvite = new nmv.UUID("d1cd5b71-6209-4595-9bf0-771bf689ce00");
-        const groupID = new nmv.UUID("c6424e05-6e2c-fb03-220b-ca7904d11e04");
+        const groupID      = new nmv.UUID("c6424e05-6e2c-fb03-220b-ca7904d11e04");
 
         bot.clientCommands.group.getGroupRoles(groupID).then((roles) =>
         {
@@ -220,7 +220,7 @@ function connect()
                         }
                         else
                         {
-                            bot.clientCommands.group.sendGroupInvite(groupID, userToInvite , role.RoleID);
+                            bot.clientCommands.group.sendGroupInvite(groupID, userToInvite, role.RoleID);
                         }
                     });
                 }
@@ -229,15 +229,24 @@ function connect()
 
         setTimeout(() =>  // TODO: This 5 second delay is a fudge. We need to wait for the eventqueue to start properly
         {
-            bot.clientCommands.teleport.teleportTo('Izanagi', new nmv.Vector3([128, 128, 20]), new nmv.Vector3([0, 1.0, 0])).then(() =>
+            bot.clientCommands.teleport.teleportTo('Izanagi', new nmv.Vector3([128, 128, 20]), new nmv.Vector3([0,
+                                                                                                                1.0,
+                                                                                                                0])).then(() =>
             {
                 console.log("Teleport completed");
-            }).catch((err) => {
+            }).catch((err) =>
+            {
                 console.error(err);
             });
         }, 5000);
 
         bot.clientCommands.comms.sendFriendRequest(master, 'Be friends with me?');
+
+        const folders = bot.clientCommands.inventory.getInventoryRoot().getChildFolders();
+        folders.forEach((folder) =>
+        {
+            console.log('Top level folder: ' + folder.name);
+        });
 
         // When it's time to go home, call bot.close();
     }).catch((error) =>

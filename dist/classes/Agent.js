@@ -153,7 +153,8 @@ class Agent {
                     }
                 });
             }
-            this.inventory.main.skeleton.forEach((folder) => {
+            Object.keys(this.inventory.main.skeleton).forEach((uuid) => {
+                const folder = this.inventory.main.skeleton[uuid];
                 if (folder.typeDefault === AssetType_1.AssetType.CurrentOutfitFolder) {
                     const folderID = folder.folderID;
                     const requestFolder = {

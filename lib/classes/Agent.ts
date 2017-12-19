@@ -242,8 +242,9 @@ export class Agent
                 });
             }
 
-            this.inventory.main.skeleton.forEach((folder) =>
+            Object.keys(this.inventory.main.skeleton).forEach((uuid) =>
             {
+                const folder = this.inventory.main.skeleton[uuid];
                 if (folder.typeDefault === AssetType.CurrentOutfitFolder)
                 {
                     const folderID = folder.folderID;
