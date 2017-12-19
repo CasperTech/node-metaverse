@@ -12,6 +12,7 @@ const GroupInviteEvent_1 = require("../events/GroupInviteEvent");
 const GroupChatEvent_1 = require("../events/GroupChatEvent");
 const FriendRequestEvent_1 = require("../events/FriendRequestEvent");
 const InventoryOfferedEvent_1 = require("../events/InventoryOfferedEvent");
+const FriendshipResponseEvent_1 = require("../events/FriendshipResponseEvent");
 class Comms {
     constructor(circuit, agent, clientEvents) {
         this.clientEvents = clientEvents;
@@ -157,9 +158,31 @@ class Comms {
                                 break;
                             }
                         case InstantMessageDialog_1.InstantMessageDialog.FriendshipAccepted:
-                            break;
+                            {
+                                const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                                const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
+                                const frEvent = new FriendshipResponseEvent_1.FriendResponseEvent();
+                                frEvent.from = im.AgentData.AgentID;
+                                frEvent.fromName = fromName;
+                                frEvent.message = message;
+                                frEvent.requestID = im.MessageBlock.ID;
+                                frEvent.accepted = true;
+                                this.clientEvents.onFriendResponse.next(frEvent);
+                                break;
+                            }
                         case InstantMessageDialog_1.InstantMessageDialog.FriendshipDeclined:
-                            break;
+                            {
+                                const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                                const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
+                                const frEvent = new FriendshipResponseEvent_1.FriendResponseEvent();
+                                frEvent.from = im.AgentData.AgentID;
+                                frEvent.fromName = fromName;
+                                frEvent.message = message;
+                                frEvent.requestID = im.MessageBlock.ID;
+                                frEvent.accepted = false;
+                                this.clientEvents.onFriendResponse.next(frEvent);
+                                break;
+                            }
                         case InstantMessageDialog_1.InstantMessageDialog.StartTyping:
                             {
                                 const imEvent = new InstantMessageEvent_1.InstantMessageEvent();

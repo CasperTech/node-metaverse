@@ -384,6 +384,40 @@ export class CommunicationsCommands extends CommandsBase
         return this.circuit.waitForAck(sequenceNo, 10000);
     }
 
+    sendFriendRequest(to: UUID | string, message: string)
+    {
+        if (typeof to === 'string')
+        {
+            to = new UUID(to);
+        }
+        const requestID = UUID.random();
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+                im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: to,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: 0,
+            Dialog: InstantMessageDialog.FriendshipOffered,
+            ID: requestID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils.StringToBuffer(agentName),
+            Message: Utils.StringToBuffer(message),
+            BinaryBucket: Utils.StringToBuffer('')
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceNo, 10000);
+    }
+
     private respondToInventoryOffer(event: InventoryOfferedEvent, response: InstantMessageDialog): Promise<void>
     {
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;

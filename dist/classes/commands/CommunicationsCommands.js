@@ -305,6 +305,37 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
         const sequenceNo = this.circuit.sendMessage(accept, PacketFlags_1.PacketFlags.Reliable);
         return this.circuit.waitForAck(sequenceNo, 10000);
     }
+    sendFriendRequest(to, message) {
+        if (typeof to === 'string') {
+            to = new UUID_1.UUID(to);
+        }
+        const requestID = UUID_1.UUID.random();
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: to,
+            ParentEstateID: 0,
+            RegionID: UUID_1.UUID.zero(),
+            Position: Vector3_1.Vector3.getZero(),
+            Offline: 0,
+            Dialog: InstantMessageDialog_1.InstantMessageDialog.FriendshipOffered,
+            ID: requestID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+            Message: Utils_1.Utils.StringToBuffer(message),
+            BinaryBucket: Utils_1.Utils.StringToBuffer('')
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        const sequenceNo = this.circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceNo, 10000);
+    }
     respondToInventoryOffer(event, response) {
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();

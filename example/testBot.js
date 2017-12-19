@@ -154,6 +154,18 @@ bot.clientEvents.onGroupInvite.subscribe((GroupInviteEvent) =>
     });
 });
 
+bot.clientEvents.onFriendResponse.subscribe((response) =>
+{
+    if (response.accepted)
+    {
+        console.log(response.fromName + ' accepted your friend request');
+    }
+    else
+    {
+        console.log(response.fromName + ' declined your friend request');
+    }
+});
+
 function connect()
 {
     console.log("Logging in..");
@@ -224,6 +236,8 @@ function connect()
                 console.error(err);
             });
         }, 5000);
+
+        bot.clientCommands.comms.sendFriendRequest(master, 'Be friends with me?');
 
         // When it's time to go home, call bot.close();
     }).catch((error) =>
