@@ -29,7 +29,7 @@ class Agent {
         this.home = {};
         this.gestures = [];
         this.agentUpdateTimer = null;
-        this.inventory = new Inventory_1.Inventory(clientEvents);
+        this.inventory = new Inventory_1.Inventory(clientEvents, this);
         this.clientEvents = clientEvents;
         this.clientEvents.onGroupChatAgentListUpdate.subscribe((event) => {
             const str = event.groupID.toString();

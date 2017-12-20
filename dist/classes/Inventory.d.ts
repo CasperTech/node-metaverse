@@ -2,6 +2,7 @@ import { UUID } from './UUID';
 import { ClientEvents } from './ClientEvents';
 import { AssetType } from '../enums/AssetType';
 import { InventoryFolder } from './InventoryFolder';
+import { Agent } from './Agent';
 export declare class Inventory {
     main: {
         skeleton: {
@@ -17,7 +18,8 @@ export declare class Inventory {
         root?: UUID;
     };
     private clientEvents;
-    constructor(clientEvents: ClientEvents);
+    private agent;
+    constructor(clientEvents: ClientEvents, agent: Agent);
     getRootFolderLibrary(): InventoryFolder;
     getRootFolderMain(): InventoryFolder;
     findFolderForType(type: AssetType): UUID;

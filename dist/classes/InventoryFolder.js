@@ -1,9 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const UUID_1 = require("./UUID");
+const InventoryItem_1 = require("./InventoryItem");
+const fs = require("fs");
+const path = require("path");
+const LLSD = require("llsd");
+const InventorySortOrder_1 = require("../enums/InventorySortOrder");
 class InventoryFolder {
-    constructor(invBase) {
+    constructor(invBase, agent) {
         this.items = [];
+        this.agent = agent;
         this.inventoryBase = invBase;
+        this.cacheDir = path.resolve(__dirname + '/cache/' + this.agent.agentID.toString());
+        if (!fs.existsSync(this.cacheDir)) {
+            fs.mkdirSync(this.cacheDir, 0o777);
+        }
     }
     getChildFolders() {
         const children = [];
@@ -15,6 +26,124 @@ class InventoryFolder {
             }
         });
         return children;
+    }
+    saveCache() {
+        return new Promise((resolve, reject) => {
+            const json = {
+                version: this.version,
+                items: this.items
+            };
+            const fileName = path.join(this.cacheDir + '/' + this.folderID.toString());
+            fs.writeFile(fileName, JSON.stringify(json), (err) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
+    loadCache() {
+        return new Promise((resolve, reject) => {
+            const fileName = path.join(this.cacheDir + '/' + this.folderID.toString());
+            if (fs.existsSync(fileName)) {
+                fs.readFile(fileName, (err, data) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        try {
+                            const json = JSON.parse(data.toString('utf8'));
+                            if (json['version'] >= this.version) {
+                                this.items = [];
+                                json['items'].forEach((item) => {
+                                    item.created = new Date(item.created.mUUID);
+                                    item.assetID = new UUID_1.UUID(item.assetID.mUUID);
+                                    item.parentID = new UUID_1.UUID(item.parentID.mUUID);
+                                    item.itemID = new UUID_1.UUID(item.itemID.mUUID);
+                                    item.permissions.lastOwner = new UUID_1.UUID(item.permissions.lastOwner.mUUID);
+                                    item.permissions.owner = new UUID_1.UUID(item.permissions.owner.mUUID);
+                                    item.permissions.creator = new UUID_1.UUID(item.permissions.creator.mUUID);
+                                    item.permissions.group = new UUID_1.UUID(item.permissions.group.mUUID);
+                                    this.items.push(item);
+                                });
+                                resolve();
+                            }
+                            else {
+                                reject(new Error('Old version'));
+                            }
+                        }
+                        catch (err) {
+                            reject(err);
+                        }
+                    }
+                });
+            }
+            else {
+                reject(new Error('Cache miss'));
+            }
+        });
+    }
+    populate() {
+        return new Promise((resolve, reject) => {
+            this.loadCache().then(() => {
+                resolve();
+            }).catch((err) => {
+                const requestFolder = {
+                    folder_id: new LLSD.UUID(this.folderID),
+                    owner_id: new LLSD.UUID(this.agent.agentID),
+                    fetch_folders: true,
+                    fetch_items: true,
+                    sort_order: InventorySortOrder_1.InventorySortOrder.ByName
+                };
+                const requestedFolders = {
+                    'folders': [
+                        requestFolder
+                    ]
+                };
+                this.agent.currentRegion.caps.capsRequestXML('FetchInventoryDescendents2', requestedFolders).then((folderContents) => {
+                    if (folderContents['folders'] && folderContents['folders'][0] && folderContents['folders'][0]['items']) {
+                        this.version = folderContents['folders'][0]['version'];
+                        this.items = [];
+                        folderContents['folders'][0]['items'].forEach((item) => {
+                            const invItem = new InventoryItem_1.InventoryItem();
+                            invItem.assetID = new UUID_1.UUID(item['asset_id'].toString());
+                            invItem.inventoryType = item['inv_type'];
+                            invItem.name = item['name'];
+                            invItem.salePrice = item['sale_info']['sale_price'];
+                            invItem.saleType = item['sale_info']['sale_type'];
+                            invItem.created = new Date(item['created_at'] * 1000);
+                            invItem.parentID = new UUID_1.UUID(item['parent_id'].toString());
+                            invItem.flags = item['flags'];
+                            invItem.itemID = new UUID_1.UUID(item['item_id'].toString());
+                            invItem.description = item['desc'];
+                            invItem.type = item['type'];
+                            invItem.permissions = {
+                                baseMask: item['permissions']['base_mask'],
+                                groupMask: item['permissions']['group_mask'],
+                                nextOwnerMask: item['permissions']['next_owner_mask'],
+                                ownerMask: item['permissions']['owner_mask'],
+                                everyoneMask: item['permissions']['everyone_mask'],
+                                lastOwner: new UUID_1.UUID(item['permissions']['last_owner_id'].toString()),
+                                owner: new UUID_1.UUID(item['permissions']['owner_id'].toString()),
+                                creator: new UUID_1.UUID(item['permissions']['creator_id'].toString()),
+                                group: new UUID_1.UUID(item['permissions']['group_id'].toString())
+                            };
+                            this.items.push(invItem);
+                        });
+                        this.saveCache().then(() => {
+                            resolve();
+                        }).catch(() => {
+                            resolve();
+                        });
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+            });
+        });
     }
 }
 exports.InventoryFolder = InventoryFolder;
