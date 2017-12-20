@@ -1,0 +1,52 @@
+{
+    "sentAcks": [],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 0,
+        "sequenceNumber": 2143,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "LayerData",
+            "messageFlags": 33,
+            "id": 11,
+            "LayerID": {
+                "Type": 55
+            },
+            "LayerData": {
+                "Data": {
+                    "type": "Buffer",
+                    "data": [
+                        18,
+                        0,
+                        16,
+                        55,
+                        71,
+                        118,
+                        103,
+                        162,
+                        192,
+                        1,
+                        0,
+                        0,
+                        63,
+                        222,
+                        71,
+                        60,
+                        104,
+                        170,
+                        63,
+                        1,
+                        0,
+                        0,
+                        63,
+                        198,
+                        97
+                    ]
+                }
+            }
+        }
+    }
+}

@@ -4,6 +4,7 @@ import {Zerocoder} from './Zerocoder';
 import {nameFromID} from './MessageClasses';
 import {MessageFlags} from '../enums/MessageFlags';
 import * as MessageClass from './MessageClasses';
+import {DecodeFlags} from '../enums/DecodeFlags';
 
 export class Packet
 {
@@ -26,9 +27,13 @@ export class Packet
         return 1 + 4 + 1 + this.extraHeader.length + idSize + this.message.getSize();
     }
 
-    writeToBuffer(buf: Buffer, pos: number): Buffer
+    writeToBuffer(buf: Buffer, pos: number, options?: DecodeFlags): Buffer
     {
-        if (this.message.messageFlags & MessageFlags.Zerocoded)
+        if (options === undefined)
+        {
+            options = 0;
+        }
+        if (this.message.messageFlags & MessageFlags.Zerocoded && !(options & 1))
         {
             this.packetFlags = this.packetFlags | PacketFlags.Zerocoded;
         }
@@ -67,7 +72,7 @@ export class Packet
         pos += actualLength;
         if (pos < buf.length)
         {
-            console.error('WARNING: BUFFER UNDERFLOW: Finished writing but we are not at the end of the buffer');
+            console.error('WARNING: BUFFER UNDERFLOW: Finished writing but we are not at the end of the buffer (Written: ' + pos + ' bytes, expected ' + buf.length);
         }
         if (this.packetFlags & PacketFlags.Zerocoded)
         {
@@ -76,7 +81,7 @@ export class Packet
         return buf;
     }
 
-    readFromBuffer(buf: Buffer, pos: number, ackReceived: (sequenceID: number) => void, sendAck: (sequenceID: number) => void)
+    readFromBuffer(buf: Buffer, pos: number, ackReceived: (sequenceID: number) => void, sendAck: (sequenceID: number) => void):  number
     {
         this.packetFlags = buf.readUInt8(pos++);
         this.sequenceNumber = buf.readUInt32BE(pos);
@@ -155,5 +160,6 @@ export class Packet
         {
             console.error('WARNING: Finished reading ' + nameFromID(messageID) + ' but we\'re not at the end of the packet (' + pos + ' < ' + buf.length + ', seq ' + this.sequenceNumber + ')');
         }
+        return pos;
     }
 }

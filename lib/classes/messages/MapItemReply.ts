@@ -29,7 +29,7 @@ export class MapItemReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.Data, 'Name', 1) + 32) * this.Data.length) + 25;
+        return this.calculateVarVarSize(this.Data, 'Name', 1) + ((32) * this.Data.length) + 25;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

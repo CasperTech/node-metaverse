@@ -1,0 +1,39 @@
+{
+    "sentAcks": [
+        2088
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 2088,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "KillObject",
+            "messageFlags": 33,
+            "id": 16,
+            "ObjectData": [
+                {
+                    "ID": 579538094
+                },
+                {
+                    "ID": 579538095
+                },
+                {
+                    "ID": 579538098
+                },
+                {
+                    "ID": 579538099
+                },
+                {
+                    "ID": 579564526
+                },
+                {
+                    "ID": 579564527
+                }
+            ]
+        }
+    }
+}

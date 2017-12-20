@@ -25,7 +25,7 @@ export class CopyInventoryItemMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.InventoryData, 'NewName', 1) + 52) * this.InventoryData.length) + 33;
+        return this.calculateVarVarSize(this.InventoryData, 'NewName', 1) + ((52) * this.InventoryData.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

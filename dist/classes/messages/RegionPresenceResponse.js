@@ -12,7 +12,7 @@ class RegionPresenceResponseMessage {
         this.id = Message_1.Message.RegionPresenceResponse;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.RegionData, 'Message', 1) + 42) * this.RegionData.length) + 1;
+        return this.calculateVarVarSize(this.RegionData, 'Message', 1) + ((42) * this.RegionData.length) + 1;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

@@ -211,7 +211,7 @@ messages.forEach((message) =>
                     else
                     {
                         //Variable parameter in variable or multi block - tricky edge case
-                        blockVariableSize.push('this.calculateVarVarSize(this.'+block.name+', \''+param.name+'\', '+param.size+')');
+                        messageVariableSize.push('this.calculateVarVarSize(this.'+block.name+', \''+param.name+'\', '+param.size+')');
                         calcVarVar = true;
                     }
                     break;

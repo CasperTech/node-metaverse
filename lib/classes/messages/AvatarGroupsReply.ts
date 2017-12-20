@@ -30,7 +30,7 @@ export class AvatarGroupsReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.GroupData, 'GroupTitle', 1) + this.calculateVarVarSize(this.GroupData, 'GroupName', 1) + 41) * this.GroupData.length) + 34;
+        return this.calculateVarVarSize(this.GroupData, 'GroupTitle', 1) + this.calculateVarVarSize(this.GroupData, 'GroupName', 1) + ((41) * this.GroupData.length) + 34;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

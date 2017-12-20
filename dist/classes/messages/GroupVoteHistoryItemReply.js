@@ -10,7 +10,7 @@ class GroupVoteHistoryItemReplyMessage {
         this.id = Message_1.Message.GroupVoteHistoryItemReply;
     }
     getSize() {
-        return (this.HistoryItemData['TerseDateID'].length + 1 + this.HistoryItemData['StartDateTime'].length + 1 + this.HistoryItemData['EndDateTime'].length + 1 + this.HistoryItemData['VoteType'].length + 1 + this.HistoryItemData['VoteResult'].length + 1 + this.HistoryItemData['ProposalText'].length + 2) + ((this.calculateVarVarSize(this.VoteItem, 'VoteCast', 1) + 20) * this.VoteItem.length) + 93;
+        return (this.HistoryItemData['TerseDateID'].length + 1 + this.HistoryItemData['StartDateTime'].length + 1 + this.HistoryItemData['EndDateTime'].length + 1 + this.HistoryItemData['VoteType'].length + 1 + this.HistoryItemData['VoteResult'].length + 1 + this.HistoryItemData['ProposalText'].length + 2) + this.calculateVarVarSize(this.VoteItem, 'VoteCast', 1) + ((20) * this.VoteItem.length) + 93;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

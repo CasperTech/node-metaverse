@@ -18,7 +18,7 @@ export class ScriptDataReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.DataBlock, 'Reply', 2) + 8) * this.DataBlock.length) + 1;
+        return this.calculateVarVarSize(this.DataBlock, 'Reply', 2) + ((8) * this.DataBlock.length) + 1;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

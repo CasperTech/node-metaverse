@@ -1,0 +1,40 @@
+{
+    "sentAcks": [
+        1919
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 1919,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "TeleportLocal",
+            "messageFlags": 36,
+            "id": 4294901824,
+            "Info": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "LocationID": 2,
+                "Position": {
+                    "values": {
+                        "0": 212,
+                        "1": 48,
+                        "2": 141
+                    }
+                },
+                "LookAt": {
+                    "values": {
+                        "0": -0.8175408840179443,
+                        "1": -0.18210625648498535,
+                        "2": -0.546318769454956
+                    }
+                },
+                "TeleportFlags": 131076
+            }
+        }
+    }
+}

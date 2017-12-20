@@ -10,7 +10,7 @@ class DirEventsReplyMessage {
         this.id = Message_1.Message.DirEventsReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + this.calculateVarVarSize(this.QueryReplies, 'Date', 1) + 28) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
+        return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + this.calculateVarVarSize(this.QueryReplies, 'Date', 1) + ((28) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

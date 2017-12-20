@@ -13,7 +13,7 @@ import {Quaternion} from './Quaternion';
 import {AgentState} from '../enums/AgentState';
 import {AgentFlags} from '../enums/AgentFlags';
 import {BuiltInAnimations} from '../enums/BuiltInAnimations';
-import * as LLSD from 'llsd';
+import * as LLSD from '@caspertech/llsd';
 import {AssetType} from '../enums/AssetType';
 import {AgentWearablesRequestMessage} from './messages/AgentWearablesRequest';
 import {PacketFlags} from '../enums/PacketFlags';

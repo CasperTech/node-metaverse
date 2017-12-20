@@ -1,0 +1,21 @@
+{
+    "sentAcks": [],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 0,
+        "sequenceNumber": 2126,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "StartPingCheck",
+            "messageFlags": 1,
+            "id": 1,
+            "PingID": {
+                "PingID": 17,
+                "OldestUnacked": 2121
+            }
+        }
+    }
+}

@@ -68,7 +68,7 @@ export class ObjectUpdateMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ObjectData, 'ObjectData', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + this.calculateVarVarSize(this.ObjectData, 'TextureAnim', 1) + this.calculateVarVarSize(this.ObjectData, 'NameValue', 2) + this.calculateVarVarSize(this.ObjectData, 'Data', 2) + this.calculateVarVarSize(this.ObjectData, 'Text', 1) + this.calculateVarVarSize(this.ObjectData, 'MediaURL', 1) + this.calculateVarVarSize(this.ObjectData, 'PSBlock', 1) + this.calculateVarVarSize(this.ObjectData, 'ExtraParams', 1) + 141) * this.ObjectData.length) + 11;
+        return this.calculateVarVarSize(this.ObjectData, 'ObjectData', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + this.calculateVarVarSize(this.ObjectData, 'TextureAnim', 1) + this.calculateVarVarSize(this.ObjectData, 'NameValue', 2) + this.calculateVarVarSize(this.ObjectData, 'Data', 2) + this.calculateVarVarSize(this.ObjectData, 'Text', 1) + this.calculateVarVarSize(this.ObjectData, 'MediaURL', 1) + this.calculateVarVarSize(this.ObjectData, 'PSBlock', 1) + this.calculateVarVarSize(this.ObjectData, 'ExtraParams', 1) + ((141) * this.ObjectData.length) + 11;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

@@ -1,0 +1,51 @@
+{
+    "sentAcks": [
+        1910
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 1910,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "MapBlockReply",
+            "messageFlags": 36,
+            "id": 4294902169,
+            "AgentData": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "Flags": 0
+            },
+            "Data": [
+                {
+                    "X": 1033,
+                    "Y": 1102,
+                    "Name": {
+                        "type": "Buffer",
+                        "data": [
+                            73,
+                            122,
+                            97,
+                            110,
+                            97,
+                            103,
+                            105,
+                            0
+                        ]
+                    },
+                    "Access": 21,
+                    "RegionFlags": 0,
+                    "WaterHeight": 0,
+                    "Agents": 0,
+                    "MapImageID": {
+                        "mUUID": "447400de-0103-da92-a976-234d8af2933a"
+                    }
+                }
+            ]
+        }
+    }
+}

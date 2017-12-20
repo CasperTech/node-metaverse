@@ -34,7 +34,7 @@ export class RezMultipleAttachmentsFromInvMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Name', 1) + this.calculateVarVarSize(this.ObjectData, 'Description', 1) + 49) * this.ObjectData.length) + 51;
+        return this.calculateVarVarSize(this.ObjectData, 'Name', 1) + this.calculateVarVarSize(this.ObjectData, 'Description', 1) + ((49) * this.ObjectData.length) + 51;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

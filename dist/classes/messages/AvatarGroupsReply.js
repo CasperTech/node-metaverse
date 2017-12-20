@@ -11,7 +11,7 @@ class AvatarGroupsReplyMessage {
         this.id = Message_1.Message.AvatarGroupsReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.GroupData, 'GroupTitle', 1) + this.calculateVarVarSize(this.GroupData, 'GroupName', 1) + 41) * this.GroupData.length) + 34;
+        return this.calculateVarVarSize(this.GroupData, 'GroupTitle', 1) + this.calculateVarVarSize(this.GroupData, 'GroupName', 1) + ((41) * this.GroupData.length) + 34;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

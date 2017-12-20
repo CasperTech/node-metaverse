@@ -23,7 +23,7 @@ export class MultipleObjectUpdateMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Data', 1) + 5) * this.ObjectData.length) + 33;
+        return this.calculateVarVarSize(this.ObjectData, 'Data', 1) + ((5) * this.ObjectData.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

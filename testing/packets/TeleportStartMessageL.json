@@ -1,0 +1,22 @@
+{
+    "sentAcks": [
+        1917
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 1917,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "TeleportStart",
+            "messageFlags": 36,
+            "id": 4294901833,
+            "Info": {
+                "TeleportFlags": 131076
+            }
+        }
+    }
+}

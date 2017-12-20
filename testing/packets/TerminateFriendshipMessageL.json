@@ -1,0 +1,32 @@
+{
+    "sentAcks": [
+        1692
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 1692,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "TerminateFriendship",
+            "messageFlags": 4,
+            "id": 4294902060,
+            "AgentData": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "SessionID": {
+                    "mUUID": "3d64e727-5147-4ea2-a76f-753f747c6108"
+                }
+            },
+            "ExBlock": {
+                "OtherID": {
+                    "mUUID": "d1cd5b71-6209-4595-9bf0-771bf689ce00"
+                }
+            }
+        }
+    }
+}

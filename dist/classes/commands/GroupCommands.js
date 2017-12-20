@@ -13,7 +13,7 @@ const GroupRoleDataRequest_1 = require("../messages/GroupRoleDataRequest");
 const Message_1 = require("../../enums/Message");
 const GroupMember_1 = require("../GroupMember");
 const FilterResponse_1 = require("../../enums/FilterResponse");
-const LLSD = require("llsd");
+const LLSD = require("@caspertech/llsd");
 class GroupCommands extends CommandsBase_1.CommandsBase {
     sendGroupNotice(groupID, subject, message) {
         if (typeof groupID === 'string') {

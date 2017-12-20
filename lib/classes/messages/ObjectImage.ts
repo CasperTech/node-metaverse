@@ -23,7 +23,7 @@ export class ObjectImageMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ObjectData, 'MediaURL', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + 4) * this.ObjectData.length) + 33;
+        return this.calculateVarVarSize(this.ObjectData, 'MediaURL', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + ((4) * this.ObjectData.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

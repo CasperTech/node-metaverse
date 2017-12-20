@@ -10,7 +10,7 @@ class AlertMessageMessage {
         this.id = Message_1.Message.AlertMessage;
     }
     getSize() {
-        return (this.AlertData['Message'].length + 1) + ((this.calculateVarVarSize(this.AlertInfo, 'Message', 1) + this.calculateVarVarSize(this.AlertInfo, 'ExtraParams', 1)) * this.AlertInfo.length) + ((16) * this.AgentInfo.length) + 2;
+        return (this.AlertData['Message'].length + 1) + this.calculateVarVarSize(this.AlertInfo, 'Message', 1) + this.calculateVarVarSize(this.AlertInfo, 'ExtraParams', 1) + ((16) * this.AgentInfo.length) + 2;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

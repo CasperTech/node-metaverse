@@ -13,7 +13,7 @@ class ChildAgentUpdateMessage {
         this.id = Message_1.Message.ChildAgentUpdate;
     }
     getSize() {
-        return (this.AgentData['Throttles'].length + 1 + this.AgentData['AgentTextures'].length + 2) + ((25) * this.GroupData.length) + ((32) * this.AnimationData.length) + ((16) * this.GranterBlock.length) + ((this.calculateVarVarSize(this.NVPairData, 'NVPairs', 2)) * this.NVPairData.length) + ((1) * this.VisualParam.length) + ((2) * this.AgentAccess.length) + ((4) * this.AgentInfo.length) + ((this.calculateVarVarSize(this.AgentInventoryHost, 'InventoryHost', 1)) * this.AgentInventoryHost.length) + 216;
+        return (this.AgentData['Throttles'].length + 1 + this.AgentData['AgentTextures'].length + 2) + ((25) * this.GroupData.length) + ((32) * this.AnimationData.length) + ((16) * this.GranterBlock.length) + this.calculateVarVarSize(this.NVPairData, 'NVPairs', 2) + ((1) * this.VisualParam.length) + ((2) * this.AgentAccess.length) + ((4) * this.AgentInfo.length) + this.calculateVarVarSize(this.AgentInventoryHost, 'InventoryHost', 1) + 216;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

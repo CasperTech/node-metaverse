@@ -10,7 +10,7 @@ class UpdateInventoryFolderMessage {
         this.id = Message_1.Message.UpdateInventoryFolder;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.FolderData, 'Name', 1) + 33) * this.FolderData.length) + 33;
+        return this.calculateVarVarSize(this.FolderData, 'Name', 1) + ((33) * this.FolderData.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

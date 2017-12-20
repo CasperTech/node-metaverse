@@ -10,7 +10,7 @@ class ScriptDialogMessage {
         this.id = Message_1.Message.ScriptDialog;
     }
     getSize() {
-        return (this.Data['FirstName'].length + 1 + this.Data['LastName'].length + 1 + this.Data['ObjectName'].length + 1 + this.Data['Message'].length + 2) + ((this.calculateVarVarSize(this.Buttons, 'ButtonLabel', 1)) * this.Buttons.length) + ((16) * this.OwnerData.length) + 38;
+        return (this.Data['FirstName'].length + 1 + this.Data['LastName'].length + 1 + this.Data['ObjectName'].length + 1 + this.Data['Message'].length + 2) + this.calculateVarVarSize(this.Buttons, 'ButtonLabel', 1) + ((16) * this.OwnerData.length) + 38;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

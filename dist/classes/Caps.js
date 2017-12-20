@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const LLSD = require("llsd");
+const LLSD = require("@caspertech/llsd");
 const request = require("request");
 const Subject_1 = require("rxjs/Subject");
 const EventQueueClient_1 = require("./EventQueueClient");

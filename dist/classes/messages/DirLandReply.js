@@ -10,7 +10,7 @@ class DirLandReplyMessage {
         this.id = Message_1.Message.DirLandReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + 26) * this.QueryReplies.length) + 33;
+        return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + ((26) * this.QueryReplies.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

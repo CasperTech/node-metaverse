@@ -22,7 +22,7 @@ export class ObjectDescriptionMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Description', 1) + 4) * this.ObjectData.length) + 33;
+        return this.calculateVarVarSize(this.ObjectData, 'Description', 1) + ((4) * this.ObjectData.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

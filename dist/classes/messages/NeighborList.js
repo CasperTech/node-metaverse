@@ -11,7 +11,7 @@ class NeighborListMessage {
         this.id = Message_1.Message.NeighborList;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.NeighborBlock, 'Name', 1)) * 4) + 116;
+        return this.calculateVarVarSize(this.NeighborBlock, 'Name', 1) + 116;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

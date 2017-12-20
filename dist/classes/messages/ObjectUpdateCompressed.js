@@ -10,7 +10,7 @@ class ObjectUpdateCompressedMessage {
         this.id = Message_1.Message.ObjectUpdateCompressed;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Data', 2) + 4) * this.ObjectData.length) + 11;
+        return this.calculateVarVarSize(this.ObjectData, 'Data', 2) + ((4) * this.ObjectData.length) + 11;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

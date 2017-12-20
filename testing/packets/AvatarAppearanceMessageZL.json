@@ -1,0 +1,912 @@
+{
+    "sentAcks": [
+        1951
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 192,
+        "sequenceNumber": 1951,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "AvatarAppearance",
+            "messageFlags": 52,
+            "id": 4294901918,
+            "Sender": {
+                "ID": {
+                    "mUUID": "c458d09b-41c7-4091-9422-09def816fac5"
+                },
+                "IsTrial": false
+            },
+            "ObjectData": {
+                "TextureEntry": {
+                    "type": "Buffer",
+                    "data": [
+                        58,
+                        54,
+                        125,
+                        28,
+                        190,
+                        241,
+                        109,
+                        67,
+                        117,
+                        149,
+                        232,
+                        140,
+                        30,
+                        58,
+                        173,
+                        179,
+                        160,
+                        128,
+                        0,
+                        194,
+                        40,
+                        209,
+                        207,
+                        75,
+                        93,
+                        75,
+                        168,
+                        132,
+                        244,
+                        137,
+                        154,
+                        7,
+                        150,
+                        170,
+                        151,
+                        159,
+                        225,
+                        127,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        128,
+                        63,
+                        0,
+                        0,
+                        0,
+                        128,
+                        63,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "VisualParam": [
+                {
+                    "ParamValue": 9
+                },
+                {
+                    "ParamValue": 40
+                },
+                {
+                    "ParamValue": 113
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 52
+                },
+                {
+                    "ParamValue": 124
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 104
+                },
+                {
+                    "ParamValue": 35
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 76
+                },
+                {
+                    "ParamValue": 132
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 79
+                },
+                {
+                    "ParamValue": 68
+                },
+                {
+                    "ParamValue": 149
+                },
+                {
+                    "ParamValue": 35
+                },
+                {
+                    "ParamValue": 51
+                },
+                {
+                    "ParamValue": 117
+                },
+                {
+                    "ParamValue": 58
+                },
+                {
+                    "ParamValue": 175
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 163
+                },
+                {
+                    "ParamValue": 112
+                },
+                {
+                    "ParamValue": 158
+                },
+                {
+                    "ParamValue": 168
+                },
+                {
+                    "ParamValue": 124
+                },
+                {
+                    "ParamValue": 76
+                },
+                {
+                    "ParamValue": 86
+                },
+                {
+                    "ParamValue": 178
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 203
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 38
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 104
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 122
+                },
+                {
+                    "ParamValue": 155
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 150
+                },
+                {
+                    "ParamValue": 147
+                },
+                {
+                    "ParamValue": 178
+                },
+                {
+                    "ParamValue": 85
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 74
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 100
+                },
+                {
+                    "ParamValue": 216
+                },
+                {
+                    "ParamValue": 214
+                },
+                {
+                    "ParamValue": 204
+                },
+                {
+                    "ParamValue": 204
+                },
+                {
+                    "ParamValue": 204
+                },
+                {
+                    "ParamValue": 51
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 89
+                },
+                {
+                    "ParamValue": 76
+                },
+                {
+                    "ParamValue": 204
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 109
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 135
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 79
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 140
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 130
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 104
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 140
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 102
+                },
+                {
+                    "ParamValue": 221
+                },
+                {
+                    "ParamValue": 110
+                },
+                {
+                    "ParamValue": 165
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 142
+                },
+                {
+                    "ParamValue": 229
+                },
+                {
+                    "ParamValue": 178
+                },
+                {
+                    "ParamValue": 63
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 159
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 178
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 89
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 153
+                },
+                {
+                    "ParamValue": 150
+                },
+                {
+                    "ParamValue": 127
+                },
+                {
+                    "ParamValue": 117
+                },
+                {
+                    "ParamValue": 78
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 20
+                },
+                {
+                    "ParamValue": 12
+                },
+                {
+                    "ParamValue": 117
+                },
+                {
+                    "ParamValue": 124
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 214
+                },
+                {
+                    "ParamValue": 204
+                },
+                {
+                    "ParamValue": 198
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 140
+                },
+                {
+                    "ParamValue": 226
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 198
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 204
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 153
+                },
+                {
+                    "ParamValue": 140
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 100
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 84
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 61
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 255
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 23
+                },
+                {
+                    "ParamValue": 51
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 23
+                },
+                {
+                    "ParamValue": 51
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 23
+                },
+                {
+                    "ParamValue": 51
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 23
+                },
+                {
+                    "ParamValue": 51
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 23
+                },
+                {
+                    "ParamValue": 51
+                },
+                {
+                    "ParamValue": 0
+                },
+                {
+                    "ParamValue": 25
+                },
+                {
+                    "ParamValue": 23
+                },
+                {
+                    "ParamValue": 51
+                },
+                {
+                    "ParamValue": 1
+                },
+                {
+                    "ParamValue": 127
+                }
+            ],
+            "AppearanceData": [
+                {
+                    "AppearanceVersion": 1,
+                    "CofVersion": 158,
+                    "Flags": 0
+                }
+            ],
+            "AppearanceHover": [
+                {
+                    "HoverHeight": {
+                        "values": {
+                            "0": 0,
+                            "1": 0,
+                            "2": 0
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

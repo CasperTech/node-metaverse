@@ -21,7 +21,7 @@ export class GroupDataUpdateMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.AgentGroupData, 'GroupTitle', 1) + 40) * this.AgentGroupData.length) + 1;
+        return this.calculateVarVarSize(this.AgentGroupData, 'GroupTitle', 1) + ((40) * this.AgentGroupData.length) + 1;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

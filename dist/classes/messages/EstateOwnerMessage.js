@@ -10,7 +10,7 @@ class EstateOwnerMessageMessage {
         this.id = Message_1.Message.EstateOwnerMessage;
     }
     getSize() {
-        return (this.MethodData['Method'].length + 1) + ((this.calculateVarVarSize(this.ParamList, 'Parameter', 1)) * this.ParamList.length) + 65;
+        return (this.MethodData['Method'].length + 1) + this.calculateVarVarSize(this.ParamList, 'Parameter', 1) + 65;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

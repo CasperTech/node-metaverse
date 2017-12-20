@@ -24,7 +24,7 @@ export class UpdateInventoryFolderMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.FolderData, 'Name', 1) + 33) * this.FolderData.length) + 33;
+        return this.calculateVarVarSize(this.FolderData, 'Name', 1) + ((33) * this.FolderData.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

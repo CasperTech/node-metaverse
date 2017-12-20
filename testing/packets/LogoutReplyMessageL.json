@@ -1,0 +1,49 @@
+{
+    "sentAcks": [
+        2146
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 2146,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "LogoutReply",
+            "messageFlags": 52,
+            "id": 4294902013,
+            "AgentData": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "SessionID": {
+                    "mUUID": "3d64e727-5147-4ea2-a76f-753f747c6108"
+                }
+            },
+            "InventoryData": [
+                {
+                    "ItemID": {
+                        "mUUID": "33e0d3e9-b0a2-357d-a5db-2a6686962dbb"
+                    }
+                },
+                {
+                    "ItemID": {
+                        "mUUID": "ec44c997-7f90-3659-b682-9c7776020a8e"
+                    }
+                },
+                {
+                    "ItemID": {
+                        "mUUID": "37d7256a-7b59-3388-9ff4-cb6cfad46985"
+                    }
+                },
+                {
+                    "ItemID": {
+                        "mUUID": "e5fbfb89-7afc-19b7-6d91-02c0857c3f9c"
+                    }
+                }
+            ]
+        }
+    }
+}

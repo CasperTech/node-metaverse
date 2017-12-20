@@ -22,7 +22,7 @@ export class LogTextMessageMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.DataBlock, 'Message', 2) + 52) * this.DataBlock.length) + 1;
+        return this.calculateVarVarSize(this.DataBlock, 'Message', 2) + ((52) * this.DataBlock.length) + 1;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

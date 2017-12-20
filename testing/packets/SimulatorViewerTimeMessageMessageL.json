@@ -1,0 +1,43 @@
+{
+    "sentAcks": [
+        2129
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 2129,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "SimulatorViewerTimeMessage",
+            "messageFlags": 36,
+            "id": 4294901910,
+            "TimeInfo": {
+                "UsecSinceStart": {
+                    "low": -1676671021,
+                    "high": 352455,
+                    "unsigned": false
+                },
+                "SecPerDay": 14400,
+                "SecPerYear": 158400,
+                "SunDirection": {
+                    "values": {
+                        "0": -3.223413358455218e-8,
+                        "1": -0.5214424133300781,
+                        "2": 0.8532864451408386
+                    }
+                },
+                "SunPhase": 1.5707963705062866,
+                "SunAngVelocity": {
+                    "values": {
+                        "0": 0,
+                        "1": 0.000227522206841968,
+                        "2": 0.00022752217773813754
+                    }
+                }
+            }
+        }
+    }
+}

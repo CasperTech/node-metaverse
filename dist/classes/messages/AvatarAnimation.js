@@ -10,7 +10,7 @@ class AvatarAnimationMessage {
         this.id = Message_1.Message.AvatarAnimation;
     }
     getSize() {
-        return ((20) * this.AnimationList.length) + ((16) * this.AnimationSourceList.length) + ((this.calculateVarVarSize(this.PhysicalAvatarEventList, 'TypeData', 1)) * this.PhysicalAvatarEventList.length) + 19;
+        return ((20) * this.AnimationList.length) + ((16) * this.AnimationSourceList.length) + this.calculateVarVarSize(this.PhysicalAvatarEventList, 'TypeData', 1) + 19;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

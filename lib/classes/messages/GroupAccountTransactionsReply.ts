@@ -31,7 +31,7 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return (this.MoneyData['StartDate'].length + 1) + ((this.calculateVarVarSize(this.HistoryData, 'Time', 1) + this.calculateVarVarSize(this.HistoryData, 'User', 1) + this.calculateVarVarSize(this.HistoryData, 'Item', 1) + 8) * this.HistoryData.length) + 57;
+        return (this.MoneyData['StartDate'].length + 1) + this.calculateVarVarSize(this.HistoryData, 'Time', 1) + this.calculateVarVarSize(this.HistoryData, 'User', 1) + this.calculateVarVarSize(this.HistoryData, 'Item', 1) + ((8) * this.HistoryData.length) + 57;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

@@ -31,7 +31,7 @@ export class GroupRoleDataReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.RoleData, 'Name', 1) + this.calculateVarVarSize(this.RoleData, 'Title', 1) + this.calculateVarVarSize(this.RoleData, 'Description', 1) + 28) * this.RoleData.length) + 53;
+        return this.calculateVarVarSize(this.RoleData, 'Name', 1) + this.calculateVarVarSize(this.RoleData, 'Title', 1) + this.calculateVarVarSize(this.RoleData, 'Description', 1) + ((28) * this.RoleData.length) + 53;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

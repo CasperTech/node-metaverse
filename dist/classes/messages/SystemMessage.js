@@ -10,7 +10,7 @@ class SystemMessageMessage {
         this.id = Message_1.Message.SystemMessage;
     }
     getSize() {
-        return (this.MethodData['Method'].length + 1) + ((this.calculateVarVarSize(this.ParamList, 'Parameter', 1)) * this.ParamList.length) + 49;
+        return (this.MethodData['Method'].length + 1) + this.calculateVarVarSize(this.ParamList, 'Parameter', 1) + 49;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

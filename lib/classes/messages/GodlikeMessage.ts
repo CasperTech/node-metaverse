@@ -26,7 +26,7 @@ export class GodlikeMessageMessage implements MessageBase
 
     getSize(): number
     {
-        return (this.MethodData['Method'].length + 1) + ((this.calculateVarVarSize(this.ParamList, 'Parameter', 1)) * this.ParamList.length) + 65;
+        return (this.MethodData['Method'].length + 1) + this.calculateVarVarSize(this.ParamList, 'Parameter', 1) + 65;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

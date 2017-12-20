@@ -10,7 +10,7 @@ class ImprovedTerseObjectUpdateMessage {
         this.id = Message_1.Message.ImprovedTerseObjectUpdate;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Data', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2)) * this.ObjectData.length) + 11;
+        return this.calculateVarVarSize(this.ObjectData, 'Data', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + 11;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

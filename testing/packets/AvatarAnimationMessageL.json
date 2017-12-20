@@ -1,0 +1,83 @@
+{
+    "sentAcks": [
+        2139
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 2139,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "AvatarAnimation",
+            "messageFlags": 33,
+            "id": 20,
+            "Sender": {
+                "ID": {
+                    "mUUID": "d1cd5b71-6209-4595-9bf0-771bf689ce00"
+                }
+            },
+            "AnimationList": [
+                {
+                    "AnimID": {
+                        "mUUID": "182e3e15-5af1-6c22-5fb3-6c42801519a3"
+                    },
+                    "AnimSequenceID": 1225548
+                },
+                {
+                    "AnimID": {
+                        "mUUID": "2408fe9e-df1d-1d7d-f4ff-1384fa7b350f"
+                    },
+                    "AnimSequenceID": 1225031
+                },
+                {
+                    "AnimID": {
+                        "mUUID": "2df8a0e4-bf5b-e8f2-4f52-af30915f4dba"
+                    },
+                    "AnimSequenceID": 1225033
+                },
+                {
+                    "AnimID": {
+                        "mUUID": "42b46214-4b44-79ae-deb8-0df61424ff4b"
+                    },
+                    "AnimSequenceID": 1225545
+                },
+                {
+                    "AnimID": {
+                        "mUUID": "46fab526-5374-d4b3-d910-bbd018c4e41d"
+                    },
+                    "AnimSequenceID": 1225550
+                },
+                {
+                    "AnimID": {
+                        "mUUID": "75b6d03f-f575-db96-ec9a-a1c844251690"
+                    },
+                    "AnimSequenceID": 1225552
+                },
+                {
+                    "AnimID": {
+                        "mUUID": "833be4ee-b997-2f65-56de-fdeb504ab824"
+                    },
+                    "AnimSequenceID": 1225523
+                }
+            ],
+            "AnimationSourceList": [
+                {
+                    "ObjectID": {
+                        "mUUID": "00000000-0000-0000-0000-000000000000"
+                    }
+                }
+            ],
+            "PhysicalAvatarEventList": [
+                {
+                    "TypeData": {
+                        "type": "Buffer",
+                        "data": []
+                    }
+                }
+            ]
+        }
+    }
+}

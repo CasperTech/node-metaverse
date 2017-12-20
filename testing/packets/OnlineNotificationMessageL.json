@@ -1,0 +1,26 @@
+{
+    "sentAcks": [
+        1892
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 1892,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "OnlineNotification",
+            "messageFlags": 36,
+            "id": 4294902082,
+            "AgentBlock": [
+                {
+                    "AgentID": {
+                        "mUUID": "d1cd5b71-6209-4595-9bf0-771bf689ce00"
+                    }
+                }
+            ]
+        }
+    }
+}

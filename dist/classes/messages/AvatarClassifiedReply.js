@@ -10,7 +10,7 @@ class AvatarClassifiedReplyMessage {
         this.id = Message_1.Message.AvatarClassifiedReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.Data, 'Name', 1) + 16) * this.Data.length) + 33;
+        return this.calculateVarVarSize(this.Data, 'Name', 1) + ((16) * this.Data.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

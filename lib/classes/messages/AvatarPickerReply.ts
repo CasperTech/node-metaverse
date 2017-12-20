@@ -23,7 +23,7 @@ export class AvatarPickerReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.Data, 'FirstName', 1) + this.calculateVarVarSize(this.Data, 'LastName', 1) + 16) * this.Data.length) + 33;
+        return this.calculateVarVarSize(this.Data, 'FirstName', 1) + this.calculateVarVarSize(this.Data, 'LastName', 1) + ((16) * this.Data.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

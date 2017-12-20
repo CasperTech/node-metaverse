@@ -1,0 +1,149 @@
+{
+    "sentAcks": [
+        3
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 192,
+        "sequenceNumber": 3,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "RegionHandshake",
+            "messageFlags": 52,
+            "id": 4294901908,
+            "RegionInfo": {
+                "RegionFlags": 336625846,
+                "SimAccess": 21,
+                "SimName": {
+                    "type": "Buffer",
+                    "data": [
+                        73,
+                        122,
+                        97,
+                        110,
+                        97,
+                        103,
+                        105,
+                        0
+                    ]
+                },
+                "SimOwner": {
+                    "mUUID": "d1cd5b71-6209-4595-9bf0-771bf689ce00"
+                },
+                "IsEstateManager": false,
+                "WaterHeight": 20,
+                "BillableFactor": 0,
+                "CacheID": {
+                    "mUUID": "b9eebb2f-6549-f843-85dd-b5f117ec1706"
+                },
+                "TerrainBase0": {
+                    "mUUID": "b8d3965a-ad78-bf43-699b-bff8eca6c975"
+                },
+                "TerrainBase1": {
+                    "mUUID": "abb783e6-3e93-26c0-248a-247666855da3"
+                },
+                "TerrainBase2": {
+                    "mUUID": "179cdabd-398a-9b6b-1391-4dc333ba321f"
+                },
+                "TerrainBase3": {
+                    "mUUID": "beb169c7-11ea-fff2-efe5-0f24dc881df2"
+                },
+                "TerrainDetail0": {
+                    "mUUID": "547f5032-82a2-3da1-393a-4ef8c4353225"
+                },
+                "TerrainDetail1": {
+                    "mUUID": "8172e3dd-68d7-1f4a-a722-988706fd27b2"
+                },
+                "TerrainDetail2": {
+                    "mUUID": "cc063e58-f9b7-e2ff-054f-4aa5d1a59924"
+                },
+                "TerrainDetail3": {
+                    "mUUID": "19e7b6a7-c4d3-2f10-efa7-f7c1a69d4323"
+                },
+                "TerrainStartHeight00": -15,
+                "TerrainStartHeight01": -15,
+                "TerrainStartHeight10": 0,
+                "TerrainStartHeight11": -27.5,
+                "TerrainHeightRange00": 110,
+                "TerrainHeightRange01": 120,
+                "TerrainHeightRange10": 120,
+                "TerrainHeightRange11": 120
+            },
+            "RegionInfo2": {
+                "RegionID": {
+                    "mUUID": "1ccf2f34-ecea-40f5-baff-4f0e4f9e5fea"
+                }
+            },
+            "RegionInfo3": {
+                "CPUClassID": 801,
+                "CPURatio": 1,
+                "ColoName": {
+                    "type": "Buffer",
+                    "data": [
+                        67,
+                        104,
+                        97,
+                        110,
+                        100,
+                        108,
+                        101,
+                        114,
+                        0
+                    ]
+                },
+                "ProductSKU": {
+                    "type": "Buffer",
+                    "data": [
+                        48,
+                        50,
+                        52,
+                        0
+                    ]
+                },
+                "ProductName": {
+                    "type": "Buffer",
+                    "data": [
+                        69,
+                        115,
+                        116,
+                        97,
+                        116,
+                        101,
+                        32,
+                        47,
+                        32,
+                        70,
+                        117,
+                        108,
+                        108,
+                        32,
+                        82,
+                        101,
+                        103,
+                        105,
+                        111,
+                        110,
+                        0
+                    ]
+                }
+            },
+            "RegionInfo4": [
+                {
+                    "RegionFlagsExtended": {
+                        "low": 336625846,
+                        "high": 0,
+                        "unsigned": false
+                    },
+                    "RegionProtocols": {
+                        "low": 1,
+                        "high": 0,
+                        "unsigned": false
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -24,7 +24,7 @@ export class NeighborListMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.NeighborBlock, 'Name', 1)) * 4) + 116;
+        return this.calculateVarVarSize(this.NeighborBlock, 'Name', 1) + 116;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

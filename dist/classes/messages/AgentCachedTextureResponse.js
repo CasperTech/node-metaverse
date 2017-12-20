@@ -10,7 +10,7 @@ class AgentCachedTextureResponseMessage {
         this.id = Message_1.Message.AgentCachedTextureResponse;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.WearableData, 'HostName', 1) + 17) * this.WearableData.length) + 37;
+        return this.calculateVarVarSize(this.WearableData, 'HostName', 1) + ((17) * this.WearableData.length) + 37;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

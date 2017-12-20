@@ -22,7 +22,7 @@ export class SystemMessageMessage implements MessageBase
 
     getSize(): number
     {
-        return (this.MethodData['Method'].length + 1) + ((this.calculateVarVarSize(this.ParamList, 'Parameter', 1)) * this.ParamList.length) + 49;
+        return (this.MethodData['Method'].length + 1) + this.calculateVarVarSize(this.ParamList, 'Parameter', 1) + 49;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

@@ -1,0 +1,177 @@
+{
+    "sentAcks": [],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 0,
+        "sequenceNumber": 2142,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "SimStats",
+            "messageFlags": 36,
+            "id": 4294901900,
+            "Region": {
+                "RegionX": 1033,
+                "RegionY": 1102,
+                "RegionFlags": 336625846,
+                "ObjectCapacity": 20000
+            },
+            "Stat": [
+                {
+                    "StatID": 0,
+                    "StatValue": 0.9957875609397888
+                },
+                {
+                    "StatID": 1,
+                    "StatValue": 44.868412017822266
+                },
+                {
+                    "StatID": 2,
+                    "StatValue": 44.951148986816406
+                },
+                {
+                    "StatID": 3,
+                    "StatValue": 8
+                },
+                {
+                    "StatID": 31,
+                    "StatValue": 525.1862182617188
+                },
+                {
+                    "StatID": 4,
+                    "StatValue": 22.22874641418457
+                },
+                {
+                    "StatID": 5,
+                    "StatValue": 0.26503828167915344
+                },
+                {
+                    "StatID": 6,
+                    "StatValue": 1.8774386644363403
+                },
+                {
+                    "StatID": 7,
+                    "StatValue": 2.040506601333618
+                },
+                {
+                    "StatID": 8,
+                    "StatValue": 0.5538991093635559
+                },
+                {
+                    "StatID": 9,
+                    "StatValue": 0.03875179961323738
+                },
+                {
+                    "StatID": 10,
+                    "StatValue": 11.279239654541016
+                },
+                {
+                    "StatID": 11,
+                    "StatValue": 4019
+                },
+                {
+                    "StatID": 12,
+                    "StatValue": 1033
+                },
+                {
+                    "StatID": 13,
+                    "StatValue": 8
+                },
+                {
+                    "StatID": 14,
+                    "StatValue": 0
+                },
+                {
+                    "StatID": 15,
+                    "StatValue": 2156
+                },
+                {
+                    "StatID": 17,
+                    "StatValue": 51.05316162109375
+                },
+                {
+                    "StatID": 18,
+                    "StatValue": 101.19288635253906
+                },
+                {
+                    "StatID": 19,
+                    "StatValue": 0
+                },
+                {
+                    "StatID": 20,
+                    "StatValue": 0
+                },
+                {
+                    "StatID": 24,
+                    "StatValue": 133.17706298828125
+                },
+                {
+                    "StatID": 25,
+                    "StatValue": 0
+                },
+                {
+                    "StatID": 26,
+                    "StatValue": 0
+                },
+                {
+                    "StatID": 27,
+                    "StatValue": 1.7843987941741943
+                },
+                {
+                    "StatID": 28,
+                    "StatValue": 0.054992370307445526
+                },
+                {
+                    "StatID": 29,
+                    "StatValue": 0.12858127057552338
+                },
+                {
+                    "StatID": 30,
+                    "StatValue": 26.236286163330078
+                },
+                {
+                    "StatID": 32,
+                    "StatValue": 6.253810405731201
+                },
+                {
+                    "StatID": 33,
+                    "StatValue": 6.3341779708862305
+                },
+                {
+                    "StatID": 34,
+                    "StatValue": 0.03570255637168884
+                },
+                {
+                    "StatID": 35,
+                    "StatValue": 99.65371704101562
+                },
+                {
+                    "StatID": 38,
+                    "StatValue": 0.001307747676037252
+                },
+                {
+                    "StatID": 39,
+                    "StatValue": 0
+                },
+                {
+                    "StatID": 40,
+                    "StatValue": 0
+                }
+            ],
+            "PidStat": {
+                "PID": 8167
+            },
+            "RegionInfo": [
+                {
+                    "RegionFlagsExtended": {
+                        "low": 336625846,
+                        "high": 0,
+                        "unsigned": false
+                    }
+                }
+            ]
+        }
+    }
+}

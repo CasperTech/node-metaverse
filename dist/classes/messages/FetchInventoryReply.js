@@ -10,7 +10,7 @@ class FetchInventoryReplyMessage {
         this.id = Message_1.Message.FetchInventoryReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + 136) * this.InventoryData.length) + 17;
+        return this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + ((136) * this.InventoryData.length) + 17;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

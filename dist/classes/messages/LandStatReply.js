@@ -10,7 +10,7 @@ class LandStatReplyMessage {
         this.id = Message_1.Message.LandStatReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ReportData, 'TaskName', 1) + this.calculateVarVarSize(this.ReportData, 'OwnerName', 1) + 36) * this.ReportData.length) + 13;
+        return this.calculateVarVarSize(this.ReportData, 'TaskName', 1) + this.calculateVarVarSize(this.ReportData, 'OwnerName', 1) + ((36) * this.ReportData.length) + 13;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

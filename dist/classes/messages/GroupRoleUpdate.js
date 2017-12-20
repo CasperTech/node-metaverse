@@ -11,7 +11,7 @@ class GroupRoleUpdateMessage {
         this.id = Message_1.Message.GroupRoleUpdate;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.RoleData, 'Name', 1) + this.calculateVarVarSize(this.RoleData, 'Description', 1) + this.calculateVarVarSize(this.RoleData, 'Title', 1) + 25) * this.RoleData.length) + 49;
+        return this.calculateVarVarSize(this.RoleData, 'Name', 1) + this.calculateVarVarSize(this.RoleData, 'Description', 1) + this.calculateVarVarSize(this.RoleData, 'Title', 1) + ((25) * this.RoleData.length) + 49;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

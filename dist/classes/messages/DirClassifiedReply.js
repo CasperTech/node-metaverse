@@ -10,7 +10,7 @@ class DirClassifiedReplyMessage {
         this.id = Message_1.Message.DirClassifiedReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + 29) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
+        return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + ((29) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

@@ -1,0 +1,199 @@
+{
+    "sentAcks": [
+        1294
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 1294,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "ObjectUpdateCached",
+            "messageFlags": 33,
+            "id": 14,
+            "RegionData": {
+                "RegionHandle": {
+                    "low": 282112,
+                    "high": 264448,
+                    "unsigned": false
+                },
+                "TimeDilation": 65077
+            },
+            "ObjectData": [
+                {
+                    "ID": 544846227,
+                    "CRC": 19198,
+                    "UpdateFlags": 268599504
+                },
+                {
+                    "ID": 544846228,
+                    "CRC": 9,
+                    "UpdateFlags": 268566736
+                },
+                {
+                    "ID": 544846229,
+                    "CRC": 4234,
+                    "UpdateFlags": 268566736
+                },
+                {
+                    "ID": 544846230,
+                    "CRC": 4176,
+                    "UpdateFlags": 268566736
+                },
+                {
+                    "ID": 544846231,
+                    "CRC": 5780,
+                    "UpdateFlags": 268566736
+                },
+                {
+                    "ID": 544846232,
+                    "CRC": 4359,
+                    "UpdateFlags": 268566736
+                },
+                {
+                    "ID": 544846233,
+                    "CRC": 4024,
+                    "UpdateFlags": 268566736
+                },
+                {
+                    "ID": 544556260,
+                    "CRC": 266,
+                    "UpdateFlags": 268599504
+                },
+                {
+                    "ID": 544556256,
+                    "CRC": 278,
+                    "UpdateFlags": 268599504
+                },
+                {
+                    "ID": 544437011,
+                    "CRC": 14118,
+                    "UpdateFlags": 1232
+                },
+                {
+                    "ID": 549887635,
+                    "CRC": 1576,
+                    "UpdateFlags": 268436688
+                },
+                {
+                    "ID": 549888458,
+                    "CRC": 31,
+                    "UpdateFlags": 268568592
+                },
+                {
+                    "ID": 544436996,
+                    "CRC": 836,
+                    "UpdateFlags": 1232
+                },
+                {
+                    "ID": 544436997,
+                    "CRC": 2237,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544436998,
+                    "CRC": 2260,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544436999,
+                    "CRC": 2259,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437000,
+                    "CRC": 2257,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437001,
+                    "CRC": 2258,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437002,
+                    "CRC": 2480,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437003,
+                    "CRC": 1228,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437004,
+                    "CRC": 971,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437005,
+                    "CRC": 958,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437006,
+                    "CRC": 975,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437007,
+                    "CRC": 964,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437008,
+                    "CRC": 954,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437009,
+                    "CRC": 454,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 544437010,
+                    "CRC": 722,
+                    "UpdateFlags": 134352
+                },
+                {
+                    "ID": 549888439,
+                    "CRC": 37,
+                    "UpdateFlags": 268568592
+                },
+                {
+                    "ID": 544755400,
+                    "CRC": 587519,
+                    "UpdateFlags": 268566736
+                },
+                {
+                    "ID": 544451828,
+                    "CRC": 365,
+                    "UpdateFlags": 268568592
+                },
+                {
+                    "ID": 544755399,
+                    "CRC": 565561,
+                    "UpdateFlags": 268568784
+                },
+                {
+                    "ID": 549888096,
+                    "CRC": 1414,
+                    "UpdateFlags": 268566736
+                },
+                {
+                    "ID": 549888094,
+                    "CRC": 77,
+                    "UpdateFlags": 268568784
+                },
+                {
+                    "ID": 549888095,
+                    "CRC": 78,
+                    "UpdateFlags": 268568784
+                }
+            ]
+        }
+    }
+}

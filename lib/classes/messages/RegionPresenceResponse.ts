@@ -25,7 +25,7 @@ export class RegionPresenceResponseMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.RegionData, 'Message', 1) + 42) * this.RegionData.length) + 1;
+        return this.calculateVarVarSize(this.RegionData, 'Message', 1) + ((42) * this.RegionData.length) + 1;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number
