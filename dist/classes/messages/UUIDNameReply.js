@@ -10,7 +10,7 @@ class UUIDNameReplyMessage {
         this.id = Message_1.Message.UUIDNameReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.UUIDNameBlock, 'FirstName', 1) + this.calculateVarVarSize(this.UUIDNameBlock, 'LastName', 1) + 16) * this.UUIDNameBlock.length) + 1;
+        return this.calculateVarVarSize(this.UUIDNameBlock, 'FirstName', 1) + this.calculateVarVarSize(this.UUIDNameBlock, 'LastName', 1) + ((16) * this.UUIDNameBlock.length) + 1;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

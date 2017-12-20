@@ -10,7 +10,7 @@ class MapItemReplyMessage {
         this.id = Message_1.Message.MapItemReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.Data, 'Name', 1) + 32) * this.Data.length) + 25;
+        return this.calculateVarVarSize(this.Data, 'Name', 1) + ((32) * this.Data.length) + 25;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

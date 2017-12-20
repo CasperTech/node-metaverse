@@ -31,7 +31,7 @@ export class DirClassifiedReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + 29) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
+        return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + ((29) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

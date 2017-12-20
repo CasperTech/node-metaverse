@@ -18,7 +18,7 @@ import {GroupMembersReplyMessage} from '../messages/GroupMembersReply';
 import {FilterResponse} from '../../enums/FilterResponse';
 import * as Long from 'long';
 import {GroupChatSessionJoinEvent} from '../../events/GroupChatSessionJoinEvent';
-import * as LLSD from 'llsd';
+import * as LLSD from '@caspertech/llsd';
 
 export class GroupCommands extends CommandsBase
 {

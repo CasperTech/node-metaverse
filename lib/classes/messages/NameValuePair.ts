@@ -20,7 +20,7 @@ export class NameValuePairMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.NameValueData, 'NVPair', 2)) * this.NameValueData.length) + 17;
+        return this.calculateVarVarSize(this.NameValueData, 'NVPair', 2) + 17;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

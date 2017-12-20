@@ -1,4 +1,4 @@
-import * as LLSD from 'llsd';
+import * as LLSD from '@caspertech/llsd';
 import * as request from 'request';
 import {Region} from './Region';
 import {Subject} from 'rxjs/Subject';
@@ -6,7 +6,7 @@ import {Subscription} from 'rxjs/Subscription';
 import {EventQueueClient} from './EventQueueClient';
 import {UUID} from './UUID';
 import {HTTPAssets} from '../enums/HTTPAssets';
-import {ClientEvents} from "./ClientEvents";
+import {ClientEvents} from './ClientEvents';
 import {Agent} from './Agent';
 
 export class Caps

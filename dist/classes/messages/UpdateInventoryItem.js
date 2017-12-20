@@ -10,7 +10,7 @@ class UpdateInventoryItemMessage {
         this.id = Message_1.Message.UpdateInventoryItem;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + 140) * this.InventoryData.length) + 49;
+        return this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + ((140) * this.InventoryData.length) + 49;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

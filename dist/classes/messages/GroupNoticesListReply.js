@@ -10,7 +10,7 @@ class GroupNoticesListReplyMessage {
         this.id = Message_1.Message.GroupNoticesListReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.Data, 'FromName', 2) + this.calculateVarVarSize(this.Data, 'Subject', 2) + 22) * this.Data.length) + 33;
+        return this.calculateVarVarSize(this.Data, 'FromName', 2) + this.calculateVarVarSize(this.Data, 'Subject', 2) + ((22) * this.Data.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

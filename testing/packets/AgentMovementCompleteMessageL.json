@@ -1,0 +1,91 @@
+{
+    "sentAcks": [
+        4
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 4,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "AgentMovementComplete",
+            "messageFlags": 4,
+            "id": 4294902010,
+            "AgentData": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "SessionID": {
+                    "mUUID": "3d64e727-5147-4ea2-a76f-753f747c6108"
+                }
+            },
+            "Data": {
+                "Position": {
+                    "values": {
+                        "0": 212.00399780273438,
+                        "1": 48.003700256347656,
+                        "2": 139.97300720214844
+                    }
+                },
+                "LookAt": {
+                    "values": {
+                        "0": 1,
+                        "1": -0.0000526076000824105,
+                        "2": 0
+                    }
+                },
+                "RegionHandle": {
+                    "low": 282112,
+                    "high": 264448,
+                    "unsigned": false
+                },
+                "Timestamp": 1513785229
+            },
+            "SimData": {
+                "ChannelVersion": {
+                    "type": "Buffer",
+                    "data": [
+                        83,
+                        101,
+                        99,
+                        111,
+                        110,
+                        100,
+                        32,
+                        76,
+                        105,
+                        102,
+                        101,
+                        32,
+                        83,
+                        101,
+                        114,
+                        118,
+                        101,
+                        114,
+                        32,
+                        49,
+                        55,
+                        46,
+                        49,
+                        50,
+                        46,
+                        48,
+                        49,
+                        46,
+                        53,
+                        49,
+                        49,
+                        49,
+                        51,
+                        49,
+                        0
+                    ]
+                }
+            }
+        }
+    }
+}

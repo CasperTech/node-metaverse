@@ -10,7 +10,7 @@ class AvatarTextureUpdateMessage {
         this.id = Message_1.Message.AvatarTextureUpdate;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.WearableData, 'HostName', 1) + 17) * this.WearableData.length) + ((16) * this.TextureData.length) + 19;
+        return this.calculateVarVarSize(this.WearableData, 'HostName', 1) + ((17) * this.WearableData.length) + ((16) * this.TextureData.length) + 19;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

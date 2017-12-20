@@ -19,7 +19,7 @@ export class ScriptDataRequestMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.DataBlock, 'Request', 2) + 9) * this.DataBlock.length) + 1;
+        return this.calculateVarVarSize(this.DataBlock, 'Request', 2) + ((9) * this.DataBlock.length) + 1;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

@@ -10,7 +10,7 @@ class BulkUpdateInventoryMessage {
         this.id = Message_1.Message.BulkUpdateInventory;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.FolderData, 'Name', 1) + 33) * this.FolderData.length) + ((this.calculateVarVarSize(this.ItemData, 'Name', 1) + this.calculateVarVarSize(this.ItemData, 'Description', 1) + 140) * this.ItemData.length) + 34;
+        return this.calculateVarVarSize(this.FolderData, 'Name', 1) + ((33) * this.FolderData.length) + this.calculateVarVarSize(this.ItemData, 'Name', 1) + this.calculateVarVarSize(this.ItemData, 'Description', 1) + ((140) * this.ItemData.length) + 34;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

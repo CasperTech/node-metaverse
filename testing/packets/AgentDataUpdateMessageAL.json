@@ -1,0 +1,114 @@
+{
+    "sentAcks": [
+        10
+    ],
+    "receivedAcks": [
+        10,
+        11,
+        12
+    ],
+    "packet": {
+        "packetFlags": 80,
+        "sequenceNumber": 10,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "AgentDataUpdate",
+            "messageFlags": 52,
+            "id": 4294902147,
+            "AgentData": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "FirstName": {
+                    "type": "Buffer",
+                    "data": [
+                        67,
+                        117,
+                        115,
+                        116,
+                        111,
+                        109,
+                        101,
+                        114,
+                        83,
+                        117,
+                        112,
+                        112,
+                        111,
+                        114,
+                        116,
+                        79,
+                        102,
+                        102,
+                        105,
+                        99,
+                        105,
+                        97,
+                        108,
+                        0
+                    ]
+                },
+                "LastName": {
+                    "type": "Buffer",
+                    "data": [
+                        82,
+                        101,
+                        115,
+                        105,
+                        100,
+                        101,
+                        110,
+                        116,
+                        0
+                    ]
+                },
+                "GroupTitle": {
+                    "type": "Buffer",
+                    "data": [
+                        67,
+                        97,
+                        115,
+                        112,
+                        101,
+                        114,
+                        32,
+                        84,
+                        101,
+                        99,
+                        104,
+                        105,
+                        101,
+                        0
+                    ]
+                },
+                "ActiveGroupID": {
+                    "mUUID": "c6424e05-6e2c-fb03-220b-ca7904d11e04"
+                },
+                "GroupPowers": {
+                    "low": -1842,
+                    "high": 101887,
+                    "unsigned": false
+                },
+                "GroupName": {
+                    "type": "Buffer",
+                    "data": [
+                        67,
+                        97,
+                        115,
+                        112,
+                        101,
+                        114,
+                        84,
+                        101,
+                        99,
+                        104,
+                        0
+                    ]
+                }
+            }
+        }
+    }
+}

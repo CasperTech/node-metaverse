@@ -1,0 +1,27 @@
+{
+    "sentAcks": [],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 0,
+        "sequenceNumber": 1942,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "CameraConstraint",
+            "messageFlags": 49,
+            "id": 22,
+            "CameraCollidePlane": {
+                "Plane": {
+                    "values": {
+                        "0": -0.9190573692321777,
+                        "1": -0.37379807233810425,
+                        "2": -0.12493376433849335,
+                        "3": 9869.619140625
+                    }
+                }
+            }
+        }
+    }
+}

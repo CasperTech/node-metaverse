@@ -10,7 +10,7 @@ class ObjectImageMessage {
         this.id = Message_1.Message.ObjectImage;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ObjectData, 'MediaURL', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + 4) * this.ObjectData.length) + 33;
+        return this.calculateVarVarSize(this.ObjectData, 'MediaURL', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + ((4) * this.ObjectData.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

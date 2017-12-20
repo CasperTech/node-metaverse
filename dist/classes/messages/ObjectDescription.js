@@ -10,7 +10,7 @@ class ObjectDescriptionMessage {
         this.id = Message_1.Message.ObjectDescription;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Description', 1) + 4) * this.ObjectData.length) + 33;
+        return this.calculateVarVarSize(this.ObjectData, 'Description', 1) + ((4) * this.ObjectData.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

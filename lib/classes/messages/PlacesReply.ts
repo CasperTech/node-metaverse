@@ -36,7 +36,7 @@ export class PlacesReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.QueryData, 'Name', 1) + this.calculateVarVarSize(this.QueryData, 'Desc', 1) + this.calculateVarVarSize(this.QueryData, 'SimName', 1) + 61) * this.QueryData.length) + 49;
+        return this.calculateVarVarSize(this.QueryData, 'Name', 1) + this.calculateVarVarSize(this.QueryData, 'Desc', 1) + this.calculateVarVarSize(this.QueryData, 'SimName', 1) + ((61) * this.QueryData.length) + 49;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

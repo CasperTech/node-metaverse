@@ -43,7 +43,7 @@ export class UpdateInventoryItemMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + 140) * this.InventoryData.length) + 49;
+        return this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + ((140) * this.InventoryData.length) + 49;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

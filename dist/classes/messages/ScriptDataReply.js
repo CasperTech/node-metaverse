@@ -10,7 +10,7 @@ class ScriptDataReplyMessage {
         this.id = Message_1.Message.ScriptDataReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.DataBlock, 'Reply', 2) + 8) * this.DataBlock.length) + 1;
+        return this.calculateVarVarSize(this.DataBlock, 'Reply', 2) + ((8) * this.DataBlock.length) + 1;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

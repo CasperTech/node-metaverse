@@ -34,7 +34,7 @@ export class GroupActiveProposalItemReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ProposalData, 'TerseDateID', 1) + this.calculateVarVarSize(this.ProposalData, 'StartDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'EndDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'VoteCast', 1) + this.calculateVarVarSize(this.ProposalData, 'ProposalText', 1) + 41) * this.ProposalData.length) + 53;
+        return this.calculateVarVarSize(this.ProposalData, 'TerseDateID', 1) + this.calculateVarVarSize(this.ProposalData, 'StartDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'EndDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'VoteCast', 1) + this.calculateVarVarSize(this.ProposalData, 'ProposalText', 1) + ((41) * this.ProposalData.length) + 53;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

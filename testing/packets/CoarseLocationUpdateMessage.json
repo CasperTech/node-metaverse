@@ -1,0 +1,105 @@
+{
+    "sentAcks": [],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 0,
+        "sequenceNumber": 2145,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "CoarseLocationUpdate",
+            "messageFlags": 34,
+            "id": 65286,
+            "Location": [
+                {
+                    "X": 182,
+                    "Y": 220,
+                    "Z": 31
+                },
+                {
+                    "X": 212,
+                    "Y": 48,
+                    "Z": 35
+                },
+                {
+                    "X": 193,
+                    "Y": 74,
+                    "Z": 33
+                },
+                {
+                    "X": 213,
+                    "Y": 49,
+                    "Z": 35
+                },
+                {
+                    "X": 195,
+                    "Y": 75,
+                    "Z": 33
+                },
+                {
+                    "X": 139,
+                    "Y": 140,
+                    "Z": 32
+                },
+                {
+                    "X": 68,
+                    "Y": 83,
+                    "Z": 32
+                },
+                {
+                    "X": 138,
+                    "Y": 141,
+                    "Z": 32
+                }
+            ],
+            "Index": {
+                "You": 1,
+                "Prey": -1
+            },
+            "AgentData": [
+                {
+                    "AgentID": {
+                        "mUUID": "b5eb3daa-f5bc-4b86-a9e7-dd7a6ba00372"
+                    }
+                },
+                {
+                    "AgentID": {
+                        "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                    }
+                },
+                {
+                    "AgentID": {
+                        "mUUID": "c458d09b-41c7-4091-9422-09def816fac5"
+                    }
+                },
+                {
+                    "AgentID": {
+                        "mUUID": "d1cd5b71-6209-4595-9bf0-771bf689ce00"
+                    }
+                },
+                {
+                    "AgentID": {
+                        "mUUID": "17616f8b-6e76-4f13-8c92-cc9bbd35a291"
+                    }
+                },
+                {
+                    "AgentID": {
+                        "mUUID": "43cfd911-1a13-4670-8046-9f935ef56769"
+                    }
+                },
+                {
+                    "AgentID": {
+                        "mUUID": "804fec95-181f-4970-9e1c-5e330f83faa4"
+                    }
+                },
+                {
+                    "AgentID": {
+                        "mUUID": "828f7198-42e5-41b4-bd60-926a33ea067b"
+                    }
+                }
+            ]
+        }
+    }
+}

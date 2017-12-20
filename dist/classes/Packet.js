@@ -21,8 +21,11 @@ class Packet {
         }
         return 1 + 4 + 1 + this.extraHeader.length + idSize + this.message.getSize();
     }
-    writeToBuffer(buf, pos) {
-        if (this.message.messageFlags & MessageFlags_1.MessageFlags.Zerocoded) {
+    writeToBuffer(buf, pos, options) {
+        if (options === undefined) {
+            options = 0;
+        }
+        if (this.message.messageFlags & MessageFlags_1.MessageFlags.Zerocoded && !(options & 1)) {
             this.packetFlags = this.packetFlags | PacketFlags_1.PacketFlags.Zerocoded;
         }
         buf.writeUInt8(this.packetFlags, pos++);
@@ -52,7 +55,7 @@ class Packet {
         }
         pos += actualLength;
         if (pos < buf.length) {
-            console.error('WARNING: BUFFER UNDERFLOW: Finished writing but we are not at the end of the buffer');
+            console.error('WARNING: BUFFER UNDERFLOW: Finished writing but we are not at the end of the buffer (Written: ' + pos + ' bytes, expected ' + buf.length);
         }
         if (this.packetFlags & PacketFlags_1.PacketFlags.Zerocoded) {
             buf = Zerocoder_1.Zerocoder.Encode(buf, bodyStart, pos);
@@ -116,6 +119,7 @@ class Packet {
         if (pos < buf.length) {
             console.error('WARNING: Finished reading ' + MessageClasses_1.nameFromID(messageID) + ' but we\'re not at the end of the packet (' + pos + ' < ' + buf.length + ', seq ' + this.sequenceNumber + ')');
         }
+        return pos;
     }
 }
 exports.Packet = Packet;

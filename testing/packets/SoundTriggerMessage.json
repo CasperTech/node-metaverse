@@ -1,0 +1,44 @@
+{
+    "sentAcks": [],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 0,
+        "sequenceNumber": 1968,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "SoundTrigger",
+            "messageFlags": 1,
+            "id": 29,
+            "SoundData": {
+                "SoundID": {
+                    "mUUID": "be582e5d-b123-41a2-a150-454c39e961c8"
+                },
+                "OwnerID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "ObjectID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "ParentID": {
+                    "mUUID": "00000000-0000-0000-0000-000000000000"
+                },
+                "Handle": {
+                    "low": 282112,
+                    "high": 264448,
+                    "unsigned": false
+                },
+                "Position": {
+                    "values": {
+                        "0": 212,
+                        "1": 48,
+                        "2": 139.8922882080078
+                    }
+                },
+                "Gain": 1.5259478092193604
+            }
+        }
+    }
+}

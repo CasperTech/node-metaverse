@@ -10,7 +10,7 @@ class DirPlacesReplyMessage {
         this.id = Message_1.Message.DirPlacesReply;
     }
     getSize() {
-        return ((16) * this.QueryData.length) + ((this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + 22) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 19;
+        return ((16) * this.QueryData.length) + this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + ((22) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 19;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

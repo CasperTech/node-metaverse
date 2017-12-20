@@ -40,7 +40,7 @@ export class FetchInventoryReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + 136) * this.InventoryData.length) + 17;
+        return this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + ((136) * this.InventoryData.length) + 17;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

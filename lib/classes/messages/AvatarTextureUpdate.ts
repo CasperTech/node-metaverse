@@ -26,7 +26,7 @@ export class AvatarTextureUpdateMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.WearableData, 'HostName', 1) + 17) * this.WearableData.length) + ((16) * this.TextureData.length) + 19;
+        return this.calculateVarVarSize(this.WearableData, 'HostName', 1) + ((17) * this.WearableData.length) + ((16) * this.TextureData.length) + 19;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

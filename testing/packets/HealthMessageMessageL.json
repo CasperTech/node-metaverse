@@ -1,0 +1,22 @@
+{
+    "sentAcks": [
+        6
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 6,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "HealthMessage",
+            "messageFlags": 52,
+            "id": 4294901898,
+            "HealthData": {
+                "Health": 100
+            }
+        }
+    }
+}

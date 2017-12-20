@@ -1,0 +1,80 @@
+{
+    "sentAcks": [
+        1837
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 192,
+        "sequenceNumber": 1837,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "MoneyBalanceReply",
+            "messageFlags": 52,
+            "id": 4294902074,
+            "MoneyData": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "TransactionID": {
+                    "mUUID": "0cf4e90b-2606-6165-2ecf-f2236ecc4aef"
+                },
+                "TransactionSuccess": true,
+                "MoneyBalance": 4,
+                "SquareMetersCredit": 0,
+                "SquareMetersCommitted": 0,
+                "Description": {
+                    "type": "Buffer",
+                    "data": [
+                        67,
+                        97,
+                        115,
+                        112,
+                        101,
+                        114,
+                        32,
+                        87,
+                        97,
+                        114,
+                        100,
+                        101,
+                        110,
+                        32,
+                        112,
+                        97,
+                        105,
+                        100,
+                        32,
+                        121,
+                        111,
+                        117,
+                        32,
+                        76,
+                        36,
+                        50,
+                        46,
+                        0
+                    ]
+                }
+            },
+            "TransactionInfo": {
+                "TransactionType": 5001,
+                "SourceID": {
+                    "mUUID": "d1cd5b71-6209-4595-9bf0-771bf689ce00"
+                },
+                "IsSourceGroup": false,
+                "DestID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "IsDestGroup": false,
+                "Amount": 2,
+                "ItemDescription": {
+                    "type": "Buffer",
+                    "data": []
+                }
+            }
+        }
+    }
+}

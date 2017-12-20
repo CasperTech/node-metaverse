@@ -3,7 +3,7 @@ import { Region } from './Region';
 import { EventQueueClient } from './EventQueueClient';
 import { UUID } from './UUID';
 import { HTTPAssets } from '../enums/HTTPAssets';
-import { ClientEvents } from "./ClientEvents";
+import { ClientEvents } from './ClientEvents';
 import { Agent } from './Agent';
 export declare class Caps {
     private region;

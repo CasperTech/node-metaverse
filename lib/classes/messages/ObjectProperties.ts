@@ -44,7 +44,7 @@ export class ObjectPropertiesMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Name', 1) + this.calculateVarVarSize(this.ObjectData, 'Description', 1) + this.calculateVarVarSize(this.ObjectData, 'TouchName', 1) + this.calculateVarVarSize(this.ObjectData, 'SitName', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureID', 1) + 174) * this.ObjectData.length) + 1;
+        return this.calculateVarVarSize(this.ObjectData, 'Name', 1) + this.calculateVarVarSize(this.ObjectData, 'Description', 1) + this.calculateVarVarSize(this.ObjectData, 'TouchName', 1) + this.calculateVarVarSize(this.ObjectData, 'SitName', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureID', 1) + ((174) * this.ObjectData.length) + 1;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

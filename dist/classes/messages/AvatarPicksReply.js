@@ -10,7 +10,7 @@ class AvatarPicksReplyMessage {
         this.id = Message_1.Message.AvatarPicksReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.Data, 'PickName', 1) + 16) * this.Data.length) + 33;
+        return this.calculateVarVarSize(this.Data, 'PickName', 1) + ((16) * this.Data.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

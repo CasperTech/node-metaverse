@@ -22,7 +22,7 @@ export class TeleportFailedMessage implements MessageBase
 
     getSize(): number
     {
-        return (this.Info['Reason'].length + 1) + ((this.calculateVarVarSize(this.AlertInfo, 'Message', 1) + this.calculateVarVarSize(this.AlertInfo, 'ExtraParams', 1)) * this.AlertInfo.length) + 17;
+        return (this.Info['Reason'].length + 1) + this.calculateVarVarSize(this.AlertInfo, 'Message', 1) + this.calculateVarVarSize(this.AlertInfo, 'ExtraParams', 1) + 17;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

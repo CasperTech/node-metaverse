@@ -1,0 +1,30 @@
+{
+    "sentAcks": [],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 0,
+        "sequenceNumber": 2144,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "AttachedSound",
+            "messageFlags": 34,
+            "id": 65293,
+            "DataBlock": {
+                "SoundID": {
+                    "mUUID": "4dc25983-c0fd-2421-7585-190874c3cea4"
+                },
+                "ObjectID": {
+                    "mUUID": "5994a66d-02b3-50ca-c299-03ae9368bd9c"
+                },
+                "OwnerID": {
+                    "mUUID": "bffac2a2-38ae-4860-9c7d-4104f30d8310"
+                },
+                "Gain": 0.05000000074505806,
+                "Flags": 0
+            }
+        }
+    }
+}

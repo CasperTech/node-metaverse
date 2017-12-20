@@ -10,7 +10,7 @@ class GroupTitlesReplyMessage {
         this.id = Message_1.Message.GroupTitlesReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.GroupData, 'Title', 1) + 17) * this.GroupData.length) + 49;
+        return this.calculateVarVarSize(this.GroupData, 'Title', 1) + ((17) * this.GroupData.length) + 49;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

@@ -10,7 +10,7 @@ class GroupAccountTransactionsReplyMessage {
         this.id = Message_1.Message.GroupAccountTransactionsReply;
     }
     getSize() {
-        return (this.MoneyData['StartDate'].length + 1) + ((this.calculateVarVarSize(this.HistoryData, 'Time', 1) + this.calculateVarVarSize(this.HistoryData, 'User', 1) + this.calculateVarVarSize(this.HistoryData, 'Item', 1) + 8) * this.HistoryData.length) + 57;
+        return (this.MoneyData['StartDate'].length + 1) + this.calculateVarVarSize(this.HistoryData, 'Time', 1) + this.calculateVarVarSize(this.HistoryData, 'User', 1) + this.calculateVarVarSize(this.HistoryData, 'Item', 1) + ((8) * this.HistoryData.length) + 57;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

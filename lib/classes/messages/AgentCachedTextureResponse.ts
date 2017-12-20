@@ -24,7 +24,7 @@ export class AgentCachedTextureResponseMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.WearableData, 'HostName', 1) + 17) * this.WearableData.length) + 37;
+        return this.calculateVarVarSize(this.WearableData, 'HostName', 1) + ((17) * this.WearableData.length) + 37;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

@@ -11,7 +11,7 @@ class GroupMembersReplyMessage {
         this.id = Message_1.Message.GroupMembersReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.MemberData, 'OnlineStatus', 1) + this.calculateVarVarSize(this.MemberData, 'Title', 1) + 29) * this.MemberData.length) + 53;
+        return this.calculateVarVarSize(this.MemberData, 'OnlineStatus', 1) + this.calculateVarVarSize(this.MemberData, 'Title', 1) + ((29) * this.MemberData.length) + 53;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

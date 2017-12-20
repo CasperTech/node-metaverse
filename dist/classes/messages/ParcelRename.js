@@ -10,7 +10,7 @@ class ParcelRenameMessage {
         this.id = Message_1.Message.ParcelRename;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ParcelData, 'NewName', 1) + 16) * this.ParcelData.length) + 1;
+        return this.calculateVarVarSize(this.ParcelData, 'NewName', 1) + ((16) * this.ParcelData.length) + 1;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

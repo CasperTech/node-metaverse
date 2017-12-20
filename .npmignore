@@ -6,6 +6,7 @@ tools/
 example/
 docs/
 dist/tests/
+testing/
 .npmignore
 .gitignore
 caspertech-node-metaverse-*.tgz

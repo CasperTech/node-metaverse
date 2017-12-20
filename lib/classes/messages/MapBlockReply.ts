@@ -28,7 +28,7 @@ export class MapBlockReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.Data, 'Name', 1) + 27) * this.Data.length) + 21;
+        return this.calculateVarVarSize(this.Data, 'Name', 1) + ((27) * this.Data.length) + 21;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

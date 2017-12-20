@@ -1,0 +1,69 @@
+{
+    "sentAcks": [
+        9
+    ],
+    "receivedAcks": [
+        8,
+        9
+    ],
+    "packet": {
+        "packetFlags": 208,
+        "sequenceNumber": 9,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "AgentWearablesUpdate",
+            "messageFlags": 52,
+            "id": 4294902142,
+            "AgentData": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                },
+                "SessionID": {
+                    "mUUID": "00000000-0000-0000-0000-000000000000"
+                },
+                "SerialNum": 42
+            },
+            "WearableData": [
+                {
+                    "ItemID": {
+                        "mUUID": "db5a4e5f-9da3-44c8-992d-1181c5795498"
+                    },
+                    "AssetID": {
+                        "mUUID": "d3d25329-42a7-4526-a622-7db0c33d72c3"
+                    },
+                    "WearableType": 1
+                },
+                {
+                    "ItemID": {
+                        "mUUID": "6969c7cc-f72f-4a76-a19b-c293cce8ce4f"
+                    },
+                    "AssetID": {
+                        "mUUID": "57ca535e-1f23-49e5-a478-a443a5380564"
+                    },
+                    "WearableType": 2
+                },
+                {
+                    "ItemID": {
+                        "mUUID": "7999702b-b291-48f9-8903-c91dfb828408"
+                    },
+                    "AssetID": {
+                        "mUUID": "bb1089a8-3060-4722-9692-8b8ed1ab7a29"
+                    },
+                    "WearableType": 3
+                },
+                {
+                    "ItemID": {
+                        "mUUID": "566cb59e-ef60-41d7-bfa6-e0f293fbea40"
+                    },
+                    "AssetID": {
+                        "mUUID": "09656fd9-a624-491d-9370-919aa721aa09"
+                    },
+                    "WearableType": 4
+                }
+            ]
+        }
+    }
+}

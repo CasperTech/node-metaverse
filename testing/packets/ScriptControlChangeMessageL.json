@@ -1,0 +1,31 @@
+{
+    "sentAcks": [
+        64
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 64,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "ScriptControlChange",
+            "messageFlags": 36,
+            "id": 4294901949,
+            "Data": [
+                {
+                    "TakeControls": false,
+                    "Controls": 7864383,
+                    "PassToAgent": true
+                },
+                {
+                    "TakeControls": true,
+                    "Controls": 7864383,
+                    "PassToAgent": true
+                }
+            ]
+        }
+    }
+}

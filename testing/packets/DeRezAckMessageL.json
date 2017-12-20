@@ -1,0 +1,25 @@
+{
+    "sentAcks": [
+        1890
+    ],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 64,
+        "sequenceNumber": 1890,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "DeRezAck",
+            "messageFlags": 36,
+            "id": 4294902052,
+            "TransactionData": {
+                "TransactionID": {
+                    "mUUID": "00000000-0000-0000-0000-000000000000"
+                },
+                "Success": true
+            }
+        }
+    }
+}

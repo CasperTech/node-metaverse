@@ -28,7 +28,7 @@ export class DirPeopleReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'FirstName', 1) + this.calculateVarVarSize(this.QueryReplies, 'LastName', 1) + this.calculateVarVarSize(this.QueryReplies, 'Group', 1) + 21) * this.QueryReplies.length) + 33;
+        return this.calculateVarVarSize(this.QueryReplies, 'FirstName', 1) + this.calculateVarVarSize(this.QueryReplies, 'LastName', 1) + this.calculateVarVarSize(this.QueryReplies, 'Group', 1) + ((21) * this.QueryReplies.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

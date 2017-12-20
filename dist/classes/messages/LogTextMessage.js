@@ -10,7 +10,7 @@ class LogTextMessageMessage {
         this.id = Message_1.Message.LogTextMessage;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.DataBlock, 'Message', 2) + 52) * this.DataBlock.length) + 1;
+        return this.calculateVarVarSize(this.DataBlock, 'Message', 2) + ((52) * this.DataBlock.length) + 1;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

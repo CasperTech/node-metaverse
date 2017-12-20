@@ -24,7 +24,7 @@ export class AlertMessageMessage implements MessageBase
 
     getSize(): number
     {
-        return (this.AlertData['Message'].length + 1) + ((this.calculateVarVarSize(this.AlertInfo, 'Message', 1) + this.calculateVarVarSize(this.AlertInfo, 'ExtraParams', 1)) * this.AlertInfo.length) + ((16) * this.AgentInfo.length) + 2;
+        return (this.AlertData['Message'].length + 1) + this.calculateVarVarSize(this.AlertInfo, 'Message', 1) + this.calculateVarVarSize(this.AlertInfo, 'ExtraParams', 1) + ((16) * this.AgentInfo.length) + 2;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

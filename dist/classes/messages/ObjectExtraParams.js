@@ -10,7 +10,7 @@ class ObjectExtraParamsMessage {
         this.id = Message_1.Message.ObjectExtraParams;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ObjectData, 'ParamData', 1) + 11) * this.ObjectData.length) + 33;
+        return this.calculateVarVarSize(this.ObjectData, 'ParamData', 1) + ((11) * this.ObjectData.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

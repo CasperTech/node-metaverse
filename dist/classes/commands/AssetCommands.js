@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const CommandsBase_1 = require("./CommandsBase");
 const UUID_1 = require("../UUID");
-const LLSD = require("llsd");
+const LLSD = require("@caspertech/llsd");
 const Utils_1 = require("../Utils");
 class AssetCommands extends CommandsBase_1.CommandsBase {
     downloadAsset(type, uuid) {

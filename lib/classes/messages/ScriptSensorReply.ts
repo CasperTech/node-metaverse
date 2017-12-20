@@ -30,7 +30,7 @@ export class ScriptSensorReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.SensedData, 'Name', 1) + 92) * this.SensedData.length) + 17;
+        return this.calculateVarVarSize(this.SensedData, 'Name', 1) + ((92) * this.SensedData.length) + 17;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

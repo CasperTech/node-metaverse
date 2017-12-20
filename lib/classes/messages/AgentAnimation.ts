@@ -25,7 +25,7 @@ export class AgentAnimationMessage implements MessageBase
 
     getSize(): number
     {
-        return ((17) * this.AnimationList.length) + ((this.calculateVarVarSize(this.PhysicalAvatarEventList, 'TypeData', 1)) * this.PhysicalAvatarEventList.length) + 34;
+        return ((17) * this.AnimationList.length) + this.calculateVarVarSize(this.PhysicalAvatarEventList, 'TypeData', 1) + 34;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

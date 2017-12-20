@@ -31,7 +31,7 @@ export class DirEventsReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + this.calculateVarVarSize(this.QueryReplies, 'Date', 1) + 28) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
+        return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + this.calculateVarVarSize(this.QueryReplies, 'Date', 1) + ((28) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

@@ -1,5 +1,5 @@
 import {Caps} from './Caps';
-import * as LLSD from 'llsd';
+import * as LLSD from '@caspertech/llsd';
 import * as request from 'request';
 import * as Long from 'long';
 import {IPAddress} from './IPAddress';

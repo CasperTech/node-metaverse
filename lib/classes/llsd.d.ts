@@ -1,1 +1,1 @@
-declare module 'llsd';
+declare module '@caspertech/llsd';

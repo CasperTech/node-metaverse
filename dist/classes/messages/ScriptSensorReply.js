@@ -12,7 +12,7 @@ class ScriptSensorReplyMessage {
         this.id = Message_1.Message.ScriptSensorReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.SensedData, 'Name', 1) + 92) * this.SensedData.length) + 17;
+        return this.calculateVarVarSize(this.SensedData, 'Name', 1) + ((92) * this.SensedData.length) + 17;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

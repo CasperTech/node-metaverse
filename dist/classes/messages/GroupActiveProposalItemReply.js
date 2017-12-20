@@ -10,7 +10,7 @@ class GroupActiveProposalItemReplyMessage {
         this.id = Message_1.Message.GroupActiveProposalItemReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ProposalData, 'TerseDateID', 1) + this.calculateVarVarSize(this.ProposalData, 'StartDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'EndDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'VoteCast', 1) + this.calculateVarVarSize(this.ProposalData, 'ProposalText', 1) + 41) * this.ProposalData.length) + 53;
+        return this.calculateVarVarSize(this.ProposalData, 'TerseDateID', 1) + this.calculateVarVarSize(this.ProposalData, 'StartDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'EndDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'VoteCast', 1) + this.calculateVarVarSize(this.ProposalData, 'ProposalText', 1) + ((41) * this.ProposalData.length) + 53;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

@@ -10,7 +10,7 @@ class MapBlockReplyMessage {
         this.id = Message_1.Message.MapBlockReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.Data, 'Name', 1) + 27) * this.Data.length) + 21;
+        return this.calculateVarVarSize(this.Data, 'Name', 1) + ((27) * this.Data.length) + 21;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

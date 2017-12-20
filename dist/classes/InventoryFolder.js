@@ -4,7 +4,7 @@ const UUID_1 = require("./UUID");
 const InventoryItem_1 = require("./InventoryItem");
 const fs = require("fs");
 const path = require("path");
-const LLSD = require("llsd");
+const LLSD = require("@caspertech/llsd");
 const InventorySortOrder_1 = require("../enums/InventorySortOrder");
 class InventoryFolder {
     constructor(invBase, agent) {

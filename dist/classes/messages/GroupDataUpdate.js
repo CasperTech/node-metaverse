@@ -11,7 +11,7 @@ class GroupDataUpdateMessage {
         this.id = Message_1.Message.GroupDataUpdate;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.AgentGroupData, 'GroupTitle', 1) + 40) * this.AgentGroupData.length) + 1;
+        return this.calculateVarVarSize(this.AgentGroupData, 'GroupTitle', 1) + ((40) * this.AgentGroupData.length) + 1;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

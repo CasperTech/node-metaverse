@@ -18,7 +18,7 @@ export class ParcelRenameMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ParcelData, 'NewName', 1) + 16) * this.ParcelData.length) + 1;
+        return this.calculateVarVarSize(this.ParcelData, 'NewName', 1) + ((16) * this.ParcelData.length) + 1;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

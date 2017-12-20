@@ -10,7 +10,7 @@ class RemoveNameValuePairMessage {
         this.id = Message_1.Message.RemoveNameValuePair;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.NameValueData, 'NVPair', 2)) * this.NameValueData.length) + 17;
+        return this.calculateVarVarSize(this.NameValueData, 'NVPair', 2) + 17;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

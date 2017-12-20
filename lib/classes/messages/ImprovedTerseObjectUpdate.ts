@@ -22,7 +22,7 @@ export class ImprovedTerseObjectUpdateMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Data', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2)) * this.ObjectData.length) + 11;
+        return this.calculateVarVarSize(this.ObjectData, 'Data', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + 11;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

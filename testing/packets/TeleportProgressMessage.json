@@ -1,0 +1,41 @@
+{
+    "sentAcks": [],
+    "receivedAcks": [],
+    "packet": {
+        "packetFlags": 0,
+        "sequenceNumber": 1918,
+        "extraHeader": {
+            "type": "Buffer",
+            "data": []
+        },
+        "message": {
+            "name": "TeleportProgress",
+            "messageFlags": 36,
+            "id": 4294901826,
+            "AgentData": {
+                "AgentID": {
+                    "mUUID": "96b5f431-d0b5-4e9b-88dd-afc0e38a1567"
+                }
+            },
+            "Info": {
+                "TeleportFlags": 131076,
+                "Message": {
+                    "type": "Buffer",
+                    "data": [
+                        99,
+                        111,
+                        109,
+                        112,
+                        108,
+                        101,
+                        116,
+                        105,
+                        110,
+                        103,
+                        0
+                    ]
+                }
+            }
+        }
+    }
+}

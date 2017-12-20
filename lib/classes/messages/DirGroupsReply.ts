@@ -26,7 +26,7 @@ export class DirGroupsReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'GroupName', 1) + 24) * this.QueryReplies.length) + 33;
+        return this.calculateVarVarSize(this.QueryReplies, 'GroupName', 1) + ((24) * this.QueryReplies.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

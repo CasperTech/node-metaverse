@@ -28,7 +28,7 @@ export class DirLandReplyMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + 26) * this.QueryReplies.length) + 33;
+        return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + ((26) * this.QueryReplies.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

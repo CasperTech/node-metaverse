@@ -10,7 +10,7 @@ class DirPopularReplyMessage {
         this.id = Message_1.Message.DirPopularReply;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + 20) * this.QueryReplies.length) + 33;
+        return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + ((20) * this.QueryReplies.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

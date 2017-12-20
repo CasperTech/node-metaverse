@@ -26,7 +26,7 @@ export class ViewerEffectMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.Effect, 'TypeData', 1) + 41) * this.Effect.length) + 33;
+        return this.calculateVarVarSize(this.Effect, 'TypeData', 1) + ((41) * this.Effect.length) + 33;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

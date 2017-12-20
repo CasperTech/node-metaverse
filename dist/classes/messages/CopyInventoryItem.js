@@ -10,7 +10,7 @@ class CopyInventoryItemMessage {
         this.id = Message_1.Message.CopyInventoryItem;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.InventoryData, 'NewName', 1) + 52) * this.InventoryData.length) + 33;
+        return this.calculateVarVarSize(this.InventoryData, 'NewName', 1) + ((52) * this.InventoryData.length) + 33;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

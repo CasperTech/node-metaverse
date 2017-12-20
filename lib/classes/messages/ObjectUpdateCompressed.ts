@@ -22,7 +22,7 @@ export class ObjectUpdateCompressedMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Data', 2) + 4) * this.ObjectData.length) + 11;
+        return this.calculateVarVarSize(this.ObjectData, 'Data', 2) + ((4) * this.ObjectData.length) + 11;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number

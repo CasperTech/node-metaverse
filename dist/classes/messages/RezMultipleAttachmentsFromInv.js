@@ -10,7 +10,7 @@ class RezMultipleAttachmentsFromInvMessage {
         this.id = Message_1.Message.RezMultipleAttachmentsFromInv;
     }
     getSize() {
-        return ((this.calculateVarVarSize(this.ObjectData, 'Name', 1) + this.calculateVarVarSize(this.ObjectData, 'Description', 1) + 49) * this.ObjectData.length) + 51;
+        return this.calculateVarVarSize(this.ObjectData, 'Name', 1) + this.calculateVarVarSize(this.ObjectData, 'Description', 1) + ((49) * this.ObjectData.length) + 51;
     }
     calculateVarVarSize(block, paramName, extraPerVar) {
         let size = 0;

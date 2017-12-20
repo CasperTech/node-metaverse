@@ -48,7 +48,7 @@ export class BulkUpdateInventoryMessage implements MessageBase
 
     getSize(): number
     {
-        return ((this.calculateVarVarSize(this.FolderData, 'Name', 1) + 33) * this.FolderData.length) + ((this.calculateVarVarSize(this.ItemData, 'Name', 1) + this.calculateVarVarSize(this.ItemData, 'Description', 1) + 140) * this.ItemData.length) + 34;
+        return this.calculateVarVarSize(this.FolderData, 'Name', 1) + ((33) * this.FolderData.length) + this.calculateVarVarSize(this.ItemData, 'Name', 1) + this.calculateVarVarSize(this.ItemData, 'Description', 1) + ((140) * this.ItemData.length) + 34;
     }
 
     calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number
