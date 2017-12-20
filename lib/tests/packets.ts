@@ -113,20 +113,23 @@ describe('Packets', () =>
                             done();
                         }
                     });
+                    let buf = Buffer.allocUnsafe(0);
+                    let extra = 0;
                     it('should encode back to binary', (done) =>
                     {
                         try
                         {
-                            let buf = Buffer.alloc(packet.getSize());
+                            buf = Buffer.alloc(packet.getSize());
                             buf = packet.writeToBuffer(buf, 0, DecodeFlags.DontChangeFlags);
 
                             // Account for appended acks
                             let bl = buf.length;
                             if (packet.packetFlags & PacketFlags.Ack)
                             {
-                                bl += 4 * acksReceived.length;
-                                bl ++;
+                                extra += 4 * acksReceived.length;
+                                extra++;
                             }
+                            bl += extra;
 
                             if (data.length !== bl)
                             {
@@ -142,6 +145,19 @@ describe('Packets', () =>
                         catch (err)
                         {
                             done(err);
+                        }
+                    });
+                    it('should match the original packet byte-for-byte', (done) =>
+                    {
+                        // First trim off the extra bytes
+                        const trimmedData = data.slice(0, data.length - extra);
+                        if (trimmedData.compare(buf) !== 0)
+                        {
+                            done('Buffers do not match');
+                        }
+                        else
+                        {
+                            done();
                         }
                     });
                 });
