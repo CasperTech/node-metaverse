@@ -13,14 +13,14 @@
     "build": "tsc --removeComments",
     "run": "node -r source-map-support/register example/testBot.js"
   },
-  "engines" : {
-    "node" : ">=4.8.7"
+  "engines": {
+    "node": ">=4.8.7"
   },
   "author": "CasperTech Ltd",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CasperTech/node-metaverse.git"
+    "url": "git+https://github.com/CasperTech/node-metaverse.git"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.44",
@@ -33,6 +33,7 @@
     "typescript": "^2.6.1"
   },
   "dependencies": {
+    "@caspertech/llsd": "^1.0.0",
     "@types/long": "^3.0.32",
     "@types/request": "^2.0.8",
     "@types/uuid": "^3.4.3",
@@ -40,7 +41,6 @@
     "@types/xml": "^1.0.2",
     "@types/xmlrpc": "^1.3.3",
     "ipaddr.js": "^1.5.4",
-    "llsd": "git+https://github.com/CasperTech/llsd.git",
     "long": "^3.2.0",
     "request": "^2.83.0",
     "rxjs": "^5.5.2",
