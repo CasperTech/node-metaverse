@@ -30,7 +30,12 @@ export class InventoryFolder
     {
         this.agent = agent;
         this.inventoryBase = invBase;
-        this.cacheDir = path.resolve(__dirname + '/cache/' + this.agent.agentID.toString());
+        const cacheLocation = path.resolve(__dirname + '/cache');
+        if (!fs.existsSync(cacheLocation))
+        {
+            fs.mkdirSync(cacheLocation, 0o777);
+        }
+        this.cacheDir = path.resolve(cacheLocation + '/' + this.agent.agentID.toString());
         if (!fs.existsSync(this.cacheDir))
         {
             fs.mkdirSync(this.cacheDir, 0o777);
