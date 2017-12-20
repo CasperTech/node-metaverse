@@ -7,7 +7,7 @@
   "scripts": {
     "setup": "npm install",
     "prepublish": "npm run build",
-    "test-only": "mocha dist/tests/",
+    "test-only": "mocha -r source-map-support/register dist/tests/",
     "pretest": "npm run build",
     "test": "npm run test-only",
     "build": "tsc --removeComments",
