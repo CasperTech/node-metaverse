@@ -56,7 +56,7 @@ describe('Packets', () =>
                             });
                             done();
                         }
-                        catch(err)
+                        catch (err)
                         {
                             done(err);
                         }
