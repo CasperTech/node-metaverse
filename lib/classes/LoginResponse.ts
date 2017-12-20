@@ -95,6 +95,12 @@ export class LoginResponse
         this.clientEvents = clientEvents;
         this.agent = new Agent(this.clientEvents);
         this.region = new Region(this.agent, this.clientEvents, options);
+
+        if (json['agent_id'])
+        {
+            this.agent.agentID = new UUID(json['agent_id']);
+        }
+
         Object.keys(json).forEach((key: string) =>
         {
             const val: any = json[key];
@@ -103,7 +109,7 @@ export class LoginResponse
                 case 'inventory-skeleton':
                     val.forEach((item: any) =>
                     {
-                        const folder = new InventoryFolder(this.agent.inventory.main);
+                        const folder = new InventoryFolder(this.agent.inventory.main, this.agent);
                         folder.typeDefault = parseInt(item['type_default'], 10);
                         folder.version = parseInt(item['version'], 10);
                         folder.name = String(item['name']);
@@ -115,7 +121,7 @@ export class LoginResponse
                 case 'inventory-skel-lib':
                     val.forEach((item: any) =>
                     {
-                        const folder = new InventoryFolder(this.agent.inventory.library);
+                        const folder = new InventoryFolder(this.agent.inventory.library, this.agent);
                         folder.typeDefault = parseInt(item['type_default'], 10);
                         folder.version = parseInt(item['version'], 10);
                         folder.name = String(item['name']);
@@ -127,7 +133,7 @@ export class LoginResponse
                 case 'inventory-root':
                 {
                     this.agent.inventory.main.root = new UUID(val[0]['folder_id']);
-                    const folder = new InventoryFolder(this.agent.inventory.main);
+                    const folder = new InventoryFolder(this.agent.inventory.main, this.agent);
                     folder.typeDefault = 0;
                     folder.version = 0;
                     folder.name = 'root';
@@ -142,7 +148,7 @@ export class LoginResponse
                 case 'inventory-lib-root':
                 {
                     this.agent.inventory.library.root = new UUID(val[0]['folder_id']);
-                    const folder = new InventoryFolder(this.agent.inventory.library);
+                    const folder = new InventoryFolder(this.agent.inventory.library, this.agent);
                     folder.typeDefault = 0;
                     folder.version = 0;
                     folder.name = 'root';
@@ -315,9 +321,6 @@ export class LoginResponse
                 case 'udp_blacklist':
                     const list = String(val).split(',');
                     this.region.circuit.udpBlacklist = list;
-                    break;
-                case 'agent_id':
-                    this.agent.agentID = new UUID(val);
                     break;
                 case 'seconds_since_epoch':
                     this.region.circuit.timestamp = parseInt(val, 10);

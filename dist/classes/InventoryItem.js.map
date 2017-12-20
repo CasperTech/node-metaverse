@@ -1,1 +1,1 @@
-{"version":3,"file":"InventoryItem.js","sourceRoot":"","sources":["../../lib/classes/InventoryItem.ts"],"names":[],"mappings":";;AAAA;CAGC;AAHD,sCAGC"}
+{"version":3,"file":"InventoryItem.js","sourceRoot":"","sources":["../../lib/classes/InventoryItem.ts"],"names":[],"mappings":";;AAAA,iCAA4B;AAM5B;IAAA;QAEI,YAAO,GAAS,WAAI,CAAC,IAAI,EAAE,CAAC;IAsBhC,CAAC;CAAA;AAxBD,sCAwBC"}

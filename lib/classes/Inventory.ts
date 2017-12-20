@@ -3,6 +3,7 @@ import {ClientEvents} from './ClientEvents';
 import {AssetType} from '../enums/AssetType';
 import {InventoryFolder} from './InventoryFolder';
 import uuid = require('uuid');
+import {Agent} from './Agent';
 
 export class Inventory
 {
@@ -20,16 +21,18 @@ export class Inventory
         skeleton: {}
     };
     private clientEvents: ClientEvents;
+    private agent: Agent;
 
-    constructor(clientEvents: ClientEvents)
+    constructor(clientEvents: ClientEvents, agent: Agent)
     {
+        this.agent = agent;
         this.clientEvents = clientEvents;
     }
     getRootFolderLibrary(): InventoryFolder
     {
         if (this.library.root === undefined)
         {
-            return new InventoryFolder(this.library);
+            return new InventoryFolder(this.library, this.agent);
         }
         const uuidStr = this.library.root.toString();
         if (this.library.skeleton[uuidStr])
@@ -38,14 +41,14 @@ export class Inventory
         }
         else
         {
-            return new InventoryFolder(this.library);
+            return new InventoryFolder(this.library, this.agent);
         }
     }
     getRootFolderMain(): InventoryFolder
     {
         if (this.main.root === undefined)
         {
-            return new InventoryFolder(this.main);
+            return new InventoryFolder(this.main, this.agent);
         }
         const uuidStr = this.main.root.toString();
         if (this.main.skeleton[uuidStr])
@@ -54,7 +57,7 @@ export class Inventory
         }
         else
         {
-            return new InventoryFolder(this.main);
+            return new InventoryFolder(this.main, this.agent);
         }
     }
     findFolderForType(type: AssetType): UUID
@@ -68,9 +71,9 @@ export class Inventory
             return this.main.root;
         }
         let found = UUID.zero();
-        Object.keys(this.main.skeleton).forEach((uuid) =>
+        Object.keys(this.main.skeleton).forEach((fUUID) =>
         {
-            const folder = this.main.skeleton[uuid];
+            const folder = this.main.skeleton[fUUID];
             if (folder.typeDefault === type)
             {
                 found = folder.folderID;

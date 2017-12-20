@@ -83,7 +83,7 @@ export class Agent
 
     constructor(clientEvents: ClientEvents)
     {
-        this.inventory = new Inventory(clientEvents);
+        this.inventory = new Inventory(clientEvents, this);
         this.clientEvents = clientEvents;
         this.clientEvents.onGroupChatAgentListUpdate.subscribe((event: GroupChatSessionAgentListEvent) =>
         {

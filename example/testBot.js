@@ -246,6 +246,7 @@ function connect()
         folders.forEach((folder) =>
         {
             console.log('Top level folder: ' + folder.name);
+            folder.populate();
         });
 
         // When it's time to go home, call bot.close();

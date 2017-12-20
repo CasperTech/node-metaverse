@@ -9,3 +9,4 @@ dist/tests/
 .npmignore
 .gitignore
 caspertech-node-metaverse-*.tgz
+dist/classes/cache
