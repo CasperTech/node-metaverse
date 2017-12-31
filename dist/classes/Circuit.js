@@ -203,7 +203,13 @@ class Circuit {
     }
     receivedPacket(bytes) {
         const packet = new Packet_1.Packet();
-        packet.readFromBuffer(bytes, 0, this.ackReceived.bind(this), this.sendAck.bind(this));
+        try {
+            packet.readFromBuffer(bytes, 0, this.ackReceived.bind(this), this.sendAck.bind(this));
+        }
+        catch (erro) {
+            console.error(erro);
+            return;
+        }
         if (this.receivedPackets[packet.sequenceNumber]) {
             clearTimeout(this.receivedPackets[packet.sequenceNumber]);
             this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
