@@ -324,7 +324,15 @@ export class Circuit
     receivedPacket(bytes: Buffer)
     {
         const packet = new Packet();
-        packet.readFromBuffer(bytes, 0, this.ackReceived.bind(this), this.sendAck.bind(this));
+        try
+        {
+            packet.readFromBuffer(bytes, 0, this.ackReceived.bind(this), this.sendAck.bind(this));
+        }
+        catch(erro)
+        {
+            console.error(erro);
+            return;
+        }
 
         if (this.receivedPackets[packet.sequenceNumber])
         {
