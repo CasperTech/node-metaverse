@@ -92,7 +92,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 const filterMsg = packet.message;
                 let found = false;
                 filterMsg.Data.forEach((data) => {
-                    if (data.X === (gridX / 256) && data.Y === (gridY / 256)) {
+                    if (data.X === gridX && data.Y === gridY) {
                         found = true;
                     }
                 });
@@ -103,7 +103,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
             }).then((packet) => {
                 const responseMsg = packet.message;
                 responseMsg.Data.forEach((data) => {
-                    if (data.X === (gridX / 256) && data.Y === (gridY / 256)) {
+                    if (data.X === gridX && data.Y === gridY) {
                         response.block = new MapBlock_1.MapBlock();
                         response.block.name = Utils_1.Utils.BufferToStringSimple(data.Name);
                         response.block.accessFlags = data.Access;
@@ -124,9 +124,9 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                     RegionHandle: regionHandle
                 };
                 circuit.sendMessage(mi, PacketFlags_1.PacketFlags.Reliable);
-                const minX = Math.floor(gridX / 256) * 256;
+                const minX = gridX;
                 const maxX = minX + 256;
-                const minY = Math.floor(gridY / 256) * 256;
+                const minY = gridY;
                 const maxY = minY + 256;
                 response.avatars = [];
                 circuit.waitForMessage(Message_1.Message.MapItemReply, 10000, (packet) => {

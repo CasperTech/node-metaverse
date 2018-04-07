@@ -26,16 +26,16 @@ let loginResponse = null;
 
 bot.clientEvents.onLure.subscribe((lureEvent) =>
 {
-    bot.clientCommands.grid.getRegionMapInfo(lureEvent.gridX, lureEvent.gridY).then((regionInfo) =>
+    bot.clientCommands.grid.getRegionMapInfo(lureEvent.gridX / 256, lureEvent.gridY / 256).then((regionInfo) =>
     {
         if (lureEvent.from.toString() === master)
         {
-            console.log('Accepting teleport lure to ' + regionInfo.name + ' (' + regionInfo.avatars.length + ' avatar' + ((regionInfo.avatars.length === 1)?'':'s') + ' present) from ' + lureEvent.fromName + ' with message: ' + lureEvent.lureMessage);
+            console.log('Accepting teleport lure to ' + regionInfo.block.name + ' (' + regionInfo.avatars.length + ' avatar' + ((regionInfo.avatars.length === 1)?'':'s') + ' present) from ' + lureEvent.fromName + ' with message: ' + lureEvent.lureMessage);
             bot.clientCommands.teleport.acceptTeleport(lureEvent);
         }
         else
         {
-            console.log('Ignoring teleport lure to ' + regionInfo.name + ' (' + regionInfo.avatars.length + ' avatar' + ((regionInfo.avatars.length === 1)?'':'s') + ' present) from ' + lureEvent.fromName + ' with message: ' + lureEvent.lureMessage);
+            console.log('Ignoring teleport lure to ' + regionInfo.block.name + ' (' + regionInfo.avatars.length + ' avatar' + ((regionInfo.avatars.length === 1)?'':'s') + ' present) from ' + lureEvent.fromName + ' with message: ' + lureEvent.lureMessage);
         }
     });
 });
