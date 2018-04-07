@@ -111,7 +111,7 @@ export class GridCommands extends CommandsBase
                 let found = false;
                 filterMsg.Data.forEach((data) =>
                 {
-                    if (data.X === (gridX / 256) && data.Y === (gridY / 256))
+                    if (data.X === gridX && data.Y === gridY)
                     {
                         found = true;
                     }
@@ -126,7 +126,7 @@ export class GridCommands extends CommandsBase
                 const responseMsg = packet.message as MapBlockReplyMessage;
                 responseMsg.Data.forEach((data) =>
                 {
-                    if (data.X === (gridX / 256) && data.Y === (gridY / 256))
+                    if (data.X === gridX && data.Y === gridY)
                     {
                         response.block = new MapBlock();
                         response.block.name = Utils.BufferToStringSimple(data.Name);
@@ -151,9 +151,9 @@ export class GridCommands extends CommandsBase
                     RegionHandle: regionHandle
                 };
                 circuit.sendMessage(mi, PacketFlags.Reliable);
-                const minX = Math.floor(gridX / 256) * 256;
+                const minX = gridX;
                 const maxX = minX + 256;
-                const minY = Math.floor(gridY / 256) * 256;
+                const minY = gridY;
                 const maxY = minY + 256;
                 response.avatars = [];
                 circuit.waitForMessage(Message.MapItemReply, 10000, (packet: Packet): FilterResponse =>
