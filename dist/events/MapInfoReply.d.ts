@@ -1,8 +1,6 @@
-import { UUID } from '../classes/UUID';
+import { MapBlock } from '../classes/MapBlock';
 export declare class MapInfoReply {
-    name: string;
-    mapImage: UUID;
-    accessFlags: number;
+    block: MapBlock;
     avatars: {
         X: number;
         Y: number;

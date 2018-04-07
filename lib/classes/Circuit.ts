@@ -299,8 +299,7 @@ export class Circuit
 
         const keys: string[] = Object.keys(this.awaitingAck);
 
-        keys.forEach((seqID: string) =>
-        {
+        keys.forEach((seqID: string) => {
             const nSeq = parseInt(seqID, 10);
             if (oldest === -1 || this.awaitingAck[nSeq].sent < oldest)
             {
