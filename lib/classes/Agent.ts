@@ -203,7 +203,6 @@ export class Agent
                     {
                         // TODO: Pretty sure this isn't the best way to do this
                         this.controlFlags = ControlFlags.AGENT_CONTROL_FINISH_ANIM;
-                        console.log('Stopping animation ' + a);
                         this.sendAgentUpdate();
                         this.controlFlags = 0;
                     }

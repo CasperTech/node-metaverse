@@ -120,7 +120,6 @@ class Agent {
                         a === BuiltInAnimations_1.BuiltInAnimations.WALK ||
                         a === BuiltInAnimations_1.BuiltInAnimations.RUN) {
                         this.controlFlags = ControlFlags_1.ControlFlags.AGENT_CONTROL_FINISH_ANIM;
-                        console.log('Stopping animation ' + a);
                         this.sendAgentUpdate();
                         this.controlFlags = 0;
                     }
