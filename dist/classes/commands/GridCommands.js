@@ -14,6 +14,8 @@ const FilterResponse_1 = require("../../enums/FilterResponse");
 const MapNameRequest_1 = require("../messages/MapNameRequest");
 const GridLayerType_1 = require("../../enums/GridLayerType");
 const RegionInfoReply_1 = require("../../events/RegionInfoReply");
+const MapInfoRangeReply_1 = require("../../events/MapInfoRangeReply");
+const MapBlock_1 = require("../MapBlock");
 class GridCommands extends CommandsBase_1.CommandsBase {
     getRegionByName(regionName) {
         return new Promise((resolve, reject) => {
@@ -75,15 +77,15 @@ class GridCommands extends CommandsBase_1.CommandsBase {
             msg.AgentData = {
                 AgentID: this.agent.agentID,
                 SessionID: circuit.sessionID,
-                Flags: 65536,
+                Flags: 2,
                 EstateID: 0,
                 Godlike: false
             };
             msg.PositionData = {
-                MinX: (gridX / 256),
-                MaxX: (gridX / 256),
-                MinY: (gridY / 256),
-                MaxY: (gridY / 256)
+                MinX: gridX,
+                MaxX: gridX,
+                MinY: gridY,
+                MaxY: gridY
             };
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
             circuit.waitForMessage(Message_1.Message.MapBlockReply, 10000, (packet) => {
@@ -102,9 +104,10 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 const responseMsg = packet.message;
                 responseMsg.Data.forEach((data) => {
                     if (data.X === (gridX / 256) && data.Y === (gridY / 256)) {
-                        response.name = Utils_1.Utils.BufferToStringSimple(data.Name);
-                        response.accessFlags = data.Access;
-                        response.mapImage = data.MapImageID;
+                        response.block = new MapBlock_1.MapBlock();
+                        response.block.name = Utils_1.Utils.BufferToStringSimple(data.Name);
+                        response.block.accessFlags = data.Access;
+                        response.block.mapImage = data.MapImageID;
                     }
                 });
                 const regionHandle = Utils_1.Utils.RegionCoordinatesToHandle(gridX, gridY);
@@ -157,6 +160,53 @@ class GridCommands extends CommandsBase_1.CommandsBase {
             });
         });
     }
+    getRegionMapInfoRange(minX, minY, maxX, maxY) {
+        return new Promise((resolve, reject) => {
+            const circuit = this.currentRegion.circuit;
+            const response = new MapInfoRangeReply_1.MapInfoRangeReply();
+            const msg = new MapBlockRequest_1.MapBlockRequestMessage();
+            msg.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID,
+                Flags: 2,
+                EstateID: 0,
+                Godlike: false
+            };
+            msg.PositionData = {
+                MinX: minX,
+                MaxX: maxX,
+                MinY: minY,
+                MaxY: maxY
+            };
+            circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
+            circuit.waitForMessage(Message_1.Message.MapBlockReply, 30000, (packet) => {
+                const filterMsg = packet.message;
+                let found = false;
+                filterMsg.Data.forEach((data) => {
+                    if (data.X >= minX && data.X <= maxX && data.Y >= minY && data.Y <= maxY) {
+                        found = true;
+                        const mapBlock = new MapBlock_1.MapBlock();
+                        mapBlock.name = Utils_1.Utils.BufferToStringSimple(data.Name);
+                        mapBlock.accessFlags = data.Access;
+                        mapBlock.mapImage = data.MapImageID;
+                        response.regions.push(mapBlock);
+                    }
+                });
+                if (found) {
+                    return FilterResponse_1.FilterResponse.Match;
+                }
+                return FilterResponse_1.FilterResponse.NoMatch;
+            }).then((packet) => {
+            }).catch((err) => {
+                if (err.message === 'Timeout') {
+                    resolve(response);
+                }
+                else {
+                    reject(err);
+                }
+            });
+        });
+    }
     name2Key(name) {
         const check = name.split('.');
         if (check.length > 1) {
@@ -190,7 +240,8 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 let found = null;
                 const apr = packet.message;
                 apr.Data.forEach((dataBlock) => {
-                    const resultName = (Utils_1.Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' + Utils_1.Utils.BufferToStringSimple(dataBlock.LastName)).toLowerCase();
+                    const resultName = (Utils_1.Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' +
+                        Utils_1.Utils.BufferToStringSimple(dataBlock.LastName)).toLowerCase();
                     if (resultName === name) {
                         found = dataBlock.AvatarID;
                     }
