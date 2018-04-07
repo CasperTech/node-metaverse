@@ -110,7 +110,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                         response.block.mapImage = data.MapImageID;
                     }
                 });
-                const regionHandle = Utils_1.Utils.RegionCoordinatesToHandle(gridX, gridY);
+                const regionHandle = Utils_1.Utils.RegionCoordinatesToHandle(gridX * 256, gridY * 256);
                 const mi = new MapItemRequest_1.MapItemRequestMessage();
                 mi.AgentData = {
                     AgentID: this.agent.agentID,
@@ -124,9 +124,9 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                     RegionHandle: regionHandle
                 };
                 circuit.sendMessage(mi, PacketFlags_1.PacketFlags.Reliable);
-                const minX = gridX;
+                const minX = gridX * 256;
                 const maxX = minX + 256;
-                const minY = gridY;
+                const minY = gridY * 256;
                 const maxY = minY + 256;
                 response.avatars = [];
                 circuit.waitForMessage(Message_1.Message.MapItemReply, 10000, (packet) => {

@@ -136,7 +136,7 @@ export class GridCommands extends CommandsBase
                 });
 
                 //  Now get the region handle
-                const regionHandle: Long = Utils.RegionCoordinatesToHandle(gridX, gridY);
+                const regionHandle: Long = Utils.RegionCoordinatesToHandle(gridX * 256, gridY * 256);
 
                 const mi = new MapItemRequestMessage();
                 mi.AgentData = {
@@ -151,9 +151,9 @@ export class GridCommands extends CommandsBase
                     RegionHandle: regionHandle
                 };
                 circuit.sendMessage(mi, PacketFlags.Reliable);
-                const minX = gridX;
+                const minX = gridX * 256;
                 const maxX = minX + 256;
-                const minY = gridY;
+                const minY = gridY * 256;
                 const maxY = minY + 256;
                 response.avatars = [];
                 circuit.waitForMessage(Message.MapItemReply, 10000, (packet: Packet): FilterResponse =>
