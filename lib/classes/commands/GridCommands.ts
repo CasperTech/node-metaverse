@@ -94,7 +94,7 @@ export class GridCommands extends CommandsBase
             msg.AgentData = {
                 AgentID: this.agent.agentID,
                 SessionID: circuit.sessionID,
-                Flags: 2,
+                Flags: 0,
                 EstateID: 0,
                 Godlike: false
             };
@@ -208,7 +208,7 @@ export class GridCommands extends CommandsBase
             msg.AgentData = {
                 AgentID: this.agent.agentID,
                 SessionID: circuit.sessionID,
-                Flags: 2,
+                Flags: 0,
                 EstateID: 0,
                 Godlike: false
             };
