@@ -39,6 +39,8 @@ import {SoundFlags} from './enums/SoundFlags';
 import {TeleportFlags} from './enums/TeleportFlags';
 import {CompressedFlags} from './enums/CompressedFlags';
 import {DecodeFlags} from './enums/DecodeFlags';
+import {ParcelInfoFlags} from './enums/ParcelInfoFlags';
+import {ParcelInfoReplyEvent} from './events/ParcelInfoReplyEvent';
 
 export {
     Bot,
@@ -61,6 +63,7 @@ export {
     InventoryItemFlags,
     LoginFlags,
     MessageFlags,
+    ParcelInfoFlags,
     PacketFlags,
     RegionProtocolFlags,
     SoundFlags,
@@ -80,6 +83,7 @@ export {
     LureEvent,
     MapInfoRangeReplyEvent,
     MapInfoReplyEvent,
+    ParcelInfoReplyEvent,
     RegionInfoReplyEvent,
     TeleportEvent
 };
