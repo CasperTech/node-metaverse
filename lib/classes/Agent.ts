@@ -219,7 +219,7 @@ export class Agent
             SessionID: circuit.sessionID
         };
         circuit.sendMessage(wearablesRequest, PacketFlags.Reliable);
-        circuit.waitForMessage(Message.AgentWearablesUpdate, 10000).then((packet: Packet) =>
+        circuit.waitForPacket(Message.AgentWearablesUpdate, 10000).then((packet: Packet) =>
         {
             const wearables = packet.message as AgentWearablesUpdateMessage;
             if (!this.wearables || wearables.AgentData.SerialNum > this.wearables.serialNumber)

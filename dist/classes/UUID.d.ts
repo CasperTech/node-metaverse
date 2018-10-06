@@ -7,4 +7,5 @@ export declare class UUID {
     setUUID(val: string): boolean;
     toString: () => string;
     writeToBuffer(buf: Buffer, pos: number): void;
+    equals(cmp: UUID | string): boolean;
 }

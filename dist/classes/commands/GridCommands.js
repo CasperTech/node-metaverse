@@ -33,7 +33,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 Name: Utils_1.Utils.StringToBuffer(regionName)
             };
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
-            circuit.waitForMessage(Message_1.Message.MapBlockReply, 10000, (packet) => {
+            circuit.waitForPacket(Message_1.Message.MapBlockReply, 10000, (packet) => {
                 const filterMsg = packet.message;
                 let found = false;
                 filterMsg.Data.forEach((region) => {
@@ -88,7 +88,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 MaxY: gridY
             };
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
-            circuit.waitForMessage(Message_1.Message.MapBlockReply, 10000, (packet) => {
+            circuit.waitForPacket(Message_1.Message.MapBlockReply, 10000, (packet) => {
                 const filterMsg = packet.message;
                 let found = false;
                 filterMsg.Data.forEach((data) => {
@@ -129,7 +129,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 const minY = gridY * 256;
                 const maxY = minY + 256;
                 response.avatars = [];
-                circuit.waitForMessage(Message_1.Message.MapItemReply, 10000, (packet) => {
+                circuit.waitForPacket(Message_1.Message.MapItemReply, 10000, (packet) => {
                     const filterMsg = packet.message;
                     let found = false;
                     filterMsg.Data.forEach((data) => {
@@ -179,7 +179,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 MaxY: maxY
             };
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
-            circuit.waitForMessage(Message_1.Message.MapBlockReply, 30000, (packet) => {
+            circuit.waitForPacket(Message_1.Message.MapBlockReply, 30000, (packet) => {
                 const filterMsg = packet.message;
                 let found = false;
                 filterMsg.Data.forEach((data) => {
@@ -228,7 +228,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 Name: Utils_1.Utils.StringToBuffer(name)
             };
             this.circuit.sendMessage(aprm, PacketFlags_1.PacketFlags.Reliable);
-            this.circuit.waitForMessage(Message_1.Message.AvatarPickerReply, 10000, (packet) => {
+            this.circuit.waitForPacket(Message_1.Message.AvatarPickerReply, 10000, (packet) => {
                 const apr = packet.message;
                 if (apr.AgentData.QueryID.toString() === queryID.toString()) {
                     return FilterResponse_1.FilterResponse.Finish;

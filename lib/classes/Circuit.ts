@@ -171,7 +171,13 @@ export class Circuit
         }
     }
 
-    waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<Packet>
+    async waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<MessageBase>
+    {
+        const msg: Packet = await this.waitForPacket(id, timeout, filter);
+        return msg.message;
+    }
+
+    waitForPacket(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<Packet>
     {
         return new Promise<Packet>((resolve, reject) =>
         {

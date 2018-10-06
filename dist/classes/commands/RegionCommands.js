@@ -14,7 +14,7 @@ class RegionCommands extends CommandsBase_1.CommandsBase {
                 RegionID: regionID,
             };
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
-            circuit.waitForMessage(Message_1.Message.RegionIDAndHandleReply, 10000, (packet) => {
+            circuit.waitForPacket(Message_1.Message.RegionIDAndHandleReply, 10000, (packet) => {
                 const filterMsg = packet.message;
                 if (filterMsg.ReplyBlock.RegionID.toString() === regionID.toString()) {
                     return FilterResponse_1.FilterResponse.Finish;

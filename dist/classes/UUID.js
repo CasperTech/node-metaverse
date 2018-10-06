@@ -49,6 +49,14 @@ class UUID {
         const binary = Buffer.from(shortened, 'hex');
         binary.copy(buf, pos, 0);
     }
+    equals(cmp) {
+        if (typeof cmp === 'string') {
+            return (cmp === this.mUUID);
+        }
+        else {
+            return cmp.equals(this.mUUID);
+        }
+    }
 }
 exports.UUID = UUID;
 //# sourceMappingURL=UUID.js.map

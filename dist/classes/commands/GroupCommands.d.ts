@@ -1,8 +1,8 @@
 import { CommandsBase } from './CommandsBase';
 import { UUID } from '../UUID';
-import { GroupInviteEvent } from '../../events/GroupInviteEvent';
 import { GroupRole } from '../GroupRole';
 import { GroupMember } from '../GroupMember';
+import { GroupInviteEvent } from '../..';
 export declare class GroupCommands extends CommandsBase {
     sendGroupNotice(groupID: UUID | string, subject: string, message: string): Promise<void>;
     sendGroupInviteBulk(groupID: UUID | string, sendTo: {

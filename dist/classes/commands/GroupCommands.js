@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const CommandsBase_1 = require("./CommandsBase");
 const UUID_1 = require("../UUID");
@@ -16,66 +24,70 @@ const FilterResponse_1 = require("../../enums/FilterResponse");
 const LLSD = require("@caspertech/llsd");
 class GroupCommands extends CommandsBase_1.CommandsBase {
     sendGroupNotice(groupID, subject, message) {
-        if (typeof groupID === 'string') {
-            groupID = new UUID_1.UUID(groupID);
-        }
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: groupID,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog_1.InstantMessageDialog.GroupNotice,
-            ID: UUID_1.UUID.zero(),
-            Timestamp: 0,
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(subject + '|' + message),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof groupID === 'string') {
+                groupID = new UUID_1.UUID(groupID);
+            }
+            const circuit = this.circuit;
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: groupID,
+                ParentEstateID: 0,
+                RegionID: UUID_1.UUID.zero(),
+                Position: Vector3_1.Vector3.getZero(),
+                Offline: 0,
+                Dialog: InstantMessageDialog_1.InstantMessageDialog.GroupNotice,
+                ID: UUID_1.UUID.zero(),
+                Timestamp: 0,
+                FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                Message: Utils_1.Utils.StringToBuffer(subject + '|' + message),
+                BinaryBucket: Buffer.allocUnsafe(0)
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            return yield circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     sendGroupInviteBulk(groupID, sendTo) {
-        if (typeof groupID === 'string') {
-            groupID = new UUID_1.UUID(groupID);
-        }
-        const igr = new InviteGroupRequest_1.InviteGroupRequestMessage();
-        igr.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        igr.GroupData = {
-            GroupID: groupID
-        };
-        igr.InviteData = [];
-        sendTo.forEach((to) => {
-            if (typeof to.avatarID === 'string') {
-                to.avatarID = new UUID_1.UUID(to.avatarID);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof groupID === 'string') {
+                groupID = new UUID_1.UUID(groupID);
             }
-            if (to.roleID === undefined) {
-                to.roleID = UUID_1.UUID.zero();
-            }
-            if (typeof to.roleID === 'string') {
-                to.roleID = new UUID_1.UUID(to.roleID);
-            }
-            igr.InviteData.push({
-                InviteeID: to.avatarID,
-                RoleID: to.roleID
+            const igr = new InviteGroupRequest_1.InviteGroupRequestMessage();
+            igr.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            igr.GroupData = {
+                GroupID: groupID
+            };
+            igr.InviteData = [];
+            sendTo.forEach((to) => {
+                if (typeof to.avatarID === 'string') {
+                    to.avatarID = new UUID_1.UUID(to.avatarID);
+                }
+                if (to.roleID === undefined) {
+                    to.roleID = UUID_1.UUID.zero();
+                }
+                if (typeof to.roleID === 'string') {
+                    to.roleID = new UUID_1.UUID(to.roleID);
+                }
+                igr.InviteData.push({
+                    InviteeID: to.avatarID,
+                    RoleID: to.roleID
+                });
             });
+            const sequenceNo = this.circuit.sendMessage(igr, PacketFlags_1.PacketFlags.Reliable);
+            return yield this.circuit.waitForAck(sequenceNo, 10000);
         });
-        const sequenceNo = this.circuit.sendMessage(igr, PacketFlags_1.PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
     }
     getSessionAgentCount(sessionID) {
         if (typeof sessionID === 'string') {
@@ -84,67 +96,73 @@ class GroupCommands extends CommandsBase_1.CommandsBase {
         return this.agent.getSessionAgentCount(sessionID);
     }
     sendGroupInvite(groupID, to, role) {
-        const sendTo = [{
-                avatarID: to,
-                roleID: role
-            }];
-        return this.sendGroupInviteBulk(groupID, sendTo);
+        return __awaiter(this, void 0, void 0, function* () {
+            const sendTo = [{
+                    avatarID: to,
+                    roleID: role
+                }];
+            return yield this.sendGroupInviteBulk(groupID, sendTo);
+        });
     }
     acceptGroupInvite(event) {
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: event.from,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog_1.InstantMessageDialog.GroupInvitationAccept,
-            ID: event.inviteID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(''),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            const circuit = this.circuit;
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: event.from,
+                ParentEstateID: 0,
+                RegionID: UUID_1.UUID.zero(),
+                Position: Vector3_1.Vector3.getZero(),
+                Offline: 0,
+                Dialog: InstantMessageDialog_1.InstantMessageDialog.GroupInvitationAccept,
+                ID: event.inviteID,
+                Timestamp: Math.floor(new Date().getTime() / 1000),
+                FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                Message: Utils_1.Utils.StringToBuffer(''),
+                BinaryBucket: Buffer.allocUnsafe(0)
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            return yield circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     rejectGroupInvite(event) {
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: event.from,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog_1.InstantMessageDialog.GroupInvitationDecline,
-            ID: event.inviteID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(''),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            const circuit = this.circuit;
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: event.from,
+                ParentEstateID: 0,
+                RegionID: UUID_1.UUID.zero(),
+                Position: Vector3_1.Vector3.getZero(),
+                Offline: 0,
+                Dialog: InstantMessageDialog_1.InstantMessageDialog.GroupInvitationDecline,
+                ID: event.inviteID,
+                Timestamp: Math.floor(new Date().getTime() / 1000),
+                FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                Message: Utils_1.Utils.StringToBuffer(''),
+                BinaryBucket: Buffer.allocUnsafe(0)
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            return yield circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     getMemberList(groupID) {
         return new Promise((resolve, reject) => {
@@ -203,7 +221,7 @@ class GroupCommands extends CommandsBase_1.CommandsBase {
             };
             let totalRoleCount = 0;
             this.circuit.sendMessage(grdr, PacketFlags_1.PacketFlags.Reliable);
-            this.circuit.waitForMessage(Message_1.Message.GroupRoleDataReply, 10000, (packet) => {
+            this.circuit.waitForPacket(Message_1.Message.GroupRoleDataReply, 10000, (packet) => {
                 const gmr = packet.message;
                 if (gmr.GroupData.RequestID.toString() === requestID.toString()) {
                     totalRoleCount = gmr.GroupData.RoleCount;
