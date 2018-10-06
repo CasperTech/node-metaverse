@@ -1,4 +1,3 @@
-import {MapInfoReply} from '../../events/MapInfoReply';
 import {Packet} from '../Packet';
 import * as Long from 'long';
 import {MapItemReplyMessage} from '../messages/MapItemReply';
@@ -8,7 +7,6 @@ import {MapBlockRequestMessage} from '../messages/MapBlockRequest';
 import {UUID} from '../UUID';
 import {MapItemRequestMessage} from '../messages/MapItemRequest';
 import {Utils} from '../Utils';
-import {PacketFlags} from '../../enums/PacketFlags';
 import {GridItemType} from '../../enums/GridItemType';
 import {CommandsBase} from './CommandsBase';
 import {AvatarPickerRequestMessage} from '../messages/AvatarPickerRequest';
@@ -16,17 +14,15 @@ import {AvatarPickerReplyMessage} from '../messages/AvatarPickerReply';
 import {FilterResponse} from '../../enums/FilterResponse';
 import {MapNameRequestMessage} from '../messages/MapNameRequest';
 import {GridLayerType} from '../../enums/GridLayerType';
-import {RegionInfoReply} from '../../events/RegionInfoReply';
-import {MapInfoRangeReply} from '../../events/MapInfoRangeReply';
 import {MapBlock} from '../MapBlock';
+import {MapInfoRangeReplyEvent, MapInfoReplyEvent, PacketFlags, RegionInfoReplyEvent} from '../..';
 export class GridCommands extends CommandsBase
 {
     getRegionByName(regionName: string)
     {
-        return new Promise<RegionInfoReply>((resolve, reject) =>
+        return new Promise<RegionInfoReplyEvent>((resolve, reject) =>
         {
             const circuit = this.currentRegion.circuit;
-            const response = new MapInfoReply();
             const msg: MapNameRequestMessage = new MapNameRequestMessage();
             msg.AgentData = {
                 AgentID: this.agent.agentID,
@@ -64,17 +60,18 @@ export class GridCommands extends CommandsBase
                     const name = Utils.BufferToStringSimple(region.Name);
                     if (name.trim().toLowerCase() === regionName.trim().toLowerCase() && !(region.X === 0 && region.Y === 0))
                     {
-                        const reply = new RegionInfoReply();
-                        reply.access = region.Access;
-                        reply.X = region.X;
-                        reply.Y = region.Y;
-                        reply.name = name;
-                        reply.regionFlags = region.RegionFlags;
-                        reply.waterHeight = region.WaterHeight;
-                        reply.agents = region.Agents;
-                        reply.mapImageID = region.MapImageID;
-
-                        reply.handle = Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256);
+                        const reply = new class implements RegionInfoReplyEvent
+                        {
+                            X =  region.X;
+                            Y = region.Y;
+                            name = name;
+                            access = region.Access;
+                            regionFlags = region.RegionFlags;
+                            waterHeight = region.WaterHeight;
+                            agents = region.Agents;
+                            mapImageID = region.MapImageID;
+                            handle = Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256)
+                        };
                         resolve(reply);
                     }
                 });
@@ -84,12 +81,12 @@ export class GridCommands extends CommandsBase
             });
         });
     }
-    getRegionMapInfo(gridX: number, gridY: number): Promise<MapInfoReply>
+    getRegionMapInfo(gridX: number, gridY: number): Promise<MapInfoReplyEvent>
     {
-        return new Promise<MapInfoReply>((resolve, reject) =>
+        return new Promise<MapInfoReplyEvent>((resolve, reject) =>
         {
             const circuit = this.currentRegion.circuit;
-            const response = new MapInfoReply();
+            const response = new MapInfoReplyEvent();
             const msg: MapBlockRequestMessage = new MapBlockRequestMessage();
             msg.AgentData = {
                 AgentID: this.agent.agentID,
@@ -198,12 +195,12 @@ export class GridCommands extends CommandsBase
         });
     }
 
-    getRegionMapInfoRange(minX: number, minY: number, maxX: number, maxY: number): Promise<MapInfoRangeReply>
+    getRegionMapInfoRange(minX: number, minY: number, maxX: number, maxY: number): Promise<MapInfoRangeReplyEvent>
     {
-        return new Promise<MapInfoRangeReply>((resolve, reject) =>
+        return new Promise<MapInfoRangeReplyEvent>((resolve, reject) =>
         {
             const circuit = this.currentRegion.circuit;
-            const response = new MapInfoRangeReply();
+            const response = new MapInfoRangeReplyEvent();
             const msg: MapBlockRequestMessage = new MapBlockRequestMessage();
             msg.AgentData = {
                 AgentID: this.agent.agentID,

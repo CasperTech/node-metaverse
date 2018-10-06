@@ -1,15 +1,11 @@
 import {CommandsBase} from './CommandsBase';
 import {Region} from '../Region';
-import {LureEvent} from '../../events/LureEvent';
 import {TeleportEventType} from '../../enums/TeleportEventType';
-import {TeleportEvent} from '../../events/TeleportEvent';
-import {PacketFlags} from '../../enums/PacketFlags';
 import {TeleportLureRequestMessage} from '../messages/TeleportLureRequest';
-import {TeleportFlags} from '../../enums/TeleportFlags';
 import {Vector3} from '../Vector3';
-import {RegionInfoReply} from '../../events/RegionInfoReply';
 import {TeleportLocationRequestMessage} from '../messages/TeleportLocationRequest';
 import * as Long from 'long';
+import {LureEvent, PacketFlags, RegionInfoReplyEvent, TeleportEvent, TeleportFlags} from '../..';
 
 export class TeleportCommands extends CommandsBase
 {
@@ -131,7 +127,7 @@ export class TeleportCommands extends CommandsBase
     {
         return new Promise<TeleportEvent>((resolve, reject) =>
         {
-            this.bot.clientCommands.grid.getRegionByName(regionName).then((region: RegionInfoReply) =>
+            this.bot.clientCommands.grid.getRegionByName(regionName).then((region: RegionInfoReplyEvent) =>
             {
                 this.teleportToHandle(region.handle, position, lookAt).then((event: TeleportEvent) =>
                 {

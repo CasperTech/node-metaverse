@@ -17,12 +17,28 @@ import {Vector3} from './classes/Vector3';
 import {ChatEvent} from './events/ChatEvent';
 import {GroupInviteEvent} from './events/GroupInviteEvent';
 import {FriendRequestEvent} from './events/FriendRequestEvent';
+import {FriendResponseEvent} from './events/FriendResponseEvent';
 import {LureEvent} from './events/LureEvent';
 import {TeleportEvent} from './events/TeleportEvent';
 import {DisconnectEvent} from './events/DisconnectEvent';
 import {GroupChatEvent} from './events/GroupChatEvent';
 import {GroupChatSessionJoinEvent} from './events/GroupChatSessionJoinEvent';
 import {GroupChatSessionAgentListEvent} from './events/GroupChatSessionAgentListEvent';
+import {RegionInfoReplyEvent} from './events/RegionInfoReplyEvent';
+import {MapInfoReplyEvent} from './events/MapInfoReplyEvent';
+import {MapInfoRangeReplyEvent} from './events/MapInfoRangeReplyEvent';
+import {InventoryOfferedEvent} from './events/InventoryOfferedEvent';
+import {AgentFlags} from './enums/AgentFlags';
+import {ControlFlags} from './enums/ControlFlags';
+import {InventoryItemFlags} from './enums/InventoryItemFlags';
+import {LoginFlags} from './enums/LoginFlags';
+import {MessageFlags} from './enums/MessageFlags';
+import {PacketFlags} from './enums/PacketFlags';
+import {RegionProtocolFlags} from './enums/RegionProtocolFlags';
+import {SoundFlags} from './enums/SoundFlags';
+import {TeleportFlags} from './enums/TeleportFlags';
+import {CompressedFlags} from './enums/CompressedFlags';
+import {DecodeFlags} from './enums/DecodeFlags';
 
 export {
     Bot,
@@ -31,19 +47,39 @@ export {
     HTTPAssets,
     ClientEvents,
     BVH,
-    InstantMessageEvent,
-    InstantMessageEventFlags,
     ChatSourceType,
     BotOptionFlags,
     UUID,
     Vector3,
+
+    // Flags
+    AgentFlags,
+    CompressedFlags,
+    ControlFlags,
+    DecodeFlags,
+    InstantMessageEventFlags,
+    InventoryItemFlags,
+    LoginFlags,
+    MessageFlags,
+    PacketFlags,
+    RegionProtocolFlags,
+    SoundFlags,
+    TeleportFlags,
+
+    // Events
     ChatEvent,
-    GroupInviteEvent,
-    FriendRequestEvent,
-    LureEvent,
-    TeleportEvent,
     DisconnectEvent,
+    FriendRequestEvent,
+    FriendResponseEvent,
     GroupChatEvent,
+    GroupChatSessionAgentListEvent,
     GroupChatSessionJoinEvent,
-    GroupChatSessionAgentListEvent
+    GroupInviteEvent,
+    InstantMessageEvent,
+    InventoryOfferedEvent,
+    LureEvent,
+    MapInfoRangeReplyEvent,
+    MapInfoReplyEvent,
+    RegionInfoReplyEvent,
+    TeleportEvent
 };

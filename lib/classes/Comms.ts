@@ -5,19 +5,20 @@ import {Message} from '../enums/Message';
 import {ChatFromSimulatorMessage} from './messages/ChatFromSimulator';
 import {ImprovedInstantMessageMessage} from './messages/ImprovedInstantMessage';
 import {Utils} from './Utils';
-import {ChatEvent} from '../events/ChatEvent';
 import {InstantMessageDialog} from '../enums/InstantMessageDialog';
-import {LureEvent} from '../events/LureEvent';
 import {AlertMessageMessage} from './messages/AlertMessage';
 import {ClientEvents} from './ClientEvents';
-import {InstantMessageEvent} from '../events/InstantMessageEvent';
-import {ChatSourceType} from '../enums/ChatSourceType';
-import {InstantMessageEventFlags} from '../enums/InstantMessageEventFlags';
-import {GroupInviteEvent} from '../events/GroupInviteEvent';
-import {GroupChatEvent} from '../events/GroupChatEvent';
-import {FriendRequestEvent} from '../events/FriendRequestEvent';
-import {InventoryOfferedEvent} from '../events/InventoryOfferedEvent';
-import {FriendResponseEvent} from '../events/FriendshipResponseEvent';
+import {
+    ChatEvent,
+    ChatSourceType,
+    FriendRequestEvent,
+    FriendResponseEvent,
+    GroupChatEvent,
+    GroupInviteEvent,
+    InstantMessageEvent,
+    InstantMessageEventFlags,
+    InventoryOfferedEvent, LureEvent
+} from '..';
 
 export class Comms
 {
