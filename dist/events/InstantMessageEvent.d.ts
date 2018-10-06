@@ -1,6 +1,4 @@
-import { ChatSourceType } from '../enums/ChatSourceType';
-import { UUID } from '../classes/UUID';
-import { InstantMessageEventFlags } from '../enums/InstantMessageEventFlags';
+import { ChatSourceType, InstantMessageEventFlags, UUID } from '..';
 export declare class InstantMessageEvent {
     source: ChatSourceType;
     fromName: string;

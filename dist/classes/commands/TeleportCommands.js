@@ -3,10 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const CommandsBase_1 = require("./CommandsBase");
 const Region_1 = require("../Region");
 const TeleportEventType_1 = require("../../enums/TeleportEventType");
-const PacketFlags_1 = require("../../enums/PacketFlags");
 const TeleportLureRequest_1 = require("../messages/TeleportLureRequest");
-const TeleportFlags_1 = require("../../enums/TeleportFlags");
 const TeleportLocationRequest_1 = require("../messages/TeleportLocationRequest");
+const __1 = require("../..");
 class TeleportCommands extends CommandsBase_1.CommandsBase {
     awaitTeleportEvent() {
         return new Promise((resolve, reject) => {
@@ -63,9 +62,9 @@ class TeleportCommands extends CommandsBase_1.CommandsBase {
                 AgentID: this.agent.agentID,
                 SessionID: circuit.sessionID,
                 LureID: lure.lureID,
-                TeleportFlags: TeleportFlags_1.TeleportFlags.ViaLure
+                TeleportFlags: __1.TeleportFlags.ViaLure
             };
-            circuit.sendMessage(tlr, PacketFlags_1.PacketFlags.Reliable);
+            circuit.sendMessage(tlr, __1.PacketFlags.Reliable);
             this.awaitTeleportEvent().then((event) => {
                 resolve(event);
             }).catch((err) => {
@@ -85,7 +84,7 @@ class TeleportCommands extends CommandsBase_1.CommandsBase {
                 Position: position,
                 RegionHandle: handle
             };
-            this.circuit.sendMessage(rtm, PacketFlags_1.PacketFlags.Reliable);
+            this.circuit.sendMessage(rtm, __1.PacketFlags.Reliable);
             this.awaitTeleportEvent().then((event) => {
                 resolve(event);
             }).catch((err) => {

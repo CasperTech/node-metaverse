@@ -1,26 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const MapInfoReply_1 = require("../../events/MapInfoReply");
 const Message_1 = require("../../enums/Message");
 const MapBlockRequest_1 = require("../messages/MapBlockRequest");
 const UUID_1 = require("../UUID");
 const MapItemRequest_1 = require("../messages/MapItemRequest");
 const Utils_1 = require("../Utils");
-const PacketFlags_1 = require("../../enums/PacketFlags");
 const GridItemType_1 = require("../../enums/GridItemType");
 const CommandsBase_1 = require("./CommandsBase");
 const AvatarPickerRequest_1 = require("../messages/AvatarPickerRequest");
 const FilterResponse_1 = require("../../enums/FilterResponse");
 const MapNameRequest_1 = require("../messages/MapNameRequest");
 const GridLayerType_1 = require("../../enums/GridLayerType");
-const RegionInfoReply_1 = require("../../events/RegionInfoReply");
-const MapInfoRangeReply_1 = require("../../events/MapInfoRangeReply");
 const MapBlock_1 = require("../MapBlock");
+const __1 = require("../..");
 class GridCommands extends CommandsBase_1.CommandsBase {
     getRegionByName(regionName) {
         return new Promise((resolve, reject) => {
             const circuit = this.currentRegion.circuit;
-            const response = new MapInfoReply_1.MapInfoReply();
             const msg = new MapNameRequest_1.MapNameRequestMessage();
             msg.AgentData = {
                 AgentID: this.agent.agentID,
@@ -32,7 +28,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
             msg.NameData = {
                 Name: Utils_1.Utils.StringToBuffer(regionName)
             };
-            circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
+            circuit.sendMessage(msg, __1.PacketFlags.Reliable);
             circuit.waitForPacket(Message_1.Message.MapBlockReply, 10000, (packet) => {
                 const filterMsg = packet.message;
                 let found = false;
@@ -51,16 +47,19 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 responseMsg.Data.forEach((region) => {
                     const name = Utils_1.Utils.BufferToStringSimple(region.Name);
                     if (name.trim().toLowerCase() === regionName.trim().toLowerCase() && !(region.X === 0 && region.Y === 0)) {
-                        const reply = new RegionInfoReply_1.RegionInfoReply();
-                        reply.access = region.Access;
-                        reply.X = region.X;
-                        reply.Y = region.Y;
-                        reply.name = name;
-                        reply.regionFlags = region.RegionFlags;
-                        reply.waterHeight = region.WaterHeight;
-                        reply.agents = region.Agents;
-                        reply.mapImageID = region.MapImageID;
-                        reply.handle = Utils_1.Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256);
+                        const reply = new class {
+                            constructor() {
+                                this.X = region.X;
+                                this.Y = region.Y;
+                                this.name = name;
+                                this.access = region.Access;
+                                this.regionFlags = region.RegionFlags;
+                                this.waterHeight = region.WaterHeight;
+                                this.agents = region.Agents;
+                                this.mapImageID = region.MapImageID;
+                                this.handle = Utils_1.Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256);
+                            }
+                        };
                         resolve(reply);
                     }
                 });
@@ -72,7 +71,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
     getRegionMapInfo(gridX, gridY) {
         return new Promise((resolve, reject) => {
             const circuit = this.currentRegion.circuit;
-            const response = new MapInfoReply_1.MapInfoReply();
+            const response = new __1.MapInfoReplyEvent();
             const msg = new MapBlockRequest_1.MapBlockRequestMessage();
             msg.AgentData = {
                 AgentID: this.agent.agentID,
@@ -87,7 +86,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 MinY: gridY,
                 MaxY: gridY
             };
-            circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
+            circuit.sendMessage(msg, __1.PacketFlags.Reliable);
             circuit.waitForPacket(Message_1.Message.MapBlockReply, 10000, (packet) => {
                 const filterMsg = packet.message;
                 let found = false;
@@ -123,7 +122,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                     ItemType: GridItemType_1.GridItemType.AgentLocations,
                     RegionHandle: regionHandle
                 };
-                circuit.sendMessage(mi, PacketFlags_1.PacketFlags.Reliable);
+                circuit.sendMessage(mi, __1.PacketFlags.Reliable);
                 const minX = gridX * 256;
                 const maxX = minX + 256;
                 const minY = gridY * 256;
@@ -163,7 +162,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
     getRegionMapInfoRange(minX, minY, maxX, maxY) {
         return new Promise((resolve, reject) => {
             const circuit = this.currentRegion.circuit;
-            const response = new MapInfoRangeReply_1.MapInfoRangeReply();
+            const response = new __1.MapInfoRangeReplyEvent();
             const msg = new MapBlockRequest_1.MapBlockRequestMessage();
             msg.AgentData = {
                 AgentID: this.agent.agentID,
@@ -178,7 +177,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 MinY: minY,
                 MaxY: maxY
             };
-            circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
+            circuit.sendMessage(msg, __1.PacketFlags.Reliable);
             circuit.waitForPacket(Message_1.Message.MapBlockReply, 30000, (packet) => {
                 const filterMsg = packet.message;
                 let found = false;
@@ -227,7 +226,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
             aprm.Data = {
                 Name: Utils_1.Utils.StringToBuffer(name)
             };
-            this.circuit.sendMessage(aprm, PacketFlags_1.PacketFlags.Reliable);
+            this.circuit.sendMessage(aprm, __1.PacketFlags.Reliable);
             this.circuit.waitForPacket(Message_1.Message.AvatarPickerReply, 10000, (packet) => {
                 const apr = packet.message;
                 if (apr.AgentData.QueryID.toString() === queryID.toString()) {

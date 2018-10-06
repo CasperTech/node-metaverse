@@ -1,7 +1,8 @@
 import { UUID } from '..';
-export declare class GroupChatEvent {
-    groupID: UUID;
+export declare class FriendResponseEvent {
     from: UUID;
     fromName: string;
     message: string;
+    accepted: boolean;
+    requestID: UUID;
 }

@@ -1,4 +1,4 @@
-import { UUID } from '../classes/UUID';
+import { UUID } from '..';
 export declare class GroupChatSessionAgentListEvent {
     groupID: UUID;
     agentID: UUID;
