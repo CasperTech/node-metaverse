@@ -2,17 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Message_1 = require("../enums/Message");
 const Utils_1 = require("./Utils");
-const ChatEvent_1 = require("../events/ChatEvent");
 const InstantMessageDialog_1 = require("../enums/InstantMessageDialog");
-const LureEvent_1 = require("../events/LureEvent");
-const InstantMessageEvent_1 = require("../events/InstantMessageEvent");
-const ChatSourceType_1 = require("../enums/ChatSourceType");
-const InstantMessageEventFlags_1 = require("../enums/InstantMessageEventFlags");
-const GroupInviteEvent_1 = require("../events/GroupInviteEvent");
-const GroupChatEvent_1 = require("../events/GroupChatEvent");
-const FriendRequestEvent_1 = require("../events/FriendRequestEvent");
-const InventoryOfferedEvent_1 = require("../events/InventoryOfferedEvent");
-const FriendshipResponseEvent_1 = require("../events/FriendshipResponseEvent");
+const __1 = require("..");
 class Comms {
     constructor(circuit, agent, clientEvents) {
         this.clientEvents = clientEvents;
@@ -29,20 +20,20 @@ class Comms {
                     switch (im.MessageBlock.Dialog) {
                         case InstantMessageDialog_1.InstantMessageDialog.MessageFromAgent:
                             {
-                                const imEvent = new InstantMessageEvent_1.InstantMessageEvent();
-                                imEvent.source = ChatSourceType_1.ChatSourceType.Agent;
+                                const imEvent = new __1.InstantMessageEvent();
+                                imEvent.source = __1.ChatSourceType.Agent;
                                 imEvent.from = im.AgentData.AgentID;
                                 imEvent.owner = im.AgentData.AgentID;
                                 imEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 imEvent.message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
-                                imEvent.flags = InstantMessageEventFlags_1.InstantMessageEventFlags.normal;
+                                imEvent.flags = __1.InstantMessageEventFlags.normal;
                                 this.clientEvents.onInstantMessage.next(imEvent);
                                 break;
                             }
                         case InstantMessageDialog_1.InstantMessageDialog.MessageBox:
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.GroupInvitation:
-                            const giEvent = new GroupInviteEvent_1.GroupInviteEvent();
+                            const giEvent = new __1.GroupInviteEvent();
                             giEvent.from = im.AgentData.AgentID;
                             giEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                             giEvent.message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
@@ -53,12 +44,12 @@ class Comms {
                             {
                                 const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
-                                const ioEvent = new InventoryOfferedEvent_1.InventoryOfferedEvent();
+                                const ioEvent = new __1.InventoryOfferedEvent();
                                 ioEvent.from = im.AgentData.AgentID;
                                 ioEvent.fromName = fromName;
                                 ioEvent.message = message;
                                 ioEvent.requestID = im.MessageBlock.ID;
-                                ioEvent.source = ChatSourceType_1.ChatSourceType.Agent;
+                                ioEvent.source = __1.ChatSourceType.Agent;
                                 this.clientEvents.onInventoryOffered.next(ioEvent);
                                 break;
                             }
@@ -70,12 +61,12 @@ class Comms {
                             {
                                 const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
-                                const ioEvent = new InventoryOfferedEvent_1.InventoryOfferedEvent();
+                                const ioEvent = new __1.InventoryOfferedEvent();
                                 ioEvent.from = im.AgentData.AgentID;
                                 ioEvent.fromName = fromName;
                                 ioEvent.message = message;
                                 ioEvent.requestID = im.MessageBlock.ID;
-                                ioEvent.source = ChatSourceType_1.ChatSourceType.Object;
+                                ioEvent.source = __1.ChatSourceType.Object;
                                 ioEvent.type = im.MessageBlock.BinaryBucket.readUInt8(0);
                                 this.clientEvents.onInventoryOffered.next(ioEvent);
                                 break;
@@ -86,32 +77,32 @@ class Comms {
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.MessageFromObject:
                             {
-                                const imEvent = new InstantMessageEvent_1.InstantMessageEvent();
-                                imEvent.source = ChatSourceType_1.ChatSourceType.Object;
+                                const imEvent = new __1.InstantMessageEvent();
+                                imEvent.source = __1.ChatSourceType.Object;
                                 imEvent.owner = im.AgentData.AgentID;
                                 imEvent.from = im.MessageBlock.ID;
                                 imEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 imEvent.message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
-                                imEvent.flags = InstantMessageEventFlags_1.InstantMessageEventFlags.normal;
+                                imEvent.flags = __1.InstantMessageEventFlags.normal;
                                 this.clientEvents.onInstantMessage.next(imEvent);
                                 break;
                             }
                         case InstantMessageDialog_1.InstantMessageDialog.BusyAutoResponse:
                             {
-                                const imEvent = new InstantMessageEvent_1.InstantMessageEvent();
-                                imEvent.source = ChatSourceType_1.ChatSourceType.Agent;
+                                const imEvent = new __1.InstantMessageEvent();
+                                imEvent.source = __1.ChatSourceType.Agent;
                                 imEvent.from = im.AgentData.AgentID;
                                 imEvent.owner = im.AgentData.AgentID;
                                 imEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 imEvent.message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
-                                imEvent.flags = InstantMessageEventFlags_1.InstantMessageEventFlags.busyResponse;
+                                imEvent.flags = __1.InstantMessageEventFlags.busyResponse;
                                 this.clientEvents.onInstantMessage.next(imEvent);
                                 break;
                             }
                         case InstantMessageDialog_1.InstantMessageDialog.ConsoleAndChatHistory:
                             break;
                         case InstantMessageDialog_1.InstantMessageDialog.RequestTeleport:
-                            const lureEvent = new LureEvent_1.LureEvent();
+                            const lureEvent = new __1.LureEvent();
                             const extraData = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.BinaryBucket).split('|');
                             lureEvent.from = im.AgentData.AgentID;
                             lureEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
@@ -149,7 +140,7 @@ class Comms {
                             {
                                 const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
-                                const frEvent = new FriendRequestEvent_1.FriendRequestEvent();
+                                const frEvent = new __1.FriendRequestEvent();
                                 frEvent.from = im.AgentData.AgentID;
                                 frEvent.fromName = fromName;
                                 frEvent.message = message;
@@ -161,7 +152,7 @@ class Comms {
                             {
                                 const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
-                                const frEvent = new FriendshipResponseEvent_1.FriendResponseEvent();
+                                const frEvent = new __1.FriendResponseEvent();
                                 frEvent.from = im.AgentData.AgentID;
                                 frEvent.fromName = fromName;
                                 frEvent.message = message;
@@ -174,7 +165,7 @@ class Comms {
                             {
                                 const fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 const message = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.Message);
-                                const frEvent = new FriendshipResponseEvent_1.FriendResponseEvent();
+                                const frEvent = new __1.FriendResponseEvent();
                                 frEvent.from = im.AgentData.AgentID;
                                 frEvent.fromName = fromName;
                                 frEvent.message = message;
@@ -185,31 +176,31 @@ class Comms {
                             }
                         case InstantMessageDialog_1.InstantMessageDialog.StartTyping:
                             {
-                                const imEvent = new InstantMessageEvent_1.InstantMessageEvent();
-                                imEvent.source = ChatSourceType_1.ChatSourceType.Agent;
+                                const imEvent = new __1.InstantMessageEvent();
+                                imEvent.source = __1.ChatSourceType.Agent;
                                 imEvent.from = im.AgentData.AgentID;
                                 imEvent.owner = im.AgentData.AgentID;
                                 imEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 imEvent.message = '';
-                                imEvent.flags = InstantMessageEventFlags_1.InstantMessageEventFlags.startTyping;
+                                imEvent.flags = __1.InstantMessageEventFlags.startTyping;
                                 this.clientEvents.onInstantMessage.next(imEvent);
                                 break;
                             }
                         case InstantMessageDialog_1.InstantMessageDialog.StopTyping:
                             {
-                                const imEvent = new InstantMessageEvent_1.InstantMessageEvent();
-                                imEvent.source = ChatSourceType_1.ChatSourceType.Agent;
+                                const imEvent = new __1.InstantMessageEvent();
+                                imEvent.source = __1.ChatSourceType.Agent;
                                 imEvent.from = im.AgentData.AgentID;
                                 imEvent.owner = im.AgentData.AgentID;
                                 imEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 imEvent.message = '';
-                                imEvent.flags = InstantMessageEventFlags_1.InstantMessageEventFlags.finishTyping;
+                                imEvent.flags = __1.InstantMessageEventFlags.finishTyping;
                                 this.clientEvents.onInstantMessage.next(imEvent);
                                 break;
                             }
                         case InstantMessageDialog_1.InstantMessageDialog.SessionSend:
                             {
-                                const groupChatEvent = new GroupChatEvent_1.GroupChatEvent();
+                                const groupChatEvent = new __1.GroupChatEvent();
                                 groupChatEvent.from = im.AgentData.AgentID;
                                 groupChatEvent.fromName = Utils_1.Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                                 groupChatEvent.groupID = im.MessageBlock.ID;
@@ -221,7 +212,7 @@ class Comms {
                     break;
                 case Message_1.Message.ChatFromSimulator:
                     const chat = packet.message;
-                    const event = new ChatEvent_1.ChatEvent();
+                    const event = new __1.ChatEvent();
                     event.fromName = Utils_1.Utils.BufferToStringSimple(chat.ChatData.FromName);
                     event.message = Utils_1.Utils.BufferToStringSimple(chat.ChatData.Message);
                     event.from = chat.ChatData.SourceID;

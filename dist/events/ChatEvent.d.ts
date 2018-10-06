@@ -1,8 +1,6 @@
-import { UUID } from '../classes/UUID';
 import { ChatAudibleLevel } from '../enums/ChatAudible';
 import { ChatType } from '../enums/ChatType';
-import { ChatSourceType } from '../enums/ChatSourceType';
-import { Vector3 } from '../classes/Vector3';
+import { ChatSourceType, UUID, Vector3 } from '..';
 export declare class ChatEvent {
     from: UUID;
     ownerID: UUID;

@@ -1,5 +1,4 @@
-import { UUID } from '../classes/UUID';
-import { Vector3 } from '../classes/Vector3';
+import { UUID, Vector3 } from '..';
 export declare class LureEvent {
     from: UUID;
     fromName: string;
