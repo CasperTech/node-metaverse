@@ -5,7 +5,7 @@ import {CommandsBase} from './CommandsBase';
 
 export class AgentCommands extends CommandsBase
 {
-    private animate(anim: UUID[], run: boolean): Promise<void>
+    private async animate(anim: UUID[], run: boolean): Promise<void>
     {
 
         const circuit = this.currentRegion.circuit;
@@ -24,16 +24,16 @@ export class AgentCommands extends CommandsBase
             });
         });
 
-        return circuit.waitForAck(circuit.sendMessage(animPacket, PacketFlags.Reliable), 10000);
+        return await circuit.waitForAck(circuit.sendMessage(animPacket, PacketFlags.Reliable), 10000);
     }
 
-    startAnimations(anim: UUID[]): Promise<void>
+    async startAnimations(anim: UUID[]): Promise<void>
     {
-        return this.animate(anim, true);
+        return await this.animate(anim, true);
     }
 
-    stopAnimations(anim: UUID[]): Promise<void>
+    async stopAnimations(anim: UUID[]): Promise<void>
     {
-        return this.animate(anim, false);
+        return await this.animate(anim, false);
     }
 }

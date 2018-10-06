@@ -6,7 +6,7 @@ export class NetworkCommands extends CommandsBase
 {
     private throttleGenCounter = 0;
 
-    setBandwidth(total: number)
+    async setBandwidth(total: number): Promise<void>
     {
         const agentThrottle: AgentThrottleMessage = new AgentThrottleMessage();
         agentThrottle.AgentData = {
@@ -45,6 +45,7 @@ export class NetworkCommands extends CommandsBase
             GenCounter: this.throttleGenCounter++,
             Throttles: throttleData
         };
-        this.circuit.sendMessage(agentThrottle, PacketFlags.Reliable);
+        const sequenceNo = this.circuit.sendMessage(agentThrottle, PacketFlags.Reliable);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 }

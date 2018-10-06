@@ -102,7 +102,7 @@ export class TeleportCommands extends CommandsBase
         });
     }
 
-    teleportToHandle(handle: Long, position: Vector3, lookAt: Vector3)
+    teleportToHandle(handle: Long, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
     {
         return new Promise<TeleportEvent>((resolve, reject) =>
         {
@@ -127,7 +127,7 @@ export class TeleportCommands extends CommandsBase
         });
     }
 
-    teleportTo(regionName: string, position: Vector3, lookAt: Vector3)
+    teleportTo(regionName: string, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
     {
         return new Promise<TeleportEvent>((resolve, reject) =>
         {

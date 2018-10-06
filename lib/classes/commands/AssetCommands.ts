@@ -6,9 +6,9 @@ import {Utils} from '../Utils';
 
 export class AssetCommands extends CommandsBase
 {
-    downloadAsset(type: HTTPAssets, uuid: UUID)
+    async downloadAsset(type: HTTPAssets, uuid: UUID): Promise<Buffer>
     {
-        return this.currentRegion.caps.downloadAsset(uuid, type);
+        return await this.currentRegion.caps.downloadAsset(uuid, type);
     }
 
     uploadAsset(type: HTTPAssets, data: Buffer, name: string, description: string): Promise<UUID>

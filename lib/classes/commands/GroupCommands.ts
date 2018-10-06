@@ -6,23 +6,19 @@ import {PacketFlags} from '../../enums/PacketFlags';
 import {ImprovedInstantMessageMessage} from '../messages/ImprovedInstantMessage';
 import {Vector3} from '../Vector3';
 import {InviteGroupRequestMessage} from '../messages/InviteGroupRequest';
-import {GroupInviteEvent} from '../../events/GroupInviteEvent';
 import {GroupRole} from '../GroupRole';
 import {GroupRoleDataRequestMessage} from '../messages/GroupRoleDataRequest';
 import {Message} from '../../enums/Message';
 import {Packet} from '../Packet';
 import {GroupRoleDataReplyMessage} from '../messages/GroupRoleDataReply';
 import {GroupMember} from '../GroupMember';
-import {GroupMembersRequestMessage} from '../messages/GroupMembersRequest';
-import {GroupMembersReplyMessage} from '../messages/GroupMembersReply';
 import {FilterResponse} from '../../enums/FilterResponse';
-import * as Long from 'long';
-import {GroupChatSessionJoinEvent} from '../../events/GroupChatSessionJoinEvent';
 import * as LLSD from '@caspertech/llsd';
+import {GroupInviteEvent} from '../..';
 
 export class GroupCommands extends CommandsBase
 {
-    sendGroupNotice(groupID: UUID | string, subject: string, message: string)
+    async sendGroupNotice(groupID: UUID | string, subject: string, message: string): Promise<void>
     {
         if (typeof groupID === 'string')
         {
@@ -53,10 +49,10 @@ export class GroupCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    sendGroupInviteBulk(groupID: UUID | string, sendTo: {
+    async sendGroupInviteBulk(groupID: UUID | string, sendTo: {
         avatarID: UUID | string,
         roleID: UUID | string | undefined
     }[]): Promise<void>
@@ -95,7 +91,7 @@ export class GroupCommands extends CommandsBase
         });
 
         const sequenceNo = this.circuit.sendMessage(igr, PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
     getSessionAgentCount(sessionID: UUID | string): number
@@ -107,16 +103,16 @@ export class GroupCommands extends CommandsBase
         return this.agent.getSessionAgentCount(sessionID);
     }
 
-    sendGroupInvite(groupID: UUID | string, to: UUID | string, role: UUID | string | undefined): Promise<void>
+    async sendGroupInvite(groupID: UUID | string, to: UUID | string, role: UUID | string | undefined): Promise<void>
     {
         const sendTo = [{
             avatarID: to,
             roleID: role
         }];
-        return this.sendGroupInviteBulk(groupID, sendTo);
+        return await this.sendGroupInviteBulk(groupID, sendTo);
     }
 
-    acceptGroupInvite(event: GroupInviteEvent): Promise<void>
+    async acceptGroupInvite(event: GroupInviteEvent): Promise<void>
     {
         const circuit = this.circuit;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
@@ -143,10 +139,10 @@ export class GroupCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    rejectGroupInvite(event: GroupInviteEvent): Promise<void>
+    async rejectGroupInvite(event: GroupInviteEvent): Promise<void>
     {
         const circuit = this.circuit;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
@@ -173,7 +169,7 @@ export class GroupCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return await circuit.waitForAck(sequenceNo, 10000);
     }
 
     getMemberList(groupID: UUID | string): Promise<GroupMember[]>

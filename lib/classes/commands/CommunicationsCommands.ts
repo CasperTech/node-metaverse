@@ -8,17 +8,14 @@ import {ChatFromViewerMessage} from '../messages/ChatFromViewer';
 import {ChatType} from '../../enums/ChatType';
 import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
 import Timer = NodeJS.Timer;
-import {GroupChatSessionJoinEvent} from '../../events/GroupChatSessionJoinEvent';
-import {FriendRequestEvent} from '../../events/FriendRequestEvent';
 import {AcceptFriendshipMessage} from '../messages/AcceptFriendship';
-import {AssetType} from '../../enums/AssetType';
 import {DeclineFriendshipMessage} from '../messages/DeclineFriendship';
 import {InventoryOfferedEvent} from '../../events/InventoryOfferedEvent';
-import {ChatSourceType} from '../../enums/ChatSourceType';
+import {AssetType, ChatSourceType, FriendRequestEvent, GroupChatSessionJoinEvent} from '../..';
 
 export class CommunicationsCommands extends CommandsBase
 {
-    sendInstantMessage(to: UUID | string, message: string): Promise<void>
+    async sendInstantMessage(to: UUID | string, message: string): Promise<void>
     {
         const circuit = this.circuit;
         if (typeof to === 'string')
@@ -49,10 +46,10 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    nearbyChat(message: string, type: ChatType, channel?: number): Promise<void>
+    async nearbyChat(message: string, type: ChatType, channel?: number): Promise<void>
     {
         if (channel === undefined)
         {
@@ -69,25 +66,25 @@ export class CommunicationsCommands extends CommandsBase
             Channel: channel
         };
         const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    say(message: string, channel?: number): Promise<void>
+    async say(message: string, channel?: number): Promise<void>
     {
-        return this.nearbyChat(message, ChatType.Normal, channel);
+        return await this.nearbyChat(message, ChatType.Normal, channel);
     }
 
-    whisper(message: string, channel?: number): Promise<void>
+    async whisper(message: string, channel?: number): Promise<void>
     {
-        return this.nearbyChat(message, ChatType.Whisper, channel);
+        return await this.nearbyChat(message, ChatType.Whisper, channel);
     }
 
-    shout(message: string, channel?: number): Promise<void>
+    async shout(message: string, channel?: number): Promise<void>
     {
-        return this.nearbyChat(message, ChatType.Shout, channel);
+        return await this.nearbyChat(message, ChatType.Shout, channel);
     }
 
-    startTypingLocal(): Promise<void>
+    async startTypingLocal(): Promise<void>
     {
         const cfv = new ChatFromViewerMessage();
         cfv.AgentData = {
@@ -100,10 +97,10 @@ export class CommunicationsCommands extends CommandsBase
             Channel: 0
         };
         const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    stopTypingLocal(): Promise<void>
+    async stopTypingLocal(): Promise<void>
     {
         const cfv = new ChatFromViewerMessage();
         cfv.AgentData = {
@@ -116,10 +113,10 @@ export class CommunicationsCommands extends CommandsBase
             Channel: 0
         };
         const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    startTypingIM(to: UUID | string): Promise<void>
+    async startTypingIM(to: UUID | string): Promise<void>
     {
         if (typeof to === 'string')
         {
@@ -150,10 +147,10 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    stopTypingIM(to: UUID | string): Promise<void>
+    async stopTypingIM(to: UUID | string): Promise<void>
     {
         if (typeof to === 'string')
         {
@@ -184,7 +181,7 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return await circuit.waitForAck(sequenceNo, 10000);
     }
 
     typeInstantMessage(to: UUID | string, message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>
@@ -364,7 +361,7 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    acceptFriendRequest(event: FriendRequestEvent): Promise<void>
+    async acceptFriendRequest(event: FriendRequestEvent): Promise<void>
     {
         const accept: AcceptFriendshipMessage = new AcceptFriendshipMessage();
         accept.AgentData = {
@@ -381,10 +378,10 @@ export class CommunicationsCommands extends CommandsBase
             }
         );
         const sequenceNo = this.circuit.sendMessage(accept, PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    sendFriendRequest(to: UUID | string, message: string)
+    async sendFriendRequest(to: UUID | string, message: string): Promise<void>
     {
         if (typeof to === 'string')
         {
@@ -415,10 +412,10 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    private respondToInventoryOffer(event: InventoryOfferedEvent, response: InstantMessageDialog): Promise<void>
+    private async respondToInventoryOffer(event: InventoryOfferedEvent, response: InstantMessageDialog): Promise<void>
     {
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
@@ -449,34 +446,34 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    acceptInventoryOffer(event: InventoryOfferedEvent): Promise<void>
+    async acceptInventoryOffer(event: InventoryOfferedEvent): Promise<void>
     {
         if (event.source === ChatSourceType.Object)
         {
-            return this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryAccepted);
+            return await this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryAccepted);
         }
         else
         {
-            return this.respondToInventoryOffer(event, InstantMessageDialog.InventoryAccepted);
+            return await this.respondToInventoryOffer(event, InstantMessageDialog.InventoryAccepted);
         }
     }
 
-    rejectInventoryOffer(event: InventoryOfferedEvent): Promise<void>
+    async rejectInventoryOffer(event: InventoryOfferedEvent): Promise<void>
     {
         if (event.source === ChatSourceType.Object)
         {
-            return this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryDeclined);
+            return await this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryDeclined);
         }
         else
         {
-            return this.respondToInventoryOffer(event, InstantMessageDialog.InventoryDeclined);
+            return await this.respondToInventoryOffer(event, InstantMessageDialog.InventoryDeclined);
         }
     }
 
-    rejectFriendRequest(event: FriendRequestEvent): Promise<void>
+    async rejectFriendRequest(event: FriendRequestEvent): Promise<void>
     {
         const reject: DeclineFriendshipMessage = new DeclineFriendshipMessage();
         reject.AgentData = {
@@ -487,7 +484,7 @@ export class CommunicationsCommands extends CommandsBase
             TransactionID: event.requestID
         };
         const sequenceNo = this.circuit.sendMessage(reject, PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
     sendGroupMessage(groupID: UUID | string, message: string): Promise<number>
