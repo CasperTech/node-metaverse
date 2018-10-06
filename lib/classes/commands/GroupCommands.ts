@@ -246,7 +246,7 @@ export class GroupCommands extends CommandsBase
             let totalRoleCount = 0;
 
             this.circuit.sendMessage(grdr, PacketFlags.Reliable);
-            this.circuit.waitForMessage(Message.GroupRoleDataReply, 10000, (packet: Packet): FilterResponse =>
+            this.circuit.waitForPacket(Message.GroupRoleDataReply, 10000, (packet: Packet): FilterResponse =>
             {
                 const gmr = packet.message as GroupRoleDataReplyMessage;
                 if (gmr.GroupData.RequestID.toString() === requestID.toString())

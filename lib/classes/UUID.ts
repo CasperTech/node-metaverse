@@ -66,4 +66,16 @@ export class UUID
         const binary = Buffer.from(shortened, 'hex');
         binary.copy(buf, pos, 0);
     }
+
+    public equals(cmp: UUID | string): boolean
+    {
+        if (typeof cmp === 'string')
+        {
+            return (cmp === this.mUUID);
+        }
+        else
+        {
+            return cmp.equals(this.mUUID);
+        }
+    }
 }

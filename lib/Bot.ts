@@ -99,10 +99,10 @@ export class Bot
                 SessionID: circuit.sessionID
             };
             circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForMessage(Message.LogoutReply, 5000).then((packet: Packet) =>
+            circuit.waitForPacket(Message.LogoutReply, 5000).then((packet: Packet) =>
             {
 
-            }).catch((error) =>
+            }).catch((error: Error) =>
             {
                 console.error('Timeout waiting for logout reply')
             }).then(() =>
@@ -156,7 +156,7 @@ export class Bot
                     CircuitCode: circuit.circuitCode
                 };
                 circuit.sendMessage(agentMovement, PacketFlags.Reliable);
-                return circuit.waitForMessage(Message.RegionHandshake, 10000);
+                return circuit.waitForPacket(Message.RegionHandshake, 10000);
             }).then((packet: Packet) =>
             {
                 const handshakeReply: RegionHandshakeReplyMessage = new RegionHandshakeReplyMessage();
@@ -198,7 +198,7 @@ export class Bot
                         OldestUnacked: this.currentRegion.circuit.getOldestUnacked()
                     };
                     circuit.sendMessage(ping, PacketFlags.Reliable);
-                    circuit.waitForMessage(Message.CompletePingCheck, 10000, ((pingData: {
+                    circuit.waitForPacket(Message.CompletePingCheck, 10000, ((pingData: {
                         pingID: number,
                         timeSent: number
                     }, packet: Packet): FilterResponse =>

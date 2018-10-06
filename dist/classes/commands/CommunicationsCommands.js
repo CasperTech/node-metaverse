@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const CommandsBase_1 = require("./CommandsBase");
 const UUID_1 = require("../UUID");
@@ -10,156 +18,173 @@ const ChatFromViewer_1 = require("../messages/ChatFromViewer");
 const ChatType_1 = require("../../enums/ChatType");
 const InstantMessageDialog_1 = require("../../enums/InstantMessageDialog");
 const AcceptFriendship_1 = require("../messages/AcceptFriendship");
-const AssetType_1 = require("../../enums/AssetType");
 const DeclineFriendship_1 = require("../messages/DeclineFriendship");
-const ChatSourceType_1 = require("../../enums/ChatSourceType");
+const __1 = require("../..");
 class CommunicationsCommands extends CommandsBase_1.CommandsBase {
     sendInstantMessage(to, message) {
-        const circuit = this.circuit;
-        if (typeof to === 'string') {
-            to = new UUID_1.UUID(to);
-        }
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: to,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 1,
-            Dialog: 0,
-            ID: UUID_1.UUID.zero(),
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(message),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            const circuit = this.circuit;
+            if (typeof to === 'string') {
+                to = new UUID_1.UUID(to);
+            }
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: to,
+                ParentEstateID: 0,
+                RegionID: UUID_1.UUID.zero(),
+                Position: Vector3_1.Vector3.getZero(),
+                Offline: 1,
+                Dialog: 0,
+                ID: UUID_1.UUID.zero(),
+                Timestamp: Math.floor(new Date().getTime() / 1000),
+                FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                Message: Utils_1.Utils.StringToBuffer(message),
+                BinaryBucket: Buffer.allocUnsafe(0)
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            return yield circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     nearbyChat(message, type, channel) {
-        if (channel === undefined) {
-            channel = 0;
-        }
-        const cfv = new ChatFromViewer_1.ChatFromViewerMessage();
-        cfv.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        cfv.ChatData = {
-            Message: Utils_1.Utils.StringToBuffer(message),
-            Type: type,
-            Channel: channel
-        };
-        const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags_1.PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (channel === undefined) {
+                channel = 0;
+            }
+            const cfv = new ChatFromViewer_1.ChatFromViewerMessage();
+            cfv.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            cfv.ChatData = {
+                Message: Utils_1.Utils.StringToBuffer(message),
+                Type: type,
+                Channel: channel
+            };
+            const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags_1.PacketFlags.Reliable);
+            return yield this.circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     say(message, channel) {
-        return this.nearbyChat(message, ChatType_1.ChatType.Normal, channel);
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.nearbyChat(message, ChatType_1.ChatType.Normal, channel);
+        });
     }
     whisper(message, channel) {
-        return this.nearbyChat(message, ChatType_1.ChatType.Whisper, channel);
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.nearbyChat(message, ChatType_1.ChatType.Whisper, channel);
+        });
     }
     shout(message, channel) {
-        return this.nearbyChat(message, ChatType_1.ChatType.Shout, channel);
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.nearbyChat(message, ChatType_1.ChatType.Shout, channel);
+        });
     }
     startTypingLocal() {
-        const cfv = new ChatFromViewer_1.ChatFromViewerMessage();
-        cfv.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        cfv.ChatData = {
-            Message: Buffer.allocUnsafe(0),
-            Type: ChatType_1.ChatType.StartTyping,
-            Channel: 0
-        };
-        const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags_1.PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            const cfv = new ChatFromViewer_1.ChatFromViewerMessage();
+            cfv.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            cfv.ChatData = {
+                Message: Buffer.allocUnsafe(0),
+                Type: ChatType_1.ChatType.StartTyping,
+                Channel: 0
+            };
+            const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags_1.PacketFlags.Reliable);
+            return yield this.circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     stopTypingLocal() {
-        const cfv = new ChatFromViewer_1.ChatFromViewerMessage();
-        cfv.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        cfv.ChatData = {
-            Message: Buffer.allocUnsafe(0),
-            Type: ChatType_1.ChatType.StopTyping,
-            Channel: 0
-        };
-        const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags_1.PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            const cfv = new ChatFromViewer_1.ChatFromViewerMessage();
+            cfv.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            cfv.ChatData = {
+                Message: Buffer.allocUnsafe(0),
+                Type: ChatType_1.ChatType.StopTyping,
+                Channel: 0
+            };
+            const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags_1.PacketFlags.Reliable);
+            return yield this.circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     startTypingIM(to) {
-        if (typeof to === 'string') {
-            to = new UUID_1.UUID(to);
-        }
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: to,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog_1.InstantMessageDialog.StartTyping,
-            ID: UUID_1.UUID.zero(),
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(''),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof to === 'string') {
+                to = new UUID_1.UUID(to);
+            }
+            const circuit = this.circuit;
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: to,
+                ParentEstateID: 0,
+                RegionID: UUID_1.UUID.zero(),
+                Position: Vector3_1.Vector3.getZero(),
+                Offline: 0,
+                Dialog: InstantMessageDialog_1.InstantMessageDialog.StartTyping,
+                ID: UUID_1.UUID.zero(),
+                Timestamp: Math.floor(new Date().getTime() / 1000),
+                FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                Message: Utils_1.Utils.StringToBuffer(''),
+                BinaryBucket: Buffer.allocUnsafe(0)
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            return yield circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     stopTypingIM(to) {
-        if (typeof to === 'string') {
-            to = new UUID_1.UUID(to);
-        }
-        const circuit = this.circuit;
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: to,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog_1.InstantMessageDialog.StopTyping,
-            ID: UUID_1.UUID.zero(),
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(''),
-            BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof to === 'string') {
+                to = new UUID_1.UUID(to);
+            }
+            const circuit = this.circuit;
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: to,
+                ParentEstateID: 0,
+                RegionID: UUID_1.UUID.zero(),
+                Position: Vector3_1.Vector3.getZero(),
+                Offline: 0,
+                Dialog: InstantMessageDialog_1.InstantMessageDialog.StopTyping,
+                ID: UUID_1.UUID.zero(),
+                Timestamp: Math.floor(new Date().getTime() / 1000),
+                FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                Message: Utils_1.Utils.StringToBuffer(''),
+                BinaryBucket: Buffer.allocUnsafe(0)
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const sequenceNo = circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            return yield circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     typeInstantMessage(to, message, thinkingTime, charactersPerSecond) {
         return new Promise((resolve, reject) => {
@@ -290,109 +315,121 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
         });
     }
     acceptFriendRequest(event) {
-        const accept = new AcceptFriendship_1.AcceptFriendshipMessage();
-        accept.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        accept.TransactionBlock = {
-            TransactionID: event.requestID
-        };
-        accept.FolderData = [];
-        accept.FolderData.push({
-            'FolderID': this.agent.inventory.findFolderForType(AssetType_1.AssetType.CallingCard)
+        return __awaiter(this, void 0, void 0, function* () {
+            const accept = new AcceptFriendship_1.AcceptFriendshipMessage();
+            accept.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            accept.TransactionBlock = {
+                TransactionID: event.requestID
+            };
+            accept.FolderData = [];
+            accept.FolderData.push({
+                'FolderID': this.agent.inventory.findFolderForType(__1.AssetType.CallingCard)
+            });
+            const sequenceNo = this.circuit.sendMessage(accept, PacketFlags_1.PacketFlags.Reliable);
+            return yield this.circuit.waitForAck(sequenceNo, 10000);
         });
-        const sequenceNo = this.circuit.sendMessage(accept, PacketFlags_1.PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
     }
     sendFriendRequest(to, message) {
-        if (typeof to === 'string') {
-            to = new UUID_1.UUID(to);
-        }
-        const requestID = UUID_1.UUID.random();
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: to,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog_1.InstantMessageDialog.FriendshipOffered,
-            ID: requestID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(message),
-            BinaryBucket: Utils_1.Utils.StringToBuffer('')
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = this.circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof to === 'string') {
+                to = new UUID_1.UUID(to);
+            }
+            const requestID = UUID_1.UUID.random();
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: to,
+                ParentEstateID: 0,
+                RegionID: UUID_1.UUID.zero(),
+                Position: Vector3_1.Vector3.getZero(),
+                Offline: 0,
+                Dialog: InstantMessageDialog_1.InstantMessageDialog.FriendshipOffered,
+                ID: requestID,
+                Timestamp: Math.floor(new Date().getTime() / 1000),
+                FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                Message: Utils_1.Utils.StringToBuffer(message),
+                BinaryBucket: Utils_1.Utils.StringToBuffer('')
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const sequenceNo = this.circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            return yield this.circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     respondToInventoryOffer(event, response) {
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
-        const folder = this.agent.inventory.findFolderForType(event.type);
-        const binary = Buffer.allocUnsafe(16);
-        folder.writeToBuffer(binary, 0);
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: event.from,
-            ParentEstateID: 0,
-            RegionID: UUID_1.UUID.zero(),
-            Position: Vector3_1.Vector3.getZero(),
-            Offline: 0,
-            Dialog: response,
-            ID: event.requestID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
-            Message: Utils_1.Utils.StringToBuffer(''),
-            BinaryBucket: binary
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = this.circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im = new ImprovedInstantMessage_1.ImprovedInstantMessageMessage();
+            const folder = this.agent.inventory.findFolderForType(event.type);
+            const binary = Buffer.allocUnsafe(16);
+            folder.writeToBuffer(binary, 0);
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: event.from,
+                ParentEstateID: 0,
+                RegionID: UUID_1.UUID.zero(),
+                Position: Vector3_1.Vector3.getZero(),
+                Offline: 0,
+                Dialog: response,
+                ID: event.requestID,
+                Timestamp: Math.floor(new Date().getTime() / 1000),
+                FromAgentName: Utils_1.Utils.StringToBuffer(agentName),
+                Message: Utils_1.Utils.StringToBuffer(''),
+                BinaryBucket: binary
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const sequenceNo = this.circuit.sendMessage(im, PacketFlags_1.PacketFlags.Reliable);
+            return yield this.circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     acceptInventoryOffer(event) {
-        if (event.source === ChatSourceType_1.ChatSourceType.Object) {
-            return this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.TaskInventoryAccepted);
-        }
-        else {
-            return this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.InventoryAccepted);
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            if (event.source === __1.ChatSourceType.Object) {
+                return yield this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.TaskInventoryAccepted);
+            }
+            else {
+                return yield this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.InventoryAccepted);
+            }
+        });
     }
     rejectInventoryOffer(event) {
-        if (event.source === ChatSourceType_1.ChatSourceType.Object) {
-            return this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.TaskInventoryDeclined);
-        }
-        else {
-            return this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.InventoryDeclined);
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            if (event.source === __1.ChatSourceType.Object) {
+                return yield this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.TaskInventoryDeclined);
+            }
+            else {
+                return yield this.respondToInventoryOffer(event, InstantMessageDialog_1.InstantMessageDialog.InventoryDeclined);
+            }
+        });
     }
     rejectFriendRequest(event) {
-        const reject = new DeclineFriendship_1.DeclineFriendshipMessage();
-        reject.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        reject.TransactionBlock = {
-            TransactionID: event.requestID
-        };
-        const sequenceNo = this.circuit.sendMessage(reject, PacketFlags_1.PacketFlags.Reliable);
-        return this.circuit.waitForAck(sequenceNo, 10000);
+        return __awaiter(this, void 0, void 0, function* () {
+            const reject = new DeclineFriendship_1.DeclineFriendshipMessage();
+            reject.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            reject.TransactionBlock = {
+                TransactionID: event.requestID
+            };
+            const sequenceNo = this.circuit.sendMessage(reject, PacketFlags_1.PacketFlags.Reliable);
+            return yield this.circuit.waitForAck(sequenceNo, 10000);
+        });
     }
     sendGroupMessage(groupID, message) {
         return new Promise((resolve, reject) => {

@@ -64,7 +64,7 @@ class Bot {
                 SessionID: circuit.sessionID
             };
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
-            circuit.waitForMessage(Message_1.Message.LogoutReply, 5000).then((packet) => {
+            circuit.waitForPacket(Message_1.Message.LogoutReply, 5000).then((packet) => {
             }).catch((error) => {
                 console.error('Timeout waiting for logout reply');
             }).then(() => {
@@ -109,7 +109,7 @@ class Bot {
                     CircuitCode: circuit.circuitCode
                 };
                 circuit.sendMessage(agentMovement, PacketFlags_1.PacketFlags.Reliable);
-                return circuit.waitForMessage(Message_1.Message.RegionHandshake, 10000);
+                return circuit.waitForPacket(Message_1.Message.RegionHandshake, 10000);
             }).then((packet) => {
                 const handshakeReply = new RegionHandshakeReply_1.RegionHandshakeReplyMessage();
                 handshakeReply.AgentData = {
@@ -144,7 +144,7 @@ class Bot {
                         OldestUnacked: this.currentRegion.circuit.getOldestUnacked()
                     };
                     circuit.sendMessage(ping, PacketFlags_1.PacketFlags.Reliable);
-                    circuit.waitForMessage(Message_1.Message.CompletePingCheck, 10000, ((pingData, packet) => {
+                    circuit.waitForPacket(Message_1.Message.CompletePingCheck, 10000, ((pingData, packet) => {
                         const cpc = packet.message;
                         if (cpc.PingID.PingID === pingData.pingID) {
                             this.lastSuccessfulPing = new Date().getTime();
