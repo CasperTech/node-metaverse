@@ -7,8 +7,7 @@ import {
     InstantMessageEvent,
     InventoryOfferedEvent,
     LureEvent,
-    TeleportEvent,
-    ScriptDialogEvent
+    TeleportEvent
 } from '..';
 
 
@@ -27,5 +26,4 @@ export class ClientEvents
     onGroupChatSessionJoin: Subject<GroupChatSessionJoinEvent> = new Subject<GroupChatSessionJoinEvent>();
     onGroupChatAgentListUpdate: Subject<GroupChatSessionAgentListEvent> = new Subject<GroupChatSessionAgentListEvent>();
     onFriendResponse: Subject<FriendResponseEvent> = new Subject<FriendResponseEvent>();
-    onScriptDialog: Subject<ScriptDialogEvent> = new Subject<ScriptDialogEvent>();
 }
