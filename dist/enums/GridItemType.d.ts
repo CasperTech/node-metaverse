@@ -7,5 +7,5 @@ export declare enum GridItemType {
     LandForSale = 7,
     Classified = 8,
     AdultEvent = 9,
-    AdultLandForSale = 10,
+    AdultLandForSale = 10
 }

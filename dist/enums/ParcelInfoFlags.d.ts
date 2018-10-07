@@ -1,3 +1,3 @@
 export declare enum ParcelInfoFlags {
-    mature = 1,
+    mature = 1
 }

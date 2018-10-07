@@ -1,3 +1,3 @@
 export declare enum DecodeFlags {
-    DontChangeFlags = 1,
+    DontChangeFlags = 1
 }

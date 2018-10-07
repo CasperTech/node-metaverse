@@ -35,9 +35,8 @@ export class GridCommands extends CommandsBase
                 Name: Utils.StringToBuffer(regionName)
             };
             circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForPacket(Message.MapBlockReply, 10000, (packet: Packet): FilterResponse =>
+            circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 10000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
             {
-                const filterMsg = packet.message as MapBlockReplyMessage;
                 let found = false;
                 filterMsg.Data.forEach((region) =>
                 {
@@ -52,9 +51,8 @@ export class GridCommands extends CommandsBase
                     return FilterResponse.Finish;
                 }
                 return FilterResponse.NoMatch;
-            }).then((packet: Packet) =>
+            }).then((responseMsg: MapBlockReplyMessage) =>
             {
-                const responseMsg = packet.message as MapBlockReplyMessage;
                 responseMsg.Data.forEach((region) =>
                 {
                     const name = Utils.BufferToStringSimple(region.Name);
@@ -102,9 +100,8 @@ export class GridCommands extends CommandsBase
                 MaxY: gridY
             };
             circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForPacket(Message.MapBlockReply, 10000, (packet: Packet): FilterResponse =>
+            circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 10000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
             {
-                const filterMsg = packet.message as MapBlockReplyMessage;
                 let found = false;
                 filterMsg.Data.forEach((data) =>
                 {
@@ -118,9 +115,8 @@ export class GridCommands extends CommandsBase
                     return FilterResponse.Finish;
                 }
                 return FilterResponse.NoMatch;
-            }).then((packet: Packet) =>
+            }).then((responseMsg: MapBlockReplyMessage) =>
             {
-                const responseMsg = packet.message as MapBlockReplyMessage;
                 responseMsg.Data.forEach((data) =>
                 {
                     if (data.X === gridX && data.Y === gridY)
@@ -153,9 +149,8 @@ export class GridCommands extends CommandsBase
                 const minY = gridY * 256;
                 const maxY = minY + 256;
                 response.avatars = [];
-                circuit.waitForPacket(Message.MapItemReply, 10000, (packet: Packet): FilterResponse =>
+                circuit.waitForMessage<MapItemReplyMessage>(Message.MapItemReply, 10000, (filterMsg: MapItemReplyMessage): FilterResponse =>
                 {
-                    const filterMsg = packet.message as MapItemReplyMessage;
                     let found = false;
                     filterMsg.Data.forEach((data) =>
                     {
@@ -173,9 +168,8 @@ export class GridCommands extends CommandsBase
                     {
                         return FilterResponse.NoMatch;
                     }
-                }).then((packet2: Packet) =>
+                }).then((responseMsg2: MapItemReplyMessage) =>
                 {
-                    const responseMsg2 = packet2.message as MapItemReplyMessage;
                     responseMsg2.Data.forEach((data) =>
                     {
                         response.avatars.push({
@@ -216,9 +210,8 @@ export class GridCommands extends CommandsBase
                 MaxY: maxY
             };
             circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForPacket(Message.MapBlockReply, 30000, (packet: Packet): FilterResponse =>
+            circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 30000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
             {
-                const filterMsg = packet.message as MapBlockReplyMessage;
                 let found = false;
                 filterMsg.Data.forEach((data) =>
                 {
@@ -237,7 +230,7 @@ export class GridCommands extends CommandsBase
                     return FilterResponse.Match;
                 }
                 return FilterResponse.NoMatch;
-            }).then((packet: Packet) =>
+            }).then((ignore: MapBlockReplyMessage) =>
             {
 
             }).catch((err) =>
@@ -281,9 +274,8 @@ export class GridCommands extends CommandsBase
             };
 
             this.circuit.sendMessage(aprm, PacketFlags.Reliable);
-            this.circuit.waitForPacket(Message.AvatarPickerReply, 10000, (packet: Packet): FilterResponse =>
+            this.circuit.waitForMessage<AvatarPickerReplyMessage>(Message.AvatarPickerReply, 10000, (apr: AvatarPickerReplyMessage): FilterResponse =>
             {
-                const apr = packet.message as AvatarPickerReplyMessage;
                 if (apr.AgentData.QueryID.toString() === queryID.toString())
                 {
                     return FilterResponse.Finish;
@@ -292,10 +284,9 @@ export class GridCommands extends CommandsBase
                 {
                     return FilterResponse.NoMatch;
                 }
-            }).then((packet: Packet) =>
+            }).then((apr: AvatarPickerReplyMessage) =>
             {
                 let found: UUID | null = null;
-                const apr = packet.message as AvatarPickerReplyMessage;
                 apr.Data.forEach((dataBlock) =>
                 {
                     const resultName = (Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' +

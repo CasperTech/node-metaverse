@@ -1,4 +1,3 @@
-/// <reference types="long" />
 import { CommandsBase } from './CommandsBase';
 import { UUID } from '../UUID';
 import * as Long from 'long';

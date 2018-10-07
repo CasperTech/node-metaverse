@@ -5,5 +5,5 @@ export declare enum SoundFlags {
     SyncSlave = 4,
     SyncPending = 8,
     Queue = 16,
-    Stop = 32,
+    Stop = 32
 }

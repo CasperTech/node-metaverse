@@ -8,5 +8,5 @@ export declare enum ChatType {
     Debug = 6,
     OwnerSay = 8,
     RegionSayTo = 9,
-    RegionSay = 255,
+    RegionSay = 255
 }

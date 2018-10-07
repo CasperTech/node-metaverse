@@ -135,8 +135,7 @@ class Agent {
             SessionID: circuit.sessionID
         };
         circuit.sendMessage(wearablesRequest, PacketFlags_1.PacketFlags.Reliable);
-        circuit.waitForPacket(Message_1.Message.AgentWearablesUpdate, 10000).then((packet) => {
-            const wearables = packet.message;
+        circuit.waitForMessage(Message_1.Message.AgentWearablesUpdate, 10000).then((wearables) => {
             if (!this.wearables || wearables.AgentData.SerialNum > this.wearables.serialNumber) {
                 this.wearables = {
                     serialNumber: wearables.AgentData.SerialNum,

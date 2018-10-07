@@ -1,4 +1,3 @@
-/// <reference types="long" />
 import * as Long from 'long';
 import { UUID } from '..';
 export declare class RegionInfoReplyEvent {

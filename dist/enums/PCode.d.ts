@@ -5,5 +5,5 @@ export declare enum PCode {
     Grass = 95,
     NewTree = 111,
     ParticleSystem = 143,
-    Tree = 255,
+    Tree = 255
 }

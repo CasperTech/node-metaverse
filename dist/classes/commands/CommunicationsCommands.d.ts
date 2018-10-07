@@ -18,7 +18,7 @@ export declare class CommunicationsCommands extends CommandsBase {
     startGroupChatSession(sessionID: UUID | string, message: string): Promise<void>;
     acceptFriendRequest(event: FriendRequestEvent): Promise<void>;
     sendFriendRequest(to: UUID | string, message: string): Promise<void>;
-    private respondToInventoryOffer(event, response);
+    private respondToInventoryOffer;
     acceptInventoryOffer(event: InventoryOfferedEvent): Promise<void>;
     rejectInventoryOffer(event: InventoryOfferedEvent): Promise<void>;
     rejectFriendRequest(event: FriendRequestEvent): Promise<void>;

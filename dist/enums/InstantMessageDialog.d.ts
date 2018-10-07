@@ -41,5 +41,5 @@ export declare enum InstantMessageDialog {
     FriendshipAccepted = 39,
     FriendshipDeclined = 40,
     StartTyping = 41,
-    StopTyping = 42,
+    StopTyping = 42
 }

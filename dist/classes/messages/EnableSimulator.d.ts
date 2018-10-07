@@ -1,4 +1,3 @@
-/// <reference types="long" />
 /// <reference types="node" />
 import { IPAddress } from '../IPAddress';
 import Long = require('long');

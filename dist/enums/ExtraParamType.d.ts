@@ -3,5 +3,5 @@ export declare enum ExtraParamType {
     Light = 32,
     Sculpt = 48,
     LightImage = 64,
-    Mesh = 96,
+    Mesh = 96
 }

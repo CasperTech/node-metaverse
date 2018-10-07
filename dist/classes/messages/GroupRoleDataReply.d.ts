@@ -1,5 +1,4 @@
 /// <reference types="node" />
-/// <reference types="long" />
 import { UUID } from '../UUID';
 import Long = require('long');
 import { MessageBase } from '../MessageBase';

@@ -6,5 +6,5 @@ export declare enum MessageFlags {
     Zerocoded = 16,
     Trusted = 32,
     Blacklisted = 64,
-    Deprecated = 128,
+    Deprecated = 128
 }

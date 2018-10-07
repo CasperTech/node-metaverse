@@ -39,5 +39,5 @@ export declare enum AttachmentPoint {
     HUDBottom = 37,
     HUDBottomRight = 38,
     Neck = 39,
-    Root = 40,
+    Root = 40
 }

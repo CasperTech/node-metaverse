@@ -1,4 +1,3 @@
-/// <reference types="request" />
 import { Caps } from './Caps';
 import * as request from 'request';
 import { ClientEvents } from './ClientEvents';

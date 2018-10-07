@@ -1,4 +1,3 @@
-/// <reference types="long" />
 /// <reference types="node" />
 import Long = require('long');
 import { MessageFlags } from '../../enums/MessageFlags';

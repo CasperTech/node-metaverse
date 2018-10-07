@@ -8,5 +8,5 @@ export declare enum InventoryItemFlags {
     ObjectOverwriteEveryone = 524288,
     ObjectOverwriteNextOwner = 1048576,
     ObjectHasMultipleItems = 2097152,
-    SharedSingleReference = 1073741824,
+    SharedSingleReference = 1073741824
 }

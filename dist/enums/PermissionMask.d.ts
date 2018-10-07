@@ -6,5 +6,5 @@ export declare enum PermissionMask {
     Export = 65536,
     Move = 524288,
     Damage = 1048576,
-    All = 581632,
+    All = 581632
 }

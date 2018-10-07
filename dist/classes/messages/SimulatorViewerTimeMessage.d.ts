@@ -1,4 +1,3 @@
-/// <reference types="long" />
 /// <reference types="node" />
 import { Vector3 } from '../Vector3';
 import Long = require('long');

@@ -1,5 +1,5 @@
 export declare enum FilterResponse {
     NoMatch = 0,
     Match = 1,
-    Finish = 2,
+    Finish = 2
 }
