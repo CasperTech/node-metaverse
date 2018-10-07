@@ -18,5 +18,5 @@ export declare enum TeleportFlags {
     ForceRedirect = 32768,
     FinishedViaLure = 67108864,
     FinishedViaNewSim = 268435456,
-    FinishedViaSameSim = 536870912,
+    FinishedViaSameSim = 536870912
 }

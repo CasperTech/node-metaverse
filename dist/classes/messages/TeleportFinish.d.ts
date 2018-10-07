@@ -1,4 +1,3 @@
-/// <reference types="long" />
 /// <reference types="node" />
 import { UUID } from '../UUID';
 import { IPAddress } from '../IPAddress';

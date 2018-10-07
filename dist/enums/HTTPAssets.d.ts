@@ -18,5 +18,5 @@ export declare enum HTTPAssets {
     ASSET_LINK_FOLDER = "link_f",
     ASSET_MESH = "mesh",
     ASSET_WIDGET = "widget",
-    ASSET_PERSON = "person",
+    ASSET_PERSON = "person"
 }

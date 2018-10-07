@@ -34,5 +34,5 @@ export declare enum AssetType {
     Mesh = 49,
     Inbox = 50,
     Outbox = 51,
-    BasicRoot = 51,
+    BasicRoot = 51
 }

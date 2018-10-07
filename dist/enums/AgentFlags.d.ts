@@ -1,4 +1,4 @@
 export declare enum AgentFlags {
     None = 0,
-    HideGroupTitle = 1,
+    HideGroupTitle = 1
 }

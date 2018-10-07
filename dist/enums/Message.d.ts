@@ -476,5 +476,5 @@ export declare enum Message {
     LinkInventoryItem = 4294902186,
     RetrieveIMsExtended = 4294902187,
     JoinGroupRequestExtended = 4294902188,
-    CreateGroupRequestExtended = 4294902189,
+    CreateGroupRequestExtended = 4294902189
 }

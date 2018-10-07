@@ -9,5 +9,5 @@ export declare enum CompressedFlags {
     TextureAnimation = 64,
     HasAngularVelocity = 128,
     HasNameValues = 256,
-    MediaURL = 512,
+    MediaURL = 512
 }

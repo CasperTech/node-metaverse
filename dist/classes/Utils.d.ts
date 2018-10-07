@@ -1,5 +1,4 @@
 /// <reference types="node" />
-/// <reference types="long" />
 import * as Long from 'long';
 export declare class Utils {
     static StringToBuffer(str: string): Buffer;

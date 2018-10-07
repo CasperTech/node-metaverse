@@ -1,12 +1,11 @@
 import {CommandsBase} from './CommandsBase';
 import {UUID} from '../UUID';
-import {Packet} from '../Packet';
 import * as Long from 'long';
-import {PacketFlags} from '../../enums/PacketFlags';
 import {RegionHandleRequestMessage} from '../messages/RegionHandleRequest';
 import {Message} from '../../enums/Message';
 import {FilterResponse} from '../../enums/FilterResponse';
 import {RegionIDAndHandleReplyMessage} from '../messages/RegionIDAndHandleReply';
+import {PacketFlags} from '../..';
 
 export class RegionCommands extends CommandsBase
 {
@@ -20,9 +19,8 @@ export class RegionCommands extends CommandsBase
                 RegionID: regionID,
             };
             circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForPacket(Message.RegionIDAndHandleReply, 10000, (packet: Packet): FilterResponse =>
+            circuit.waitForMessage<RegionIDAndHandleReplyMessage>(Message.RegionIDAndHandleReply, 10000, (filterMsg: RegionIDAndHandleReplyMessage): FilterResponse =>
             {
-                const filterMsg = packet.message as RegionIDAndHandleReplyMessage;
                 if (filterMsg.ReplyBlock.RegionID.toString() === regionID.toString())
                 {
                     return FilterResponse.Finish;
@@ -31,9 +29,8 @@ export class RegionCommands extends CommandsBase
                 {
                     return FilterResponse.NoMatch;
                 }
-            }).then((packet: Packet) =>
+            }).then((responseMsg: RegionIDAndHandleReplyMessage) =>
             {
-                const responseMsg = packet.message as RegionIDAndHandleReplyMessage;
                 resolve(responseMsg.ReplyBlock.RegionHandle);
             });
         });

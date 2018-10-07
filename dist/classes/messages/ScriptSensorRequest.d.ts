@@ -1,5 +1,4 @@
 /// <reference types="node" />
-/// <reference types="long" />
 import { UUID } from '../UUID';
 import { Vector3 } from '../Vector3';
 import Long = require('long');

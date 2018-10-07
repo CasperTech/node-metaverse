@@ -19,7 +19,7 @@ export declare class InventoryFolder {
         root?: UUID;
     }, agent: Agent);
     getChildFolders(): InventoryFolder[];
-    private saveCache();
-    private loadCache();
+    private saveCache;
+    private loadCache;
     populate(): Promise<{}>;
 }

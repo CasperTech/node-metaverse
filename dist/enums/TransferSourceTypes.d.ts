@@ -4,5 +4,5 @@ export declare enum TransferSourceType {
     Asset = 2,
     SimInventoryItem = 3,
     SimEstate = 4,
-    NumTypes = 5,
+    NumTypes = 5
 }

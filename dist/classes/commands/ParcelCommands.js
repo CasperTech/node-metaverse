@@ -30,8 +30,7 @@ class ParcelCommands extends CommandsBase_1.CommandsBase {
                 ParcelID: parcelID
             };
             this.circuit.sendMessage(msg, __1.PacketFlags.Reliable);
-            const parcelInfoReply = (yield this.circuit.waitForMessage(Message_1.Message.ParcelInfoReply, 10000, (packet) => {
-                const replyMessage = packet.message;
+            const parcelInfoReply = (yield this.circuit.waitForMessage(Message_1.Message.ParcelInfoReply, 10000, (replyMessage) => {
                 if (replyMessage.Data.ParcelID.equals(parcelID)) {
                     return FilterResponse_1.FilterResponse.Finish;
                 }

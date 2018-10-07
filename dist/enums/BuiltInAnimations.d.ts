@@ -133,5 +133,5 @@ export declare enum BuiltInAnimations {
     WORRY = "9f496bd2-589a-709f-16cc-69bf7df1d36c",
     YES = "15dd911d-be82-2856-26db-27659b142875",
     YES_HAPPY = "b8c8b2a3-9008-1771-3bfc-90924955ab2d",
-    YOGA_FLOAT = "42ecd00b-9947-a97c-400a-bbc9174c7aeb",
+    YOGA_FLOAT = "42ecd00b-9947-a97c-400a-bbc9174c7aeb"
 }

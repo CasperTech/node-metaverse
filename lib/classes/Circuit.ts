@@ -51,7 +51,7 @@ export class Circuit
 
     subscribeToMessages(ids: number[], callback: (packet: Packet) => void)
     {
-        const lookupObject: {[key: number]: boolean} = {};
+        const lookupObject: { [key: number]: boolean } = {};
         ids.forEach((id) =>
         {
             lookupObject[id] = true;
@@ -171,15 +171,9 @@ export class Circuit
         }
     }
 
-    async waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<MessageBase>
+    waitForMessage<T extends MessageBase>(id: Message, timeout: number, filter?: (message: T) => FilterResponse): Promise<T>
     {
-        const msg: Packet = await this.waitForPacket(id, timeout, filter);
-        return msg.message;
-    }
-
-    waitForPacket(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<Packet>
-    {
-        return new Promise<Packet>((resolve, reject) =>
+        return new Promise<T>((resolve, reject) =>
         {
             const handleObj: {
                 timeout: Timer | null,
@@ -211,7 +205,7 @@ export class Circuit
                     }
                     else
                     {
-                        const filterResult = filter(packet);
+                        const filterResult = filter(packet.message as T);
                         if (filterResult === FilterResponse.Finish)
                         {
                             finish = true;
@@ -239,7 +233,7 @@ export class Circuit
                         handleObj.subscription.unsubscribe();
                         handleObj.subscription = null;
                     }
-                    resolve(packet);
+                    resolve(packet.message as T);
                 }
             });
         });
@@ -305,7 +299,8 @@ export class Circuit
 
         const keys: string[] = Object.keys(this.awaitingAck);
 
-        keys.forEach((seqID: string) => {
+        keys.forEach((seqID: string) =>
+        {
             const nSeq = parseInt(seqID, 10);
             if (oldest === -1 || this.awaitingAck[nSeq].sent < oldest)
             {
@@ -333,7 +328,7 @@ export class Circuit
         {
             packet.readFromBuffer(bytes, 0, this.ackReceived.bind(this), this.sendAck.bind(this));
         }
-        catch(erro)
+        catch (erro)
         {
             console.error(erro);
             return;

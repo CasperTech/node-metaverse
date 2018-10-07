@@ -39,8 +39,7 @@ export declare class Circuit {
     waitForAck(ack: number, timeout: number): Promise<void>;
     init(): void;
     shutdown(): void;
-    waitForMessage(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<MessageBase>;
-    waitForPacket(id: Message, timeout: number, filter?: (packet: Packet) => FilterResponse): Promise<Packet>;
+    waitForMessage<T extends MessageBase>(id: Message, timeout: number, filter?: (message: T) => FilterResponse): Promise<T>;
     sendPacket(packet: Packet): void;
     ackReceived(sequenceNumber: number): void;
     sendAck(sequenceNumber: number): void;

@@ -1,4 +1,3 @@
-/// <reference types="long" />
 import { UUID } from './UUID';
 import { Vector3 } from './Vector3';
 import { Inventory } from './Inventory';

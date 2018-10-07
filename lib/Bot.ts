@@ -27,6 +27,7 @@ import Timer = NodeJS.Timer;
 import {Subscription} from 'rxjs/Subscription';
 import {BotOptionFlags} from './enums/BotOptionFlags';
 import {FilterResponse} from './enums/FilterResponse';
+import {LogoutReplyMessage} from './classes/messages/LogoutReply';
 
 export class Bot
 {
@@ -49,316 +50,252 @@ export class Bot
         this.options = options;
     }
 
-    login()
+    async login()
     {
-        return new Promise((resolve, reject) =>
-        {
-            const loginHandler = new LoginHandler(this.clientEvents, this.options);
-            loginHandler.Login(this.loginParams).then((response: LoginResponse) =>
-            {
-                this.currentRegion = response.region;
-                this.agent = response.agent;
-                this.clientCommands = new ClientCommands(response.region, response.agent, this);
-                resolve(response);
-            }).catch((error: Error) =>
-            {
-                reject(error);
-            });
-        });
+        const loginHandler = new LoginHandler(this.clientEvents, this.options);
+        const response: LoginResponse = await loginHandler.Login(this.loginParams);
+        this.currentRegion = response.region;
+        this.agent = response.agent;
+        this.clientCommands = new ClientCommands(response.region, response.agent, this);
+        return response;
     }
 
-    changeRegion(region: Region)
+    async changeRegion(region: Region)
     {
-        return new Promise((resolve, reject) =>
+        this.currentRegion = region;
+        this.clientCommands = new ClientCommands(this.currentRegion, this.agent, this);
+        if (this.ping !== null)
         {
-            this.currentRegion = region;
-            this.clientCommands = new ClientCommands(this.currentRegion, this.agent, this);
-            if (this.ping !== null)
+            clearInterval(this.ping);
+            this.ping = null;
+        }
+
+        await this.connectToSim();
+    }
+
+    private closeCircuit()
+    {
+        this.agent.shutdown();
+        this.currentRegion.shutdown();
+        if (this.circuitSubscription !== null)
+        {
+            this.circuitSubscription.unsubscribe();
+            this.circuitSubscription = null;
+        }
+        delete this.currentRegion;
+        delete this.agent;
+        delete this.clientCommands;
+        if (this.ping !== null)
+        {
+            clearInterval(this.ping);
+            this.ping = null;
+        }
+
+    }
+
+    private kicked(message: string)
+    {
+        this.closeCircuit();
+        this.disconnected(false, message);
+    }
+
+    private disconnected(requested: boolean, message: string)
+    {
+        const disconnectEvent = new DisconnectEvent();
+        disconnectEvent.requested = requested;
+        disconnectEvent.message = message;
+        if (this.clientEvents)
+        {
+            this.clientEvents.onDisconnected.next(disconnectEvent);
+        }
+    }
+
+    async close()
+    {
+        const circuit = this.currentRegion.circuit;
+        const msg: LogoutRequestMessage = new LogoutRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        circuit.sendMessage(msg, PacketFlags.Reliable);
+        await circuit.waitForMessage<LogoutReplyMessage>(Message.LogoutReply, 5000);
+
+        this.closeCircuit();
+        this.disconnected(true, 'Logout completed');
+    }
+
+    async connectToSim()
+    {
+        const circuit = this.currentRegion.circuit;
+        circuit.init();
+        const msg: UseCircuitCodeMessage = new UseCircuitCodeMessage();
+        msg.CircuitCode = {
+            SessionID: circuit.sessionID,
+            ID: this.agent.agentID,
+            Code: circuit.circuitCode
+        };
+
+        await circuit.waitForAck(circuit.sendMessage(msg, PacketFlags.Reliable), 1000);
+
+
+        const agentMovement: CompleteAgentMovementMessage = new CompleteAgentMovementMessage();
+        agentMovement.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID,
+            CircuitCode: circuit.circuitCode
+        };
+        circuit.sendMessage(agentMovement, PacketFlags.Reliable);
+
+        await circuit.waitForMessage(Message.RegionHandshake, 10000);
+
+        const handshakeReply: RegionHandshakeReplyMessage = new RegionHandshakeReplyMessage();
+        handshakeReply.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        handshakeReply.RegionInfo = {
+            Flags: RegionProtocolFlags.SelfAppearanceSupport | RegionProtocolFlags.AgentAppearanceService
+        };
+        await circuit.waitForAck(circuit.sendMessage(handshakeReply, PacketFlags.Reliable), 10000);
+
+        if (this.clientCommands !== null)
+        {
+            this.clientCommands.network.setBandwidth(1536000);
+        }
+
+        const agentRequest = new AgentDataUpdateRequestMessage();
+        agentRequest.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        circuit.sendMessage(agentRequest, PacketFlags.Reliable);
+        this.agent.setInitialAppearance();
+        this.agent.circuitActive();
+
+        this.lastSuccessfulPing = new Date().getTime();
+
+        this.ping = setInterval(async () =>
+        {
+            this.pingNumber++;
+            if (this.pingNumber > 255)
             {
-                clearInterval(this.ping);
-                this.ping = null;
+                this.pingNumber = 0;
             }
-            this.connectToSim().then(() =>
-            {
-                resolve();
-            }).catch((error) =>
-            {
-                reject(error);
-            });
-        });
-    }
-
-    close()
-    {
-        return new Promise((resolve, reject) =>
-        {
-            const circuit = this.currentRegion.circuit;
-            const msg: LogoutRequestMessage = new LogoutRequestMessage();
-            msg.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: circuit.sessionID
+            const ping = new StartPingCheckMessage();
+            ping.PingID = {
+                PingID: this.pingNumber,
+                OldestUnacked: this.currentRegion.circuit.getOldestUnacked()
             };
-            circuit.sendMessage(msg, PacketFlags.Reliable);
-            circuit.waitForPacket(Message.LogoutReply, 5000).then((packet: Packet) =>
-            {
+            circuit.sendMessage(ping, PacketFlags.Reliable);
 
-            }).catch((error: Error) =>
+            circuit.waitForMessage<CompletePingCheckMessage>(Message.CompletePingCheck, 10000, ((pingData: {
+                pingID: number,
+                timeSent: number
+            }, cpc: CompletePingCheckMessage): FilterResponse =>
             {
-                console.error('Timeout waiting for logout reply')
-            }).then(() =>
-            {
-                this.agent.shutdown();
-                this.currentRegion.shutdown();
-                if (this.circuitSubscription !== null)
+                if (cpc.PingID.PingID === pingData.pingID)
                 {
-                    this.circuitSubscription.unsubscribe();
-                    this.circuitSubscription = null;
-                }
-                delete this.currentRegion;
-                delete this.agent;
-                delete this.clientCommands;
-                if (this.ping !== null)
-                {
-                    clearInterval(this.ping);
-                    this.ping = null;
-                }
-
-                const disconnectEvent = new DisconnectEvent();
-                disconnectEvent.requested = true;
-                disconnectEvent.message = 'Logout completed';
-                if (this.clientEvents)
-                {
-                    this.clientEvents.onDisconnected.next(disconnectEvent);
-                }
-                resolve();
-            });
-        });
-    }
-
-    connectToSim()
-    {
-        return new Promise((resolve, reject) =>
-        {
-            const circuit = this.currentRegion.circuit;
-            circuit.init();
-            const msg: UseCircuitCodeMessage = new UseCircuitCodeMessage();
-            msg.CircuitCode = {
-                SessionID: circuit.sessionID,
-                ID: this.agent.agentID,
-                Code: circuit.circuitCode
-            };
-            circuit.waitForAck(circuit.sendMessage(msg, PacketFlags.Reliable), 1000).then(() =>
-            {
-                const agentMovement: CompleteAgentMovementMessage = new CompleteAgentMovementMessage();
-                agentMovement.AgentData = {
-                    AgentID: this.agent.agentID,
-                    SessionID: circuit.sessionID,
-                    CircuitCode: circuit.circuitCode
-                };
-                circuit.sendMessage(agentMovement, PacketFlags.Reliable);
-                return circuit.waitForPacket(Message.RegionHandshake, 10000);
-            }).then((packet: Packet) =>
-            {
-                const handshakeReply: RegionHandshakeReplyMessage = new RegionHandshakeReplyMessage();
-                handshakeReply.AgentData = {
-                    AgentID: this.agent.agentID,
-                    SessionID: circuit.sessionID
-                };
-                handshakeReply.RegionInfo = {
-                    Flags: RegionProtocolFlags.SelfAppearanceSupport | RegionProtocolFlags.AgentAppearanceService
-                };
-                return circuit.waitForAck(circuit.sendMessage(handshakeReply, PacketFlags.Reliable), 10000)
-            }).then(() =>
-            {
-                if (this.clientCommands !== null)
-                {
-                    this.clientCommands.network.setBandwidth(1536000);
-                }
-
-                const agentRequest = new AgentDataUpdateRequestMessage();
-                agentRequest.AgentData = {
-                    AgentID: this.agent.agentID,
-                    SessionID: circuit.sessionID
-                };
-                circuit.sendMessage(agentRequest, PacketFlags.Reliable);
-                this.agent.setInitialAppearance();
-                this.agent.circuitActive();
-
-                this.lastSuccessfulPing = new Date().getTime();
-                this.ping = setInterval(() =>
-                {
-                    this.pingNumber++;
-                    if (this.pingNumber > 255)
+                    this.lastSuccessfulPing = new Date().getTime();
+                    const pingTime = this.lastSuccessfulPing - pingData.timeSent;
+                    if (this.clientEvents !== null)
                     {
-                        this.pingNumber = 0;
+                        this.clientEvents.onCircuitLatency.next(pingTime);
                     }
-                    const ping = new StartPingCheckMessage();
-                    ping.PingID = {
-                        PingID: this.pingNumber,
-                        OldestUnacked: this.currentRegion.circuit.getOldestUnacked()
-                    };
-                    circuit.sendMessage(ping, PacketFlags.Reliable);
-                    circuit.waitForPacket(Message.CompletePingCheck, 10000, ((pingData: {
-                        pingID: number,
-                        timeSent: number
-                    }, packet: Packet): FilterResponse =>
-                    {
-                        const cpc = packet.message as CompletePingCheckMessage;
-                        if (cpc.PingID.PingID === pingData.pingID)
-                        {
-                            this.lastSuccessfulPing = new Date().getTime();
-                            const pingTime = this.lastSuccessfulPing - pingData.timeSent;
-                            if (this.clientEvents !== null)
-                            {
-                                this.clientEvents.onCircuitLatency.next(pingTime);
-                            }
-                            return FilterResponse.Finish;
-                        }
-                        return FilterResponse.NoMatch;
-                    }).bind(this, {
-                        pingID: this.pingNumber,
-                        timeSent: new Date().getTime()
-                    }));
-
-                    if ((new Date().getTime() - this.lastSuccessfulPing) > 60000)
-                    {
-                        // We're dead, jim
-                        this.agent.shutdown();
-                        this.currentRegion.shutdown();
-                        if (this.circuitSubscription !== null)
-                        {
-                            this.circuitSubscription.unsubscribe();
-                            this.circuitSubscription = null;
-                        }
-                        delete this.currentRegion;
-                        delete this.agent;
-                        delete this.clientCommands;
-                        if (this.ping !== null)
-                        {
-                            clearInterval(this.ping);
-                            this.ping = null;
-                        }
-
-                        const disconnectEvent = new DisconnectEvent();
-                        disconnectEvent.requested = false;
-                        disconnectEvent.message = 'Circuit timeout';
-                        if (this.clientEvents)
-                        {
-                            this.clientEvents.onDisconnected.next(disconnectEvent);
-                        }
-                    }
-
-                }, 5000);
-
-                this.circuitSubscription = circuit.subscribeToMessages(
-                   [
-                       Message.TeleportFailed,
-                       Message.TeleportFinish,
-                       Message.TeleportLocal,
-                       Message.TeleportStart,
-                       Message.TeleportProgress,
-                       Message.TeleportCancel,
-                       Message.KickUser
-                   ], (packet: Packet) =>
-                    {
-                        switch (packet.message.id)
-                        {
-                            case Message.TeleportLocal:
-                            {
-                                const tpEvent = new TeleportEvent();
-                                tpEvent.message = '';
-                                tpEvent.eventType = TeleportEventType.TeleportCompleted;
-                                tpEvent.simIP = 'local';
-                                tpEvent.simPort = 0;
-                                tpEvent.seedCapability = '';
-
-                                if (this.clientEvents === null)
-                                {
-                                    reject(new Error('ClientEvents is null'));
-                                    return;
-                                }
-
-                                this.clientEvents.onTeleportEvent.next(tpEvent);
-                                break;
-                            }
-                            case Message.TeleportStart:
-                            {
-                                const teleportStart = packet.message as TeleportStartMessage;
-
-                                const tpEvent = new TeleportEvent();
-                                tpEvent.message = '';
-                                tpEvent.eventType = TeleportEventType.TeleportStarted;
-                                tpEvent.simIP = '';
-                                tpEvent.simPort = 0;
-                                tpEvent.seedCapability = '';
-
-                                if (this.clientEvents === null)
-                                {
-                                    reject(new Error('ClientEvents is null'));
-                                    return;
-                                }
-
-                                this.clientEvents.onTeleportEvent.next(tpEvent);
-                                break;
-                            }
-                            case Message.TeleportProgress:
-                            {
-                                const teleportProgress = packet.message as TeleportProgressMessage;
-                                const message = Utils.BufferToStringSimple(teleportProgress.Info.Message);
-
-                                const tpEvent = new TeleportEvent();
-                                tpEvent.message = message;
-                                tpEvent.eventType = TeleportEventType.TeleportProgress;
-                                tpEvent.simIP = '';
-                                tpEvent.simPort = 0;
-                                tpEvent.seedCapability = '';
-
-                                if (this.clientEvents === null)
-                                {
-                                    reject(new Error('ClientEvents is null'));
-                                    return;
-                                }
-
-                                this.clientEvents.onTeleportEvent.next(tpEvent);
-                                break;
-                            }
-                            case Message.KickUser:
-                            {
-                                const kickUser = packet.message as KickUserMessage;
-                                this.agent.shutdown();
-                                this.currentRegion.shutdown();
-                                if (this.circuitSubscription !== null)
-                                {
-                                    this.circuitSubscription.unsubscribe();
-                                    this.circuitSubscription = null;
-                                }
-                                delete this.currentRegion;
-                                delete this.agent;
-                                delete this.clientCommands;
-                                if (this.ping !== null)
-                                {
-                                    clearInterval(this.ping);
-                                    this.ping = null;
-                                }
-
-                                const disconnectEvent = new DisconnectEvent();
-                                disconnectEvent.requested = false;
-                                disconnectEvent.message = Utils.BufferToStringSimple(kickUser.UserInfo.Reason);
-                                if (this.clientEvents)
-                                {
-                                    this.clientEvents.onDisconnected.next(disconnectEvent);
-                                }
-                                break;
-                            }
-                        }
-                    });
+                    return FilterResponse.Finish;
+                }
+                return FilterResponse.NoMatch;
+            }).bind(this, {
+                pingID: this.pingNumber,
+                timeSent: new Date().getTime()
+            }));
 
 
-                resolve();
-            }).catch((error) =>
+            if ((new Date().getTime() - this.lastSuccessfulPing) > 60000)
             {
-                reject(error);
+                // We're dead, jim
+                this.kicked('Circuit Timeout');
+            }
+
+        }, 5000);
+
+        this.circuitSubscription = circuit.subscribeToMessages(
+            [
+                Message.TeleportFailed,
+                Message.TeleportFinish,
+                Message.TeleportLocal,
+                Message.TeleportStart,
+                Message.TeleportProgress,
+                Message.TeleportCancel,
+                Message.KickUser
+            ], (packet: Packet) =>
+            {
+                switch (packet.message.id)
+                {
+                    case Message.TeleportLocal:
+                    {
+                        const tpEvent = new TeleportEvent();
+                        tpEvent.message = '';
+                        tpEvent.eventType = TeleportEventType.TeleportCompleted;
+                        tpEvent.simIP = 'local';
+                        tpEvent.simPort = 0;
+                        tpEvent.seedCapability = '';
+
+                        if (this.clientEvents === null)
+                        {
+                            this.kicked('ClientEvents is null');
+                        }
+
+                        this.clientEvents.onTeleportEvent.next(tpEvent);
+                        break;
+                    }
+                    case Message.TeleportStart:
+                    {
+                        const teleportStart = packet.message as TeleportStartMessage;
+
+                        const tpEvent = new TeleportEvent();
+                        tpEvent.message = '';
+                        tpEvent.eventType = TeleportEventType.TeleportStarted;
+                        tpEvent.simIP = '';
+                        tpEvent.simPort = 0;
+                        tpEvent.seedCapability = '';
+
+                        if (this.clientEvents === null)
+                        {
+                            this.kicked('ClientEvents is null');
+                        }
+
+                        this.clientEvents.onTeleportEvent.next(tpEvent);
+                        break;
+                    }
+                    case Message.TeleportProgress:
+                    {
+                        const teleportProgress = packet.message as TeleportProgressMessage;
+                        const message = Utils.BufferToStringSimple(teleportProgress.Info.Message);
+
+                        const tpEvent = new TeleportEvent();
+                        tpEvent.message = message;
+                        tpEvent.eventType = TeleportEventType.TeleportProgress;
+                        tpEvent.simIP = '';
+                        tpEvent.simPort = 0;
+                        tpEvent.seedCapability = '';
+
+                        if (this.clientEvents === null)
+                        {
+                            this.kicked('ClientEvents is null');
+                        }
+
+                        this.clientEvents.onTeleportEvent.next(tpEvent);
+                        break;
+                    }
+                    case Message.KickUser:
+                    {
+                        const kickUser = packet.message as KickUserMessage;
+                        this.kicked(Utils.BufferToStringSimple(kickUser.UserInfo.Reason));
+
+                        break;
+                    }
+                }
             });
-        });
     }
 }

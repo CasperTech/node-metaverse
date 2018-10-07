@@ -19,5 +19,5 @@ export declare enum Tree {
     SeaSword = 17,
     Kelp1 = 18,
     BeachGrass1 = 19,
-    Kelp2 = 20,
+    Kelp2 = 20
 }

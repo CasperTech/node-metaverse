@@ -28,8 +28,8 @@ export declare class LoginResponse {
     };
     searchToken: string;
     clientEvents: ClientEvents;
-    private static toRegionHandle(x_global, y_global);
-    private static parseVector3(str);
-    private static parseHome(str);
+    private static toRegionHandle;
+    private static parseVector3;
+    private static parseHome;
     constructor(json: any, clientEvents: ClientEvents, options: BotOptionFlags);
 }
