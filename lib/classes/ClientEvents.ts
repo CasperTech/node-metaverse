@@ -2,13 +2,18 @@ import {Subject} from 'rxjs/Subject';
 import {
     ChatEvent,
     DisconnectEvent,
-    FriendRequestEvent, FriendResponseEvent, GroupChatEvent, GroupChatSessionAgentListEvent, GroupChatSessionJoinEvent,
+    FriendRequestEvent,
+    FriendResponseEvent,
+    GroupChatEvent,
+    GroupChatSessionAgentListEvent,
+    GroupChatSessionJoinEvent,
     GroupInviteEvent,
     InstantMessageEvent,
     InventoryOfferedEvent,
     LureEvent,
     TeleportEvent,
-    ScriptDialogEvent
+    ScriptDialogEvent,
+    EventQueueStateChangeEvent
 } from '..';
 
 
@@ -28,4 +33,5 @@ export class ClientEvents
     onGroupChatAgentListUpdate: Subject<GroupChatSessionAgentListEvent> = new Subject<GroupChatSessionAgentListEvent>();
     onFriendResponse: Subject<FriendResponseEvent> = new Subject<FriendResponseEvent>();
     onScriptDialog: Subject<ScriptDialogEvent> = new Subject<ScriptDialogEvent>();
+    onEventQueueStateChange: Subject<EventQueueStateChangeEvent> = new Subject<EventQueueStateChangeEvent>();
 }

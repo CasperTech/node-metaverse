@@ -4,15 +4,15 @@ const Circuit_1 = require("./Circuit");
 const Caps_1 = require("./Caps");
 const Comms_1 = require("./Comms");
 const ObjectStoreFull_1 = require("./ObjectStoreFull");
-const BotOptionFlags_1 = require("../enums/BotOptionFlags");
 const ObjectStoreLite_1 = require("./ObjectStoreLite");
+const __1 = require("..");
 class Region {
     constructor(agent, clientEvents, options) {
         this.agent = agent;
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = new Circuit_1.Circuit(clientEvents);
-        if (options & BotOptionFlags_1.BotOptionFlags.LiteObjectStore) {
+        if (options & __1.BotOptionFlags.LiteObjectStore) {
             this.objects = new ObjectStoreLite_1.ObjectStoreLite(this.circuit, agent, clientEvents, options);
         }
         else {

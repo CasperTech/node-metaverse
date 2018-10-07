@@ -25,15 +25,29 @@ const ClientCommands_1 = require("./classes/ClientCommands");
 const DisconnectEvent_1 = require("./events/DisconnectEvent");
 const StartPingCheck_1 = require("./classes/messages/StartPingCheck");
 const FilterResponse_1 = require("./enums/FilterResponse");
+const UUID_1 = require("./classes/UUID");
 class Bot {
     constructor(login, options) {
         this.ping = null;
         this.pingNumber = 0;
         this.lastSuccessfulPing = 0;
         this.circuitSubscription = null;
+        this.eventQueueRunning = false;
+        this.eventQueueWaits = {};
         this.clientEvents = new ClientEvents_1.ClientEvents();
         this.loginParams = login;
         this.options = options;
+        this.clientEvents.onEventQueueStateChange.subscribe((evt) => {
+            this.eventQueueRunning = evt.active;
+            for (const waitID of Object.keys(this.eventQueueWaits)) {
+                try {
+                    clearTimeout(this.eventQueueWaits[waitID].timer);
+                    this.eventQueueWaits[waitID].resolve();
+                    delete this.eventQueueWaits[waitID];
+                }
+                catch (ignore) { }
+            }
+        });
     }
     login() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -54,6 +68,24 @@ class Bot {
                 this.ping = null;
             }
             yield this.connectToSim();
+        });
+    }
+    waitForEventQueue(timeout = 1000) {
+        return new Promise((resolve, reject) => {
+            if (this.eventQueueRunning) {
+                resolve();
+            }
+            else {
+                const waitID = UUID_1.UUID.random().toString();
+                const newWait = {
+                    'resolve': resolve
+                };
+                newWait.timer = setTimeout(() => {
+                    delete this.eventQueueWaits[waitID];
+                    reject(new Error('Timeout'));
+                }, timeout);
+                this.eventQueueWaits[waitID] = newWait;
+            }
         });
     }
     closeCircuit() {

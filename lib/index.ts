@@ -3,9 +3,6 @@ import {LoginParameters} from './classes/LoginParameters';
 import {ClientEvents} from './classes/ClientEvents';
 import {BVH} from './classes/BVH';
 
-
-// Enums
-
 import {AssetType} from './enums/AssetType';
 import {HTTPAssets} from './enums/HTTPAssets';
 import {InstantMessageEventFlags} from './enums/InstantMessageEventFlags';
@@ -42,6 +39,7 @@ import {DecodeFlags} from './enums/DecodeFlags';
 import {ParcelInfoFlags} from './enums/ParcelInfoFlags';
 import {ParcelInfoReplyEvent} from './events/ParcelInfoReplyEvent';
 import {ScriptDialogEvent} from './events/ScriptDialogEvent';
+import {EventQueueStateChangeEvent} from './events/EventQueueStateChangeEvent';
 
 export {
     Bot,
@@ -87,5 +85,6 @@ export {
     ParcelInfoReplyEvent,
     RegionInfoReplyEvent,
     TeleportEvent,
-    ScriptDialogEvent
+    ScriptDialogEvent,
+    EventQueueStateChangeEvent
 };

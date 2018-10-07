@@ -4,7 +4,7 @@ import { Caps } from './Caps';
 import { Comms } from './Comms';
 import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
-import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { BotOptionFlags } from '..';
 export declare class Region {
     xCoordinate: number;
     yCoordinate: number;

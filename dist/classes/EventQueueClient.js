@@ -4,12 +4,9 @@ const LLSD = require("@caspertech/llsd");
 const request = require("request");
 const Long = require("long");
 const IPAddress_1 = require("./IPAddress");
-const TeleportEvent_1 = require("../events/TeleportEvent");
 const TeleportEventType_1 = require("../enums/TeleportEventType");
-const GroupChatEvent_1 = require("../events/GroupChatEvent");
 const UUID_1 = require("./UUID");
-const GroupChatSessionJoinEvent_1 = require("../events/GroupChatSessionJoinEvent");
-const GroupChatSessionAgentListEvent_1 = require("../events/GroupChatSessionAgentListEvent");
+const __1 = require("..");
 class EventQueueClient {
     constructor(agent, caps, clientEvents) {
         this.done = false;
@@ -18,8 +15,14 @@ class EventQueueClient {
         this.clientEvents = clientEvents;
         this.caps = caps;
         this.Get();
+        const state = new __1.EventQueueStateChangeEvent();
+        state.active = true;
+        this.clientEvents.onEventQueueStateChange.next(state);
     }
     shutdown() {
+        const state = new __1.EventQueueStateChangeEvent();
+        state.active = false;
+        this.clientEvents.onEventQueueStateChange.next(state);
         if (this.currentRequest !== null) {
             this.currentRequest.abort();
         }
@@ -30,6 +33,7 @@ class EventQueueClient {
             'ack': this.ack,
             'done': this.done
         };
+        const startTime = new Date().getTime();
         this.capsRequestXML('EventQueueGet', req).then((data) => {
             if (data['events']) {
                 data['events'].forEach((event) => {
@@ -46,7 +50,7 @@ class EventQueueClient {
                                     break;
                                 case 'TeleportFailed':
                                     {
-                                        const tpEvent = new TeleportEvent_1.TeleportEvent();
+                                        const tpEvent = new __1.TeleportEvent();
                                         tpEvent.message = event['body']['Info'][0]['Reason'];
                                         tpEvent.eventType = TeleportEventType_1.TeleportEventType.TeleportFailed;
                                         tpEvent.simIP = '';
@@ -58,7 +62,7 @@ class EventQueueClient {
                                 case "ChatterBoxSessionStartReply":
                                     {
                                         if (event['body']) {
-                                            const gcsje = new GroupChatSessionJoinEvent_1.GroupChatSessionJoinEvent();
+                                            const gcsje = new __1.GroupChatSessionJoinEvent();
                                             gcsje.sessionID = new UUID_1.UUID(event['body']['session_id'].toString());
                                             gcsje.success = event['body']['success'];
                                             if (gcsje.success) {
@@ -73,7 +77,7 @@ class EventQueueClient {
                                         if (event['body'] && event['body']['instantmessage'] && event['body']['instantmessage']['message_params'] && event['body']['instantmessage']['message_params']['id']) {
                                             const messageParams = event['body']['instantmessage']['message_params'];
                                             const imSessionID = messageParams['id'];
-                                            const groupChatEvent = new GroupChatEvent_1.GroupChatEvent();
+                                            const groupChatEvent = new __1.GroupChatEvent();
                                             groupChatEvent.from = new UUID_1.UUID(messageParams['from_id'].toString());
                                             groupChatEvent.fromName = messageParams['from_name'];
                                             groupChatEvent.groupID = new UUID_1.UUID(messageParams['id'].toString());
@@ -82,9 +86,9 @@ class EventQueueClient {
                                                 'method': 'accept invitation',
                                                 'session-id': imSessionID
                                             };
-                                            this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((result) => {
+                                            this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((ignore) => {
                                                 this.agent.addChatSession(groupChatEvent.groupID);
-                                                const gcsje = new GroupChatSessionJoinEvent_1.GroupChatSessionJoinEvent();
+                                                const gcsje = new __1.GroupChatSessionJoinEvent();
                                                 gcsje.sessionID = groupChatEvent.groupID;
                                                 gcsje.success = true;
                                                 this.clientEvents.onGroupChatSessionJoin.next(gcsje);
@@ -101,7 +105,7 @@ class EventQueueClient {
                                             if (event['body']['agent_updates']) {
                                                 Object.keys(event['body']['agent_updates']).forEach((agentUpdate) => {
                                                     const updObj = event['body']['agent_updates'][agentUpdate];
-                                                    const gcsale = new GroupChatSessionAgentListEvent_1.GroupChatSessionAgentListEvent();
+                                                    const gcsale = new __1.GroupChatSessionAgentListEvent();
                                                     gcsale.agentID = new UUID_1.UUID(agentUpdate);
                                                     gcsale.groupID = new UUID_1.UUID(event['body']['session_id'].toString());
                                                     gcsale.canVoiceChat = false;
@@ -128,7 +132,7 @@ class EventQueueClient {
                                             info['RegionHandle'] = new Long(regionHandleBuf.readUInt32LE(0), regionHandleBuf.readUInt32LE(4), true);
                                             info['SimIP'] = new IPAddress_1.IPAddress(Buffer.from(info['SimIP'].toArray()), 0).toString();
                                             info['TeleportFlags'] = Buffer.from(info['TeleportFlags'].toArray()).readUInt32LE(0);
-                                            const tpEvent = new TeleportEvent_1.TeleportEvent();
+                                            const tpEvent = new __1.TeleportEvent();
                                             tpEvent.message = '';
                                             tpEvent.eventType = TeleportEventType_1.TeleportEventType.TeleportCompleted;
                                             tpEvent.simIP = info['SimIP'];
@@ -160,11 +164,20 @@ class EventQueueClient {
                 this.Get();
             }
         }).catch((err) => {
-            setTimeout(() => {
+            const time = (new Date().getTime()) - startTime;
+            if (time > 30000) {
                 if (!this.done) {
                     this.Get();
                 }
-            }, 5000);
+            }
+            else {
+                console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds');
+                setTimeout(() => {
+                    if (!this.done) {
+                        this.Get();
+                    }
+                }, 5000);
+            }
         });
     }
     request(url, data, contentType) {
@@ -190,7 +203,7 @@ class EventQueueClient {
             });
         });
     }
-    capsRequestXML(capability, data) {
+    capsRequestXML(capability, data, attempt = 0) {
         return new Promise((resolve, reject) => {
             this.caps.getCapability(capability).then((url) => {
                 const serializedData = LLSD.LLSD.formatXML(data);
@@ -201,7 +214,12 @@ class EventQueueClient {
                             resolve(parsed);
                         }
                         else {
-                            throw new Error('Not an LLSD response');
+                            if (attempt < 3) {
+                                return this.capsRequestXML(capability, data, ++attempt);
+                            }
+                            else {
+                                reject(new Error('Not an LLSD response, capability: ' + capability));
+                            }
                         }
                     }
                     catch (error) {

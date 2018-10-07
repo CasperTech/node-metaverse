@@ -13,5 +13,5 @@ export declare class EventQueueClient {
     shutdown(): void;
     Get(): void;
     request(url: string, data: string, contentType: string): Promise<string>;
-    capsRequestXML(capability: string, data: any): Promise<any>;
+    capsRequestXML(capability: string, data: any, attempt?: number): Promise<any>;
 }

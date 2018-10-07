@@ -12,7 +12,8 @@ class Comms {
         this.circuit.subscribeToMessages([
             Message_1.Message.ImprovedInstantMessage,
             Message_1.Message.ChatFromSimulator,
-            Message_1.Message.AlertMessage
+            Message_1.Message.AlertMessage,
+            Message_1.Message.ScriptDialog
         ], (packet) => {
             switch (packet.message.id) {
                 case Message_1.Message.ImprovedInstantMessage:
@@ -211,27 +212,53 @@ class Comms {
                     }
                     break;
                 case Message_1.Message.ChatFromSimulator:
-                    const chat = packet.message;
-                    const event = new __1.ChatEvent();
-                    event.fromName = Utils_1.Utils.BufferToStringSimple(chat.ChatData.FromName);
-                    event.message = Utils_1.Utils.BufferToStringSimple(chat.ChatData.Message);
-                    event.from = chat.ChatData.SourceID;
-                    event.ownerID = chat.ChatData.OwnerID;
-                    event.chatType = chat.ChatData.ChatType;
-                    event.sourceType = chat.ChatData.SourceType;
-                    event.audible = chat.ChatData.Audible;
-                    event.position = chat.ChatData.Position;
-                    this.clientEvents.onNearbyChat.next(event);
-                    break;
+                    {
+                        const chat = packet.message;
+                        const event = new __1.ChatEvent();
+                        event.fromName = Utils_1.Utils.BufferToStringSimple(chat.ChatData.FromName);
+                        event.message = Utils_1.Utils.BufferToStringSimple(chat.ChatData.Message);
+                        event.from = chat.ChatData.SourceID;
+                        event.ownerID = chat.ChatData.OwnerID;
+                        event.chatType = chat.ChatData.ChatType;
+                        event.sourceType = chat.ChatData.SourceType;
+                        event.audible = chat.ChatData.Audible;
+                        event.position = chat.ChatData.Position;
+                        this.clientEvents.onNearbyChat.next(event);
+                        break;
+                    }
                 case Message_1.Message.AlertMessage:
-                    const alertm = packet.message;
-                    const alertMessage = Utils_1.Utils.BufferToStringSimple(alertm.AlertData.Message);
-                    console.log('Alert message: ' + alertMessage);
-                    alertm.AlertInfo.forEach((info) => {
-                        const alertInfoMessage = Utils_1.Utils.BufferToStringSimple(info.Message);
-                        console.log('Alert info message: ' + alertInfoMessage);
-                    });
-                    break;
+                    {
+                        const alertm = packet.message;
+                        const alertMessage = Utils_1.Utils.BufferToStringSimple(alertm.AlertData.Message);
+                        console.log('Alert message: ' + alertMessage);
+                        alertm.AlertInfo.forEach((info) => {
+                            const alertInfoMessage = Utils_1.Utils.BufferToStringSimple(info.Message);
+                            console.log('Alert info message: ' + alertInfoMessage);
+                        });
+                        break;
+                    }
+                case Message_1.Message.ScriptDialog:
+                    {
+                        const scriptd = packet.message;
+                        const event = new __1.ScriptDialogEvent();
+                        event.ObjectID = scriptd.Data.ObjectID;
+                        event.FirstName = Utils_1.Utils.BufferToStringSimple(scriptd.Data.FirstName);
+                        event.LastName = Utils_1.Utils.BufferToStringSimple(scriptd.Data.LastName);
+                        event.ObjectName = Utils_1.Utils.BufferToStringSimple(scriptd.Data.ObjectName);
+                        event.Message = Utils_1.Utils.BufferToStringSimple(scriptd.Data.Message);
+                        event.ChatChannel = scriptd.Data.ChatChannel;
+                        event.ImageID = scriptd.Data.ImageID;
+                        event.Buttons = [];
+                        event.Owners = [];
+                        for (const button of scriptd.Buttons) {
+                            event.Buttons.push(Utils_1.Utils.BufferToStringSimple(button.ButtonLabel));
+                        }
+                        for (const owner of scriptd.OwnerData) {
+                            event.Owners.push(owner.OwnerID);
+                        }
+                        this.clientEvents.onScriptDialog.next(event);
+                        break;
+                    }
             }
         });
     }
