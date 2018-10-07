@@ -188,7 +188,7 @@ export class Circuit
                 if (handleObj.subscription !== null)
                 {
                     handleObj.subscription.unsubscribe();
-                    reject(new Error('Timeout'));
+                    reject(new Error('Timeout waiting for message of type ' + id));
                 }
             };
 

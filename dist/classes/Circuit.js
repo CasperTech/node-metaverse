@@ -111,7 +111,7 @@ class Circuit {
             const timeoutFunc = () => {
                 if (handleObj.subscription !== null) {
                     handleObj.subscription.unsubscribe();
-                    reject(new Error('Timeout'));
+                    reject(new Error('Timeout waiting for message of type ' + id));
                 }
             };
             handleObj.timeout = setTimeout(timeoutFunc, timeout);
