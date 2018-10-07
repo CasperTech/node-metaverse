@@ -78,4 +78,6 @@ const ParcelInfoFlags_1 = require("./enums/ParcelInfoFlags");
 exports.ParcelInfoFlags = ParcelInfoFlags_1.ParcelInfoFlags;
 const ParcelInfoReplyEvent_1 = require("./events/ParcelInfoReplyEvent");
 exports.ParcelInfoReplyEvent = ParcelInfoReplyEvent_1.ParcelInfoReplyEvent;
+const ScriptDialogEvent_1 = require("./events/ScriptDialogEvent");
+exports.ScriptDialogEvent = ScriptDialogEvent_1.ScriptDialogEvent;
 //# sourceMappingURL=index.js.map
