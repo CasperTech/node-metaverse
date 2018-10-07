@@ -41,7 +41,6 @@ import {CompressedFlags} from './enums/CompressedFlags';
 import {DecodeFlags} from './enums/DecodeFlags';
 import {ParcelInfoFlags} from './enums/ParcelInfoFlags';
 import {ParcelInfoReplyEvent} from './events/ParcelInfoReplyEvent';
-import {ScriptDialogEvent} from './events/ScriptDialogEvent';
 
 export {
     Bot,
@@ -86,6 +85,5 @@ export {
     MapInfoReplyEvent,
     ParcelInfoReplyEvent,
     RegionInfoReplyEvent,
-    TeleportEvent,
-    ScriptDialogEvent
+    TeleportEvent
 };
