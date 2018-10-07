@@ -47,7 +47,7 @@ export class ParcelCommands extends CommandsBase
             {
                 // We received a reply for the ParcelID that we requested info for, so return with "Finish" because we don't want any more after this.
                 // If we are expecting multiple replies we can reply with FilterResponse.Match which will keep the listener open.
-                return FilterResponse.Match;
+                return FilterResponse.Finish;
             }
             return FilterResponse.NoMatch;
         })) as ParcelInfoReplyMessage;
@@ -62,7 +62,7 @@ export class ParcelCommands extends CommandsBase
         {
             OwnerID = parcelInfoReply.Data.OwnerID;
 
-            // Because Data.Name is a buffer, we have a halper functino to decode it.
+            // Because Data.Name is a buffer, we have a helper function to decode it.
             ParcelName = Utils.BufferToStringSimple(parcelInfoReply.Data.Name);
             ParcelDescription = Utils.BufferToStringSimple(parcelInfoReply.Data.Desc);
             Area = parcelInfoReply.Data.ActualArea;
