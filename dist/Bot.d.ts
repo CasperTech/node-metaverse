@@ -13,11 +13,14 @@ export declare class Bot {
     private lastSuccessfulPing;
     private circuitSubscription;
     private options;
+    private eventQueueRunning;
     clientEvents: ClientEvents;
     clientCommands: ClientCommands;
+    private eventQueueWaits;
     constructor(login: LoginParameters, options: BotOptionFlags);
     login(): Promise<LoginResponse>;
     changeRegion(region: Region): Promise<void>;
+    waitForEventQueue(timeout?: number): Promise<void>;
     private closeCircuit;
     private kicked;
     private disconnected;

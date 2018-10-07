@@ -17,6 +17,7 @@ class ClientEvents {
         this.onGroupChatAgentListUpdate = new Subject_1.Subject();
         this.onFriendResponse = new Subject_1.Subject();
         this.onScriptDialog = new Subject_1.Subject();
+        this.onEventQueueStateChange = new Subject_1.Subject();
     }
 }
 exports.ClientEvents = ClientEvents;

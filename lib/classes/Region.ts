@@ -5,8 +5,8 @@ import {Comms} from './Comms';
 import {ClientEvents} from './ClientEvents';
 import {IObjectStore} from './interfaces/IObjectStore';
 import {ObjectStoreFull} from './ObjectStoreFull';
-import {BotOptionFlags} from '../enums/BotOptionFlags';
 import {ObjectStoreLite} from './ObjectStoreLite';
+import {BotOptionFlags} from '..';
 
 export class Region
 {

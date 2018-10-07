@@ -80,4 +80,6 @@ const ParcelInfoReplyEvent_1 = require("./events/ParcelInfoReplyEvent");
 exports.ParcelInfoReplyEvent = ParcelInfoReplyEvent_1.ParcelInfoReplyEvent;
 const ScriptDialogEvent_1 = require("./events/ScriptDialogEvent");
 exports.ScriptDialogEvent = ScriptDialogEvent_1.ScriptDialogEvent;
+const EventQueueStateChangeEvent_1 = require("./events/EventQueueStateChangeEvent");
+exports.EventQueueStateChangeEvent = EventQueueStateChangeEvent_1.EventQueueStateChangeEvent;
 //# sourceMappingURL=index.js.map

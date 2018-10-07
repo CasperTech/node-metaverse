@@ -3,15 +3,17 @@ import * as LLSD from '@caspertech/llsd';
 import * as request from 'request';
 import * as Long from 'long';
 import {IPAddress} from './IPAddress';
-import {TeleportEvent} from '../events/TeleportEvent';
 import {ClientEvents} from './ClientEvents';
 import {TeleportEventType} from '../enums/TeleportEventType';
-import {GroupChatEvent} from '../events/GroupChatEvent';
-import {Utils} from './Utils';
 import {UUID} from './UUID';
 import {Agent} from './Agent';
-import {GroupChatSessionJoinEvent} from '../events/GroupChatSessionJoinEvent';
-import {GroupChatSessionAgentListEvent} from '../events/GroupChatSessionAgentListEvent';
+import {
+    EventQueueStateChangeEvent,
+    GroupChatEvent,
+    GroupChatSessionAgentListEvent,
+    GroupChatSessionJoinEvent,
+    TeleportEvent
+} from '..';
 
 export class EventQueueClient
 {
@@ -28,9 +30,15 @@ export class EventQueueClient
         this.clientEvents = clientEvents;
         this.caps = caps;
         this.Get();
+        const state = new EventQueueStateChangeEvent();
+        state.active = true;
+        this.clientEvents.onEventQueueStateChange.next(state);
     }
     shutdown()
     {
+        const state = new EventQueueStateChangeEvent();
+        state.active = false;
+        this.clientEvents.onEventQueueStateChange.next(state);
         if (this.currentRequest !== null)
         {
             this.currentRequest.abort();
@@ -43,6 +51,7 @@ export class EventQueueClient
             'ack': this.ack,
             'done': this.done
         };
+        const startTime = new Date().getTime();
         this.capsRequestXML('EventQueueGet', req).then((data) =>
         {
             if (data['events'])
@@ -293,7 +302,7 @@ export class EventQueueClient
                                             'method': 'accept invitation',
                                             'session-id': imSessionID
                                         };
-                                        this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((result: any) =>
+                                        this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((ignore: any) =>
                                         {
                                             this.agent.addChatSession(groupChatEvent.groupID);
 
@@ -393,14 +402,28 @@ export class EventQueueClient
             }
         }).catch((err) =>
         {
-            // Wait 5 seconds before retrying
-            setTimeout(() =>
+            const time = (new Date().getTime()) - startTime;
+            if (time > 30000)
             {
+                // This is the normal request timeout, so reconnect immediately
                 if (!this.done)
                 {
                     this.Get();
                 }
-            }, 5000);
+            }
+            else
+            {
+                console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds');
+
+                // Wait 5 seconds before retrying
+                setTimeout(() =>
+                {
+                    if (!this.done)
+                    {
+                        this.Get();
+                    }
+                }, 5000);
+            }
         });
     }
     request(url: string, data: string, contentType: string): Promise<string>
@@ -432,7 +455,7 @@ export class EventQueueClient
         });
     }
 
-    capsRequestXML(capability: string, data: any): Promise<any>
+    capsRequestXML(capability: string, data: any, attempt: number = 0): Promise<any>
     {
         return new Promise<any>((resolve, reject) =>
         {
@@ -450,7 +473,15 @@ export class EventQueueClient
                         }
                         else
                         {
-                            throw new Error('Not an LLSD response');
+                            // Retry caps request three times before giving up
+                            if (attempt < 3)
+                            {
+                                return this.capsRequestXML(capability, data, ++attempt);
+                            }
+                            else
+                            {
+                                reject(new Error('Not an LLSD response, capability: ' + capability));
+                            }
                         }
                     }
                     catch (error)

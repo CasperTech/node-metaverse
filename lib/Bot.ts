@@ -28,6 +28,8 @@ import {Subscription} from 'rxjs/Subscription';
 import {BotOptionFlags} from './enums/BotOptionFlags';
 import {FilterResponse} from './enums/FilterResponse';
 import {LogoutReplyMessage} from './classes/messages/LogoutReply';
+import {EventQueueStateChangeEvent} from './events/EventQueueStateChangeEvent';
+import {UUID} from './classes/UUID';
 
 export class Bot
 {
@@ -39,8 +41,11 @@ export class Bot
     private lastSuccessfulPing = 0;
     private circuitSubscription: Subscription | null = null;
     private options: BotOptionFlags;
+    private eventQueueRunning = false;
     public clientEvents: ClientEvents;
     public clientCommands: ClientCommands;
+    private eventQueueWaits: any = {};
+
 
 
     constructor(login: LoginParameters, options: BotOptionFlags)
@@ -48,6 +53,21 @@ export class Bot
         this.clientEvents = new ClientEvents();
         this.loginParams = login;
         this.options = options;
+
+        this.clientEvents.onEventQueueStateChange.subscribe((evt: EventQueueStateChangeEvent) =>
+        {
+            this.eventQueueRunning = evt.active;
+            for (const waitID of Object.keys(this.eventQueueWaits))
+            {
+                try
+                {
+                    clearTimeout(this.eventQueueWaits[waitID].timer);
+                    this.eventQueueWaits[waitID].resolve();
+                    delete this.eventQueueWaits[waitID];
+                }
+                catch (ignore){}
+            }
+        });
     }
 
     async login()
@@ -71,6 +91,35 @@ export class Bot
         }
 
         await this.connectToSim();
+    }
+
+    waitForEventQueue(timeout: number = 1000): Promise<void>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            if (this.eventQueueRunning)
+            {
+                resolve();
+            }
+            else
+            {
+                const waitID = UUID.random().toString();
+                const newWait: {
+                    'resolve': any,
+                    'timer'?: Timer
+                } = {
+                    'resolve': resolve
+                };
+
+                newWait.timer = setTimeout(() =>
+                {
+                    delete this.eventQueueWaits[waitID];
+                    reject(new Error('Timeout'));
+                }, timeout);
+
+                this.eventQueueWaits[waitID] = newWait;
+            }
+        });
     }
 
     private closeCircuit()

@@ -17,8 +17,12 @@ import {
     GroupInviteEvent,
     InstantMessageEvent,
     InstantMessageEventFlags,
-    InventoryOfferedEvent, LureEvent
+    InventoryOfferedEvent, 
+    LureEvent,
+    ScriptDialogEvent,
+    UUID
 } from '..';
+import {ScriptDialogMessage} from './messages/ScriptDialog';
 
 export class Comms
 {
@@ -35,7 +39,8 @@ export class Comms
         this.circuit.subscribeToMessages([
             Message.ImprovedInstantMessage,
             Message.ChatFromSimulator,
-            Message.AlertMessage
+            Message.AlertMessage,
+            Message.ScriptDialog
         ], (packet: Packet) =>
         {
             switch (packet.message.id)
@@ -243,7 +248,7 @@ export class Comms
                     break;
 
                 case Message.ChatFromSimulator:
-
+                {
                     const chat = packet.message as ChatFromSimulatorMessage;
                     const event = new ChatEvent();
                     event.fromName = Utils.BufferToStringSimple(chat.ChatData.FromName);
@@ -256,8 +261,10 @@ export class Comms
                     event.position = chat.ChatData.Position;
                     this.clientEvents.onNearbyChat.next(event);
                     break;
-
+                }
                 case Message.AlertMessage:
+                {
+                    // TODO: this isn't finished
                     const alertm = packet.message as AlertMessageMessage;
 
                     const alertMessage = Utils.BufferToStringSimple(alertm.AlertData.Message);
@@ -269,6 +276,31 @@ export class Comms
                         console.log('Alert info message: ' + alertInfoMessage);
                     });
                     break;
+                }
+                case Message.ScriptDialog:
+                {
+                    const scriptd = packet.message as ScriptDialogMessage;
+                    const event = new ScriptDialogEvent();
+                    event.ObjectID = scriptd.Data.ObjectID;
+                    event.FirstName = Utils.BufferToStringSimple(scriptd.Data.FirstName);
+                    event.LastName = Utils.BufferToStringSimple(scriptd.Data.LastName);
+                    event.ObjectName = Utils.BufferToStringSimple(scriptd.Data.ObjectName);
+                    event.Message = Utils.BufferToStringSimple(scriptd.Data.Message);
+                    event.ChatChannel = scriptd.Data.ChatChannel;
+                    event.ImageID = scriptd.Data.ImageID;
+                    event.Buttons = [];
+                    event.Owners = [];
+                    for (const button of scriptd.Buttons)
+                    {
+                        event.Buttons.push(Utils.BufferToStringSimple(button.ButtonLabel));
+                    }
+                    for (const owner of scriptd.OwnerData)
+                    {
+                        event.Owners.push(owner.OwnerID);
+                    }
+                    this.clientEvents.onScriptDialog.next(event);
+                    break;
+                }
             }
         });
     }
