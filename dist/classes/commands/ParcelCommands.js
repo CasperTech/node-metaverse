@@ -33,7 +33,7 @@ class ParcelCommands extends CommandsBase_1.CommandsBase {
             const parcelInfoReply = (yield this.circuit.waitForMessage(Message_1.Message.ParcelInfoReply, 10000, (packet) => {
                 const replyMessage = packet.message;
                 if (replyMessage.Data.ParcelID.equals(parcelID)) {
-                    return FilterResponse_1.FilterResponse.Match;
+                    return FilterResponse_1.FilterResponse.Finish;
                 }
                 return FilterResponse_1.FilterResponse.NoMatch;
             }));
