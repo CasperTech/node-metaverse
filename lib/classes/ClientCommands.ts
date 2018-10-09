@@ -38,4 +38,17 @@ export class ClientCommands
         this.group = new GroupCommands(region, agent, bot);
         this.inventory = new InventoryCommands(region, agent, bot);
     }
+    shutdown()
+    {
+        this.network.shutdown();
+        this.asset.shutdown();
+        this.teleport.shutdown();
+        this.region.shutdown();
+        this.parcel.shutdown();
+        this.grid.shutdown();
+        this.comms.shutdown();
+        this.agent.shutdown();
+        this.group.shutdown();
+        this.inventory.shutdown();
+    }
 }

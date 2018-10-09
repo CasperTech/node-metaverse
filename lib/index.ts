@@ -40,6 +40,7 @@ import {ParcelInfoFlags} from './enums/ParcelInfoFlags';
 import {ParcelInfoReplyEvent} from './events/ParcelInfoReplyEvent';
 import {ScriptDialogEvent} from './events/ScriptDialogEvent';
 import {EventQueueStateChangeEvent} from './events/EventQueueStateChangeEvent';
+import {RegionFlags} from './enums/RegionFlags';
 
 export {
     Bot,
@@ -67,6 +68,7 @@ export {
     RegionProtocolFlags,
     SoundFlags,
     TeleportFlags,
+    RegionFlags,
 
     // Events
     ChatEvent,

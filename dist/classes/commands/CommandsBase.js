@@ -7,6 +7,8 @@ class CommandsBase {
         this.bot = bot;
         this.circuit = this.currentRegion.circuit;
     }
+    shutdown() {
+    }
 }
 exports.CommandsBase = CommandsBase;
 //# sourceMappingURL=CommandsBase.js.map

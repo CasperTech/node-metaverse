@@ -12,6 +12,7 @@ export declare class Caps {
     private capabilities;
     private clientEvents;
     private agent;
+    private active;
     eventQueueClient: EventQueueClient | null;
     constructor(agent: Agent, region: Region, seedURL: string, clientEvents: ClientEvents);
     downloadAsset(uuid: UUID, type: HTTPAssets): Promise<Buffer>;

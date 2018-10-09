@@ -15,6 +15,7 @@ class Circuit {
         this.sequenceNumber = 0;
         this.awaitingAck = {};
         this.receivedPackets = {};
+        this.active = false;
         this.clientEvents = clientEvents;
         this.onPacketReceived = new Subject_1.Subject();
         this.onAckReceived = new Subject_1.Subject();
@@ -29,6 +30,9 @@ class Circuit {
         }).subscribe(callback);
     }
     sendMessage(message, flags) {
+        if (!this.active) {
+            throw new Error('Attempting to send a message on a closed circuit');
+        }
         const packet = new Packet_1.Packet();
         packet.message = message;
         packet.sequenceNumber = this.sequenceNumber++;
@@ -37,6 +41,10 @@ class Circuit {
         return packet.sequenceNumber;
     }
     resend(sequenceNumber) {
+        if (!this.active) {
+            console.log('Resend triggered, but circuit is not active!');
+            return;
+        }
         if (this.awaitingAck[sequenceNumber]) {
             const toResend = this.awaitingAck[sequenceNumber].packet;
             toResend.packetFlags = toResend.packetFlags | PacketFlags_1.PacketFlags.Resent;
@@ -84,6 +92,7 @@ class Circuit {
         });
         this.client.on('error', (error) => {
         });
+        this.active = true;
     }
     shutdown() {
         Object.keys(this.awaitingAck).forEach((sequenceNumber) => {
@@ -101,6 +110,7 @@ class Circuit {
             this.onPacketReceived.complete();
             this.onAckReceived.complete();
         }
+        this.active = false;
     }
     waitForMessage(id, timeout, filter) {
         return new Promise((resolve, reject) => {

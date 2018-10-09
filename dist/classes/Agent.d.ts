@@ -60,8 +60,10 @@ export declare class Agent {
         serialNumber: number;
     };
     agentUpdateTimer: number | null;
+    estateManager: boolean;
     private clientEvents;
     constructor(clientEvents: ClientEvents);
+    setIsEstateManager(is: boolean): void;
     getSessionAgentCount(uuid: UUID): number;
     addChatSession(uuid: UUID): void;
     hasChatSession(uuid: UUID): boolean;

@@ -79,6 +79,7 @@ export class Agent
         serialNumber: number
     };
     agentUpdateTimer: number | null = null;
+    estateManager = false;
     private clientEvents: ClientEvents;
 
     constructor(clientEvents: ClientEvents)
@@ -107,6 +108,11 @@ export class Agent
                 delete this.chatSessions[str][agent];
             }
         });
+    }
+
+    setIsEstateManager(is: boolean): void
+    {
+        this.estateManager = is;
     }
 
     getSessionAgentCount(uuid: UUID): number

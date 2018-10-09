@@ -2,5 +2,5 @@
   "firstName": "Username",
   "lastName": "Resident",
   "password": "YourPassword",
-  "start": "home" //home, last, or login uri
+  "start": "last" //first, last, or login uri like uri:<existing region name>&<x>&<y>&<z>
 }
