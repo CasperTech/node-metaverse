@@ -29,6 +29,7 @@ export declare class Circuit {
     receivedPackets: {
         [key: number]: number;
     };
+    active: boolean;
     private clientEvents;
     private onPacketReceived;
     private onAckReceived;

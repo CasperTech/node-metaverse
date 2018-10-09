@@ -29,6 +29,7 @@ class Agent {
         this.home = {};
         this.gestures = [];
         this.agentUpdateTimer = null;
+        this.estateManager = false;
         this.inventory = new Inventory_1.Inventory(clientEvents, this);
         this.clientEvents = clientEvents;
         this.clientEvents.onGroupChatAgentListUpdate.subscribe((event) => {
@@ -47,6 +48,9 @@ class Agent {
                 delete this.chatSessions[str][agent];
             }
         });
+    }
+    setIsEstateManager(is) {
+        this.estateManager = is;
     }
     getSessionAgentCount(uuid) {
         const str = uuid.toString();

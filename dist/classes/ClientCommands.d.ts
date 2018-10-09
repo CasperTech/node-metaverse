@@ -23,4 +23,5 @@ export declare class ClientCommands {
     group: GroupCommands;
     inventory: InventoryCommands;
     constructor(region: Region, agent: Agent, bot: Bot);
+    shutdown(): void;
 }

@@ -9,6 +9,7 @@ class Caps {
         this.onGotSeedCap = new Subject_1.Subject();
         this.gotSeedCap = false;
         this.capabilities = {};
+        this.active = false;
         this.eventQueueClient = null;
         this.agent = agent;
         this.clientEvents = clientEvents;
@@ -102,6 +103,7 @@ class Caps {
         req.push('ViewerMetrics');
         req.push('ViewerStartAuction');
         req.push('ViewerStats');
+        this.active = true;
         this.request(seedURL, LLSD.LLSD.formatXML(req), 'application/llsd+xml').then((body) => {
             this.capabilities = LLSD.LLSD.parseXML(body);
             this.gotSeedCap = true;
@@ -173,6 +175,10 @@ class Caps {
     }
     getCapability(capability) {
         return new Promise((resolve, reject) => {
+            if (!this.active) {
+                reject(new Error('Requesting getCapability to an inactive Caps instance'));
+                return;
+            }
             this.waitForSeedCapability().then(() => {
                 if (this.capabilities[capability]) {
                     resolve(this.capabilities[capability]);
@@ -221,6 +227,7 @@ class Caps {
         if (this.eventQueueClient) {
             this.eventQueueClient.shutdown();
         }
+        this.active = false;
     }
 }
 exports.Caps = Caps;

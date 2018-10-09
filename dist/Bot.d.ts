@@ -4,6 +4,7 @@ import { Region } from './classes/Region';
 import { ClientEvents } from './classes/ClientEvents';
 import { ClientCommands } from './classes/ClientCommands';
 import { BotOptionFlags } from './enums/BotOptionFlags';
+import { Vector3 } from './classes/Vector3';
 export declare class Bot {
     private loginParams;
     private currentRegion;
@@ -17,13 +18,17 @@ export declare class Bot {
     clientEvents: ClientEvents;
     clientCommands: ClientCommands;
     private eventQueueWaits;
+    private stay;
+    private stayRegion;
+    private stayPosition;
     constructor(login: LoginParameters, options: BotOptionFlags);
+    stayPut(stay: boolean, regionName?: string, position?: Vector3): void;
     login(): Promise<LoginResponse>;
-    changeRegion(region: Region): Promise<void>;
+    changeRegion(region: Region, requested: boolean): Promise<void>;
     waitForEventQueue(timeout?: number): Promise<void>;
     private closeCircuit;
     private kicked;
     private disconnected;
     close(): Promise<void>;
-    connectToSim(): Promise<void>;
+    connectToSim(requested: boolean): Promise<void>;
 }

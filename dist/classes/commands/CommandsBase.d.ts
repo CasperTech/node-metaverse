@@ -8,4 +8,5 @@ export declare class CommandsBase {
     protected bot: Bot;
     protected circuit: Circuit;
     constructor(region: Region, agent: Agent, bot: Bot);
+    shutdown(): void;
 }

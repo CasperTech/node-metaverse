@@ -5,11 +5,57 @@ import {TeleportLureRequestMessage} from '../messages/TeleportLureRequest';
 import {Vector3} from '../Vector3';
 import {TeleportLocationRequestMessage} from '../messages/TeleportLocationRequest';
 import * as Long from 'long';
-import {LureEvent, PacketFlags, RegionInfoReplyEvent, TeleportEvent, TeleportFlags} from '../..';
+import {LureEvent, PacketFlags, RegionInfoReplyEvent, TeleportEvent, TeleportFlags, Bot} from '../..';
+import {Agent} from '../Agent';
+import {Subscription} from 'rxjs/Subscription';
 
 export class TeleportCommands extends CommandsBase
 {
-    private awaitTeleportEvent(): Promise<TeleportEvent>
+    private expectingTeleport = false;
+    private teleportSubscription: Subscription;
+    constructor(region: Region, agent: Agent, bot: Bot)
+    {
+        super(region, agent, bot);
+        this.teleportSubscription = this.bot.clientEvents.onTeleportEvent.subscribe((e: TeleportEvent) =>
+        {
+            if (e.eventType === TeleportEventType.TeleportCompleted)
+            {
+                if (!this.expectingTeleport)
+                {
+                    if (e.simIP === 'local')
+                    {
+                        // Local TP - no need for any other shindiggery
+                        return;
+                    }
+
+                    const newRegion: Region = new Region(this.agent, this.bot.clientEvents, this.currentRegion.options);
+                    newRegion.circuit.circuitCode = this.currentRegion.circuit.circuitCode;
+                    newRegion.circuit.secureSessionID = this.currentRegion.circuit.secureSessionID;
+                    newRegion.circuit.sessionID = this.currentRegion.circuit.sessionID;
+                    newRegion.circuit.udpBlacklist = this.currentRegion.circuit.udpBlacklist;
+                    newRegion.circuit.ipAddress = e.simIP;
+                    newRegion.circuit.port = e.simPort;
+                    newRegion.activateCaps(e.seedCapability);
+
+                    this.bot.changeRegion(newRegion, false).then(() =>
+                    {
+                        // Change region successful
+                    }).catch((error) =>
+                    {
+                        console.log('Failed to change region');
+                        console.error(error);
+                    });
+                }
+            }
+        });
+    }
+
+    shutdown()
+    {
+        this.teleportSubscription.unsubscribe();
+    }
+
+    private awaitTeleportEvent(requested: boolean): Promise<TeleportEvent>
     {
         return new Promise<TeleportEvent>((resolve, reject) =>
         {
@@ -20,10 +66,15 @@ export class TeleportCommands extends CommandsBase
                     reject(new Error('ClientEvents is null'));
                     return;
                 }
+                this.expectingTeleport = true;
                 const subscription = this.bot.clientEvents.onTeleportEvent.subscribe((e: TeleportEvent) =>
                 {
                     if (e.eventType === TeleportEventType.TeleportFailed || e.eventType === TeleportEventType.TeleportCompleted)
                     {
+                        setTimeout(() =>
+                        {
+                            this.expectingTeleport = false;
+                        });
                         subscription.unsubscribe();
                     }
                     if (e.eventType === TeleportEventType.TeleportFailed)
@@ -46,7 +97,6 @@ export class TeleportCommands extends CommandsBase
                         }
 
                         // Successful teleport! First, rip apart circuit
-                        this.currentRegion.shutdown();
                         const region: Region = new Region(this.agent, this.bot.clientEvents, this.currentRegion.options);
                         region.circuit.circuitCode = this.currentRegion.circuit.circuitCode;
                         region.circuit.secureSessionID = this.currentRegion.circuit.secureSessionID;
@@ -54,11 +104,9 @@ export class TeleportCommands extends CommandsBase
                         region.circuit.udpBlacklist = this.currentRegion.circuit.udpBlacklist;
                         region.circuit.ipAddress = e.simIP;
                         region.circuit.port = e.simPort;
-                        this.agent.setCurrentRegion(region);
-                        this.currentRegion = region;
-                        this.currentRegion.activateCaps(e.seedCapability);
+                        region.activateCaps(e.seedCapability);
 
-                        this.bot.changeRegion(this.currentRegion).then(() =>
+                        this.bot.changeRegion(region, requested).then(() =>
                         {
                             resolve(e);
                         }).catch((error) =>
@@ -88,7 +136,7 @@ export class TeleportCommands extends CommandsBase
                 TeleportFlags: TeleportFlags.ViaLure
             };
             circuit.sendMessage(tlr, PacketFlags.Reliable);
-            this.awaitTeleportEvent().then((event: TeleportEvent) =>
+            this.awaitTeleportEvent(true).then((event: TeleportEvent) =>
             {
                 resolve(event);
             }).catch((err) =>
@@ -113,7 +161,7 @@ export class TeleportCommands extends CommandsBase
                 RegionHandle: handle
             };
             this.circuit.sendMessage(rtm, PacketFlags.Reliable);
-            this.awaitTeleportEvent().then((event: TeleportEvent) =>
+            this.awaitTeleportEvent(true).then((event: TeleportEvent) =>
             {
                 resolve(event);
             }).catch((err) =>

@@ -20,13 +20,19 @@ class EventQueueClient {
         this.clientEvents.onEventQueueStateChange.next(state);
     }
     shutdown() {
-        const state = new __1.EventQueueStateChangeEvent();
-        state.active = false;
-        this.clientEvents.onEventQueueStateChange.next(state);
+        this.done = true;
         if (this.currentRequest !== null) {
             this.currentRequest.abort();
         }
-        this.done = true;
+        const req = {
+            'ack': this.ack,
+            'done': true
+        };
+        this.capsRequestXML('EventQueueGet', req).then((data) => {
+            const state = new __1.EventQueueStateChangeEvent();
+            state.active = false;
+            this.clientEvents.onEventQueueStateChange.next(state);
+        });
     }
     Get() {
         const req = {
@@ -35,130 +41,135 @@ class EventQueueClient {
         };
         const startTime = new Date().getTime();
         this.capsRequestXML('EventQueueGet', req).then((data) => {
-            if (data['events']) {
-                data['events'].forEach((event) => {
-                    try {
-                        if (event['message']) {
-                            switch (event['message']) {
-                                case 'EnableSimulator':
-                                    break;
-                                case 'ParcelProperties':
-                                    break;
-                                case 'AgentGroupDataUpdate':
-                                    break;
-                                case 'AgentStateUpdate':
-                                    break;
-                                case 'TeleportFailed':
-                                    {
-                                        const tpEvent = new __1.TeleportEvent();
-                                        tpEvent.message = event['body']['Info'][0]['Reason'];
-                                        tpEvent.eventType = TeleportEventType_1.TeleportEventType.TeleportFailed;
-                                        tpEvent.simIP = '';
-                                        tpEvent.simPort = 0;
-                                        tpEvent.seedCapability = '';
-                                        this.clientEvents.onTeleportEvent.next(tpEvent);
-                                        break;
-                                    }
-                                case "ChatterBoxSessionStartReply":
-                                    {
-                                        if (event['body']) {
-                                            const gcsje = new __1.GroupChatSessionJoinEvent();
-                                            gcsje.sessionID = new UUID_1.UUID(event['body']['session_id'].toString());
-                                            gcsje.success = event['body']['success'];
-                                            if (gcsje.success) {
-                                                this.agent.addChatSession(gcsje.sessionID);
-                                            }
-                                            this.clientEvents.onGroupChatSessionJoin.next(gcsje);
-                                        }
-                                        break;
-                                    }
-                                case 'ChatterBoxInvitation':
-                                    {
-                                        if (event['body'] && event['body']['instantmessage'] && event['body']['instantmessage']['message_params'] && event['body']['instantmessage']['message_params']['id']) {
-                                            const messageParams = event['body']['instantmessage']['message_params'];
-                                            const imSessionID = messageParams['id'];
-                                            const groupChatEvent = new __1.GroupChatEvent();
-                                            groupChatEvent.from = new UUID_1.UUID(messageParams['from_id'].toString());
-                                            groupChatEvent.fromName = messageParams['from_name'];
-                                            groupChatEvent.groupID = new UUID_1.UUID(messageParams['id'].toString());
-                                            groupChatEvent.message = messageParams['message'];
-                                            const requestedFolders = {
-                                                'method': 'accept invitation',
-                                                'session-id': imSessionID
-                                            };
-                                            this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((ignore) => {
-                                                this.agent.addChatSession(groupChatEvent.groupID);
-                                                const gcsje = new __1.GroupChatSessionJoinEvent();
-                                                gcsje.sessionID = groupChatEvent.groupID;
-                                                gcsje.success = true;
-                                                this.clientEvents.onGroupChatSessionJoin.next(gcsje);
-                                                this.clientEvents.onGroupChat.next(groupChatEvent);
-                                            }).catch((err) => {
-                                                console.error(err);
-                                            });
-                                        }
-                                        break;
-                                    }
-                                case 'ChatterBoxSessionAgentListUpdates':
-                                    {
-                                        if (event['body']) {
-                                            if (event['body']['agent_updates']) {
-                                                Object.keys(event['body']['agent_updates']).forEach((agentUpdate) => {
-                                                    const updObj = event['body']['agent_updates'][agentUpdate];
-                                                    const gcsale = new __1.GroupChatSessionAgentListEvent();
-                                                    gcsale.agentID = new UUID_1.UUID(agentUpdate);
-                                                    gcsale.groupID = new UUID_1.UUID(event['body']['session_id'].toString());
-                                                    gcsale.canVoiceChat = false;
-                                                    gcsale.isModerator = false;
-                                                    gcsale.entered = (updObj['transition'] === 'ENTER');
-                                                    if (updObj['can_voice_chat'] === true) {
-                                                        gcsale.canVoiceChat = true;
-                                                    }
-                                                    if (updObj['is_moderator'] === true) {
-                                                        gcsale.isModerator = true;
-                                                    }
-                                                    this.clientEvents.onGroupChatAgentListUpdate.next(gcsale);
-                                                });
-                                            }
-                                        }
-                                        break;
-                                    }
-                                case 'TeleportFinish':
-                                    {
-                                        const info = event['body']['Info'][0];
-                                        if (info['LocationID']) {
-                                            info['LocationID'] = Buffer.from(info['LocationID'].toArray()).readUInt32LE(0);
-                                            const regionHandleBuf = Buffer.from(info['RegionHandle'].toArray());
-                                            info['RegionHandle'] = new Long(regionHandleBuf.readUInt32LE(0), regionHandleBuf.readUInt32LE(4), true);
-                                            info['SimIP'] = new IPAddress_1.IPAddress(Buffer.from(info['SimIP'].toArray()), 0).toString();
-                                            info['TeleportFlags'] = Buffer.from(info['TeleportFlags'].toArray()).readUInt32LE(0);
-                                            const tpEvent = new __1.TeleportEvent();
-                                            tpEvent.message = '';
-                                            tpEvent.eventType = TeleportEventType_1.TeleportEventType.TeleportCompleted;
-                                            tpEvent.simIP = info['SimIP'];
-                                            tpEvent.simPort = info['SimPort'];
-                                            tpEvent.seedCapability = info['SeedCapability'];
-                                            this.clientEvents.onTeleportEvent.next(tpEvent);
-                                        }
-                                        break;
-                                    }
-                                default:
-                                    console.log('Unhandled event:');
-                                    console.log(JSON.stringify(event, null, 4));
-                            }
-                        }
-                    }
-                    catch (erro) {
-                        console.error('Error handling cap');
-                        console.error(erro);
-                    }
-                });
-            }
             if (data['id']) {
                 this.ack = data['id'];
             }
             else {
                 this.ack = undefined;
+            }
+            try {
+                if (data['events']) {
+                    data['events'].forEach((event) => {
+                        try {
+                            if (event['message']) {
+                                switch (event['message']) {
+                                    case 'EnableSimulator':
+                                        break;
+                                    case 'ParcelProperties':
+                                        break;
+                                    case 'AgentGroupDataUpdate':
+                                        break;
+                                    case 'AgentStateUpdate':
+                                        break;
+                                    case 'TeleportFailed':
+                                        {
+                                            const tpEvent = new __1.TeleportEvent();
+                                            tpEvent.message = event['body']['Info'][0]['Reason'];
+                                            tpEvent.eventType = TeleportEventType_1.TeleportEventType.TeleportFailed;
+                                            tpEvent.simIP = '';
+                                            tpEvent.simPort = 0;
+                                            tpEvent.seedCapability = '';
+                                            this.clientEvents.onTeleportEvent.next(tpEvent);
+                                            break;
+                                        }
+                                    case "ChatterBoxSessionStartReply":
+                                        {
+                                            if (event['body']) {
+                                                const gcsje = new __1.GroupChatSessionJoinEvent();
+                                                gcsje.sessionID = new UUID_1.UUID(event['body']['session_id'].toString());
+                                                gcsje.success = event['body']['success'];
+                                                if (gcsje.success) {
+                                                    this.agent.addChatSession(gcsje.sessionID);
+                                                }
+                                                this.clientEvents.onGroupChatSessionJoin.next(gcsje);
+                                            }
+                                            break;
+                                        }
+                                    case 'ChatterBoxInvitation':
+                                        {
+                                            if (event['body'] && event['body']['instantmessage'] && event['body']['instantmessage']['message_params'] && event['body']['instantmessage']['message_params']['id']) {
+                                                const messageParams = event['body']['instantmessage']['message_params'];
+                                                const imSessionID = messageParams['id'];
+                                                const groupChatEvent = new __1.GroupChatEvent();
+                                                groupChatEvent.from = new UUID_1.UUID(messageParams['from_id'].toString());
+                                                groupChatEvent.fromName = messageParams['from_name'];
+                                                groupChatEvent.groupID = new UUID_1.UUID(messageParams['id'].toString());
+                                                groupChatEvent.message = messageParams['message'];
+                                                const requestedFolders = {
+                                                    'method': 'accept invitation',
+                                                    'session-id': imSessionID
+                                                };
+                                                this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((ignore) => {
+                                                    this.agent.addChatSession(groupChatEvent.groupID);
+                                                    const gcsje = new __1.GroupChatSessionJoinEvent();
+                                                    gcsje.sessionID = groupChatEvent.groupID;
+                                                    gcsje.success = true;
+                                                    this.clientEvents.onGroupChatSessionJoin.next(gcsje);
+                                                    this.clientEvents.onGroupChat.next(groupChatEvent);
+                                                }).catch((err) => {
+                                                    console.error(err);
+                                                });
+                                            }
+                                            break;
+                                        }
+                                    case 'ChatterBoxSessionAgentListUpdates':
+                                        {
+                                            if (event['body']) {
+                                                if (event['body']['agent_updates']) {
+                                                    Object.keys(event['body']['agent_updates']).forEach((agentUpdate) => {
+                                                        const updObj = event['body']['agent_updates'][agentUpdate];
+                                                        const gcsale = new __1.GroupChatSessionAgentListEvent();
+                                                        gcsale.agentID = new UUID_1.UUID(agentUpdate);
+                                                        gcsale.groupID = new UUID_1.UUID(event['body']['session_id'].toString());
+                                                        gcsale.canVoiceChat = false;
+                                                        gcsale.isModerator = false;
+                                                        gcsale.entered = (updObj['transition'] === 'ENTER');
+                                                        if (updObj['can_voice_chat'] === true) {
+                                                            gcsale.canVoiceChat = true;
+                                                        }
+                                                        if (updObj['is_moderator'] === true) {
+                                                            gcsale.isModerator = true;
+                                                        }
+                                                        this.clientEvents.onGroupChatAgentListUpdate.next(gcsale);
+                                                    });
+                                                }
+                                            }
+                                            break;
+                                        }
+                                    case 'TeleportFinish':
+                                        {
+                                            const info = event['body']['Info'][0];
+                                            if (info['LocationID']) {
+                                                info['LocationID'] = Buffer.from(info['LocationID'].toArray()).readUInt32LE(0);
+                                                const regionHandleBuf = Buffer.from(info['RegionHandle'].toArray());
+                                                info['RegionHandle'] = new Long(regionHandleBuf.readUInt32LE(0), regionHandleBuf.readUInt32LE(4), true);
+                                                info['SimIP'] = new IPAddress_1.IPAddress(Buffer.from(info['SimIP'].toArray()), 0).toString();
+                                                info['TeleportFlags'] = Buffer.from(info['TeleportFlags'].toArray()).readUInt32LE(0);
+                                                const tpEvent = new __1.TeleportEvent();
+                                                tpEvent.message = '';
+                                                tpEvent.eventType = TeleportEventType_1.TeleportEventType.TeleportCompleted;
+                                                tpEvent.simIP = info['SimIP'];
+                                                tpEvent.simPort = info['SimPort'];
+                                                tpEvent.seedCapability = info['SeedCapability'];
+                                                this.clientEvents.onTeleportEvent.next(tpEvent);
+                                            }
+                                            break;
+                                        }
+                                    default:
+                                        console.log('Unhandled event:');
+                                        console.log(JSON.stringify(event, null, 4));
+                                }
+                            }
+                        }
+                        catch (erro) {
+                            console.error('Error handling cap');
+                            console.error(erro);
+                        }
+                    });
+                }
+            }
+            catch (error) {
+                console.error(error);
             }
             if (!this.done) {
                 this.Get();
@@ -171,12 +182,14 @@ class EventQueueClient {
                 }
             }
             else {
-                console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds');
-                setTimeout(() => {
-                    if (!this.done) {
-                        this.Get();
-                    }
-                }, 5000);
+                if (!this.done) {
+                    console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds');
+                    setTimeout(() => {
+                        if (!this.done) {
+                            this.Get();
+                        }
+                    }, 5000);
+                }
             }
         });
     }
@@ -214,7 +227,7 @@ class EventQueueClient {
                             resolve(parsed);
                         }
                         else {
-                            if (attempt < 3) {
+                            if (attempt < 3 && capability !== 'EventQueueGet') {
                                 return this.capsRequestXML(capability, data, ++attempt);
                             }
                             else {

@@ -82,4 +82,6 @@ const ScriptDialogEvent_1 = require("./events/ScriptDialogEvent");
 exports.ScriptDialogEvent = ScriptDialogEvent_1.ScriptDialogEvent;
 const EventQueueStateChangeEvent_1 = require("./events/EventQueueStateChangeEvent");
 exports.EventQueueStateChangeEvent = EventQueueStateChangeEvent_1.EventQueueStateChangeEvent;
+const RegionFlags_1 = require("./enums/RegionFlags");
+exports.RegionFlags = RegionFlags_1.RegionFlags;
 //# sourceMappingURL=index.js.map

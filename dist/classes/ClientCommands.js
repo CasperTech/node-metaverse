@@ -23,6 +23,18 @@ class ClientCommands {
         this.group = new GroupCommands_1.GroupCommands(region, agent, bot);
         this.inventory = new InventoryCommands_1.InventoryCommands(region, agent, bot);
     }
+    shutdown() {
+        this.network.shutdown();
+        this.asset.shutdown();
+        this.teleport.shutdown();
+        this.region.shutdown();
+        this.parcel.shutdown();
+        this.grid.shutdown();
+        this.comms.shutdown();
+        this.agent.shutdown();
+        this.group.shutdown();
+        this.inventory.shutdown();
+    }
 }
 exports.ClientCommands = ClientCommands;
 //# sourceMappingURL=ClientCommands.js.map

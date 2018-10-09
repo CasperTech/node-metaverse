@@ -30,6 +30,10 @@ import {FilterResponse} from './enums/FilterResponse';
 import {LogoutReplyMessage} from './classes/messages/LogoutReply';
 import {EventQueueStateChangeEvent} from './events/EventQueueStateChangeEvent';
 import {UUID} from './classes/UUID';
+import {Vector3} from './classes/Vector3';
+import {RegionHandshakeMessage} from './classes/messages/RegionHandshake';
+import {AgentMovementCompleteMessage} from './classes/messages/AgentMovementComplete';
+import Long = require('long');
 
 export class Bot
 {
@@ -45,6 +49,9 @@ export class Bot
     public clientEvents: ClientEvents;
     public clientCommands: ClientCommands;
     private eventQueueWaits: any = {};
+    private stay = false;
+    private stayRegion = '';
+    private stayPosition = new Vector3();
 
 
 
@@ -70,6 +77,16 @@ export class Bot
         });
     }
 
+    stayPut(stay: boolean, regionName?: string, position?: Vector3)
+    {
+        this.stay = stay;
+        if (regionName !== undefined && position !== undefined)
+        {
+            this.stayRegion = regionName;
+            this.stayPosition = position;
+        }
+    }
+
     async login()
     {
         const loginHandler = new LoginHandler(this.clientEvents, this.options);
@@ -80,8 +97,9 @@ export class Bot
         return response;
     }
 
-    async changeRegion(region: Region)
+    async changeRegion(region: Region, requested: boolean)
     {
+        this.closeCircuit();
         this.currentRegion = region;
         this.clientCommands = new ClientCommands(this.currentRegion, this.agent, this);
         if (this.ping !== null)
@@ -90,7 +108,7 @@ export class Bot
             this.ping = null;
         }
 
-        await this.connectToSim();
+        await this.connectToSim(requested);
     }
 
     waitForEventQueue(timeout: number = 1000): Promise<void>
@@ -124,7 +142,6 @@ export class Bot
 
     private closeCircuit()
     {
-        this.agent.shutdown();
         this.currentRegion.shutdown();
         if (this.circuitSubscription !== null)
         {
@@ -132,7 +149,8 @@ export class Bot
             this.circuitSubscription = null;
         }
         delete this.currentRegion;
-        delete this.agent;
+
+        this.clientCommands.shutdown();
         delete this.clientCommands;
         if (this.ping !== null)
         {
@@ -145,6 +163,8 @@ export class Bot
     private kicked(message: string)
     {
         this.closeCircuit();
+        this.agent.shutdown();
+        delete this.agent;
         this.disconnected(false, message);
     }
 
@@ -169,13 +189,17 @@ export class Bot
         };
         circuit.sendMessage(msg, PacketFlags.Reliable);
         await circuit.waitForMessage<LogoutReplyMessage>(Message.LogoutReply, 5000);
-
+        this.stayRegion = '';
+        this.stayPosition = new Vector3();
         this.closeCircuit();
+        this.agent.shutdown();
+        delete this.agent;
         this.disconnected(true, 'Logout completed');
     }
 
-    async connectToSim()
+    async connectToSim(requested: boolean)
     {
+        this.agent.setCurrentRegion(this.currentRegion);
         const circuit = this.currentRegion.circuit;
         circuit.init();
         const msg: UseCircuitCodeMessage = new UseCircuitCodeMessage();
@@ -196,7 +220,25 @@ export class Bot
         };
         circuit.sendMessage(agentMovement, PacketFlags.Reliable);
 
-        await circuit.waitForMessage(Message.RegionHandshake, 10000);
+        let agentPosition: Vector3 | null = null;
+        let regionName: string | null = null;
+
+        circuit.waitForMessage<AgentMovementCompleteMessage>(Message.AgentMovementComplete, 10000).then((agentMovementMsg: AgentMovementCompleteMessage) =>
+        {
+            agentPosition = agentMovementMsg.Data.Position;
+            if (regionName !== null)
+            {
+                if (this.stayRegion === '' || requested)
+                {
+                    this.stayPut(this.stay, regionName, agentPosition);
+                }
+            }
+        }).catch(() =>
+        {
+            console.error('Timed out waiting for AgentMovementComplete')
+        });
+
+        const handshakeMessage = await circuit.waitForMessage<RegionHandshakeMessage>(Message.RegionHandshake, 10000);
 
         const handshakeReply: RegionHandshakeReplyMessage = new RegionHandshakeReplyMessage();
         handshakeReply.AgentData = {
@@ -207,6 +249,22 @@ export class Bot
             Flags: RegionProtocolFlags.SelfAppearanceSupport | RegionProtocolFlags.AgentAppearanceService
         };
         await circuit.waitForAck(circuit.sendMessage(handshakeReply, PacketFlags.Reliable), 10000);
+
+        this.currentRegion.handshake(handshakeMessage).then(() =>
+        {
+            regionName = this.currentRegion.regionName;
+            if (agentPosition !== null)
+            {
+                if (this.stayRegion === '' || requested)
+                {
+                    this.stayPut(this.stay, regionName, agentPosition);
+                }
+            }
+        }).catch((error) =>
+        {
+            console.error('Timed out getting handshake');
+            console.error(error);
+        });
 
         if (this.clientCommands !== null)
         {
@@ -257,7 +315,13 @@ export class Bot
             }).bind(this, {
                 pingID: this.pingNumber,
                 timeSent: new Date().getTime()
-            }));
+            })).then(() =>
+            {
+                // No action needed
+            }).catch(() =>
+            {
+                console.error('Timeout waiting for ping from the simulator - possible disconnection')
+            });
 
 
             if ((new Date().getTime() - this.lastSuccessfulPing) > 60000)

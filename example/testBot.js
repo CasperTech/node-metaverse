@@ -12,7 +12,7 @@ const uuid = require('uuid');
 loginParameters.firstName = parameters.firstName;
 loginParameters.lastName = parameters.lastName;
 loginParameters.password = parameters.password;
-loginParameters.start = "last";
+loginParameters.start = parameters.start;
 
 //const options = nmv.BotOptionFlags.None;
 
@@ -37,7 +37,10 @@ bot.clientEvents.onLure.subscribe(async (lureEvent) =>
         if (lureEvent.from.toString() === master)
         {
             console.log('Accepting teleport lure to ' + regionInfo.block.name + ' (' + regionInfo.avatars.length + ' avatar' + ((regionInfo.avatars.length === 1)?'':'s') + ' present) from ' + lureEvent.fromName + ' with message: ' + lureEvent.lureMessage);
-            bot.clientCommands.teleport.acceptTeleport(lureEvent).then(() => {});
+            bot.clientCommands.teleport.acceptTeleport(lureEvent).then(() => {}).catch((err) => {
+                console.error('Teleport error:');
+                console.error(err);
+            });
         }
         else
         {
@@ -261,8 +264,8 @@ async function connect()
         await bot.waitForEventQueue();
         try
         {
-            await bot.clientCommands.teleport.teleportTo('Izanagi', new nmv.Vector3([128, 128, 20]), new nmv.Vector3([ 0, 1.0, 0]));
-            console.log("Teleport completed");
+            //await bot.clientCommands.teleport.teleportTo('Izanagi', new nmv.Vector3([128, 128, 20]), new nmv.Vector3([ 0, 1.0, 0]));
+            //console.log("Teleport completed");
         }
         catch(error)
         {

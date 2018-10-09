@@ -26,6 +26,7 @@ const DisconnectEvent_1 = require("./events/DisconnectEvent");
 const StartPingCheck_1 = require("./classes/messages/StartPingCheck");
 const FilterResponse_1 = require("./enums/FilterResponse");
 const UUID_1 = require("./classes/UUID");
+const Vector3_1 = require("./classes/Vector3");
 class Bot {
     constructor(login, options) {
         this.ping = null;
@@ -34,6 +35,9 @@ class Bot {
         this.circuitSubscription = null;
         this.eventQueueRunning = false;
         this.eventQueueWaits = {};
+        this.stay = false;
+        this.stayRegion = '';
+        this.stayPosition = new Vector3_1.Vector3();
         this.clientEvents = new ClientEvents_1.ClientEvents();
         this.loginParams = login;
         this.options = options;
@@ -49,6 +53,13 @@ class Bot {
             }
         });
     }
+    stayPut(stay, regionName, position) {
+        this.stay = stay;
+        if (regionName !== undefined && position !== undefined) {
+            this.stayRegion = regionName;
+            this.stayPosition = position;
+        }
+    }
     login() {
         return __awaiter(this, void 0, void 0, function* () {
             const loginHandler = new LoginHandler_1.LoginHandler(this.clientEvents, this.options);
@@ -59,15 +70,16 @@ class Bot {
             return response;
         });
     }
-    changeRegion(region) {
+    changeRegion(region, requested) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.closeCircuit();
             this.currentRegion = region;
             this.clientCommands = new ClientCommands_1.ClientCommands(this.currentRegion, this.agent, this);
             if (this.ping !== null) {
                 clearInterval(this.ping);
                 this.ping = null;
             }
-            yield this.connectToSim();
+            yield this.connectToSim(requested);
         });
     }
     waitForEventQueue(timeout = 1000) {
@@ -89,14 +101,13 @@ class Bot {
         });
     }
     closeCircuit() {
-        this.agent.shutdown();
         this.currentRegion.shutdown();
         if (this.circuitSubscription !== null) {
             this.circuitSubscription.unsubscribe();
             this.circuitSubscription = null;
         }
         delete this.currentRegion;
-        delete this.agent;
+        this.clientCommands.shutdown();
         delete this.clientCommands;
         if (this.ping !== null) {
             clearInterval(this.ping);
@@ -105,6 +116,8 @@ class Bot {
     }
     kicked(message) {
         this.closeCircuit();
+        this.agent.shutdown();
+        delete this.agent;
         this.disconnected(false, message);
     }
     disconnected(requested, message) {
@@ -125,12 +138,17 @@ class Bot {
             };
             circuit.sendMessage(msg, PacketFlags_1.PacketFlags.Reliable);
             yield circuit.waitForMessage(Message_1.Message.LogoutReply, 5000);
+            this.stayRegion = '';
+            this.stayPosition = new Vector3_1.Vector3();
             this.closeCircuit();
+            this.agent.shutdown();
+            delete this.agent;
             this.disconnected(true, 'Logout completed');
         });
     }
-    connectToSim() {
+    connectToSim(requested) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.agent.setCurrentRegion(this.currentRegion);
             const circuit = this.currentRegion.circuit;
             circuit.init();
             const msg = new UseCircuitCode_1.UseCircuitCodeMessage();
@@ -147,7 +165,19 @@ class Bot {
                 CircuitCode: circuit.circuitCode
             };
             circuit.sendMessage(agentMovement, PacketFlags_1.PacketFlags.Reliable);
-            yield circuit.waitForMessage(Message_1.Message.RegionHandshake, 10000);
+            let agentPosition = null;
+            let regionName = null;
+            circuit.waitForMessage(Message_1.Message.AgentMovementComplete, 10000).then((agentMovementMsg) => {
+                agentPosition = agentMovementMsg.Data.Position;
+                if (regionName !== null) {
+                    if (this.stayRegion === '' || requested) {
+                        this.stayPut(this.stay, regionName, agentPosition);
+                    }
+                }
+            }).catch(() => {
+                console.error('Timed out waiting for AgentMovementComplete');
+            });
+            const handshakeMessage = yield circuit.waitForMessage(Message_1.Message.RegionHandshake, 10000);
             const handshakeReply = new RegionHandshakeReply_1.RegionHandshakeReplyMessage();
             handshakeReply.AgentData = {
                 AgentID: this.agent.agentID,
@@ -157,6 +187,17 @@ class Bot {
                 Flags: RegionProtocolFlags_1.RegionProtocolFlags.SelfAppearanceSupport | RegionProtocolFlags_1.RegionProtocolFlags.AgentAppearanceService
             };
             yield circuit.waitForAck(circuit.sendMessage(handshakeReply, PacketFlags_1.PacketFlags.Reliable), 10000);
+            this.currentRegion.handshake(handshakeMessage).then(() => {
+                regionName = this.currentRegion.regionName;
+                if (agentPosition !== null) {
+                    if (this.stayRegion === '' || requested) {
+                        this.stayPut(this.stay, regionName, agentPosition);
+                    }
+                }
+            }).catch((error) => {
+                console.error('Timed out getting handshake');
+                console.error(error);
+            });
             if (this.clientCommands !== null) {
                 this.clientCommands.network.setBandwidth(1536000);
             }
@@ -193,7 +234,10 @@ class Bot {
                 }).bind(this, {
                     pingID: this.pingNumber,
                     timeSent: new Date().getTime()
-                }));
+                })).then(() => {
+                }).catch(() => {
+                    console.error('Timeout waiting for ping from the simulator - possible disconnection');
+                });
                 if ((new Date().getTime() - this.lastSuccessfulPing) > 60000) {
                     this.kicked('Circuit Timeout');
                 }
