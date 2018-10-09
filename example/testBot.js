@@ -23,6 +23,13 @@ const options = nmv.BotOptionFlags.LiteObjectStore | nmv.BotOptionFlags.StoreMyA
 
 const bot = new nmv.Bot(loginParameters, options);
 
+// This will tell the bot to keep trying to teleport back to the 'stay' location.
+// You can specify a region and position, such as:
+// bot.stayPut(true, 'Izanagi', new Vector3([128, 128, 21]));
+// Note that the 'stay' location will be updated if you request or accept a lure (a teleport).
+// If no region is specified, it will be set to the region you log in to.
+bot.stayPut(true);
+
 let isConnected = false;
 
 const master = 'd1cd5b71-6209-4595-9bf0-771bf689ce00';

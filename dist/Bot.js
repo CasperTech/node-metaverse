@@ -189,6 +189,7 @@ class Bot {
             yield circuit.waitForAck(circuit.sendMessage(handshakeReply, PacketFlags_1.PacketFlags.Reliable), 10000);
             this.currentRegion.handshake(handshakeMessage).then(() => {
                 regionName = this.currentRegion.regionName;
+                console.log('Arrived in region: ' + regionName);
                 if (agentPosition !== null) {
                     if (this.stayRegion === '' || requested) {
                         this.stayPut(this.stay, regionName, agentPosition);
@@ -212,6 +213,16 @@ class Bot {
             this.lastSuccessfulPing = new Date().getTime();
             this.ping = setInterval(() => __awaiter(this, void 0, void 0, function* () {
                 this.pingNumber++;
+                if (this.pingNumber % 12 === 0 && this.stay) {
+                    if (this.currentRegion.regionName !== this.stayRegion) {
+                        console.log('Stay Put: Attempting to teleport to ' + this.stayRegion);
+                        this.clientCommands.teleport.teleportTo(this.stayRegion, this.stayPosition, this.stayPosition).then(() => {
+                            console.log('I found my way home.');
+                        }).catch(() => {
+                            console.log('Cannot teleport home right now.');
+                        });
+                    }
+                }
                 if (this.pingNumber > 255) {
                     this.pingNumber = 0;
                 }
