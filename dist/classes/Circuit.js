@@ -9,7 +9,6 @@ const operators_1 = require("rxjs/operators");
 const FilterResponse_1 = require("../enums/FilterResponse");
 const Subject_1 = require("rxjs/internal/Subject");
 const __1 = require("..");
-const error_1 = require("tslint/lib/error");
 class Circuit {
     constructor(clientEvents) {
         this.client = null;
@@ -32,7 +31,7 @@ class Circuit {
     }
     sendMessage(message, flags) {
         if (!this.active) {
-            throw new error_1.Error('Attempting to send a message on a closed circuit');
+            throw new Error('Attempting to send a message on a closed circuit');
         }
         const packet = new Packet_1.Packet();
         packet.message = message;
@@ -61,7 +60,7 @@ class Circuit {
             handleObj.timeout = setTimeout(() => {
                 if (handleObj.subscription !== null) {
                     handleObj.subscription.unsubscribe();
-                    reject(new error_1.Error('Timeout'));
+                    reject(new Error('Timeout'));
                 }
             }, timeout);
             handleObj.subscription = this.onAckReceived.subscribe((sequenceNumber) => {
@@ -122,7 +121,7 @@ class Circuit {
             const timeoutFunc = () => {
                 if (handleObj.subscription !== null) {
                     handleObj.subscription.unsubscribe();
-                    reject(new error_1.Error('Timeout waiting for message of type ' + id));
+                    reject(new Error('Timeout waiting for message of type ' + id));
                 }
             };
             handleObj.timeout = setTimeout(timeoutFunc, timeout);

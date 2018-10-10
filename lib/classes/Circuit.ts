@@ -14,7 +14,6 @@ import {ClientEvents} from './ClientEvents';
 import {FilterResponse} from '../enums/FilterResponse';
 import {Subject} from 'rxjs/internal/Subject';
 import {PacketFlags} from '..';
-import {Error} from 'tslint/lib/error';
 
 export class Circuit
 {
