@@ -3,7 +3,6 @@ import {Vector3} from './Vector3';
 import {Inventory} from './Inventory';
 import Long = require('long');
 import {Wearable} from './Wearable';
-import {ControlFlags} from '../enums/ControlFlags';
 import {Region} from './Region';
 import {Message} from '../enums/Message';
 import {Packet} from './Packet';
@@ -11,21 +10,18 @@ import {AvatarAnimationMessage} from './messages/AvatarAnimation';
 import {AgentUpdateMessage} from './messages/AgentUpdate';
 import {Quaternion} from './Quaternion';
 import {AgentState} from '../enums/AgentState';
-import {AgentFlags} from '../enums/AgentFlags';
 import {BuiltInAnimations} from '../enums/BuiltInAnimations';
 import * as LLSD from '@caspertech/llsd';
-import {AssetType} from '../enums/AssetType';
 import {AgentWearablesRequestMessage} from './messages/AgentWearablesRequest';
-import {PacketFlags} from '../enums/PacketFlags';
 import {AgentWearablesUpdateMessage} from './messages/AgentWearablesUpdate';
 import {InventorySortOrder} from '../enums/InventorySortOrder';
 import {RezSingleAttachmentFromInvMessage} from './messages/RezSingleAttachmentFromInv';
 import {AttachmentPoint} from '../enums/AttachmentPoint';
 import {Utils} from './Utils';
-import {AgentAnimationMessage} from './messages/AgentAnimation';
 import {ClientEvents} from './ClientEvents';
 import {IGameObject} from './interfaces/IGameObject';
-import {GroupChatSessionAgentListEvent} from '../events/GroupChatSessionAgentListEvent';
+import Timer = NodeJS.Timer;
+import {ControlFlags, GroupChatSessionAgentListEvent, AgentFlags, PacketFlags, AssetType} from '..';
 
 export class Agent
 {
@@ -78,7 +74,7 @@ export class Agent
         attachments: Wearable[];
         serialNumber: number
     };
-    agentUpdateTimer: number | null = null;
+    agentUpdateTimer: Timer | null = null;
     estateManager = false;
     private clientEvents: ClientEvents;
 
@@ -140,11 +136,7 @@ export class Agent
     hasChatSession(uuid: UUID): boolean
     {
         const str = uuid.toString();
-        if (this.chatSessions[str] === undefined)
-        {
-            return false;
-        }
-        return true;
+        return !(this.chatSessions[str] === undefined);
     }
 
     setCurrentRegion(region: Region)

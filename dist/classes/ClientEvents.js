@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Subject_1 = require("rxjs/Subject");
+const Subject_1 = require("rxjs/internal/Subject");
 class ClientEvents {
     constructor() {
         this.onNearbyChat = new Subject_1.Subject();

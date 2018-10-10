@@ -1,19 +1,19 @@
 import * as LLSD from '@caspertech/llsd';
 import * as request from 'request';
 import {Region} from './Region';
-import {Subject} from 'rxjs/Subject';
-import {Subscription} from 'rxjs/Subscription';
+import {Subscription} from 'rxjs/internal/Subscription';
 import {EventQueueClient} from './EventQueueClient';
 import {UUID} from './UUID';
-import {HTTPAssets} from '../enums/HTTPAssets';
 import {ClientEvents} from './ClientEvents';
 import {Agent} from './Agent';
+import {Subject} from 'rxjs/internal/Subject';
+import {HTTPAssets} from '..';
 
 export class Caps
 {
     private region: Region;
     private onGotSeedCap: Subject<void> = new Subject<void>();
-    private gotSeedCap: boolean = false;
+    private gotSeedCap = false;
     private capabilities: { [key: string]: string } = {};
     private clientEvents: ClientEvents;
     private agent: Agent;

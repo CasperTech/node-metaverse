@@ -7,7 +7,7 @@ import {TeleportLocationRequestMessage} from '../messages/TeleportLocationReques
 import * as Long from 'long';
 import {LureEvent, PacketFlags, RegionInfoReplyEvent, TeleportEvent, TeleportFlags, Bot} from '../..';
 import {Agent} from '../Agent';
-import {Subscription} from 'rxjs/Subscription';
+import {Subscription} from 'rxjs/internal/Subscription';
 
 export class TeleportCommands extends CommandsBase
 {

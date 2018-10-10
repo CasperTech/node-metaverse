@@ -1,12 +1,14 @@
+/// <reference types="node" />
 import { UUID } from './UUID';
 import { Vector3 } from './Vector3';
 import { Inventory } from './Inventory';
 import Long = require('long');
 import { Wearable } from './Wearable';
-import { ControlFlags } from '../enums/ControlFlags';
 import { Region } from './Region';
 import { Packet } from './Packet';
 import { ClientEvents } from './ClientEvents';
+import Timer = NodeJS.Timer;
+import { ControlFlags } from '..';
 export declare class Agent {
     firstName: string;
     lastName: string;
@@ -59,7 +61,7 @@ export declare class Agent {
         attachments: Wearable[];
         serialNumber: number;
     };
-    agentUpdateTimer: number | null;
+    agentUpdateTimer: Timer | null;
     estateManager: boolean;
     private clientEvents;
     constructor(clientEvents: ClientEvents);

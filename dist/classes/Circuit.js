@@ -1,14 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const dgram = require("dgram");
-const PacketFlags_1 = require("../enums/PacketFlags");
 const Packet_1 = require("./Packet");
 const PacketAck_1 = require("./messages/PacketAck");
 const Message_1 = require("../enums/Message");
 const CompletePingCheck_1 = require("./messages/CompletePingCheck");
-const Subject_1 = require("rxjs/Subject");
-require("rxjs/add/operator/filter");
+const operators_1 = require("rxjs/operators");
 const FilterResponse_1 = require("../enums/FilterResponse");
+const Subject_1 = require("rxjs/internal/Subject");
+const __1 = require("..");
+const error_1 = require("tslint/lib/error");
 class Circuit {
     constructor(clientEvents) {
         this.client = null;
@@ -25,13 +26,13 @@ class Circuit {
         ids.forEach((id) => {
             lookupObject[id] = true;
         });
-        return this.onPacketReceived.filter((packet) => {
+        return this.onPacketReceived.pipe(operators_1.filter((packet) => {
             return lookupObject[packet.message.id] === true;
-        }).subscribe(callback);
+        })).subscribe(callback);
     }
     sendMessage(message, flags) {
         if (!this.active) {
-            throw new Error('Attempting to send a message on a closed circuit');
+            throw new error_1.Error('Attempting to send a message on a closed circuit');
         }
         const packet = new Packet_1.Packet();
         packet.message = message;
@@ -47,7 +48,7 @@ class Circuit {
         }
         if (this.awaitingAck[sequenceNumber]) {
             const toResend = this.awaitingAck[sequenceNumber].packet;
-            toResend.packetFlags = toResend.packetFlags | PacketFlags_1.PacketFlags.Resent;
+            toResend.packetFlags = toResend.packetFlags | __1.PacketFlags.Resent;
             this.sendPacket(toResend);
         }
     }
@@ -60,7 +61,7 @@ class Circuit {
             handleObj.timeout = setTimeout(() => {
                 if (handleObj.subscription !== null) {
                     handleObj.subscription.unsubscribe();
-                    reject(new Error('Timeout'));
+                    reject(new error_1.Error('Timeout'));
                 }
             }, timeout);
             handleObj.subscription = this.onAckReceived.subscribe((sequenceNumber) => {
@@ -112,7 +113,7 @@ class Circuit {
         }
         this.active = false;
     }
-    waitForMessage(id, timeout, filter) {
+    waitForMessage(id, timeout, messageFilter) {
         return new Promise((resolve, reject) => {
             const handleObj = {
                 timeout: null,
@@ -121,18 +122,18 @@ class Circuit {
             const timeoutFunc = () => {
                 if (handleObj.subscription !== null) {
                     handleObj.subscription.unsubscribe();
-                    reject(new Error('Timeout waiting for message of type ' + id));
+                    reject(new error_1.Error('Timeout waiting for message of type ' + id));
                 }
             };
             handleObj.timeout = setTimeout(timeoutFunc, timeout);
             handleObj.subscription = this.subscribeToMessages([id], (packet) => {
                 let finish = false;
                 if (packet.message.id === id) {
-                    if (filter === undefined) {
+                    if (messageFilter === undefined) {
                         finish = true;
                     }
                     else {
-                        const filterResult = filter(packet.message);
+                        const filterResult = messageFilter(packet.message);
                         if (filterResult === FilterResponse_1.FilterResponse.Finish) {
                             finish = true;
                         }
@@ -159,7 +160,7 @@ class Circuit {
         });
     }
     sendPacket(packet) {
-        if (packet.packetFlags & PacketFlags_1.PacketFlags.Reliable) {
+        if (packet.packetFlags & __1.PacketFlags.Reliable) {
             this.awaitingAck[packet.sequenceNumber] =
                 {
                     packet: packet,
