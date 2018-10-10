@@ -1,9 +1,8 @@
 import { UUID } from './UUID';
 import { Agent } from './Agent';
 import { Region } from './Region';
-import { LoginFlags } from '../enums/LoginFlags';
 import { ClientEvents } from './ClientEvents';
-import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { BotOptionFlags, LoginFlags } from '..';
 export declare class LoginResponse {
     loginFlags: LoginFlags;
     loginMessage: string;

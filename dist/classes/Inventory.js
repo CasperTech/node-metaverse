@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const UUID_1 = require("./UUID");
-const AssetType_1 = require("../enums/AssetType");
 const InventoryFolder_1 = require("./InventoryFolder");
+const __1 = require("..");
 class Inventory {
     constructor(clientEvents, agent) {
         this.main = {
@@ -42,7 +42,7 @@ class Inventory {
         if (this.main.root === undefined) {
             return UUID_1.UUID.zero();
         }
-        if (type === AssetType_1.AssetType.Folder) {
+        if (type === __1.AssetType.Folder) {
             return this.main.root;
         }
         let found = UUID_1.UUID.zero();

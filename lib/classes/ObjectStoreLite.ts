@@ -9,7 +9,6 @@ import {MultipleObjectUpdateMessage} from './messages/MultipleObjectUpdate';
 import {RequestMultipleObjectsMessage} from './messages/RequestMultipleObjects';
 import {Agent} from './Agent';
 import {UUID} from './UUID';
-import {CompressedFlags} from '../enums/CompressedFlags';
 import {ExtraParamType} from '../enums/ExtraParamType';
 import {Utils} from './Utils';
 import {PCode} from '../enums/PCode';
@@ -18,7 +17,7 @@ import {KillObjectMessage} from './messages/KillObject';
 import {IObjectStore} from './interfaces/IObjectStore';
 import {GameObjectLite} from './GameObjectLite';
 import {NameValue} from './NameValue';
-import {BotOptionFlags} from '../enums/BotOptionFlags';
+import {BotOptionFlags, CompressedFlags} from '..';
 
 export class ObjectStoreLite implements IObjectStore
 {

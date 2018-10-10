@@ -1,9 +1,8 @@
 import {UUID} from './UUID';
 import {ClientEvents} from './ClientEvents';
-import {AssetType} from '../enums/AssetType';
 import {InventoryFolder} from './InventoryFolder';
-import uuid = require('uuid');
 import {Agent} from './Agent';
+import {AssetType} from '..';
 
 export class Inventory
 {

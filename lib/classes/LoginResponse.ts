@@ -1,12 +1,11 @@
 import {UUID} from './UUID';
 import {Agent} from './Agent';
 import {Region} from './Region';
-import {LoginFlags} from '../enums/LoginFlags';
 import {Vector3} from './Vector3';
 import Long = require('long');
 import {ClientEvents} from './ClientEvents';
-import {BotOptionFlags} from '../enums/BotOptionFlags';
 import {InventoryFolder} from './InventoryFolder';
+import {BotOptionFlags, LoginFlags} from '..';
 
 export class LoginResponse
 {

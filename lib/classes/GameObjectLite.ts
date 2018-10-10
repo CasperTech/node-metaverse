@@ -19,11 +19,7 @@ export class GameObjectLite implements IGameObject
 
     hasNameValueEntry(key: string): boolean
     {
-        if (this.NameValue['AttachItemID'])
-        {
-            return true;
-        }
-        return false;
+        return this.NameValue['AttachItemID'] !== undefined;
     }
 
     getNameValueEntry(key: string): string

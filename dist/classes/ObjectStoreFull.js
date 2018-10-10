@@ -5,12 +5,11 @@ const RequestMultipleObjects_1 = require("./messages/RequestMultipleObjects");
 const UUID_1 = require("./UUID");
 const Quaternion_1 = require("./Quaternion");
 const Vector3_1 = require("./Vector3");
-const CompressedFlags_1 = require("../enums/CompressedFlags");
 const Utils_1 = require("./Utils");
 const PCode_1 = require("../enums/PCode");
 const NameValue_1 = require("./NameValue");
 const GameObjectFull_1 = require("./GameObjectFull");
-const BotOptionFlags_1 = require("../enums/BotOptionFlags");
+const __1 = require("..");
 class ObjectStoreFull {
     constructor(circuit, agent, clientEvents, options) {
         this.objects = {};
@@ -97,7 +96,7 @@ class ObjectStoreFull {
                         obj.JointAxisOrAnchor = objData.JointAxisOrAnchor;
                         if (this.objects[localID].PCode === PCode_1.PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString()) {
                             this.agent.localID = localID;
-                            if (this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                            if (this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
                                 Object.keys(this.objectsByParent).forEach((objParentID) => {
                                     const parent = parseInt(objParentID, 10);
                                     if (parent !== this.agent.localID) {
@@ -132,7 +131,7 @@ class ObjectStoreFull {
                         if (addToParentList) {
                             this.objectsByParent[parentID].push(localID);
                         }
-                        if (objData.PCode !== PCode_1.PCode.Avatar && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                        if (objData.PCode !== PCode_1.PCode.Avatar && this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
                             if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID) {
                                 this.deleteObject(localID);
                                 return;
@@ -194,11 +193,11 @@ class ObjectStoreFull {
                             pos = pos + 4;
                             o.OwnerID = new UUID_1.UUID(buf, pos);
                             pos += 16;
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasAngularVelocity) {
+                            if (compressedflags & __1.CompressedFlags.HasAngularVelocity) {
                                 o.AngularVelocity = new Vector3_1.Vector3(buf, pos, false);
                                 pos = pos + 12;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasParent) {
+                            if (compressedflags & __1.CompressedFlags.HasParent) {
                                 const newParentID = buf.readUInt32LE(pos);
                                 pos += 4;
                                 let add = true;
@@ -221,21 +220,21 @@ class ObjectStoreFull {
                                 }
                                 o.ParentID = newParentID;
                             }
-                            if (pcode !== PCode_1.PCode.Avatar && newObj && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                            if (pcode !== PCode_1.PCode.Avatar && newObj && this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
                                 if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID) {
                                     this.deleteObject(localID);
                                     return;
                                 }
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.Tree) {
+                            if (compressedflags & __1.CompressedFlags.Tree) {
                                 o.TreeSpecies = buf.readUInt8(pos++);
                             }
-                            else if (compressedflags & CompressedFlags_1.CompressedFlags.ScratchPad) {
+                            else if (compressedflags & __1.CompressedFlags.ScratchPad) {
                                 o.TreeSpecies = 0;
                                 const scratchPadSize = buf.readUInt8(pos++);
                                 pos = pos + scratchPadSize;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasText) {
+                            if (compressedflags & __1.CompressedFlags.HasText) {
                                 const result = Utils_1.Utils.BufferToString(buf, pos);
                                 pos += result.readLength;
                                 o.Text = result.result;
@@ -245,16 +244,16 @@ class ObjectStoreFull {
                             else {
                                 o.Text = '';
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.MediaURL) {
+                            if (compressedflags & __1.CompressedFlags.MediaURL) {
                                 const result = Utils_1.Utils.BufferToString(buf, pos);
                                 pos += result.readLength;
                                 o.MediaURL = result.result;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasParticles) {
+                            if (compressedflags & __1.CompressedFlags.HasParticles) {
                                 pos += 86;
                             }
                             pos = this.readExtraParams(buf, pos, o);
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasSound) {
+                            if (compressedflags & __1.CompressedFlags.HasSound) {
                                 o.Sound = new UUID_1.UUID(buf, pos);
                                 pos = pos + 16;
                                 o.SoundGain = buf.readFloatLE(pos);
@@ -263,7 +262,7 @@ class ObjectStoreFull {
                                 o.SoundRadius = buf.readFloatLE(pos);
                                 pos = pos + 4;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasNameValues) {
+                            if (compressedflags & __1.CompressedFlags.HasNameValues) {
                                 const result = Utils_1.Utils.BufferToString(buf, pos);
                                 o.NameValue = this.parseNameValues(result.result);
                                 pos += result.readLength;
@@ -294,10 +293,10 @@ class ObjectStoreFull {
                             const textureEntryLength = buf.readUInt32LE(pos);
                             pos = pos + 4;
                             pos = pos + textureEntryLength;
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.TextureAnimation) {
+                            if (compressedflags & __1.CompressedFlags.TextureAnimation) {
                                 pos = pos + 4;
                             }
-                            o.IsAttachment = (compressedflags & CompressedFlags_1.CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
+                            o.IsAttachment = (compressedflags & __1.CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
                         });
                         break;
                     }

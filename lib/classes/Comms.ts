@@ -17,7 +17,7 @@ import {
     GroupInviteEvent,
     InstantMessageEvent,
     InstantMessageEventFlags,
-    InventoryOfferedEvent, 
+    InventoryOfferedEvent,
     LureEvent,
     ScriptDialogEvent,
     UUID

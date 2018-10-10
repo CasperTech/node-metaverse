@@ -1,11 +1,11 @@
 import {UUID} from './UUID';
-import {AssetType} from '../enums/AssetType';
 import {InventoryItem} from './InventoryItem';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as LLSD from '@caspertech/llsd';
 import {InventorySortOrder} from '../enums/InventorySortOrder';
 import {Agent} from './Agent';
+import {AssetType} from '..';
 
 export class InventoryFolder
 {

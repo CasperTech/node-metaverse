@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import { MessageFlags } from '../enums/MessageFlags';
 import { Message } from '../enums/Message';
+import { MessageFlags } from '..';
 export interface MessageBase {
     name: string;
     messageFlags: MessageFlags;

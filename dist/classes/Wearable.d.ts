@@ -1,4 +1,4 @@
-import { UUID } from "./UUID";
+import { UUID } from './UUID';
 export declare class Wearable {
     itemID: UUID;
     assetID: UUID;

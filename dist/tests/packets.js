@@ -4,8 +4,7 @@ require("mocha");
 const fs = require("fs");
 const path = require("path");
 const Packet_1 = require("../classes/Packet");
-const PacketFlags_1 = require("../enums/PacketFlags");
-const DecodeFlags_1 = require("../enums/DecodeFlags");
+const __1 = require("..");
 function compareArrays(arr1, arr2) {
     if (arr1.length === arr2.length
         && arr1.every(function (u, i) {
@@ -87,9 +86,9 @@ describe('Packets', () => {
                     it('should encode back to binary', (done) => {
                         try {
                             buf = Buffer.alloc(packet.getSize());
-                            buf = packet.writeToBuffer(buf, 0, DecodeFlags_1.DecodeFlags.DontChangeFlags);
+                            buf = packet.writeToBuffer(buf, 0, __1.DecodeFlags.DontChangeFlags);
                             let bl = buf.length;
-                            if (packet.packetFlags & PacketFlags_1.PacketFlags.Ack) {
+                            if (packet.packetFlags & __1.PacketFlags.Ack) {
                                 extra += 4 * acksReceived.length;
                                 extra++;
                             }

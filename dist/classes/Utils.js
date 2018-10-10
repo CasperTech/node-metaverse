@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Long = require("long");
-const HTTPAssets_1 = require("../enums/HTTPAssets");
+const __1 = require("..");
 class Utils {
     static StringToBuffer(str) {
         return Buffer.from(str + '\0', 'utf8');
@@ -50,35 +50,35 @@ class Utils {
     }
     static HTTPAssetTypeToInventoryType(HTTPAssetType) {
         switch (HTTPAssetType) {
-            case HTTPAssets_1.HTTPAssets.ASSET_TEXTURE:
+            case __1.HTTPAssets.ASSET_TEXTURE:
                 return 'texture';
-            case HTTPAssets_1.HTTPAssets.ASSET_SOUND:
+            case __1.HTTPAssets.ASSET_SOUND:
                 return 'sound';
-            case HTTPAssets_1.HTTPAssets.ASSET_ANIMATION:
+            case __1.HTTPAssets.ASSET_ANIMATION:
                 return 'animation';
-            case HTTPAssets_1.HTTPAssets.ASSET_GESTURE:
+            case __1.HTTPAssets.ASSET_GESTURE:
                 return 'gesture';
-            case HTTPAssets_1.HTTPAssets.ASSET_LANDMARK:
+            case __1.HTTPAssets.ASSET_LANDMARK:
                 return 'landmark';
-            case HTTPAssets_1.HTTPAssets.ASSET_CALLINGCARD:
+            case __1.HTTPAssets.ASSET_CALLINGCARD:
                 return 'callcard';
-            case HTTPAssets_1.HTTPAssets.ASSET_SCRIPT:
+            case __1.HTTPAssets.ASSET_SCRIPT:
                 return 'script';
-            case HTTPAssets_1.HTTPAssets.ASSET_CLOTHING:
+            case __1.HTTPAssets.ASSET_CLOTHING:
                 return 'wearable';
-            case HTTPAssets_1.HTTPAssets.ASSET_OBJECT:
+            case __1.HTTPAssets.ASSET_OBJECT:
                 return 'object';
-            case HTTPAssets_1.HTTPAssets.ASSET_NOTECARD:
+            case __1.HTTPAssets.ASSET_NOTECARD:
                 return 'notecard';
-            case HTTPAssets_1.HTTPAssets.ASSET_CATEGORY:
+            case __1.HTTPAssets.ASSET_CATEGORY:
                 return 'category';
-            case HTTPAssets_1.HTTPAssets.ASSET_LSL_TEXT:
+            case __1.HTTPAssets.ASSET_LSL_TEXT:
                 return 'script';
-            case HTTPAssets_1.HTTPAssets.ASSET_LSL_BYTECODE:
+            case __1.HTTPAssets.ASSET_LSL_BYTECODE:
                 return 'script';
-            case HTTPAssets_1.HTTPAssets.ASSET_BODYPART:
+            case __1.HTTPAssets.ASSET_BODYPART:
                 return 'wearable';
-            case HTTPAssets_1.HTTPAssets.ASSET_MESH:
+            case __1.HTTPAssets.ASSET_MESH:
                 return 'mesh';
             default:
                 return '';
