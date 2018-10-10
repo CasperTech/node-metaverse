@@ -8,7 +8,7 @@ export declare class Utils {
         result: string;
     };
     static RegionCoordinatesToHandle(regionX: number, regionY: number): Long;
-    static HTTPAssetTypeToInventoryType(HTTPAssetType: string): "" | "script" | "texture" | "sound" | "animation" | "gesture" | "landmark" | "callcard" | "wearable" | "object" | "notecard" | "category" | "mesh";
+    static HTTPAssetTypeToInventoryType(HTTPAssetType: string): "" | "script" | "object" | "texture" | "sound" | "animation" | "gesture" | "landmark" | "callcard" | "wearable" | "notecard" | "category" | "mesh";
     static UInt16ToFloat(val: number, lower: number, upper: number): number;
     static Base64EncodeString(str: string): string;
     static Base64DecodeString(str: string): string;

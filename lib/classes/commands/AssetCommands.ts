@@ -1,8 +1,8 @@
 import {CommandsBase} from './CommandsBase';
-import {HTTPAssets} from '../../enums/HTTPAssets';
 import {UUID} from '../UUID';
 import * as LLSD from '@caspertech/llsd';
 import {Utils} from '../Utils';
+import {HTTPAssets} from '../..';
 
 export class AssetCommands extends CommandsBase
 {

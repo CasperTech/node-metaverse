@@ -1,4 +1,3 @@
-import {Subject} from 'rxjs/Subject';
 import {
     ChatEvent,
     DisconnectEvent,
@@ -15,6 +14,7 @@ import {
     ScriptDialogEvent,
     EventQueueStateChangeEvent
 } from '..';
+import {Subject} from 'rxjs/internal/Subject';
 
 
 export class ClientEvents

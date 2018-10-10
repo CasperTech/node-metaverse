@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const LLSD = require("@caspertech/llsd");
 const request = require("request");
-const Subject_1 = require("rxjs/Subject");
 const EventQueueClient_1 = require("./EventQueueClient");
+const Subject_1 = require("rxjs/internal/Subject");
 class Caps {
     constructor(agent, region, seedURL, clientEvents) {
         this.onGotSeedCap = new Subject_1.Subject();

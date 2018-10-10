@@ -1,14 +1,14 @@
 /// <reference types="node" />
 import { UUID } from './UUID';
 import { Socket } from 'dgram';
-import { PacketFlags } from '../enums/PacketFlags';
 import { Packet } from './Packet';
 import { MessageBase } from './MessageBase';
 import { Message } from '../enums/Message';
-import { Subscription } from 'rxjs/Subscription';
-import 'rxjs/add/operator/filter';
-import { ClientEvents } from "./ClientEvents";
+import { Subscription } from 'rxjs/internal/Subscription';
+import Timer = NodeJS.Timer;
+import { ClientEvents } from './ClientEvents';
 import { FilterResponse } from '../enums/FilterResponse';
+import { PacketFlags } from '..';
 export declare class Circuit {
     secureSessionID: UUID;
     sessionID: UUID;
@@ -22,12 +22,12 @@ export declare class Circuit {
     awaitingAck: {
         [key: number]: {
             packet: Packet;
-            timeout: number;
+            timeout: Timer;
             sent: number;
         };
     };
     receivedPackets: {
-        [key: number]: number;
+        [key: number]: Timer;
     };
     active: boolean;
     private clientEvents;
@@ -40,7 +40,7 @@ export declare class Circuit {
     waitForAck(ack: number, timeout: number): Promise<void>;
     init(): void;
     shutdown(): void;
-    waitForMessage<T extends MessageBase>(id: Message, timeout: number, filter?: (message: T) => FilterResponse): Promise<T>;
+    waitForMessage<T extends MessageBase>(id: Message, timeout: number, messageFilter?: (message: T) => FilterResponse): Promise<T>;
     sendPacket(packet: Packet): void;
     ackReceived(sequenceNumber: number): void;
     sendAck(sequenceNumber: number): void;

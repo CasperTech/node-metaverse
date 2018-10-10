@@ -24,7 +24,6 @@ import {KickUserMessage} from './classes/messages/KickUser';
 import {StartPingCheckMessage} from './classes/messages/StartPingCheck';
 import {CompletePingCheckMessage} from './classes/messages/CompletePingCheck';
 import Timer = NodeJS.Timer;
-import {Subscription} from 'rxjs/Subscription';
 import {BotOptionFlags} from './enums/BotOptionFlags';
 import {FilterResponse} from './enums/FilterResponse';
 import {LogoutReplyMessage} from './classes/messages/LogoutReply';
@@ -33,7 +32,9 @@ import {UUID} from './classes/UUID';
 import {Vector3} from './classes/Vector3';
 import {RegionHandshakeMessage} from './classes/messages/RegionHandshake';
 import {AgentMovementCompleteMessage} from './classes/messages/AgentMovementComplete';
+import {Subscription} from 'rxjs/internal/Subscription';
 import Long = require('long');
+
 
 export class Bot
 {

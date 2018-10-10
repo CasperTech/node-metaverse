@@ -2,9 +2,9 @@
 import { Region } from './Region';
 import { EventQueueClient } from './EventQueueClient';
 import { UUID } from './UUID';
-import { HTTPAssets } from '../enums/HTTPAssets';
 import { ClientEvents } from './ClientEvents';
 import { Agent } from './Agent';
+import { HTTPAssets } from '..';
 export declare class Caps {
     private region;
     private onGotSeedCap;

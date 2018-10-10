@@ -1,19 +1,20 @@
 import {UUID} from './UUID';
 import {Socket} from 'dgram';
 import * as dgram from 'dgram';
-import {PacketFlags} from '../enums/PacketFlags';
 import {Packet} from './Packet';
 import {MessageBase} from './MessageBase';
 import {PacketAckMessage} from './messages/PacketAck';
 import {Message} from '../enums/Message';
 import {StartPingCheckMessage} from './messages/StartPingCheck';
 import {CompletePingCheckMessage} from './messages/CompletePingCheck';
-import {Subscription} from 'rxjs/Subscription';
-import {Subject} from 'rxjs/Subject';
-import 'rxjs/add/operator/filter';
+import {Subscription} from 'rxjs/internal/Subscription';
+import { filter } from 'rxjs/operators';
 import Timer = NodeJS.Timer;
-import {ClientEvents} from "./ClientEvents";
+import {ClientEvents} from './ClientEvents';
 import {FilterResponse} from '../enums/FilterResponse';
+import {Subject} from 'rxjs/internal/Subject';
+import {PacketFlags} from '..';
+import {Error} from 'tslint/lib/error';
 
 export class Circuit
 {
@@ -30,12 +31,12 @@ export class Circuit
     awaitingAck: {
         [key: number]: {
             packet: Packet,
-            timeout: number,
+            timeout: Timer,
             sent: number
         }
     } = {};
     receivedPackets: {
-        [key: number]: number
+        [key: number]: Timer
     } = {};
     active = false;
     private clientEvents: ClientEvents;
@@ -58,10 +59,10 @@ export class Circuit
             lookupObject[id] = true;
         });
 
-        return this.onPacketReceived.filter((packet: Packet) =>
+        return this.onPacketReceived.pipe(filter((packet: Packet) =>
         {
             return lookupObject[packet.message.id] === true;
-        }).subscribe(callback);
+        })).subscribe(callback);
     }
 
     sendMessage(message: MessageBase, flags: PacketFlags): number
@@ -183,7 +184,7 @@ export class Circuit
         this.active = false;
     }
 
-    waitForMessage<T extends MessageBase>(id: Message, timeout: number, filter?: (message: T) => FilterResponse): Promise<T>
+    waitForMessage<T extends MessageBase>(id: Message, timeout: number, messageFilter?: (message: T) => FilterResponse): Promise<T>
     {
         return new Promise<T>((resolve, reject) =>
         {
@@ -211,13 +212,13 @@ export class Circuit
                 let finish = false;
                 if (packet.message.id === id)
                 {
-                    if (filter === undefined)
+                    if (messageFilter === undefined)
                     {
                         finish = true;
                     }
                     else
                     {
-                        const filterResult = filter(packet.message as T);
+                        const filterResult = messageFilter(packet.message as T);
                         if (filterResult === FilterResponse.Finish)
                         {
                             finish = true;
@@ -355,7 +356,7 @@ export class Circuit
         }
         this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
 
-        //console.log('<--- ' + packet.message.name);
+        // console.log('<--- ' + packet.message.name);
 
         if (packet.message.id === Message.PacketAck)
         {

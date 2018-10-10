@@ -1,1 +1,1 @@
-{"version":3,"file":"EventQueueStateChangeEvent.js","sourceRoot":"","sources":["../../lib/events/EventQueueStateChangeEvent.ts"],"names":[],"mappings":";;AAAA;CAGC;AAHD,gEAGC"}
+{"version":3,"file":"EventQueueStateChangeEvent.js","sourceRoot":"","sources":["../../lib/events/EventQueueStateChangeEvent.ts"],"names":[],"mappings":";;AAAA,MAAa,0BAA0B;CAGtC;AAHD,gEAGC"}

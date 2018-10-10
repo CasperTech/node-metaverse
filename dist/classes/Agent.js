@@ -3,21 +3,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const UUID_1 = require("./UUID");
 const Vector3_1 = require("./Vector3");
 const Inventory_1 = require("./Inventory");
-const ControlFlags_1 = require("../enums/ControlFlags");
 const Message_1 = require("../enums/Message");
 const AgentUpdate_1 = require("./messages/AgentUpdate");
 const Quaternion_1 = require("./Quaternion");
 const AgentState_1 = require("../enums/AgentState");
-const AgentFlags_1 = require("../enums/AgentFlags");
 const BuiltInAnimations_1 = require("../enums/BuiltInAnimations");
 const LLSD = require("@caspertech/llsd");
-const AssetType_1 = require("../enums/AssetType");
 const AgentWearablesRequest_1 = require("./messages/AgentWearablesRequest");
-const PacketFlags_1 = require("../enums/PacketFlags");
 const InventorySortOrder_1 = require("../enums/InventorySortOrder");
 const RezSingleAttachmentFromInv_1 = require("./messages/RezSingleAttachmentFromInv");
 const AttachmentPoint_1 = require("../enums/AttachmentPoint");
 const Utils_1 = require("./Utils");
+const __1 = require("..");
 class Agent {
     constructor(clientEvents) {
         this.localID = 0;
@@ -69,10 +66,7 @@ class Agent {
     }
     hasChatSession(uuid) {
         const str = uuid.toString();
-        if (this.chatSessions[str] === undefined) {
-            return false;
-        }
-        return true;
+        return !(this.chatSessions[str] === undefined);
     }
     setCurrentRegion(region) {
         this.currentRegion = region;
@@ -101,7 +95,7 @@ class Agent {
             CameraUpAxis: new Vector3_1.Vector3([0.170316, 0.018357, 0.985218]),
             Far: 128,
             ControlFlags: this.controlFlags,
-            Flags: AgentFlags_1.AgentFlags.None
+            Flags: __1.AgentFlags.None
         };
         circuit.sendMessage(agentUpdate, 0);
     }
@@ -123,7 +117,7 @@ class Agent {
                         a === BuiltInAnimations_1.BuiltInAnimations.MEDIUM_LAND ||
                         a === BuiltInAnimations_1.BuiltInAnimations.WALK ||
                         a === BuiltInAnimations_1.BuiltInAnimations.RUN) {
-                        this.controlFlags = ControlFlags_1.ControlFlags.AGENT_CONTROL_FINISH_ANIM;
+                        this.controlFlags = __1.ControlFlags.AGENT_CONTROL_FINISH_ANIM;
                         this.sendAgentUpdate();
                         this.controlFlags = 0;
                     }
@@ -138,7 +132,7 @@ class Agent {
             AgentID: this.agentID,
             SessionID: circuit.sessionID
         };
-        circuit.sendMessage(wearablesRequest, PacketFlags_1.PacketFlags.Reliable);
+        circuit.sendMessage(wearablesRequest, __1.PacketFlags.Reliable);
         circuit.waitForMessage(Message_1.Message.AgentWearablesUpdate, 10000).then((wearables) => {
             if (!this.wearables || wearables.AgentData.SerialNum > this.wearables.serialNumber) {
                 this.wearables = {
@@ -157,7 +151,7 @@ class Agent {
             }
             Object.keys(this.inventory.main.skeleton).forEach((uuid) => {
                 const folder = this.inventory.main.skeleton[uuid];
-                if (folder.typeDefault === AssetType_1.AssetType.CurrentOutfitFolder) {
+                if (folder.typeDefault === __1.AssetType.CurrentOutfitFolder) {
                     const folderID = folder.folderID;
                     const requestFolder = {
                         folder_id: new LLSD.UUID(folderID),
@@ -201,7 +195,7 @@ class Agent {
                                         Name: Utils_1.Utils.StringToBuffer(item['name']),
                                         Description: Utils_1.Utils.StringToBuffer(item['desc'])
                                     };
-                                    circuit.sendMessage(rsafi, PacketFlags_1.PacketFlags.Reliable);
+                                    circuit.sendMessage(rsafi, __1.PacketFlags.Reliable);
                                 }
                             }
                         });
