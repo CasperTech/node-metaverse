@@ -5,7 +5,7 @@ import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
 import { GameObjectLite } from './GameObjectLite';
 import { NameValue } from './NameValue';
-import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { BotOptionFlags } from '..';
 export declare class ObjectStoreLite implements IObjectStore {
     private circuit;
     private agent;

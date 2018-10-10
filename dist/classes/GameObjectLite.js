@@ -5,10 +5,7 @@ class GameObjectLite {
         this.IsAttachment = false;
     }
     hasNameValueEntry(key) {
-        if (this.NameValue['AttachItemID']) {
-            return true;
-        }
-        return false;
+        return this.NameValue['AttachItemID'] !== undefined;
     }
     getNameValueEntry(key) {
         if (this.NameValue['AttachItemID']) {

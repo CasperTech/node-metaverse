@@ -1,5 +1,5 @@
 import * as Long from 'long';
-import {HTTPAssets} from '../enums/HTTPAssets';
+import {HTTPAssets} from '..';
 
 export class Utils
 {

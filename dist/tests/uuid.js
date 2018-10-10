@@ -3,12 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("mocha");
 const validator = require("validator");
 const assert = require("assert");
-const UUID_1 = require("../classes/UUID");
+const __1 = require("..");
 describe('UUID', () => {
     describe('random', () => {
         it('should generate a random, valid v4 UUID', () => {
-            const uuid = UUID_1.UUID.random().toString();
-            const secondUUID = UUID_1.UUID.random().toString();
+            const uuid = __1.UUID.random().toString();
+            const secondUUID = __1.UUID.random().toString();
             if (typeof uuid !== 'string') {
                 assert.fail('Returned UUID is not a string');
             }
@@ -35,7 +35,7 @@ describe('UUID', () => {
     });
     describe('zero', () => {
         it('should generate a zeroed, valid v4 UUID', () => {
-            const uuid = UUID_1.UUID.zero().toString();
+            const uuid = __1.UUID.zero().toString();
             if (typeof uuid !== 'string') {
                 assert.fail('Returned UUID is not a string');
             }
@@ -51,7 +51,7 @@ describe('UUID', () => {
     describe('encode/decode', () => {
         it('should correctly decode a 16-byte UUID from a buffer', () => {
             const buf = Buffer.from('00004af668bb6fe34893881408f586c5657c4e1c9910', 'hex');
-            const uuid = new UUID_1.UUID(buf, 2);
+            const uuid = new __1.UUID(buf, 2);
             const str = uuid.toString();
             if (typeof str !== 'string') {
                 assert.fail('Returned UUID is not a string');
@@ -66,7 +66,7 @@ describe('UUID', () => {
         });
         it('should correct encode a UUID into the correct position in a buffer', () => {
             const buf = Buffer.alloc(22);
-            const uuid = new UUID_1.UUID('4af668bb-6fe3-4893-8814-08f586c5657c');
+            const uuid = new __1.UUID('4af668bb-6fe3-4893-8814-08f586c5657c');
             uuid.writeToBuffer(buf, 2);
             const bufCmp = Buffer.from('00004af668bb6fe34893881408f586c5657c00000000', 'hex');
             if (buf.compare(bufCmp) !== 0) {

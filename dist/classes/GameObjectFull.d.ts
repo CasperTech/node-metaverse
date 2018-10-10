@@ -4,9 +4,9 @@ import { UUID } from './UUID';
 import { PCode } from '../enums/PCode';
 import { Quaternion } from './Quaternion';
 import { Tree } from '../enums/Tree';
-import { SoundFlags } from '../enums/SoundFlags';
 import { NameValue } from './NameValue';
 import { IGameObject } from './interfaces/IGameObject';
+import { SoundFlags } from '..';
 export declare class GameObjectFull implements IGameObject {
     ID: number;
     State: number;

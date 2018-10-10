@@ -1,10 +1,8 @@
-import {PacketFlags} from '../enums/PacketFlags';
 import {MessageBase} from './MessageBase';
 import {Zerocoder} from './Zerocoder';
 import {nameFromID} from './MessageClasses';
-import {MessageFlags} from '../enums/MessageFlags';
 import * as MessageClass from './MessageClasses';
-import {DecodeFlags} from '../enums/DecodeFlags';
+import {DecodeFlags, MessageFlags, PacketFlags} from '..';
 
 export class Packet
 {
@@ -142,8 +140,7 @@ export class Packet
 
         this.message = new (<any>MessageClass)[nameFromID(messageID)]() as MessageBase;
 
-        const readLength = this.message.readFromBuffer(buf, pos);
-        pos += readLength;
+        pos += this.message.readFromBuffer(buf, pos);
 
         if (this.packetFlags & PacketFlags.Ack)
         {

@@ -1,8 +1,8 @@
 import { UUID } from './UUID';
 import { ClientEvents } from './ClientEvents';
-import { AssetType } from '../enums/AssetType';
 import { InventoryFolder } from './InventoryFolder';
 import { Agent } from './Agent';
+import { AssetType } from '..';
 export declare class Inventory {
     main: {
         skeleton: {

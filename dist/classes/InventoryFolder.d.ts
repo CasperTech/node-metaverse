@@ -1,7 +1,7 @@
 import { UUID } from './UUID';
-import { AssetType } from '../enums/AssetType';
 import { InventoryItem } from './InventoryItem';
 import { Agent } from './Agent';
+import { AssetType } from '..';
 export declare class InventoryFolder {
     typeDefault: AssetType;
     version: number;

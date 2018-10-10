@@ -3,10 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const UUID_1 = require("./UUID");
 const Agent_1 = require("./Agent");
 const Region_1 = require("./Region");
-const LoginFlags_1 = require("../enums/LoginFlags");
 const Vector3_1 = require("./Vector3");
 const Long = require("long");
 const InventoryFolder_1 = require("./InventoryFolder");
+const __1 = require("..");
 class LoginResponse {
     constructor(json, clientEvents, options) {
         this.events = {
@@ -111,16 +111,16 @@ class LoginResponse {
                     let flags = 0;
                     val.forEach((obj) => {
                         if (obj['ever_logged_in'] === 'Y') {
-                            flags = flags | LoginFlags_1.LoginFlags.everLoggedIn;
+                            flags = flags | __1.LoginFlags.everLoggedIn;
                         }
                         if (obj['daylight_savings'] === 'Y') {
-                            flags = flags | LoginFlags_1.LoginFlags.daylightSavings;
+                            flags = flags | __1.LoginFlags.daylightSavings;
                         }
                         if (obj['stipend_since_login'] === 'Y') {
-                            flags = flags | LoginFlags_1.LoginFlags.stipendSinceLogin;
+                            flags = flags | __1.LoginFlags.stipendSinceLogin;
                         }
                         if (obj['gendered'] === 'Y') {
-                            flags = flags | LoginFlags_1.LoginFlags.gendered;
+                            flags = flags | __1.LoginFlags.gendered;
                         }
                     });
                     this.loginFlags = flags;

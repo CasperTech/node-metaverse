@@ -4,8 +4,7 @@ import { Caps } from './Caps';
 import { Comms } from './Comms';
 import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
-import { BotOptionFlags, UUID } from '..';
-import { RegionFlags } from '../enums/RegionFlags';
+import { BotOptionFlags, RegionFlags, UUID } from '..';
 import { RegionHandshakeMessage } from './messages/RegionHandshake';
 import * as Long from 'long';
 export declare class Region {

@@ -3,12 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Message_1 = require("../enums/Message");
 const RequestMultipleObjects_1 = require("./messages/RequestMultipleObjects");
 const UUID_1 = require("./UUID");
-const CompressedFlags_1 = require("../enums/CompressedFlags");
 const Utils_1 = require("./Utils");
 const PCode_1 = require("../enums/PCode");
 const GameObjectLite_1 = require("./GameObjectLite");
 const NameValue_1 = require("./NameValue");
-const BotOptionFlags_1 = require("../enums/BotOptionFlags");
+const __1 = require("..");
 class ObjectStoreLite {
     constructor(circuit, agent, clientEvents, options) {
         this.objects = {};
@@ -57,7 +56,7 @@ class ObjectStoreLite {
                         this.objects[localID].NameValue = this.parseNameValues(Utils_1.Utils.BufferToStringSimple(objData.NameValue));
                         if (objData.PCode === PCode_1.PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString()) {
                             this.agent.localID = localID;
-                            if (this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                            if (this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
                                 Object.keys(this.objectsByParent).forEach((objParentID) => {
                                     const parent = parseInt(objParentID, 10);
                                     if (parent !== this.agent.localID) {
@@ -90,7 +89,7 @@ class ObjectStoreLite {
                         if (addToParentList) {
                             this.objectsByParent[parentID].push(localID);
                         }
-                        if (objData.PCode !== PCode_1.PCode.Avatar && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                        if (objData.PCode !== PCode_1.PCode.Avatar && this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
                             if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID) {
                                 this.deleteObject(localID);
                                 return;
@@ -147,10 +146,10 @@ class ObjectStoreLite {
                             pos = pos + 4;
                             o.OwnerID = new UUID_1.UUID(buf, pos);
                             pos += 16;
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasAngularVelocity) {
+                            if (compressedflags & __1.CompressedFlags.HasAngularVelocity) {
                                 pos = pos + 12;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasParent) {
+                            if (compressedflags & __1.CompressedFlags.HasParent) {
                                 const newParentID = buf.readUInt32LE(pos);
                                 pos += 4;
                                 let add = true;
@@ -173,39 +172,39 @@ class ObjectStoreLite {
                                 }
                                 o.ParentID = newParentID;
                             }
-                            if (pcode !== PCode_1.PCode.Avatar && newObj && this.options & BotOptionFlags_1.BotOptionFlags.StoreMyAttachmentsOnly) {
+                            if (pcode !== PCode_1.PCode.Avatar && newObj && this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
                                 if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID) {
                                     this.deleteObject(localID);
                                     return;
                                 }
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.Tree) {
+                            if (compressedflags & __1.CompressedFlags.Tree) {
                                 pos++;
                             }
-                            else if (compressedflags & CompressedFlags_1.CompressedFlags.ScratchPad) {
+                            else if (compressedflags & __1.CompressedFlags.ScratchPad) {
                                 const scratchPadSize = buf.readUInt8(pos++);
                                 pos = pos + scratchPadSize;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasText) {
+                            if (compressedflags & __1.CompressedFlags.HasText) {
                                 const result = Utils_1.Utils.BufferToString(buf, pos);
                                 pos += result.readLength;
                                 pos = pos + 4;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.MediaURL) {
+                            if (compressedflags & __1.CompressedFlags.MediaURL) {
                                 const result = Utils_1.Utils.BufferToString(buf, pos);
                                 pos += result.readLength;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasParticles) {
+                            if (compressedflags & __1.CompressedFlags.HasParticles) {
                                 pos += 86;
                             }
                             pos = this.readExtraParams(buf, pos, o);
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasSound) {
+                            if (compressedflags & __1.CompressedFlags.HasSound) {
                                 pos = pos + 16;
                                 pos += 4;
                                 pos++;
                                 pos = pos + 4;
                             }
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.HasNameValues) {
+                            if (compressedflags & __1.CompressedFlags.HasNameValues) {
                                 const result = Utils_1.Utils.BufferToString(buf, pos);
                                 o.NameValue = this.parseNameValues(result.result);
                                 pos += result.readLength;
@@ -220,10 +219,10 @@ class ObjectStoreLite {
                             const textureEntryLength = buf.readUInt32LE(pos);
                             pos = pos + 4;
                             pos = pos + textureEntryLength;
-                            if (compressedflags & CompressedFlags_1.CompressedFlags.TextureAnimation) {
+                            if (compressedflags & __1.CompressedFlags.TextureAnimation) {
                                 pos = pos + 4;
                             }
-                            o.IsAttachment = (compressedflags & CompressedFlags_1.CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
+                            o.IsAttachment = (compressedflags & __1.CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
                         });
                         break;
                     }

@@ -6,7 +6,7 @@ import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
 import { GameObjectFull } from './GameObjectFull';
 import { IGameObject } from './interfaces/IGameObject';
-import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { BotOptionFlags } from '..';
 export declare class ObjectStoreFull implements IObjectStore {
     private circuit;
     private agent;

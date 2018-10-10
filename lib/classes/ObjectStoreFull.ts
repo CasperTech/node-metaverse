@@ -11,7 +11,6 @@ import {Agent} from './Agent';
 import {UUID} from './UUID';
 import {Quaternion} from './Quaternion';
 import {Vector3} from './Vector3';
-import {CompressedFlags} from '../enums/CompressedFlags';
 import {ExtraParamType} from '../enums/ExtraParamType';
 import {Utils} from './Utils';
 import {PCode} from '../enums/PCode';
@@ -21,7 +20,7 @@ import {KillObjectMessage} from './messages/KillObject';
 import {IObjectStore} from './interfaces/IObjectStore';
 import {GameObjectFull} from './GameObjectFull';
 import {IGameObject} from './interfaces/IGameObject';
-import {BotOptionFlags} from '../enums/BotOptionFlags';
+import {BotOptionFlags, CompressedFlags} from '..';
 
 export class ObjectStoreFull implements IObjectStore
 {
