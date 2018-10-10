@@ -4,6 +4,7 @@
 
 [![npm version](https://badge.fury.io/js/%40caspertech%2Fnode-metaverse.svg)](https://badge.fury.io/js/%40caspertech%2Fnode-metaverse)
 [![Build Status](https://travis-ci.org/CasperTech/node-metaverse.svg?branch=master)](https://travis-ci.org/CasperTech/node-metaverse)
+[![Known Vulnerabilities](https://snyk.io/test/github/CasperTech/node-metaverse/badge.svg)](https://snyk.io/test/github/CasperTech/node-metaverse)
 [![Dependencies](https://david-dm.org/CasperTech/node-metaverse.svg)](https://david-dm.org/CasperTech/node-metaverse.svg)
 
 ## Install
