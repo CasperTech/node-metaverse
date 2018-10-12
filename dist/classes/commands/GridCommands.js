@@ -171,6 +171,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 MinY: minY,
                 MaxY: maxY
             };
+            response.regions = [];
             circuit.sendMessage(msg, __1.PacketFlags.Reliable);
             circuit.waitForMessage(Message_1.Message.MapBlockReply, 30000, (filterMsg) => {
                 let found = false;

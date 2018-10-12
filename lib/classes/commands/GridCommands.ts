@@ -209,6 +209,7 @@ export class GridCommands extends CommandsBase
                 MinY: minY,
                 MaxY: maxY
             };
+            response.regions = [];
             circuit.sendMessage(msg, PacketFlags.Reliable);
             circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 30000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
             {
