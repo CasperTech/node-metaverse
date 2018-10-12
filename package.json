@@ -14,7 +14,7 @@
     "run": "node -r source-map-support/register example/testBot.js"
   },
   "engines": {
-    "node": ">=6.12.2"
+    "node": ">=7.6.0"
   },
   "author": "CasperTech Ltd",
   "license": "MIT",
