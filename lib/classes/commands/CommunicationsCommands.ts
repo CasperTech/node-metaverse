@@ -1,17 +1,13 @@
 import {CommandsBase} from './CommandsBase';
 import {UUID} from '../UUID';
 import {Utils} from '../Utils';
-import {PacketFlags} from '../../enums/PacketFlags';
 import {ImprovedInstantMessageMessage} from '../messages/ImprovedInstantMessage';
 import {Vector3} from '../Vector3';
 import {ChatFromViewerMessage} from '../messages/ChatFromViewer';
 import {ChatType} from '../../enums/ChatType';
 import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
 import Timer = NodeJS.Timer;
-import {AcceptFriendshipMessage} from '../messages/AcceptFriendship';
-import {DeclineFriendshipMessage} from '../messages/DeclineFriendship';
-import {InventoryOfferedEvent} from '../../events/InventoryOfferedEvent';
-import {AssetType, ChatSourceType, FriendRequestEvent, GroupChatSessionJoinEvent} from '../..';
+import {GroupChatSessionJoinEvent, PacketFlags} from '../..';
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -359,132 +355,6 @@ export class CommunicationsCommands extends CommandsBase
                 const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
             }
         });
-    }
-
-    async acceptFriendRequest(event: FriendRequestEvent): Promise<void>
-    {
-        const accept: AcceptFriendshipMessage = new AcceptFriendshipMessage();
-        accept.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        accept.TransactionBlock = {
-            TransactionID: event.requestID
-        };
-        accept.FolderData = [];
-        accept.FolderData.push(
-            {
-                'FolderID': this.agent.inventory.findFolderForType(AssetType.CallingCard)
-            }
-        );
-        const sequenceNo = this.circuit.sendMessage(accept, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
-    }
-
-    async sendFriendRequest(to: UUID | string, message: string): Promise<void>
-    {
-        if (typeof to === 'string')
-        {
-            to = new UUID(to);
-        }
-        const requestID = UUID.random();
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-                im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: to,
-            ParentEstateID: 0,
-            RegionID: UUID.zero(),
-            Position: Vector3.getZero(),
-            Offline: 0,
-            Dialog: InstantMessageDialog.FriendshipOffered,
-            ID: requestID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils.StringToBuffer(agentName),
-            Message: Utils.StringToBuffer(message),
-            BinaryBucket: Utils.StringToBuffer('')
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
-    }
-
-    private async respondToInventoryOffer(event: InventoryOfferedEvent, response: InstantMessageDialog): Promise<void>
-    {
-        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-
-        const folder = this.agent.inventory.findFolderForType(event.type);
-        const binary = Buffer.allocUnsafe(16);
-        folder.writeToBuffer(binary, 0);
-
-        im.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        im.MessageBlock = {
-            FromGroup: false,
-            ToAgentID: event.from,
-            ParentEstateID: 0,
-            RegionID: UUID.zero(),
-            Position: Vector3.getZero(),
-            Offline: 0,
-            Dialog: response,
-            ID: event.requestID,
-            Timestamp: Math.floor(new Date().getTime() / 1000),
-            FromAgentName: Utils.StringToBuffer(agentName),
-            Message: Utils.StringToBuffer(''),
-            BinaryBucket: binary
-        };
-        im.EstateBlock = {
-            EstateID: 0
-        };
-        const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
-    }
-
-    async acceptInventoryOffer(event: InventoryOfferedEvent): Promise<void>
-    {
-        if (event.source === ChatSourceType.Object)
-        {
-            return await this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryAccepted);
-        }
-        else
-        {
-            return await this.respondToInventoryOffer(event, InstantMessageDialog.InventoryAccepted);
-        }
-    }
-
-    async rejectInventoryOffer(event: InventoryOfferedEvent): Promise<void>
-    {
-        if (event.source === ChatSourceType.Object)
-        {
-            return await this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryDeclined);
-        }
-        else
-        {
-            return await this.respondToInventoryOffer(event, InstantMessageDialog.InventoryDeclined);
-        }
-    }
-
-    async rejectFriendRequest(event: FriendRequestEvent): Promise<void>
-    {
-        const reject: DeclineFriendshipMessage = new DeclineFriendshipMessage();
-        reject.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        reject.TransactionBlock = {
-            TransactionID: event.requestID
-        };
-        const sequenceNo = this.circuit.sendMessage(reject, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
     sendGroupMessage(groupID: UUID | string, message: string): Promise<number>

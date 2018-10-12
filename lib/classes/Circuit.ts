@@ -201,7 +201,7 @@ export class Circuit
                 if (handleObj.subscription !== null)
                 {
                     handleObj.subscription.unsubscribe();
-                    const err = new TimeoutError('Timeout waiting for message of type ' + id);
+                    const err = new TimeoutError('Timeout waiting for message of type ' + Message[id]);
                     err.timeout = true;
                     err.waitingForMessage = id;
                     reject(err);

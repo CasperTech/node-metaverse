@@ -25,7 +25,7 @@ const bot = new nmv.Bot(loginParameters, options);
 
 // This will tell the bot to keep trying to teleport back to the 'stay' location.
 // You can specify a region and position, such as:
-// bot.stayPut(true, 'Izanagi', new Vector3([128, 128, 21]));
+// bot.stayPut(true, 'Izanagi', new nmv.Vector3([128, 128, 21]));
 // Note that the 'stay' location will be updated if you request or accept a lure (a teleport).
 // If no region is specified, it will be set to the region you log in to.
 bot.stayPut(true);
@@ -163,7 +163,7 @@ bot.clientEvents.onGroupInvite.subscribe(async (GroupInviteEvent) =>
     //Resolve avatar key
     try
     {
-        const key = await bot.clientCommands.grid.name2Key(GroupInviteEvent.fromName);
+        const key = await bot.clientCommands.grid.avatarName2Key(GroupInviteEvent.fromName);
         if (key.toString() === master)
         {
             console.log('Accepting');
@@ -225,7 +225,7 @@ async function connect()
         const groupID      = new nmv.UUID("c6424e05-6e2c-fb03-220b-ca7904d11e04");
 
         // If you want to wait here for the request to be acknowledged, you can add "await"
-        bot.clientCommands.comms.sendFriendRequest(master, 'Be friends with me?').then(() => {});
+        bot.clientCommands.friends.sendFriendRequest(master, 'Be friends with me?').then(() => {});
 
         const folders = bot.clientCommands.inventory.getInventoryRoot().getChildFolders();
         folders.forEach((folder) =>
@@ -271,13 +271,17 @@ async function connect()
         await bot.waitForEventQueue();
         try
         {
-            //await bot.clientCommands.teleport.teleportTo('Izanagi', new nmv.Vector3([128, 128, 20]), new nmv.Vector3([ 0, 1.0, 0]));
-            //console.log("Teleport completed");
+            // Get map location of Casper Warden (should (hopefully)! fail if you don't have map rights on me..
+            const regionLocation = await bot.clientCommands.friends.getFriendMapLocation('d1cd5b71-6209-4595-9bf0-771bf689ce00');
+            console.log('Casper is in ' + regionLocation.regionName + ' at <' + regionLocation.localX + ', ' + regionLocation.localY + '> and there are ' + regionLocation.avatars.length + ' other avatars there too! You stalker!');
+
         }
         catch(error)
         {
-            console.error(error);
+            console.log('Map location request failed. You probably do not have map rights on Casper.');
         }
+
+        //await bot.clientCommands.friends.grantFriendRights('d1cd5b71-6209-4595-9bf0-771bf689ce00', nmv.RightsFlags.CanModifyObjects | nmv.RightsFlags.CanSeeOnline | nmv.RightsFlags.CanSeeOnMap );
     }
     catch (error)
     {

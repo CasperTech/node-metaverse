@@ -198,6 +198,11 @@ export class Bot
         this.disconnected(true, 'Logout completed');
     }
 
+    agentID(): UUID
+    {
+        return this.agent.agentID;
+    }
+
     async connectToSim(requested: boolean)
     {
         this.agent.setCurrentRegion(this.currentRegion);

@@ -122,7 +122,7 @@ class Circuit {
             const timeoutFunc = () => {
                 if (handleObj.subscription !== null) {
                     handleObj.subscription.unsubscribe();
-                    const err = new TimeoutError_1.TimeoutError('Timeout waiting for message of type ' + id);
+                    const err = new TimeoutError_1.TimeoutError('Timeout waiting for message of type ' + Message_1.Message[id]);
                     err.timeout = true;
                     err.waitingForMessage = id;
                     reject(err);

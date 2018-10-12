@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Message_1 = require("../../enums/Message");
 const MapBlockRequest_1 = require("../messages/MapBlockRequest");
@@ -14,6 +22,7 @@ const GridLayerType_1 = require("../../enums/GridLayerType");
 const MapBlock_1 = require("../MapBlock");
 const __1 = require("../..");
 const TimeoutError_1 = require("../TimeoutError");
+const UUIDNameRequest_1 = require("../messages/UUIDNameRequest");
 class GridCommands extends CommandsBase_1.CommandsBase {
     getRegionByName(regionName) {
         return new Promise((resolve, reject) => {
@@ -56,7 +65,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                                 this.waterHeight = region.WaterHeight;
                                 this.agents = region.Agents;
                                 this.mapImageID = region.MapImageID;
-                                this.handle = Utils_1.Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256);
+                                this.handle = Utils_1.Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256).regionHandle;
                             }
                         };
                         resolve(reply);
@@ -106,7 +115,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                         response.block.mapImage = data.MapImageID;
                     }
                 });
-                const regionHandle = Utils_1.Utils.RegionCoordinatesToHandle(gridX * 256, gridY * 256);
+                const regionHandle = Utils_1.Utils.RegionCoordinatesToHandle(gridX * 256, gridY * 256).regionHandle;
                 const mi = new MapItemRequest_1.MapItemRequestMessage();
                 mi.AgentData = {
                     AgentID: this.agent.agentID,
@@ -140,10 +149,10 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                     }
                 }).then((responseMsg2) => {
                     responseMsg2.Data.forEach((data) => {
-                        response.avatars.push({
-                            X: data.X,
-                            Y: data.Y
-                        });
+                        response.avatars.push(new __1.Vector2([
+                            data.X,
+                            data.Y
+                        ]));
                     });
                     resolve(response);
                 }).catch((err) => {
@@ -201,7 +210,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
             });
         });
     }
-    name2Key(name) {
+    avatarName2Key(name) {
         const check = name.split('.');
         if (check.length > 1) {
             name = check.join(' ');
@@ -248,6 +257,66 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 reject(err);
             });
         });
+    }
+    avatarKey2Name(uuid) {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            const req = new UUIDNameRequest_1.UUIDNameRequestMessage();
+            req.UUIDNameBlock = [];
+            let arr = true;
+            if (!Array.isArray(uuid)) {
+                arr = false;
+                uuid = [uuid];
+            }
+            const waitingFor = {};
+            let remaining = 0;
+            for (const id of uuid) {
+                waitingFor[id.toString()] = null;
+                req.UUIDNameBlock.push({ 'ID': id });
+                remaining++;
+            }
+            this.circuit.sendMessage(req, __1.PacketFlags.Reliable);
+            try {
+                yield this.circuit.waitForMessage(Message_1.Message.UUIDNameReply, 10000, (reply) => {
+                    let found = false;
+                    for (const name of reply.UUIDNameBlock) {
+                        if (waitingFor[name.ID.toString()] !== undefined) {
+                            found = true;
+                            if (waitingFor[name.ID.toString()] === null) {
+                                waitingFor[name.ID.toString()] = {
+                                    'firstName': Utils_1.Utils.BufferToStringSimple(name.FirstName),
+                                    'lastName': Utils_1.Utils.BufferToStringSimple(name.LastName)
+                                };
+                                remaining--;
+                            }
+                        }
+                    }
+                    if (remaining < 1) {
+                        return FilterResponse_1.FilterResponse.Finish;
+                    }
+                    else if (found) {
+                        return FilterResponse_1.FilterResponse.Match;
+                    }
+                    return FilterResponse_1.FilterResponse.NoMatch;
+                });
+                if (!arr) {
+                    const result = waitingFor[uuid[0].toString()];
+                    const av = new __1.Avatar(uuid[0], result.firstName, result.lastName);
+                    resolve(av);
+                }
+                else {
+                    const response = [];
+                    for (const k of uuid) {
+                        const result = waitingFor[k.toString()];
+                        const av = new __1.Avatar(k, result.firstName, result.lastName);
+                        response.push(av);
+                    }
+                    resolve(response);
+                }
+            }
+            catch (e) {
+                reject(e);
+            }
+        }));
     }
 }
 exports.GridCommands = GridCommands;

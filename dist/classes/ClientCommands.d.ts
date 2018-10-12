@@ -11,12 +11,14 @@ import { AgentCommands } from './commands/AgentCommands';
 import { GroupCommands } from './commands/GroupCommands';
 import { InventoryCommands } from './commands/InventoryCommands';
 import { ParcelCommands } from './commands/ParcelCommands';
+import { FriendCommands } from './commands/FriendCommands';
 export declare class ClientCommands {
     network: NetworkCommands;
     asset: AssetCommands;
     teleport: TeleportCommands;
     region: RegionCommands;
     parcel: ParcelCommands;
+    friends: FriendCommands;
     grid: GridCommands;
     comms: CommunicationsCommands;
     agent: AgentCommands;

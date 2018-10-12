@@ -1,4 +1,3 @@
-import {Packet} from '../Packet';
 import * as Long from 'long';
 import {MapItemReplyMessage} from '../messages/MapItemReply';
 import {Message} from '../../enums/Message';
@@ -15,8 +14,11 @@ import {FilterResponse} from '../../enums/FilterResponse';
 import {MapNameRequestMessage} from '../messages/MapNameRequest';
 import {GridLayerType} from '../../enums/GridLayerType';
 import {MapBlock} from '../MapBlock';
-import {MapInfoRangeReplyEvent, MapInfoReplyEvent, PacketFlags, RegionInfoReplyEvent} from '../..';
+import {Avatar, MapInfoRangeReplyEvent, MapInfoReplyEvent, PacketFlags, RegionInfoReplyEvent, Vector2} from '../..';
 import {TimeoutError} from '../TimeoutError';
+import {UUIDNameRequestMessage} from '../messages/UUIDNameRequest';
+import {UUIDNameReplyMessage} from '../messages/UUIDNameReply';
+
 export class GridCommands extends CommandsBase
 {
     getRegionByName(regionName: string)
@@ -69,7 +71,7 @@ export class GridCommands extends CommandsBase
                             waterHeight = region.WaterHeight;
                             agents = region.Agents;
                             mapImageID = region.MapImageID;
-                            handle = Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256)
+                            handle = Utils.RegionCoordinatesToHandle(region.X * 256, region.Y * 256).regionHandle;
                         };
                         resolve(reply);
                     }
@@ -130,7 +132,7 @@ export class GridCommands extends CommandsBase
                 });
 
                 //  Now get the region handle
-                const regionHandle: Long = Utils.RegionCoordinatesToHandle(gridX * 256, gridY * 256);
+                const regionHandle: Long = Utils.RegionCoordinatesToHandle(gridX * 256, gridY * 256).regionHandle;
 
                 const mi = new MapItemRequestMessage();
                 mi.AgentData = {
@@ -173,10 +175,10 @@ export class GridCommands extends CommandsBase
                 {
                     responseMsg2.Data.forEach((data) =>
                     {
-                        response.avatars.push({
-                            X: data.X,
-                            Y: data.Y
-                        });
+                        response.avatars.push(new Vector2([
+                            data.X,
+                            data.Y
+                        ]));
                     });
                     resolve(response);
                 }).catch((err) =>
@@ -249,7 +251,7 @@ export class GridCommands extends CommandsBase
         });
     }
 
-    name2Key(name: string): Promise<UUID>
+    avatarName2Key(name: string): Promise<UUID>
     {
         const check = name.split('.');
         if (check.length > 1)
@@ -311,6 +313,85 @@ export class GridCommands extends CommandsBase
             {
                 reject(err);
             });
+        });
+    }
+
+    avatarKey2Name(uuid: UUID | UUID[]): Promise<Avatar | Avatar[]>
+    {
+        return new Promise<Avatar | Avatar[]>(async (resolve, reject) =>
+        {
+            const req = new UUIDNameRequestMessage();
+            req.UUIDNameBlock = [];
+            let arr = true;
+            if (!Array.isArray(uuid))
+            {
+                arr = false;
+                uuid = [uuid];
+            }
+
+            const waitingFor: any = {};
+            let remaining = 0;
+
+            for (const id of uuid)
+            {
+                waitingFor[id.toString()] = null;
+                req.UUIDNameBlock.push({'ID': id});
+                remaining++;
+            }
+
+            this.circuit.sendMessage(req, PacketFlags.Reliable);
+            try
+            {
+                await this.circuit.waitForMessage<UUIDNameReplyMessage>(Message.UUIDNameReply, 10000, (reply: UUIDNameReplyMessage): FilterResponse =>
+                {
+                    let found = false;
+                    for (const name of reply.UUIDNameBlock)
+                    {
+                        if (waitingFor[name.ID.toString()] !== undefined)
+                        {
+                            found = true;
+                            if (waitingFor[name.ID.toString()] === null)
+                            {
+                                waitingFor[name.ID.toString()] = {
+                                    'firstName': Utils.BufferToStringSimple(name.FirstName),
+                                    'lastName': Utils.BufferToStringSimple(name.LastName)
+                                };
+                                remaining--;
+                            }
+                        }
+                    }
+                    if (remaining < 1)
+                    {
+                        return FilterResponse.Finish;
+                    }
+                    else if (found)
+                    {
+                        return FilterResponse.Match;
+                    }
+                    return FilterResponse.NoMatch;
+                });
+                if (!arr)
+                {
+                    const result = waitingFor[uuid[0].toString()];
+                    const av = new Avatar(uuid[0], result.firstName, result.lastName);
+                    resolve(av);
+                }
+                else
+                {
+                    const response: Avatar[] = [];
+                    for (const k of uuid)
+                    {
+                        const result = waitingFor[k.toString()];
+                        const av = new Avatar(k, result.firstName, result.lastName);
+                        response.push(av);
+                    }
+                    resolve(response);
+                }
+            }
+            catch (e)
+            {
+                reject(e);
+            }
         });
     }
 }

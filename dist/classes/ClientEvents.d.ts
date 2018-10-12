@@ -1,4 +1,4 @@
-import { ChatEvent, DisconnectEvent, FriendRequestEvent, FriendResponseEvent, GroupChatEvent, GroupChatSessionAgentListEvent, GroupChatSessionJoinEvent, GroupInviteEvent, InstantMessageEvent, InventoryOfferedEvent, LureEvent, TeleportEvent, ScriptDialogEvent, EventQueueStateChangeEvent } from '..';
+import { ChatEvent, DisconnectEvent, FriendRequestEvent, FriendResponseEvent, GroupChatEvent, GroupChatSessionAgentListEvent, GroupChatSessionJoinEvent, GroupInviteEvent, InstantMessageEvent, InventoryOfferedEvent, LureEvent, TeleportEvent, ScriptDialogEvent, EventQueueStateChangeEvent, FriendOnlineEvent, FriendRightsEvent, FriendRemovedEvent } from '..';
 import { Subject } from 'rxjs/internal/Subject';
 export declare class ClientEvents {
     onNearbyChat: Subject<ChatEvent>;
@@ -16,4 +16,7 @@ export declare class ClientEvents {
     onFriendResponse: Subject<FriendResponseEvent>;
     onScriptDialog: Subject<ScriptDialogEvent>;
     onEventQueueStateChange: Subject<EventQueueStateChangeEvent>;
+    onFriendOnline: Subject<FriendOnlineEvent>;
+    onFriendRights: Subject<FriendRightsEvent>;
+    onFriendRemoved: Subject<FriendRemovedEvent>;
 }

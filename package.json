@@ -1,6 +1,6 @@
 {
   "name": "@caspertech/node-metaverse",
-  "version": "0.4.9",
+  "version": "0.5.0",
   "description": "A node.js interface for Second Life.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

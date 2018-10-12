@@ -1,5 +1,5 @@
 import * as Long from 'long';
-import {HTTPAssets} from '..';
+import {GlobalPosition, HTTPAssets} from '..';
 
 export class Utils
 {
@@ -60,11 +60,20 @@ export class Utils
         }
     }
 
-    static RegionCoordinatesToHandle(regionX: number, regionY: number): Long
+    static RegionCoordinatesToHandle(regionX: number, regionY: number): GlobalPosition
     {
-        regionX = Math.floor(regionX / 256) * 256;
-        regionY = Math.floor( regionY / 256) * 256;
-        return new Long(regionY, regionX);
+        const realRegionX = Math.floor(regionX / 256) * 256;
+        const realRegionY = Math.floor(regionY / 256) * 256;
+        const localX = regionX - realRegionX;
+        const localY = regionY - realRegionY;
+        const handle = new Long(realRegionY, realRegionX);
+        return {
+            'regionHandle': handle,
+            'regionX': realRegionX / 256,
+            'regionY': realRegionY / 256,
+            'localX': localX,
+            'localY': localY
+        };
     }
 
     static HTTPAssetTypeToInventoryType(HTTPAssetType: string)

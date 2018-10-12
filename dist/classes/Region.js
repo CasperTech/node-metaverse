@@ -109,7 +109,8 @@ class Region {
                         this.xCoordinate = region.X;
                         this.yCoordinate = region.Y;
                         this.mapImage = region.MapImageID;
-                        this.regionHandle = Utils_1.Utils.RegionCoordinatesToHandle(this.xCoordinate, this.yCoordinate);
+                        const globalPos = Utils_1.Utils.RegionCoordinatesToHandle(this.xCoordinate, this.yCoordinate);
+                        this.regionHandle = globalPos.regionHandle;
                         return FilterResponse_1.FilterResponse.Finish;
                     }
                 }

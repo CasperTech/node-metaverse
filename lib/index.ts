@@ -41,6 +41,15 @@ import {ParcelInfoReplyEvent} from './events/ParcelInfoReplyEvent';
 import {ScriptDialogEvent} from './events/ScriptDialogEvent';
 import {EventQueueStateChangeEvent} from './events/EventQueueStateChangeEvent';
 import {RegionFlags} from './enums/RegionFlags';
+import {Friend} from './classes/public/Friend';
+import {FriendOnlineEvent} from './events/FriendOnlineEvent';
+import {Avatar} from './classes/public/Avatar';
+import {RightsFlags} from './enums/RightsFlags';
+import {FriendRightsEvent} from './events/FriendRightsEvent';
+import {FriendRemovedEvent} from './events/FriendRemovedEvent';
+import {GlobalPosition} from './classes/public/interfaces/GlobalPosition';
+import {MapLocation} from './classes/public/interfaces/MapLocation';
+import {Vector2} from './classes/Vector2';
 
 export {
     Bot,
@@ -53,6 +62,7 @@ export {
     BotOptionFlags,
     UUID,
     Vector3,
+    Vector2,
 
     // Flags
     AgentFlags,
@@ -69,6 +79,7 @@ export {
     SoundFlags,
     TeleportFlags,
     RegionFlags,
+    RightsFlags,
 
     // Events
     ChatEvent,
@@ -88,5 +99,16 @@ export {
     RegionInfoReplyEvent,
     TeleportEvent,
     ScriptDialogEvent,
-    EventQueueStateChangeEvent
+    EventQueueStateChangeEvent,
+    FriendOnlineEvent,
+    FriendRightsEvent,
+    FriendRemovedEvent,
+
+    // Public Classes
+    Avatar,
+    Friend,
+
+    // Public Interfaces
+    GlobalPosition,
+    MapLocation
 };

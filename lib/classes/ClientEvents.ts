@@ -12,7 +12,9 @@ import {
     LureEvent,
     TeleportEvent,
     ScriptDialogEvent,
-    EventQueueStateChangeEvent
+    EventQueueStateChangeEvent,
+    FriendOnlineEvent,
+    FriendRightsEvent, FriendRemovedEvent
 } from '..';
 import {Subject} from 'rxjs/internal/Subject';
 
@@ -34,4 +36,7 @@ export class ClientEvents
     onFriendResponse: Subject<FriendResponseEvent> = new Subject<FriendResponseEvent>();
     onScriptDialog: Subject<ScriptDialogEvent> = new Subject<ScriptDialogEvent>();
     onEventQueueStateChange: Subject<EventQueueStateChangeEvent> = new Subject<EventQueueStateChangeEvent>();
+    onFriendOnline: Subject<FriendOnlineEvent> = new Subject<FriendOnlineEvent>();
+    onFriendRights: Subject<FriendRightsEvent> = new Subject<FriendRightsEvent>();
+    onFriendRemoved: Subject<FriendRemovedEvent> = new Subject<FriendRemovedEvent>();
 }
