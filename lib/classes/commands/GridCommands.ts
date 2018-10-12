@@ -16,6 +16,7 @@ import {MapNameRequestMessage} from '../messages/MapNameRequest';
 import {GridLayerType} from '../../enums/GridLayerType';
 import {MapBlock} from '../MapBlock';
 import {MapInfoRangeReplyEvent, MapInfoReplyEvent, PacketFlags, RegionInfoReplyEvent} from '../..';
+import {TimeoutError} from '../TimeoutError';
 export class GridCommands extends CommandsBase
 {
     getRegionByName(regionName: string)
@@ -236,7 +237,7 @@ export class GridCommands extends CommandsBase
 
             }).catch((err) =>
             {
-                if (err.message === 'Timeout')
+                if (err instanceof TimeoutError && err.timeout === true)
                 {
                     resolve(response);
                 }

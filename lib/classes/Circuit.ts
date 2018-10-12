@@ -14,6 +14,7 @@ import {ClientEvents} from './ClientEvents';
 import {FilterResponse} from '../enums/FilterResponse';
 import {Subject} from 'rxjs/internal/Subject';
 import {PacketFlags} from '..';
+import {TimeoutError} from './TimeoutError';
 
 export class Circuit
 {
@@ -200,7 +201,10 @@ export class Circuit
                 if (handleObj.subscription !== null)
                 {
                     handleObj.subscription.unsubscribe();
-                    reject(new Error('Timeout waiting for message of type ' + id));
+                    const err = new TimeoutError('Timeout waiting for message of type ' + id);
+                    err.timeout = true;
+                    err.waitingForMessage = id;
+                    reject(err);
                 }
             };
 
@@ -350,7 +354,7 @@ export class Circuit
         {
             clearTimeout(this.receivedPackets[packet.sequenceNumber]);
             this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
-            console.log('Ignoring duplicate packet: ' + packet.message.name);
+            console.log('Ignoring duplicate packet: ' + packet.message.name + ' sequenceID: ' + packet.sequenceNumber);
             return;
         }
         this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);

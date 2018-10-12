@@ -13,6 +13,7 @@ const MapNameRequest_1 = require("../messages/MapNameRequest");
 const GridLayerType_1 = require("../../enums/GridLayerType");
 const MapBlock_1 = require("../MapBlock");
 const __1 = require("../..");
+const TimeoutError_1 = require("../TimeoutError");
 class GridCommands extends CommandsBase_1.CommandsBase {
     getRegionByName(regionName) {
         return new Promise((resolve, reject) => {
@@ -191,7 +192,7 @@ class GridCommands extends CommandsBase_1.CommandsBase {
                 return FilterResponse_1.FilterResponse.NoMatch;
             }).then((ignore) => {
             }).catch((err) => {
-                if (err.message === 'Timeout') {
+                if (err instanceof TimeoutError_1.TimeoutError && err.timeout === true) {
                     resolve(response);
                 }
                 else {

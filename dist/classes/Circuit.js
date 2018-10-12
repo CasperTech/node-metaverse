@@ -9,6 +9,7 @@ const operators_1 = require("rxjs/operators");
 const FilterResponse_1 = require("../enums/FilterResponse");
 const Subject_1 = require("rxjs/internal/Subject");
 const __1 = require("..");
+const TimeoutError_1 = require("./TimeoutError");
 class Circuit {
     constructor(clientEvents) {
         this.client = null;
@@ -121,7 +122,10 @@ class Circuit {
             const timeoutFunc = () => {
                 if (handleObj.subscription !== null) {
                     handleObj.subscription.unsubscribe();
-                    reject(new Error('Timeout waiting for message of type ' + id));
+                    const err = new TimeoutError_1.TimeoutError('Timeout waiting for message of type ' + id);
+                    err.timeout = true;
+                    err.waitingForMessage = id;
+                    reject(err);
                 }
             };
             handleObj.timeout = setTimeout(timeoutFunc, timeout);
@@ -223,7 +227,7 @@ class Circuit {
         if (this.receivedPackets[packet.sequenceNumber]) {
             clearTimeout(this.receivedPackets[packet.sequenceNumber]);
             this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
-            console.log('Ignoring duplicate packet: ' + packet.message.name);
+            console.log('Ignoring duplicate packet: ' + packet.message.name + ' sequenceID: ' + packet.sequenceNumber);
             return;
         }
         this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
