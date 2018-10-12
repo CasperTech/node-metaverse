@@ -6,6 +6,7 @@ import { IObjectStore } from './interfaces/IObjectStore';
 import { GameObjectLite } from './GameObjectLite';
 import { NameValue } from './NameValue';
 import { BotOptionFlags } from '..';
+import { GameObjectFull } from './GameObjectFull';
 export declare class ObjectStoreLite implements IObjectStore {
     private circuit;
     private agent;
@@ -22,4 +23,5 @@ export declare class ObjectStoreLite implements IObjectStore {
         [key: string]: NameValue;
     };
     shutdown(): void;
+    getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): GameObjectFull[];
 }

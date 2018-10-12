@@ -17,9 +17,15 @@ loginParameters.start = parameters.start;
 //const options = nmv.BotOptionFlags.None;
 
 // If you don't intend to use the object store (i.e you have no interest in inworld objects, textures, etc,
-// using None or LiteObjectStore will drastically reduce the footprint
+// using nmv.BotOptionFlags.LiteObjectStore will drastically reduce the footprint and CPU usage.
 //
-const options = nmv.BotOptionFlags.LiteObjectStore | nmv.BotOptionFlags.StoreMyAttachmentsOnly;
+// The full object store has a full searchable rtree index, the lite does not.
+//
+// For the minimum footprint, use :
+//
+// const options = nmv.BotOptionFlags.LiteObjectStore | nmv.BotOptionFlags.StoreMyAttachmentsOnly;
+
+const options = nmv.BotOptionFlags.None;
 
 const bot = new nmv.Bot(loginParameters, options);
 
@@ -280,6 +286,18 @@ async function connect()
         {
             console.log('Map location request failed. You probably do not have map rights on Casper.');
         }
+
+        setInterval(() => {
+            console.log('Finding objects');
+            var tmr = new Date().getTime();
+            const objs = bot.clientCommands.region.getObjectsInArea(191, 192, 56, 57, 144, 145);
+            var tmr2 = new Date().getTime();
+            console.log('Found ' + objs.length + ' objects in ' + (tmr2 - tmr) + 'ms');
+            for (const o of objs)
+            {
+                console.log(o.FullID.toString());
+            }
+        }, 10000)
 
         //await bot.clientCommands.friends.grantFriendRights('d1cd5b71-6209-4595-9bf0-771bf689ce00', nmv.RightsFlags.CanModifyObjects | nmv.RightsFlags.CanSeeOnline | nmv.RightsFlags.CanSeeOnMap );
     }

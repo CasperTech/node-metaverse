@@ -10,12 +10,14 @@ const PCode_1 = require("../enums/PCode");
 const NameValue_1 = require("./NameValue");
 const GameObjectFull_1 = require("./GameObjectFull");
 const __1 = require("..");
+const dist_1 = require("rbush-3d/dist");
 class ObjectStoreFull {
     constructor(circuit, agent, clientEvents, options) {
         this.objects = {};
         this.objectsByUUID = {};
         this.objectsByParent = {};
         agent.localID = 0;
+        this.rtree = new dist_1.RBush3D();
         this.options = options;
         this.clientEvents = clientEvents;
         this.circuit = circuit;
@@ -31,7 +33,7 @@ class ObjectStoreFull {
             switch (packet.message.id) {
                 case Message_1.Message.ObjectUpdate:
                     const objectUpdate = packet.message;
-                    objectUpdate.ObjectData.forEach((objData) => {
+                    for (const objData of objectUpdate.ObjectData) {
                         const localID = objData.ID;
                         const parentID = objData.ParentID;
                         let addToParentList = true;
@@ -131,13 +133,13 @@ class ObjectStoreFull {
                         if (addToParentList) {
                             this.objectsByParent[parentID].push(localID);
                         }
-                        if (objData.PCode !== PCode_1.PCode.Avatar && this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
-                            if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID) {
-                                this.deleteObject(localID);
-                                return;
-                            }
+                        if (objData.PCode !== PCode_1.PCode.Avatar && this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly && (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID)) {
+                            this.deleteObject(localID);
                         }
-                    });
+                        else {
+                            this.insertIntoRtree(obj);
+                        }
+                    }
                     break;
                 case Message_1.Message.ObjectUpdateCached:
                     const objectUpdateCached = packet.message;
@@ -158,7 +160,7 @@ class ObjectStoreFull {
                 case Message_1.Message.ObjectUpdateCompressed:
                     {
                         const objectUpdateCompressed = packet.message;
-                        objectUpdateCompressed.ObjectData.forEach((obj) => {
+                        for (const obj of objectUpdateCompressed.ObjectData) {
                             const flags = obj.UpdateFlags;
                             const buf = obj.Data;
                             let pos = 0;
@@ -220,84 +222,85 @@ class ObjectStoreFull {
                                 }
                                 o.ParentID = newParentID;
                             }
-                            if (pcode !== PCode_1.PCode.Avatar && newObj && this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
-                                if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID) {
-                                    this.deleteObject(localID);
-                                    return;
-                                }
-                            }
-                            if (compressedflags & __1.CompressedFlags.Tree) {
-                                o.TreeSpecies = buf.readUInt8(pos++);
-                            }
-                            else if (compressedflags & __1.CompressedFlags.ScratchPad) {
-                                o.TreeSpecies = 0;
-                                const scratchPadSize = buf.readUInt8(pos++);
-                                pos = pos + scratchPadSize;
-                            }
-                            if (compressedflags & __1.CompressedFlags.HasText) {
-                                const result = Utils_1.Utils.BufferToString(buf, pos);
-                                pos += result.readLength;
-                                o.Text = result.result;
-                                o.TextColor = buf.slice(pos, pos + 4);
-                                pos = pos + 4;
+                            if (pcode !== PCode_1.PCode.Avatar && newObj && this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly && (this.agent.localID !== 0 && o.ParentID !== this.agent.localID)) {
+                                this.deleteObject(localID);
+                                return;
                             }
                             else {
-                                o.Text = '';
-                            }
-                            if (compressedflags & __1.CompressedFlags.MediaURL) {
-                                const result = Utils_1.Utils.BufferToString(buf, pos);
-                                pos += result.readLength;
-                                o.MediaURL = result.result;
-                            }
-                            if (compressedflags & __1.CompressedFlags.HasParticles) {
-                                pos += 86;
-                            }
-                            pos = this.readExtraParams(buf, pos, o);
-                            if (compressedflags & __1.CompressedFlags.HasSound) {
-                                o.Sound = new UUID_1.UUID(buf, pos);
-                                pos = pos + 16;
-                                o.SoundGain = buf.readFloatLE(pos);
-                                pos += 4;
-                                o.SoundFlags = buf.readUInt8(pos++);
-                                o.SoundRadius = buf.readFloatLE(pos);
+                                if (compressedflags & __1.CompressedFlags.Tree) {
+                                    o.TreeSpecies = buf.readUInt8(pos++);
+                                }
+                                else if (compressedflags & __1.CompressedFlags.ScratchPad) {
+                                    o.TreeSpecies = 0;
+                                    const scratchPadSize = buf.readUInt8(pos++);
+                                    pos = pos + scratchPadSize;
+                                }
+                                if (compressedflags & __1.CompressedFlags.HasText) {
+                                    const result = Utils_1.Utils.BufferToString(buf, pos);
+                                    pos += result.readLength;
+                                    o.Text = result.result;
+                                    o.TextColor = buf.slice(pos, pos + 4);
+                                    pos = pos + 4;
+                                }
+                                else {
+                                    o.Text = '';
+                                }
+                                if (compressedflags & __1.CompressedFlags.MediaURL) {
+                                    const result = Utils_1.Utils.BufferToString(buf, pos);
+                                    pos += result.readLength;
+                                    o.MediaURL = result.result;
+                                }
+                                if (compressedflags & __1.CompressedFlags.HasParticles) {
+                                    pos += 86;
+                                }
+                                pos = this.readExtraParams(buf, pos, o);
+                                if (compressedflags & __1.CompressedFlags.HasSound) {
+                                    o.Sound = new UUID_1.UUID(buf, pos);
+                                    pos = pos + 16;
+                                    o.SoundGain = buf.readFloatLE(pos);
+                                    pos += 4;
+                                    o.SoundFlags = buf.readUInt8(pos++);
+                                    o.SoundRadius = buf.readFloatLE(pos);
+                                    pos = pos + 4;
+                                }
+                                if (compressedflags & __1.CompressedFlags.HasNameValues) {
+                                    const result = Utils_1.Utils.BufferToString(buf, pos);
+                                    o.NameValue = this.parseNameValues(result.result);
+                                    pos += result.readLength;
+                                }
+                                o.PathCurve = buf.readUInt8(pos++);
+                                o.PathBegin = buf.readUInt16LE(pos);
+                                pos = pos + 2;
+                                o.PathEnd = buf.readUInt16LE(pos);
+                                pos = pos + 2;
+                                o.PathScaleX = buf.readUInt8(pos++);
+                                o.PathScaleY = buf.readUInt8(pos++);
+                                o.PathShearX = buf.readUInt8(pos++);
+                                o.PathShearY = buf.readUInt8(pos++);
+                                o.PathTwist = buf.readUInt8(pos++);
+                                o.PathTwistBegin = buf.readUInt8(pos++);
+                                o.PathRadiusOffset = buf.readUInt8(pos++);
+                                o.PathTaperX = buf.readUInt8(pos++);
+                                o.PathTaperY = buf.readUInt8(pos++);
+                                o.PathRevolutions = buf.readUInt8(pos++);
+                                o.PathSkew = buf.readUInt8(pos++);
+                                o.ProfileCurve = buf.readUInt8(pos++);
+                                o.ProfileBegin = buf.readUInt16LE(pos);
+                                pos = pos + 2;
+                                o.ProfileEnd = buf.readUInt16LE(pos);
+                                pos = pos + 2;
+                                o.ProfileHollow = buf.readUInt16LE(pos);
+                                pos = pos + 2;
+                                const textureEntryLength = buf.readUInt32LE(pos);
                                 pos = pos + 4;
+                                pos = pos + textureEntryLength;
+                                if (compressedflags & __1.CompressedFlags.TextureAnimation) {
+                                    pos = pos + 4;
+                                }
+                                o.IsAttachment = (compressedflags & __1.CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
+                                this.insertIntoRtree(o);
                             }
-                            if (compressedflags & __1.CompressedFlags.HasNameValues) {
-                                const result = Utils_1.Utils.BufferToString(buf, pos);
-                                o.NameValue = this.parseNameValues(result.result);
-                                pos += result.readLength;
-                            }
-                            o.PathCurve = buf.readUInt8(pos++);
-                            o.PathBegin = buf.readUInt16LE(pos);
-                            pos = pos + 2;
-                            o.PathEnd = buf.readUInt16LE(pos);
-                            pos = pos + 2;
-                            o.PathScaleX = buf.readUInt8(pos++);
-                            o.PathScaleY = buf.readUInt8(pos++);
-                            o.PathShearX = buf.readUInt8(pos++);
-                            o.PathShearY = buf.readUInt8(pos++);
-                            o.PathTwist = buf.readUInt8(pos++);
-                            o.PathTwistBegin = buf.readUInt8(pos++);
-                            o.PathRadiusOffset = buf.readUInt8(pos++);
-                            o.PathTaperX = buf.readUInt8(pos++);
-                            o.PathTaperY = buf.readUInt8(pos++);
-                            o.PathRevolutions = buf.readUInt8(pos++);
-                            o.PathSkew = buf.readUInt8(pos++);
-                            o.ProfileCurve = buf.readUInt8(pos++);
-                            o.ProfileBegin = buf.readUInt16LE(pos);
-                            pos = pos + 2;
-                            o.ProfileEnd = buf.readUInt16LE(pos);
-                            pos = pos + 2;
-                            o.ProfileHollow = buf.readUInt16LE(pos);
-                            pos = pos + 2;
-                            const textureEntryLength = buf.readUInt32LE(pos);
-                            pos = pos + 4;
-                            pos = pos + textureEntryLength;
-                            if (compressedflags & __1.CompressedFlags.TextureAnimation) {
-                                pos = pos + 4;
-                            }
-                            o.IsAttachment = (compressedflags & __1.CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
-                        });
+                        }
                         break;
                     }
                 case Message_1.Message.ImprovedTerseObjectUpdate:
@@ -309,13 +312,30 @@ class ObjectStoreFull {
                     break;
                 case Message_1.Message.KillObject:
                     const killObj = packet.message;
-                    killObj.ObjectData.forEach((obj) => {
+                    for (const obj of killObj.ObjectData) {
                         const objectID = obj.ID;
                         this.deleteObject(objectID);
-                    });
+                    }
                     break;
             }
         });
+    }
+    insertIntoRtree(obj) {
+        if (obj.rtreeEntry !== undefined) {
+            this.rtree.remove(obj.rtreeEntry);
+        }
+        const normalizedScale = obj.Scale.multiplyByQuat(obj.Rotation);
+        const bounds = {
+            minX: obj.Position.x - (normalizedScale.x / 2),
+            maxX: obj.Position.x + (normalizedScale.x / 2),
+            minY: obj.Position.y - (normalizedScale.y / 2),
+            maxY: obj.Position.y + (normalizedScale.y / 2),
+            minZ: obj.Position.z - (normalizedScale.z / 2),
+            maxZ: obj.Position.z + (normalizedScale.z / 2),
+            gameObject: obj
+        };
+        obj.rtreeEntry = bounds;
+        this.rtree.insert(bounds);
     }
     deleteObject(objectID) {
         if (this.objects[objectID]) {
@@ -336,6 +356,9 @@ class ObjectStoreFull {
                 if (ind !== -1) {
                     this.objectsByParent[parentID].splice(ind, 1);
                 }
+            }
+            if (this.objects[objectID].rtreeEntry !== undefined) {
+                this.rtree.remove(this.objects[objectID].rtreeEntry);
             }
             delete this.objects[objectID];
         }
@@ -395,8 +418,49 @@ class ObjectStoreFull {
     }
     shutdown() {
         this.objects = {};
+        this.rtree.clear();
         this.objectsByUUID = {};
         this.objectsByParent = {};
+    }
+    findParent(go) {
+        if (go.ParentID === 0) {
+            return go;
+        }
+        else {
+            return this.findParent(this.objects[go.ParentID]);
+        }
+    }
+    getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ) {
+        const result = this.rtree.search({
+            minX: minX,
+            maxX: maxX,
+            minY: minY,
+            maxY: maxY,
+            minZ: minZ,
+            maxZ: maxZ
+        });
+        const found = {};
+        const objs = [];
+        for (const obj of result) {
+            const o = obj;
+            const go = o.gameObject;
+            try {
+                const parent = this.findParent(go);
+                const uuid = parent.FullID.toString();
+                if (parent !== go) {
+                    console.log('Resolved object ' + go.FullID.toString() + ' to parent ' + parent.FullID.toString() + ' which ' + ((found[uuid] === undefined) ? 'does not exist' : 'already exists'));
+                }
+                if (found[uuid] === undefined) {
+                    found[uuid] = parent;
+                    objs.push(parent);
+                }
+            }
+            catch (error) {
+                console.log('Failed to find parent for ' + go.FullID.toString());
+                console.error(error);
+            }
+        }
+        return objs;
     }
 }
 exports.ObjectStoreFull = ObjectStoreFull;

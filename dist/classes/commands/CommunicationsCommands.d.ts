@@ -1,6 +1,7 @@
 import { CommandsBase } from './CommandsBase';
 import { UUID } from '../UUID';
 import { ChatType } from '../../enums/ChatType';
+import { ScriptDialogEvent } from '../..';
 export declare class CommunicationsCommands extends CommandsBase {
     sendInstantMessage(to: UUID | string, message: string): Promise<void>;
     nearbyChat(message: string, type: ChatType, channel?: number): Promise<void>;
@@ -15,4 +16,5 @@ export declare class CommunicationsCommands extends CommandsBase {
     typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>;
     startGroupChatSession(sessionID: UUID | string, message: string): Promise<void>;
     sendGroupMessage(groupID: UUID | string, message: string): Promise<number>;
+    respondToScriptDialog(event: ScriptDialogEvent, buttonIndex: number): Promise<void>;
 }

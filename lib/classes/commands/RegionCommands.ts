@@ -6,6 +6,7 @@ import {Message} from '../../enums/Message';
 import {FilterResponse} from '../../enums/FilterResponse';
 import {RegionIDAndHandleReplyMessage} from '../messages/RegionIDAndHandleReply';
 import {PacketFlags} from '../..';
+import {IGameObject} from '../interfaces/IGameObject';
 
 export class RegionCommands extends CommandsBase
 {
@@ -34,5 +35,9 @@ export class RegionCommands extends CommandsBase
                 resolve(responseMsg.ReplyBlock.RegionHandle);
             });
         });
+    }
+    getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): IGameObject[]
+    {
+        return this.currentRegion.objects.getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ);
     }
 }

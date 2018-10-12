@@ -13,6 +13,7 @@ class GameObjectFull {
         this.SoundFlags = 0;
         this.SoundRadius = 1.0;
         this.SoundGain = 1.0;
+        this.ParentID = 0;
     }
     hasNameValueEntry(key) {
         if (this.NameValue['AttachItemID']) {

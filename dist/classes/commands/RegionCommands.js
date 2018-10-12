@@ -26,6 +26,9 @@ class RegionCommands extends CommandsBase_1.CommandsBase {
             });
         });
     }
+    getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ) {
+        return this.currentRegion.objects.getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ);
+    }
 }
 exports.RegionCommands = RegionCommands;
 //# sourceMappingURL=RegionCommands.js.map

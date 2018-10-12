@@ -116,7 +116,7 @@ class ObjectStoreLite {
                 case Message_1.Message.ObjectUpdateCompressed:
                     {
                         const objectUpdateCompressed = packet.message;
-                        objectUpdateCompressed.ObjectData.forEach((obj) => {
+                        for (const obj of objectUpdateCompressed.ObjectData) {
                             const flags = obj.UpdateFlags;
                             const buf = obj.Data;
                             let pos = 0;
@@ -223,7 +223,8 @@ class ObjectStoreLite {
                                 pos = pos + 4;
                             }
                             o.IsAttachment = (compressedflags & __1.CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
-                        });
+                        }
+                        ;
                         break;
                     }
                 case Message_1.Message.ImprovedTerseObjectUpdate:
@@ -323,6 +324,9 @@ class ObjectStoreLite {
         this.objects = {};
         this.objectsByUUID = {};
         this.objectsByParent = {};
+    }
+    getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ) {
+        throw new Error('GetObjectsInArea not available with the Lite object store.');
     }
 }
 exports.ObjectStoreLite = ObjectStoreLite;
