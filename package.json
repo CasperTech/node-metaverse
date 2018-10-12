@@ -42,6 +42,7 @@
     "@caspertech/llsd": "^1.0.0",
     "ipaddr.js": "^1.8.1",
     "long": "^4.0.0",
+    "rbush-3d": "0.0.4",
     "request": "^2.88.0",
     "rxjs": "^6.3.3",
     "uuid": "^3.3.2",

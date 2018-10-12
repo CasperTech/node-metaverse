@@ -17,6 +17,7 @@ const ChatFromViewer_1 = require("../messages/ChatFromViewer");
 const ChatType_1 = require("../../enums/ChatType");
 const InstantMessageDialog_1 = require("../../enums/InstantMessageDialog");
 const __1 = require("../..");
+const ScriptDialogReply_1 = require("../messages/ScriptDialogReply");
 class CommunicationsCommands extends CommandsBase_1.CommandsBase {
     sendInstantMessage(to, message) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -349,6 +350,21 @@ class CommunicationsCommands extends CommandsBase_1.CommandsBase {
                 reject(err);
             });
         });
+    }
+    respondToScriptDialog(event, buttonIndex) {
+        const dialog = new ScriptDialogReply_1.ScriptDialogReplyMessage();
+        dialog.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        dialog.Data = {
+            ObjectID: event.ObjectID,
+            ChatChannel: event.ChatChannel,
+            ButtonIndex: buttonIndex,
+            ButtonLabel: Utils_1.Utils.StringToBuffer(event.Buttons[buttonIndex])
+        };
+        const sequenceNo = this.circuit.sendMessage(dialog, __1.PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceNo, 10000);
     }
 }
 exports.CommunicationsCommands = CommunicationsCommands;

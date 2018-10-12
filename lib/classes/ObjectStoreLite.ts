@@ -18,6 +18,8 @@ import {IObjectStore} from './interfaces/IObjectStore';
 import {GameObjectLite} from './GameObjectLite';
 import {NameValue} from './NameValue';
 import {BotOptionFlags, CompressedFlags} from '..';
+import {IGameObject} from './interfaces/IGameObject';
+import {GameObjectFull} from './GameObjectFull';
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -165,7 +167,7 @@ export class ObjectStoreLite implements IObjectStore
                 case Message.ObjectUpdateCompressed:
                 {
                     const objectUpdateCompressed = packet.message as ObjectUpdateCompressedMessage;
-                    objectUpdateCompressed.ObjectData.forEach((obj) =>
+                    for (const obj of objectUpdateCompressed.ObjectData)
                     {
                         const flags = obj.UpdateFlags;
                         const buf = obj.Data;
@@ -313,8 +315,7 @@ export class ObjectStoreLite implements IObjectStore
                         }
 
                         o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
-
-                    });
+                    };
 
                     break;
                 }
@@ -450,5 +451,10 @@ export class ObjectStoreLite implements IObjectStore
         this.objects = {};
         this.objectsByUUID = {};
         this.objectsByParent = {};
+    }
+
+    getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): GameObjectFull[]
+    {
+        throw new Error('GetObjectsInArea not available with the Lite object store.');
     }
 }

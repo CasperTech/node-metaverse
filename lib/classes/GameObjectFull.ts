@@ -6,9 +6,11 @@ import {Tree} from '../enums/Tree';
 import {NameValue} from './NameValue';
 import {IGameObject} from './interfaces/IGameObject';
 import {SoundFlags} from '..';
+import {ITreeBoundingBox} from './interfaces/ITreeBoundingBox';
 
 export class GameObjectFull implements IGameObject
 {
+    rtreeEntry?: ITreeBoundingBox;
     ID: number;
     State: number;
     FullID: UUID;
@@ -71,6 +73,7 @@ export class GameObjectFull implements IGameObject
         this.SoundFlags = 0;
         this.SoundRadius = 1.0;
         this.SoundGain = 1.0;
+        this.ParentID = 0;
     }
 
     hasNameValueEntry(key: string): boolean

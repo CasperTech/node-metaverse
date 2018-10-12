@@ -7,7 +7,9 @@ import { Tree } from '../enums/Tree';
 import { NameValue } from './NameValue';
 import { IGameObject } from './interfaces/IGameObject';
 import { SoundFlags } from '..';
+import { ITreeBoundingBox } from './interfaces/ITreeBoundingBox';
 export declare class GameObjectFull implements IGameObject {
+    rtreeEntry?: ITreeBoundingBox;
     ID: number;
     State: number;
     FullID: UUID;

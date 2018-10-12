@@ -7,7 +7,8 @@ import {ChatFromViewerMessage} from '../messages/ChatFromViewer';
 import {ChatType} from '../../enums/ChatType';
 import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
 import Timer = NodeJS.Timer;
-import {GroupChatSessionJoinEvent, PacketFlags} from '../..';
+import {GroupChatSessionJoinEvent, PacketFlags, ScriptDialogEvent} from '../..';
+import {ScriptDialogReplyMessage} from '../messages/ScriptDialogReply';
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -401,5 +402,22 @@ export class CommunicationsCommands extends CommandsBase
                 reject(err);
             });
         });
+    }
+
+    respondToScriptDialog(event: ScriptDialogEvent, buttonIndex: number): Promise<void>
+    {
+        const dialog: ScriptDialogReplyMessage = new ScriptDialogReplyMessage();
+        dialog.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        dialog.Data = {
+            ObjectID: event.ObjectID,
+            ChatChannel: event.ChatChannel,
+            ButtonIndex: buttonIndex,
+            ButtonLabel: Utils.StringToBuffer(event.Buttons[buttonIndex])
+        };
+        const sequenceNo = this.circuit.sendMessage(dialog, PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceNo, 10000);
     }
 }
