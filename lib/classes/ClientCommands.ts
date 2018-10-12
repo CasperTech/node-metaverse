@@ -11,6 +11,7 @@ import {AgentCommands} from './commands/AgentCommands';
 import {GroupCommands} from './commands/GroupCommands';
 import {InventoryCommands} from './commands/InventoryCommands';
 import {ParcelCommands} from './commands/ParcelCommands';
+import {FriendCommands} from './commands/FriendCommands';
 
 export class ClientCommands
 {
@@ -19,6 +20,7 @@ export class ClientCommands
     public teleport: TeleportCommands;
     public region: RegionCommands;
     public parcel: ParcelCommands;
+    public friends: FriendCommands;
     public grid: GridCommands;
     public comms: CommunicationsCommands;
     public agent: AgentCommands;
@@ -33,6 +35,7 @@ export class ClientCommands
         this.region = new RegionCommands(region, agent, bot);
         this.parcel = new ParcelCommands(region, agent, bot);
         this.grid = new GridCommands(region, agent, bot);
+        this.friends = new FriendCommands(region, agent, bot);
         this.comms = new CommunicationsCommands(region, agent, bot);
         this.agent = new AgentCommands(region, agent, bot);
         this.group = new GroupCommands(region, agent, bot);
@@ -50,5 +53,6 @@ export class ClientCommands
         this.agent.shutdown();
         this.group.shutdown();
         this.inventory.shutdown();
+        this.friends.shutdown();
     }
 }

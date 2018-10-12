@@ -4,6 +4,7 @@ import { Region } from './classes/Region';
 import { ClientEvents } from './classes/ClientEvents';
 import { ClientCommands } from './classes/ClientCommands';
 import { BotOptionFlags } from './enums/BotOptionFlags';
+import { UUID } from './classes/UUID';
 import { Vector3 } from './classes/Vector3';
 export declare class Bot {
     private loginParams;
@@ -30,5 +31,6 @@ export declare class Bot {
     private kicked;
     private disconnected;
     close(): Promise<void>;
+    agentID(): UUID;
     connectToSim(requested: boolean): Promise<void>;
 }

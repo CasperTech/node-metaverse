@@ -178,7 +178,8 @@ export class Region
                     this.xCoordinate = region.X;
                     this.yCoordinate = region.Y;
                     this.mapImage = region.MapImageID;
-                    this.regionHandle = Utils.RegionCoordinatesToHandle(this.xCoordinate, this.yCoordinate);
+                    const globalPos = Utils.RegionCoordinatesToHandle(this.xCoordinate, this.yCoordinate);
+                    this.regionHandle = globalPos.regionHandle;
                     return FilterResponse.Finish;
                 }
             }

@@ -146,6 +146,9 @@ class Bot {
             this.disconnected(true, 'Logout completed');
         });
     }
+    agentID() {
+        return this.agent.agentID;
+    }
     connectToSim(requested) {
         return __awaiter(this, void 0, void 0, function* () {
             this.agent.setCurrentRegion(this.currentRegion);

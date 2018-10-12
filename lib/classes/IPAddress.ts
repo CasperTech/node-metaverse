@@ -36,6 +36,21 @@ export class IPAddress
                     {
                         this.ip = ipaddr.parse(buf);
                     }
+                    else
+                    {
+                        throw new Error('Invalid IP address');
+                    }
+                }
+            }
+            else
+            {
+                if (ipaddr.isValid(buf))
+                {
+                    this.ip = ipaddr.parse(buf);
+                }
+                else
+                {
+                    throw new Error('Invalid IP address');
                 }
             }
         }

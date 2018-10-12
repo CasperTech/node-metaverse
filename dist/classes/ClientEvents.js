@@ -18,6 +18,9 @@ class ClientEvents {
         this.onFriendResponse = new Subject_1.Subject();
         this.onScriptDialog = new Subject_1.Subject();
         this.onEventQueueStateChange = new Subject_1.Subject();
+        this.onFriendOnline = new Subject_1.Subject();
+        this.onFriendRights = new Subject_1.Subject();
+        this.onFriendRemoved = new Subject_1.Subject();
     }
 }
 exports.ClientEvents = ClientEvents;
