@@ -328,6 +328,22 @@ class ObjectStoreLite {
     getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ) {
         throw new Error('GetObjectsInArea not available with the Lite object store.');
     }
+    getObjectByUUID(fullID) {
+        if (fullID instanceof UUID_1.UUID) {
+            fullID = fullID.toString();
+        }
+        if (!this.objectsByUUID[fullID]) {
+            throw new Error('No object found with that UUID');
+        }
+        const localID = this.objectsByUUID[fullID];
+        return this.objects[localID];
+    }
+    getObjectByLocalID(localID) {
+        if (!this.objects[localID]) {
+            throw new Error('No object found with that UUID');
+        }
+        return this.objects[localID];
+    }
 }
 exports.ObjectStoreLite = ObjectStoreLite;
 //# sourceMappingURL=ObjectStoreLite.js.map

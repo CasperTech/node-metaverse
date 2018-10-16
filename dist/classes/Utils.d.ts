@@ -10,8 +10,12 @@ export declare class Utils {
     };
     static RegionCoordinatesToHandle(regionX: number, regionY: number): GlobalPosition;
     static HTTPAssetTypeToInventoryType(HTTPAssetType: string): "" | "script" | "object" | "texture" | "sound" | "animation" | "gesture" | "landmark" | "callcard" | "wearable" | "notecard" | "category" | "mesh";
+    static ByteToFloat(byte: number, lower: number, upper: number): number;
     static UInt16ToFloat(val: number, lower: number, upper: number): number;
     static Base64EncodeString(str: string): string;
     static Base64DecodeString(str: string): string;
     static HexToLong(hex: string): Long;
+    static ReadRotationFloat(buf: Buffer, pos: number): number;
+    static ReadGlowFloat(buf: Buffer, pos: number): number;
+    static ReadOffsetFloat(buf: Buffer, pos: number): number;
 }

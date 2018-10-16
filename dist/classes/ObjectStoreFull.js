@@ -11,6 +11,10 @@ const NameValue_1 = require("./NameValue");
 const GameObjectFull_1 = require("./GameObjectFull");
 const __1 = require("..");
 const dist_1 = require("rbush-3d/dist");
+const Vector4_1 = require("./Vector4");
+const TextureEntry_1 = require("./TextureEntry");
+const Color4_1 = require("./Color4");
+const ParticleSystem_1 = require("./ParticleSystem");
 class ObjectStoreFull {
     constructor(circuit, agent, clientEvents, options) {
         this.objects = {};
@@ -61,6 +65,89 @@ class ObjectStoreFull {
                         obj.ClickAction = objData.ClickAction;
                         obj.Scale = objData.Scale;
                         obj.ObjectData = objData.ObjectData;
+                        const data = objData.ObjectData;
+                        let dataPos = 0;
+                        switch (data.length) {
+                            case 76:
+                                obj.CollisionPlane = new Vector4_1.Vector4(objData.ObjectData, dataPos);
+                                dataPos += 16;
+                            case 60:
+                                obj.Position = new Vector3_1.Vector3(objData.ObjectData, dataPos);
+                                dataPos += 12;
+                                obj.Velocity = new Vector3_1.Vector3(objData.ObjectData, dataPos);
+                                dataPos += 12;
+                                obj.Acceleration = new Vector3_1.Vector3(objData.ObjectData, dataPos);
+                                dataPos += 12;
+                                obj.Rotation = new Quaternion_1.Quaternion(objData.ObjectData, dataPos);
+                                dataPos += 12;
+                                obj.AngularVelocity = new Vector3_1.Vector3(objData.ObjectData, dataPos);
+                                dataPos += 12;
+                                break;
+                            case 48:
+                                obj.CollisionPlane = new Vector4_1.Vector4(objData.ObjectData, dataPos);
+                                dataPos += 16;
+                            case 32:
+                                obj.Position = new Vector3_1.Vector3([
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -0.5 * 256.0, 1.5 * 256.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -0.5 * 256.0, 1.5 * 256.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 3.0 * 256.0)
+                                ]);
+                                dataPos += 6;
+                                obj.Velocity = new Vector3_1.Vector3([
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                                ]);
+                                dataPos += 6;
+                                obj.Acceleration = new Vector3_1.Vector3([
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                                ]);
+                                dataPos += 6;
+                                obj.Rotation = new Quaternion_1.Quaternion([
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -1.0, 1.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -1.0, 1.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -1.0, 1.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -1.0, 1.0)
+                                ]);
+                                dataPos += 8;
+                                obj.AngularVelocity = new Vector3_1.Vector3([
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                                    Utils_1.Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                                ]);
+                                dataPos += 6;
+                                break;
+                            case 16:
+                                obj.Position = new Vector3_1.Vector3([
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
+                                ]);
+                                obj.Velocity = new Vector3_1.Vector3([
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
+                                ]);
+                                obj.Acceleration = new Vector3_1.Vector3([
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
+                                ]);
+                                obj.Rotation = new Quaternion_1.Quaternion([
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0)
+                                ]);
+                                obj.AngularVelocity = new Vector3_1.Vector3([
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
+                                    Utils_1.Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
+                                ]);
+                                break;
+                        }
                         obj.ParentID = objData.ParentID;
                         obj.Flags = objData.UpdateFlags;
                         obj.PathCurve = objData.PathCurve;
@@ -81,11 +168,11 @@ class ObjectStoreFull {
                         obj.ProfileBegin = objData.ProfileBegin;
                         obj.ProfileEnd = objData.ProfileEnd;
                         obj.ProfileHollow = objData.ProfileHollow;
-                        obj.TextureEntry = objData.TextureEntry;
+                        obj.TextureEntry = new TextureEntry_1.TextureEntry(objData.TextureEntry);
                         obj.TextureAnim = objData.TextureAnim;
-                        obj.Data = objData.Data;
+                        const pcodeData = objData.Data;
                         obj.Text = Utils_1.Utils.BufferToStringSimple(objData.Text);
-                        obj.TextColor = objData.TextColor;
+                        obj.TextColor = new Color4_1.Color4(objData.TextColor, 0, false, true);
                         obj.MediaURL = Utils_1.Utils.BufferToStringSimple(objData.MediaURL);
                         obj.PSBlock = objData.PSBlock;
                         obj.Sound = objData.Sound;
@@ -96,6 +183,15 @@ class ObjectStoreFull {
                         obj.JointType = objData.JointType;
                         obj.JointPivot = objData.JointPivot;
                         obj.JointAxisOrAnchor = objData.JointAxisOrAnchor;
+                        switch (obj.PCode) {
+                            case PCode_1.PCode.Grass:
+                            case PCode_1.PCode.Tree:
+                            case PCode_1.PCode.NewTree:
+                                if (pcodeData.length === 1) {
+                                    obj.TreeSpecies = pcodeData[0];
+                                }
+                                break;
+                        }
                         if (this.objects[localID].PCode === PCode_1.PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString()) {
                             this.agent.localID = localID;
                             if (this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly) {
@@ -142,21 +238,27 @@ class ObjectStoreFull {
                     }
                     break;
                 case Message_1.Message.ObjectUpdateCached:
-                    const objectUpdateCached = packet.message;
-                    const rmo = new RequestMultipleObjects_1.RequestMultipleObjectsMessage();
-                    rmo.AgentData = {
-                        AgentID: this.agent.agentID,
-                        SessionID: this.circuit.sessionID
-                    };
-                    rmo.ObjectData = [];
-                    objectUpdateCached.ObjectData.forEach((obj) => {
-                        rmo.ObjectData.push({
-                            CacheMissType: 0,
-                            ID: obj.ID
-                        });
-                    });
-                    circuit.sendMessage(rmo, 0);
-                    break;
+                    {
+                        const objectUpdateCached = packet.message;
+                        const rmo = new RequestMultipleObjects_1.RequestMultipleObjectsMessage();
+                        rmo.AgentData = {
+                            AgentID: this.agent.agentID,
+                            SessionID: this.circuit.sessionID
+                        };
+                        rmo.ObjectData = [];
+                        for (const obj of objectUpdateCached.ObjectData) {
+                            if (!this.objects[obj.ID]) {
+                                rmo.ObjectData.push({
+                                    CacheMissType: 0,
+                                    ID: obj.ID
+                                });
+                            }
+                        }
+                        if (rmo.ObjectData.length > 0) {
+                            circuit.sendMessage(rmo, 0);
+                        }
+                        break;
+                    }
                 case Message_1.Message.ObjectUpdateCompressed:
                     {
                         const objectUpdateCompressed = packet.message;
@@ -239,7 +341,7 @@ class ObjectStoreFull {
                                     const result = Utils_1.Utils.BufferToString(buf, pos);
                                     pos += result.readLength;
                                     o.Text = result.result;
-                                    o.TextColor = buf.slice(pos, pos + 4);
+                                    o.TextColor = new Color4_1.Color4(buf, pos, false, true);
                                     pos = pos + 4;
                                 }
                                 else {
@@ -251,6 +353,7 @@ class ObjectStoreFull {
                                     o.MediaURL = result.result;
                                 }
                                 if (compressedflags & __1.CompressedFlags.HasParticles) {
+                                    o.Particles = new ParticleSystem_1.ParticleSystem(buf.slice(pos, pos + 86), 0);
                                     pos += 86;
                                 }
                                 pos = this.readExtraParams(buf, pos, o);
@@ -293,6 +396,7 @@ class ObjectStoreFull {
                                 pos = pos + 2;
                                 const textureEntryLength = buf.readUInt32LE(pos);
                                 pos = pos + 4;
+                                o.TextureEntry = new TextureEntry_1.TextureEntry(buf.slice(pos, pos + textureEntryLength));
                                 pos = pos + textureEntryLength;
                                 if (compressedflags & __1.CompressedFlags.TextureAnimation) {
                                     pos = pos + 4;
@@ -304,8 +408,72 @@ class ObjectStoreFull {
                         break;
                     }
                 case Message_1.Message.ImprovedTerseObjectUpdate:
-                    const objectUpdateTerse = packet.message;
-                    break;
+                    {
+                        const objectUpdateTerse = packet.message;
+                        const dilation = objectUpdateTerse.RegionData.TimeDilation / 65535.0;
+                        for (let i = 0; i < objectUpdateTerse.ObjectData.length; i++) {
+                            const objectData = objectUpdateTerse.ObjectData[i];
+                            if (!(this.options & __1.BotOptionFlags.StoreMyAttachmentsOnly)) {
+                                let pos = 0;
+                                const localID = objectData.Data.readUInt32LE(pos);
+                                pos = pos + 4;
+                                if (this.objects[localID]) {
+                                    this.objects[localID].State = objectData.Data.readUInt8(pos++);
+                                    const avatar = (objectData.Data.readUInt8(pos++) !== 0);
+                                    if (avatar) {
+                                        this.objects[localID].CollisionPlane = new Vector4_1.Vector4(objectData.Data, pos);
+                                        pos += 16;
+                                    }
+                                    this.objects[localID].Position = new Vector3_1.Vector3(objectData.Data, pos);
+                                    pos += 12;
+                                    this.objects[localID].Velocity = new Vector3_1.Vector3([
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos), -128.0, 128.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 2), -128.0, 128.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 4), -128.0, 128.0)
+                                    ]);
+                                    pos += 6;
+                                    this.objects[localID].Acceleration = new Vector3_1.Vector3([
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos), -64.0, 64.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 2), -64.0, 64.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 4), -64.0, 64.0)
+                                    ]);
+                                    pos += 6;
+                                    this.objects[localID].Rotation = new Quaternion_1.Quaternion([
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos), -1.0, 1.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 2), -1.0, 1.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 4), -1.0, 1.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 6), -1.0, 1.0)
+                                    ]);
+                                    pos += 8;
+                                    this.objects[localID].AngularVelocity = new Vector3_1.Vector3([
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos), -64.0, 64.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 2), -64.0, 64.0),
+                                        Utils_1.Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 4), -64.0, 64.0)
+                                    ]);
+                                    pos += 6;
+                                    if (objectData.TextureEntry.length > 0) {
+                                        this.objects[localID].TextureEntry = new TextureEntry_1.TextureEntry(objectData.TextureEntry.slice(4));
+                                    }
+                                    this.insertIntoRtree(this.objects[localID]);
+                                }
+                                else {
+                                    console.log('Received terse update for object ' + localID + ' which is not in the store, so requesting the object');
+                                    const rmo = new RequestMultipleObjects_1.RequestMultipleObjectsMessage();
+                                    rmo.AgentData = {
+                                        AgentID: this.agent.agentID,
+                                        SessionID: this.circuit.sessionID
+                                    };
+                                    rmo.ObjectData = [];
+                                    rmo.ObjectData.push({
+                                        CacheMissType: 0,
+                                        ID: localID
+                                    });
+                                    circuit.sendMessage(rmo, 0);
+                                }
+                            }
+                        }
+                        break;
+                    }
                 case Message_1.Message.MultipleObjectUpdate:
                     const multipleObjectUpdate = packet.message;
                     console.error('TODO: MultipleObjectUpdate');
@@ -387,6 +555,22 @@ class ObjectStoreFull {
             result.push(this.objects[localID]);
         });
         return result;
+    }
+    getObjectByUUID(fullID) {
+        if (fullID instanceof UUID_1.UUID) {
+            fullID = fullID.toString();
+        }
+        if (!this.objectsByUUID[fullID]) {
+            throw new Error('No object found with that UUID');
+        }
+        const localID = this.objectsByUUID[fullID];
+        return this.objects[localID];
+    }
+    getObjectByLocalID(localID) {
+        if (!this.objects[localID]) {
+            throw new Error('No object found with that UUID');
+        }
+        return this.objects[localID];
     }
     parseNameValues(str) {
         const nv = {};

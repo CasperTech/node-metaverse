@@ -93,6 +93,18 @@ class Utils {
                 return '';
         }
     }
+    static ByteToFloat(byte, lower, upper) {
+        const ONE_OVER_BYTEMAX = 1.0 / 255;
+        let fval = byte * ONE_OVER_BYTEMAX;
+        const delta = (upper - lower);
+        fval *= delta;
+        fval += lower;
+        const error = delta * ONE_OVER_BYTEMAX;
+        if (Math.abs(fval) < error) {
+            fval = 0.0;
+        }
+        return fval;
+    }
     static UInt16ToFloat(val, lower, upper) {
         const ONE_OVER_U16_MAX = 1.0 / 65535;
         let fval = val * ONE_OVER_U16_MAX;
@@ -118,6 +130,16 @@ class Utils {
             hex = '0' + hex;
         }
         return new Long(parseInt(hex.substr(8), 16), parseInt(hex.substr(0, 8), 16));
+    }
+    static ReadRotationFloat(buf, pos) {
+        return ((buf[pos] | (buf[pos + 1] << 8)) / 32768.0) * (2 * Math.PI);
+    }
+    static ReadGlowFloat(buf, pos) {
+        return buf[pos] / 255;
+    }
+    static ReadOffsetFloat(buf, pos) {
+        const offset = buf.readInt16LE(pos);
+        return offset / 32767.0;
     }
 }
 exports.Utils = Utils;

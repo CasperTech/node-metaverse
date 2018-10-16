@@ -1,11 +1,13 @@
 /// <reference types="node" />
 import { Circuit } from './Circuit';
 import { Agent } from './Agent';
+import { UUID } from './UUID';
 import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
 import { GameObjectLite } from './GameObjectLite';
 import { NameValue } from './NameValue';
 import { BotOptionFlags } from '..';
+import { IGameObject } from './interfaces/IGameObject';
 import { GameObjectFull } from './GameObjectFull';
 export declare class ObjectStoreLite implements IObjectStore {
     private circuit;
@@ -24,4 +26,6 @@ export declare class ObjectStoreLite implements IObjectStore {
     };
     shutdown(): void;
     getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): GameObjectFull[];
+    getObjectByUUID(fullID: UUID | string): IGameObject;
+    getObjectByLocalID(localID: number): IGameObject;
 }

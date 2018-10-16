@@ -50,6 +50,10 @@ import {FriendRemovedEvent} from './events/FriendRemovedEvent';
 import {GlobalPosition} from './classes/public/interfaces/GlobalPosition';
 import {MapLocation} from './classes/public/interfaces/MapLocation';
 import {Vector2} from './classes/Vector2';
+import {ParticleDataFlags} from './enums/ParticleDataFlags';
+import {TextureFlags} from './enums/TextureFlags';
+import {SourcePattern} from './enums/SourcePattern';
+import {BlendFunc} from './enums/BlendFunc';
 
 export {
     Bot,
@@ -80,6 +84,10 @@ export {
     TeleportFlags,
     RegionFlags,
     RightsFlags,
+    ParticleDataFlags,
+    TextureFlags,
+    SourcePattern,
+    BlendFunc,
 
     // Events
     ChatEvent,

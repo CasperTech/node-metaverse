@@ -7,6 +7,10 @@ import {NameValue} from './NameValue';
 import {IGameObject} from './interfaces/IGameObject';
 import {SoundFlags} from '..';
 import {ITreeBoundingBox} from './interfaces/ITreeBoundingBox';
+import {Vector4} from './Vector4';
+import {TextureEntry} from './TextureEntry';
+import {Color4} from './Color4';
+import {ParticleSystem} from './ParticleSystem';
 
 export class GameObjectFull implements IGameObject
 {
@@ -41,11 +45,11 @@ export class GameObjectFull implements IGameObject
     ProfileBegin: number;
     ProfileEnd: number;
     ProfileHollow: number;
-    TextureEntry: Buffer;
+    TextureEntry: TextureEntry;
     TextureAnim: Buffer;
     Data: Buffer;
     Text: string;
-    TextColor: Buffer;
+    TextColor: Color4;
     MediaURL: string;
     PSBlock: Buffer;
     OwnerID: UUID;
@@ -54,6 +58,9 @@ export class GameObjectFull implements IGameObject
     JointAxisOrAnchor: Vector3;
     Position: Vector3;
     Rotation: Quaternion;
+    CollisionPlane: Vector4;
+    Velocity: Vector3;
+    Acceleration: Vector3;
     AngularVelocity: Vector3;
     TreeSpecies: Tree;
     Sound: UUID;
@@ -62,6 +69,7 @@ export class GameObjectFull implements IGameObject
     SoundRadius: number;
     IsAttachment: boolean;
     NameValue: {[key: string]: NameValue};
+    Particles: ParticleSystem;
     constructor()
     {
         this.Position = Vector3.getZero();
