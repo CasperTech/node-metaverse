@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { Circuit } from './Circuit';
 import { Agent } from './Agent';
+import { UUID } from './UUID';
 import { NameValue } from './NameValue';
 import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
@@ -22,6 +23,8 @@ export declare class ObjectStoreFull implements IObjectStore {
     deleteObject(objectID: number): void;
     readExtraParams(buf: Buffer, pos: number, o: GameObjectFull): number;
     getObjectsByParent(parentID: number): IGameObject[];
+    getObjectByUUID(fullID: UUID | string): IGameObject;
+    getObjectByLocalID(localID: number): IGameObject;
     parseNameValues(str: string): {
         [key: string]: NameValue;
     };

@@ -457,4 +457,27 @@ export class ObjectStoreLite implements IObjectStore
     {
         throw new Error('GetObjectsInArea not available with the Lite object store.');
     }
+
+    getObjectByUUID(fullID: UUID | string): IGameObject
+    {
+        if (fullID instanceof UUID)
+        {
+            fullID = fullID.toString();
+        }
+        if (!this.objectsByUUID[fullID])
+        {
+            throw new Error('No object found with that UUID');
+        }
+        const localID: number = this.objectsByUUID[fullID];
+        return this.objects[localID];
+    }
+
+    getObjectByLocalID(localID: number): IGameObject
+    {
+        if (!this.objects[localID])
+        {
+            throw new Error('No object found with that UUID');
+        }
+        return this.objects[localID];
+    }
 }

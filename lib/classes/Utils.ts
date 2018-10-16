@@ -115,6 +115,23 @@ export class Utils
         }
     }
 
+    static ByteToFloat(byte: number, lower: number, upper: number)
+    {
+        const ONE_OVER_BYTEMAX: number = 1.0 / 255;
+
+        let fval: number = byte * ONE_OVER_BYTEMAX;
+        const delta: number = (upper - lower);
+        fval *= delta;
+        fval += lower;
+
+        const error: number = delta * ONE_OVER_BYTEMAX;
+        if (Math.abs(fval) < error)
+        {
+            fval = 0.0;
+        }
+        return fval;
+    }
+
     static UInt16ToFloat(val: number, lower: number, upper: number)
     {
         const ONE_OVER_U16_MAX = 1.0 / 65535;
@@ -147,5 +164,18 @@ export class Utils
             hex = '0' + hex;
         }
         return new Long(parseInt(hex.substr(8), 16), parseInt(hex.substr(0, 8), 16));
+    }
+    static ReadRotationFloat(buf: Buffer, pos: number): number
+    {
+        return ((buf[pos] | (buf[pos + 1] << 8)) / 32768.0) * (2 * Math.PI);
+    }
+    static ReadGlowFloat(buf: Buffer, pos: number): number
+    {
+        return buf[pos] / 255;
+    }
+    static ReadOffsetFloat(buf: Buffer, pos: number): number
+    {
+        const offset = buf.readInt16LE(pos);
+        return offset / 32767.0;
     }
 }
