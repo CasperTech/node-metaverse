@@ -365,6 +365,33 @@ class ObjectStoreLite {
             obj.children.push(child);
         }
     }
+    getAllObjects() {
+        const results = [];
+        const found = {};
+        for (const k of Object.keys(this.objects)) {
+            const go = this.objects[parseInt(k, 10)];
+            if (go.PCode !== PCode_1.PCode.Avatar && (go.IsAttachment === undefined || go.IsAttachment === false)) {
+                try {
+                    const parent = this.findParent(go);
+                    if (parent.PCode !== PCode_1.PCode.Avatar && (parent.IsAttachment === undefined || parent.IsAttachment === false)) {
+                        const uuid = parent.FullID.toString();
+                        if (found[uuid] === undefined) {
+                            found[uuid] = parent;
+                            results.push(parent);
+                        }
+                    }
+                }
+                catch (error) {
+                    console.log('Failed to find parent for ' + go.FullID.toString());
+                    console.error(error);
+                }
+            }
+        }
+        for (const obj of results) {
+            this.populateChildren(obj);
+        }
+        return results;
+    }
     getNumberOfObjects() {
         return Object.keys(this.objects).length;
     }

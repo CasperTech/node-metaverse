@@ -45,6 +45,7 @@ export declare class ObjectStoreLite implements IObjectStore {
     shutdown(): void;
     protected findParent(go: GameObject): GameObject;
     private populateChildren;
+    getAllObjects(): GameObject[];
     getNumberOfObjects(): number;
     getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): GameObject[];
     getObjectByUUID(fullID: UUID | string): GameObject;
