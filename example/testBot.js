@@ -284,20 +284,109 @@ async function connect()
         }
         catch(error)
         {
-            console.log('Map location request failed. You probably do not have map rights on Casper.');
+            console.log('Map location request failed. You probably do not have map rights on Casper, or he is offline.');
         }
 
-        setInterval(() => {
-            console.log('Finding objects');
-            var tmr = new Date().getTime();
-            const objs = bot.clientCommands.region.getObjectsInArea(191, 192, 56, 57, 144, 145);
-            var tmr2 = new Date().getTime();
-            console.log('Found ' + objs.length + ' objects in ' + (tmr2 - tmr) + 'ms');
-            for (const o of objs)
+        // By default, camera view distance is set to 1, to minimise memory and bandwidth consumption.
+        // This algorithm will slowly drag the camera up into the sky, scanning for objects.
+        let height = 64;
+        let lastObjects = 0;
+
+        bot.clientCommands.agent.setCamera(
+            new nmv.Vector3([128, 128, height]),
+            new nmv.Vector3([128, 128, 0]),
+            5000,
+            new nmv.Vector3([-1.0, 0, 0]),
+            new nmv.Vector3([0.0, 1.0, 0]));
+
+        let foundObjects = {};
+
+        const getAllChildren = function(obj)
+        {
+            let children = obj.children;
+            let newChildren = [obj]
+            ;
+            for (const child of children)
             {
-                console.log(o.FullID.toString());
+                newChildren = newChildren.concat(getAllChildren(child));
             }
-        }, 10000)
+            return children.concat(newChildren);
+        };
+
+        const scan = setInterval(async () => {
+            const count = bot.clientCommands.region.countObjects();
+            if (count > lastObjects)
+            {
+                console.log(count + ' objects found.');
+                lastObjects = count;
+            }
+            else
+            {
+                if (height > 4096)
+                {
+                    if (Object.keys(foundObjects).length > lastObjects)
+                    {
+                        const index = {};
+                        console.log('Indexing found objects');
+                        for(const o of foundObjects)
+                        {
+                            index[o.FullID.toString()] = true;
+                        }
+                        console.log('Searching for missing objects');
+                        for(const k of Object.keys(foundObjects))
+                        {
+                            if (index[k] === undefined)
+                            {
+                                console.log('Object missing: ' + k);
+                            }
+                        }
+                    }
+                    console.log('Finished scanning region! ' + lastObjects + ' objects found. Resolving all objects..');
+                    clearInterval(scan);
+                    // Query all objects in the region
+                    var tmr = new Date().getTime();
+                    const objs = await bot.clientCommands.region.getAllObjects(true);
+                    var tmr2 = new Date().getTime();
+
+                    let totalObjects = 0;
+                    let totalLandImpact = 0;
+
+                    const getLandImpact = function(obj)
+                    {
+                        let li = 0;
+                        if (obj.ownershipCost !== undefined && obj.ParentID === 0)
+                        {
+                            li += obj.ownershipCost;
+                        }
+                        /*for (const child of obj.children)
+                        {
+                            li += getLandImpact(child);
+                        }*/
+                        return li;
+                    };
+
+                    for (const obj of objs)
+                    {
+                        totalObjects += (1 + obj.totalChildren);
+                        totalLandImpact += getLandImpact(obj);
+                    }
+
+                    console.log('Found ' + objs.length + ' linksets with ' + totalObjects + ' objects  in ' + (tmr2 - tmr) + 'ms. Land impact: ' + totalLandImpact);
+                }
+                else
+                {
+                    console.log('Moving to ' + height);
+                    height += 128;
+                    bot.clientCommands.agent.setCamera(
+                        new nmv.Vector3([128, 128, height]),
+                        new nmv.Vector3([128, 128, 0]),
+                        5000,
+                        new nmv.Vector3([-1.0, 0, 0]),
+                        new nmv.Vector3([0.0, 1.0, 0]));
+                }
+            }
+        }, 5000);
+
 
         //await bot.clientCommands.friends.grantFriendRights('d1cd5b71-6209-4595-9bf0-771bf689ce00', nmv.RightsFlags.CanModifyObjects | nmv.RightsFlags.CanSeeOnline | nmv.RightsFlags.CanSeeOnMap );
     }
