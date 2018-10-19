@@ -15,21 +15,23 @@ import {PCode} from '../enums/PCode';
 import {ClientEvents} from './ClientEvents';
 import {KillObjectMessage} from './messages/KillObject';
 import {IObjectStore} from './interfaces/IObjectStore';
-import {GameObjectLite} from './GameObjectLite';
 import {NameValue} from './NameValue';
 import {BotOptionFlags, CompressedFlags} from '..';
-import {IGameObject} from './interfaces/IGameObject';
-import {GameObjectFull} from './GameObjectFull';
+import {GameObject} from './GameObject';
+import {RBush3D} from 'rbush-3d/dist';
+import {ITreeBoundingBox} from './interfaces/ITreeBoundingBox';
 
 export class ObjectStoreLite implements IObjectStore
 {
-    private circuit: Circuit;
-    private agent: Agent;
-    private objects: { [key: number]: GameObjectLite } = {};
-    private objectsByUUID: { [key: string]: number } = {};
-    private objectsByParent: { [key: number]: number[] } = {};
-    private clientEvents: ClientEvents;
-    private options: BotOptionFlags;
+    protected circuit: Circuit;
+    protected agent: Agent;
+    protected objects: { [key: number]: GameObject } = {};
+    protected objectsByUUID: { [key: string]: number } = {};
+    protected objectsByParent: { [key: number]: number[] } = {};
+    protected clientEvents: ClientEvents;
+    protected options: BotOptionFlags;
+
+    rtree?: RBush3D;
 
     constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
@@ -51,292 +53,316 @@ export class ObjectStoreLite implements IObjectStore
             {
                 case Message.ObjectUpdate:
                     const objectUpdate = packet.message as ObjectUpdateMessage;
-                    objectUpdate.ObjectData.forEach((objData) =>
-                    {
-                        const localID = objData.ID;
-                        const parentID = objData.ParentID;
-                        let addToParentList = true;
-
-                        if (this.objects[localID])
-                        {
-                            if (this.objects[localID].ParentID !== parentID && this.objectsByParent[parentID])
-                            {
-                                const ind = this.objectsByParent[parentID].indexOf(localID);
-                                if (ind !== -1)
-                                {
-                                    this.objectsByParent[parentID].splice(ind, 1);
-                                }
-                            }
-                            else
-                            {
-                                addToParentList = false;
-                            }
-                        }
-                        else
-                        {
-                            this.objects[localID] = new GameObjectLite();
-                        }
-
-                        const obj = this.objects[localID];
-                        obj.ID = objData.ID;
-                        obj.FullID = objData.FullID;
-                        obj.ParentID = objData.ParentID;
-                        obj.OwnerID = objData.OwnerID;
-                        obj.PCode = objData.PCode;
-
-                        this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
-
-                        if (objData.PCode === PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString())
-                        {
-                            this.agent.localID = localID;
-
-                            if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
-                            {
-                                Object.keys(this.objectsByParent).forEach((objParentID: string) =>
-                                {
-                                    const parent = parseInt(objParentID, 10);
-                                    if (parent !== this.agent.localID)
-                                    {
-                                        let foundAvatars = false;
-                                        this.objectsByParent[parent].forEach((objID) =>
-                                        {
-                                            if (this.objects[objID])
-                                            {
-                                                const o = this.objects[objID];
-                                                if (o.PCode === PCode.Avatar)
-                                                {
-                                                    foundAvatars = true;
-                                                }
-                                            }
-                                        });
-                                        if (this.objects[parent])
-                                        {
-                                            const o = this.objects[parent];
-                                            if (o.PCode === PCode.Avatar)
-                                            {
-                                                foundAvatars = true;
-                                            }
-                                        }
-                                        if (!foundAvatars)
-                                        {
-                                            this.deleteObject(parent);
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                        this.objectsByUUID[objData.FullID.toString()] = localID;
-                        if (!this.objectsByParent[parentID])
-                        {
-                            this.objectsByParent[parentID] = [];
-                        }
-                        if (addToParentList)
-                        {
-                            this.objectsByParent[parentID].push(localID);
-                        }
-
-                        if (objData.PCode !== PCode.Avatar && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
-                        {
-                            if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID)
-                            {
-                                // Drop object
-                                this.deleteObject(localID);
-                                return;
-                            }
-                        }
-                    });
+                    this.objectUpdate(objectUpdate);
                     break;
                 case Message.ObjectUpdateCached:
                     const objectUpdateCached = packet.message as ObjectUpdateCachedMessage;
-                    const rmo = new RequestMultipleObjectsMessage();
-                    rmo.AgentData = {
-                        AgentID: this.agent.agentID,
-                        SessionID: this.circuit.sessionID
-                    };
-                    rmo.ObjectData = [];
-                    objectUpdateCached.ObjectData.forEach((obj) =>
-                    {
-                        rmo.ObjectData.push({
-                            CacheMissType: 0,
-                            ID: obj.ID
-                        });
-                    });
-                    circuit.sendMessage(rmo, 0);
+                    this.objectUpdateCached(objectUpdateCached);
                     break;
                 case Message.ObjectUpdateCompressed:
                 {
                     const objectUpdateCompressed = packet.message as ObjectUpdateCompressedMessage;
-                    for (const obj of objectUpdateCompressed.ObjectData)
-                    {
-                        const flags = obj.UpdateFlags;
-                        const buf = obj.Data;
-                        let pos = 0;
-
-                        const fullID = new UUID(buf, pos);
-                        pos += 16;
-                        const localID = buf.readUInt32LE(pos);
-                        pos += 4;
-                        const pcode = buf.readUInt8(pos++);
-                        let newObj = false;
-                        if (!this.objects[localID])
-                        {
-                            newObj = true;
-                            this.objects[localID] = new GameObjectLite();
-                        }
-                        const o = this.objects[localID];
-                        o.ID = localID;
-                        o.PCode = pcode;
-                        this.objectsByUUID[fullID.toString()] = localID;
-                        o.FullID = fullID;
-
-
-                        pos++;
-
-                        pos = pos + 4;
-                        pos++;
-                        pos++;
-
-                        pos = pos + 12;
-
-                        pos = pos + 12;
-
-                        pos = pos + 12;
-                        const compressedflags: CompressedFlags = buf.readUInt32LE(pos);
-                        pos = pos + 4;
-                        o.OwnerID = new UUID(buf, pos);
-                        pos += 16;
-
-                        if (compressedflags & CompressedFlags.HasAngularVelocity)
-                        {
-                            pos = pos + 12;
-                        }
-                        if (compressedflags & CompressedFlags.HasParent)
-                        {
-                            const newParentID = buf.readUInt32LE(pos);
-                            pos += 4;
-                            let add = true;
-                            if (!newObj)
-                            {
-                                if (newParentID !== o.ParentID)
-                                {
-                                    const index = this.objectsByParent[o.ParentID].indexOf(localID);
-                                    if (index !== -1)
-                                    {
-                                        this.objectsByParent[o.ParentID].splice(index, 1);
-                                    }
-                                }
-                                else
-                                {
-                                    add = false;
-                                }
-                            }
-                            if (add)
-                            {
-                                if (!this.objectsByParent[newParentID])
-                                {
-                                    this.objectsByParent[newParentID] = [];
-                                }
-                                this.objectsByParent[newParentID].push(localID);
-                            }
-                            o.ParentID = newParentID;
-                        }
-                        if (pcode !== PCode.Avatar && newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
-                        {
-                            if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID)
-                            {
-                                // Drop object
-                                this.deleteObject(localID);
-                                return;
-                            }
-                        }
-                        if (compressedflags & CompressedFlags.Tree)
-                        {
-                            pos++;
-                        }
-                        else if (compressedflags & CompressedFlags.ScratchPad)
-                        {
-                            const scratchPadSize = buf.readUInt8(pos++);
-                            // Ignore this data
-                            pos = pos + scratchPadSize;
-                        }
-                        if (compressedflags & CompressedFlags.HasText)
-                        {
-                            // Read null terminated string
-                            const result = Utils.BufferToString(buf, pos);
-
-                            pos += result.readLength;
-                            pos = pos + 4;
-                        }
-                        if (compressedflags & CompressedFlags.MediaURL)
-                        {
-                            const result = Utils.BufferToString(buf, pos);
-
-                            pos += result.readLength;
-                        }
-                        if (compressedflags & CompressedFlags.HasParticles)
-                        {
-                            // TODO: Particle system block
-                            pos += 86;
-                        }
-
-                        // Extra params
-                        pos = this.readExtraParams(buf, pos, o);
-
-                        if (compressedflags & CompressedFlags.HasSound)
-                        {
-                            pos = pos + 16;
-                            pos += 4;
-                            pos++;
-                            pos = pos + 4;
-                        }
-                        if (compressedflags & CompressedFlags.HasNameValues)
-                        {
-                            const result = Utils.BufferToString(buf, pos);
-                            o.NameValue = this.parseNameValues(result.result);
-                            pos += result.readLength;
-                        }
-                        pos++;
-                        pos = pos + 2;
-                        pos = pos + 2;
-                        pos = pos + 12;
-                        pos = pos + 2;
-                        pos = pos + 2;
-                        pos = pos + 2;
-                        const textureEntryLength = buf.readUInt32LE(pos);
-                        pos = pos + 4;
-                        // TODO: Properly parse textureentry;
-                        pos = pos + textureEntryLength;
-
-                        if (compressedflags & CompressedFlags.TextureAnimation)
-                        {
-                            // TODO: Properly parse textureAnim
-                            pos = pos + 4;
-                        }
-
-                        o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
-                    };
-
+                    this.objectUpdateCompressed(objectUpdateCompressed);
                     break;
                 }
                 case Message.ImprovedTerseObjectUpdate:
                     const objectUpdateTerse = packet.message as ImprovedTerseObjectUpdateMessage;
-                    // TODO: ImprovedTerseObjectUPdate
+                    this.objectUpdateTerse(objectUpdateTerse);
                     break;
                 case Message.MultipleObjectUpdate:
                     const multipleObjectUpdate = packet.message as MultipleObjectUpdateMessage;
-                    // TODO: multipleObjectUpdate
-                    console.error('TODO: MultipleObjectUpdate');
+                    this.objectUpdateMultiple(multipleObjectUpdate);
                     break;
                 case Message.KillObject:
                     const killObj = packet.message as KillObjectMessage;
-                    killObj.ObjectData.forEach((obj) =>
-                    {
-                        const objectID = obj.ID;
-                        this.deleteObject(objectID);
-                    });
+                    this.killObject(killObj);
                     break;
             }
+        });
+    }
+
+    protected objectUpdate(objectUpdate: ObjectUpdateMessage)
+    {
+        objectUpdate.ObjectData.forEach((objData) =>
+        {
+            const localID = objData.ID;
+            const parentID = objData.ParentID;
+            let addToParentList = true;
+
+            if (this.objects[localID])
+            {
+                if (this.objects[localID].ParentID !== parentID && this.objectsByParent[parentID])
+                {
+                    const ind = this.objectsByParent[parentID].indexOf(localID);
+                    if (ind !== -1)
+                    {
+                        this.objectsByParent[parentID].splice(ind, 1);
+                    }
+                }
+                else
+                {
+                    addToParentList = false;
+                }
+            }
+            else
+            {
+                this.objects[localID] = new GameObject();
+            }
+
+            const obj = this.objects[localID];
+            obj.ID = objData.ID;
+            obj.FullID = objData.FullID;
+            obj.ParentID = objData.ParentID;
+            obj.OwnerID = objData.OwnerID;
+            obj.PCode = objData.PCode;
+
+            this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
+
+            if (objData.PCode === PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString())
+            {
+                this.agent.localID = localID;
+
+                if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                {
+                    Object.keys(this.objectsByParent).forEach((objParentID: string) =>
+                    {
+                        const parent = parseInt(objParentID, 10);
+                        if (parent !== this.agent.localID)
+                        {
+                            let foundAvatars = false;
+                            this.objectsByParent[parent].forEach((objID) =>
+                            {
+                                if (this.objects[objID])
+                                {
+                                    const o = this.objects[objID];
+                                    if (o.PCode === PCode.Avatar)
+                                    {
+                                        foundAvatars = true;
+                                    }
+                                }
+                            });
+                            if (this.objects[parent])
+                            {
+                                const o = this.objects[parent];
+                                if (o.PCode === PCode.Avatar)
+                                {
+                                    foundAvatars = true;
+                                }
+                            }
+                            if (!foundAvatars)
+                            {
+                                this.deleteObject(parent);
+                            }
+                        }
+                    });
+                }
+            }
+
+            this.objectsByUUID[objData.FullID.toString()] = localID;
+            if (!this.objectsByParent[parentID])
+            {
+                this.objectsByParent[parentID] = [];
+            }
+            if (addToParentList)
+            {
+                this.objectsByParent[parentID].push(localID);
+            }
+
+            if (objData.PCode !== PCode.Avatar && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+            {
+                if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID)
+                {
+                    // Drop object
+                    this.deleteObject(localID);
+                    return;
+                }
+            }
+        });
+    }
+
+    protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage)
+    {
+        const rmo = new RequestMultipleObjectsMessage();
+        rmo.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        rmo.ObjectData = [];
+        objectUpdateCached.ObjectData.forEach((obj) =>
+        {
+            rmo.ObjectData.push({
+                CacheMissType: 0,
+                ID: obj.ID
+            });
+        });
+        this.circuit.sendMessage(rmo, 0);
+    }
+
+    protected objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage)
+    {
+        for (const obj of objectUpdateCompressed.ObjectData)
+        {
+            const flags = obj.UpdateFlags;
+            const buf = obj.Data;
+            let pos = 0;
+
+            const fullID = new UUID(buf, pos);
+            pos += 16;
+            const localID = buf.readUInt32LE(pos);
+            pos += 4;
+            const pcode = buf.readUInt8(pos++);
+            let newObj = false;
+            if (!this.objects[localID])
+            {
+                newObj = true;
+                this.objects[localID] = new GameObject();
+            }
+            const o = this.objects[localID];
+            o.ID = localID;
+            o.PCode = pcode;
+            this.objectsByUUID[fullID.toString()] = localID;
+            o.FullID = fullID;
+
+
+            pos++;
+
+            pos = pos + 4;
+            pos++;
+            pos++;
+
+            pos = pos + 12;
+
+            pos = pos + 12;
+
+            pos = pos + 12;
+            const compressedflags: CompressedFlags = buf.readUInt32LE(pos);
+            pos = pos + 4;
+            o.OwnerID = new UUID(buf, pos);
+            pos += 16;
+
+            if (compressedflags & CompressedFlags.HasAngularVelocity)
+            {
+                pos = pos + 12;
+            }
+            if (compressedflags & CompressedFlags.HasParent)
+            {
+                const newParentID = buf.readUInt32LE(pos);
+                pos += 4;
+                let add = true;
+                if (!newObj)
+                {
+                    if (newParentID !== o.ParentID)
+                    {
+                        const index = this.objectsByParent[o.ParentID].indexOf(localID);
+                        if (index !== -1)
+                        {
+                            this.objectsByParent[o.ParentID].splice(index, 1);
+                        }
+                    }
+                    else
+                    {
+                        add = false;
+                    }
+                }
+                if (add)
+                {
+                    if (!this.objectsByParent[newParentID])
+                    {
+                        this.objectsByParent[newParentID] = [];
+                    }
+                    this.objectsByParent[newParentID].push(localID);
+                }
+                o.ParentID = newParentID;
+            }
+            if (pcode !== PCode.Avatar && newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+            {
+                if (this.agent.localID !== 0 && o.ParentID !== this.agent.localID)
+                {
+                    // Drop object
+                    this.deleteObject(localID);
+                    return;
+                }
+            }
+            if (compressedflags & CompressedFlags.Tree)
+            {
+                pos++;
+            }
+            else if (compressedflags & CompressedFlags.ScratchPad)
+            {
+                const scratchPadSize = buf.readUInt8(pos++);
+                // Ignore this data
+                pos = pos + scratchPadSize;
+            }
+            if (compressedflags & CompressedFlags.HasText)
+            {
+                // Read null terminated string
+                const result = Utils.BufferToString(buf, pos);
+
+                pos += result.readLength;
+                pos = pos + 4;
+            }
+            if (compressedflags & CompressedFlags.MediaURL)
+            {
+                const result = Utils.BufferToString(buf, pos);
+
+                pos += result.readLength;
+            }
+            if (compressedflags & CompressedFlags.HasParticles)
+            {
+                // TODO: Particle system block
+                pos += 86;
+            }
+
+            // Extra params
+            pos = this.readExtraParams(buf, pos, o);
+
+            if (compressedflags & CompressedFlags.HasSound)
+            {
+                pos = pos + 16;
+                pos += 4;
+                pos++;
+                pos = pos + 4;
+            }
+            if (compressedflags & CompressedFlags.HasNameValues)
+            {
+                const result = Utils.BufferToString(buf, pos);
+                o.NameValue = this.parseNameValues(result.result);
+                pos += result.readLength;
+            }
+            pos++;
+            pos = pos + 2;
+            pos = pos + 2;
+            pos = pos + 12;
+            pos = pos + 2;
+            pos = pos + 2;
+            pos = pos + 2;
+            const textureEntryLength = buf.readUInt32LE(pos);
+            pos = pos + 4;
+            // TODO: Properly parse textureentry;
+            pos = pos + textureEntryLength;
+
+            if (compressedflags & CompressedFlags.TextureAnimation)
+            {
+                // TODO: Properly parse textureAnim
+                pos = pos + 4;
+            }
+
+            o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
+        }
+    }
+
+    protected objectUpdateTerse(objectUpdateTerse: ImprovedTerseObjectUpdateMessage)
+    {    }
+
+    protected objectUpdateMultiple(objectUpdateMultiple: MultipleObjectUpdateMessage)
+    {    }
+
+    protected killObject(killObj: KillObjectMessage)
+    {
+        killObj.ObjectData.forEach((obj) =>
+        {
+            const objectID = obj.ID;
+            this.deleteObject(objectID);
         });
     }
 
@@ -371,11 +397,15 @@ export class ObjectStoreLite implements IObjectStore
                     this.objectsByParent[parentID].splice(ind, 1);
                 }
             }
+            if (this.rtree && this.objects[objectID].rtreeEntry !== undefined)
+            {
+                this.rtree.remove(this.objects[objectID].rtreeEntry);
+            }
             delete this.objects[objectID];
         }
     }
 
-    readExtraParams(buf: Buffer, pos: number, o: GameObjectLite): number
+    readExtraParams(buf: Buffer, pos: number, o: GameObject): number
     {
         if (pos >= buf.length)
         {
@@ -395,14 +425,14 @@ export class ObjectStoreLite implements IObjectStore
         return pos;
     }
 
-    getObjectsByParent(parentID: number): GameObjectLite[]
+    getObjectsByParent(parentID: number): GameObject[]
     {
         const list = this.objectsByParent[parentID];
         if (list === undefined)
         {
             return [];
         }
-        const result: GameObjectLite[] = [];
+        const result: GameObject[] = [];
         list.forEach((localID) =>
         {
             result.push(this.objects[localID]);
@@ -449,16 +479,102 @@ export class ObjectStoreLite implements IObjectStore
     shutdown()
     {
         this.objects = {};
+        if (this.rtree)
+        {
+            this.rtree.clear();
+        }
         this.objectsByUUID = {};
         this.objectsByParent = {};
     }
 
-    getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): GameObjectFull[]
+    protected findParent(go: GameObject): GameObject
     {
-        throw new Error('GetObjectsInArea not available with the Lite object store.');
+        if (go.ParentID !== 0 && this.objects[go.ParentID])
+        {
+            return this.findParent(this.objects[go.ParentID]);
+        }
+        else
+        {
+            return go;
+        }
     }
 
-    getObjectByUUID(fullID: UUID | string): IGameObject
+    private populateChildren(obj: GameObject)
+    {
+        obj.children = [];
+        obj.totalChildren = 0;
+        for (const child of this.getObjectsByParent(obj.ID))
+        {
+            obj.totalChildren++;
+            this.populateChildren(child);
+            if (child.totalChildren !== undefined)
+            {
+                obj.totalChildren += child.totalChildren;
+            }
+            obj.children.push(child);
+        }
+    }
+
+    getNumberOfObjects()
+    {
+        return Object.keys(this.objects).length;
+    }
+
+    getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): GameObject[]
+    {
+        if (!this.rtree)
+        {
+            throw new Error('GetObjectsInArea not available with the Lite object store');
+        }
+        const result = this.rtree.search({
+            minX: minX,
+            maxX: maxX,
+            minY: minY,
+            maxY: maxY,
+            minZ: minZ,
+            maxZ: maxZ
+        });
+        const found: {[key: string]: GameObject} = {};
+        const objs: GameObject[] = [];
+        for (const obj of result)
+        {
+            const o = obj as ITreeBoundingBox;
+            const go = o.gameObject as GameObject;
+            if (go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || go.IsAttachment === false))
+            {
+                try
+                {
+                    const parent = this.findParent(go);
+                    if (parent.PCode !== PCode.Avatar && (parent.IsAttachment === undefined || parent.IsAttachment === false))
+                    {
+                        const uuid = parent.FullID.toString();
+
+                        if (found[uuid] === undefined)
+                        {
+                            found[uuid] = parent;
+                            objs.push(parent);
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log('Failed to find parent for ' + go.FullID.toString());
+                    console.error(error);
+                    // Unable to find parent, full object probably not fully loaded yet
+                }
+            }
+        }
+
+        // Now populate children of each found object
+        for (const obj of objs)
+        {
+            this.populateChildren(obj);
+        }
+
+        return objs;
+    }
+
+    getObjectByUUID(fullID: UUID | string): GameObject
     {
         if (fullID instanceof UUID)
         {
@@ -472,12 +588,41 @@ export class ObjectStoreLite implements IObjectStore
         return this.objects[localID];
     }
 
-    getObjectByLocalID(localID: number): IGameObject
+    getObjectByLocalID(localID: number): GameObject
     {
         if (!this.objects[localID])
         {
             throw new Error('No object found with that UUID');
         }
         return this.objects[localID];
+    }
+
+    insertIntoRtree(obj: GameObject)
+    {
+        if (!this.rtree)
+        {
+            return;
+        }
+        if (obj.rtreeEntry !== undefined)
+        {
+            this.rtree.remove(obj.rtreeEntry);
+        }
+        if (!obj.Scale || !obj.Position || !obj.Rotation)
+        {
+            return;
+        }
+        const normalizedScale = obj.Scale.multiplyByQuat(obj.Rotation);
+        const bounds: ITreeBoundingBox = {
+            minX: obj.Position.x - (normalizedScale.x / 2),
+            maxX: obj.Position.x + (normalizedScale.x / 2),
+            minY: obj.Position.y - (normalizedScale.y / 2),
+            maxY: obj.Position.y + (normalizedScale.y / 2),
+            minZ: obj.Position.z - (normalizedScale.z / 2),
+            maxZ: obj.Position.z + (normalizedScale.z / 2),
+            gameObject: obj
+        };
+
+        obj.rtreeEntry = bounds;
+        this.rtree.insert(bounds);
     }
 }

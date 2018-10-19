@@ -23,6 +23,11 @@ class Agent {
         this.openID = {};
         this.buddyList = [];
         this.uiFlags = {};
+        this.cameraLookAt = new Vector3_1.Vector3([0.979546, 0.105575, -0.171303]);
+        this.cameraCenter = new Vector3_1.Vector3([199.58, 203.95, 24.304]);
+        this.cameraLeftAxis = new Vector3_1.Vector3([-1.0, 0.0, 0]);
+        this.cameraUpAxis = new Vector3_1.Vector3([0.0, 0.0, 1.0]);
+        this.cameraFar = 1;
         this.home = {};
         this.gestures = [];
         this.agentUpdateTimer = null;
@@ -89,11 +94,11 @@ class Agent {
             HeadRotation: Quaternion_1.Quaternion.getIdentity(),
             BodyRotation: Quaternion_1.Quaternion.getIdentity(),
             State: AgentState_1.AgentState.None,
-            CameraCenter: new Vector3_1.Vector3([199.58, 203.95, 24.304]),
-            CameraAtAxis: new Vector3_1.Vector3([0.979546, 0.105575, -0.171303]),
-            CameraLeftAxis: new Vector3_1.Vector3([-0.107158, 0.994242, 0]),
-            CameraUpAxis: new Vector3_1.Vector3([0.170316, 0.018357, 0.985218]),
-            Far: 128,
+            CameraCenter: this.cameraCenter,
+            CameraAtAxis: this.cameraLookAt,
+            CameraLeftAxis: this.cameraLeftAxis,
+            CameraUpAxis: this.cameraUpAxis,
+            Far: this.cameraFar,
             ControlFlags: this.controlFlags,
             Flags: __1.AgentFlags.None
         };

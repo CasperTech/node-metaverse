@@ -366,6 +366,10 @@ export class EventQueueClient
                                         }
                                         break;
                                     }
+                                    case 'ObjectPhysicsProperties':
+                                    {
+                                        break;
+                                    }
                                     case 'TeleportFinish':
                                     {
                                         const info = event['body']['Info'][0];

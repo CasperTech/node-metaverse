@@ -41,6 +41,22 @@ class AgentCommands extends CommandsBase_1.CommandsBase {
             return yield this.animate(anim, false);
         });
     }
+    setCamera(position, lookAt, viewDistance, leftAxis, upAxis) {
+        this.agent.cameraCenter = position;
+        this.agent.cameraLookAt = lookAt;
+        if (viewDistance !== undefined) {
+            this.agent.cameraFar = viewDistance;
+        }
+        if (leftAxis !== undefined) {
+            this.agent.cameraLeftAxis = leftAxis;
+        }
+        if (upAxis !== undefined) {
+            this.agent.cameraUpAxis = upAxis;
+        }
+    }
+    setViewDistance(viewDistance) {
+        this.agent.cameraFar = viewDistance;
+    }
 }
 exports.AgentCommands = AgentCommands;
 //# sourceMappingURL=AgentCommands.js.map

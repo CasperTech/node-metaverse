@@ -1,5 +1,5 @@
 import { BBox } from 'rbush-3d/dist';
-import { IGameObject } from './IGameObject';
+import { GameObject } from '../GameObject';
 export interface ITreeBoundingBox extends BBox {
-    gameObject: IGameObject;
+    gameObject: GameObject;
 }
