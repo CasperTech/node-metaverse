@@ -242,11 +242,19 @@ class RegionCommands extends CommandsBase_1.CommandsBase {
             }
         });
     }
+    getAllObjects(resolve = false) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const objs = this.currentRegion.objects.getAllObjects();
+            if (resolve) {
+                yield this.resolveObjects(objs);
+            }
+            return objs;
+        });
+    }
     getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ, resolve = false) {
         return __awaiter(this, void 0, void 0, function* () {
             const objs = this.currentRegion.objects.getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ);
             if (resolve) {
-                console.log('Resolving ' + objs.length + ' objects');
                 yield this.resolveObjects(objs);
             }
             return objs;

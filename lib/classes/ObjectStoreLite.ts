@@ -515,7 +515,49 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    getNumberOfObjects()
+    getAllObjects(): GameObject[]
+    {
+        const results = [];
+        const found: {[key: string]: GameObject} = {};
+        for (const k of Object.keys(this.objects))
+        {
+            const go = this.objects[parseInt(k, 10)];
+            if (go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || go.IsAttachment === false))
+            {
+                try
+                {
+                    const parent = this.findParent(go);
+                    if (parent.PCode !== PCode.Avatar && (parent.IsAttachment === undefined || parent.IsAttachment === false))
+                    {
+                        const uuid = parent.FullID.toString();
+
+                        if (found[uuid] === undefined)
+                        {
+                            found[uuid] = parent;
+                            results.push(parent);
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log('Failed to find parent for ' + go.FullID.toString());
+                    console.error(error);
+                    // Unable to find parent, full object probably not fully loaded yet
+                }
+            }
+        }
+
+        // Now populate children of each found object
+        for (const obj of results)
+        {
+            this.populateChildren(obj);
+        }
+
+        return results;
+    }
+
+
+    getNumberOfObjects(): number
     {
         return Object.keys(this.objects).length;
     }

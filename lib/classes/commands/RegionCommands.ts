@@ -302,12 +302,21 @@ export class RegionCommands extends CommandsBase
         }
     }
 
+    async getAllObjects(resolve: boolean = false): Promise<GameObject[]>
+    {
+        const objs = this.currentRegion.objects.getAllObjects();
+        if (resolve)
+        {
+            await this.resolveObjects(objs);
+        }
+        return objs;
+    }
+
     async getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number, resolve: boolean = false): Promise<GameObject[]>
     {
         const objs = this.currentRegion.objects.getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ);
         if (resolve)
         {
-            console.log('Resolving ' + objs.length + ' objects');
             await this.resolveObjects(objs);
         }
         return objs;

@@ -9,4 +9,5 @@ export interface IObjectStore {
     getObjectByUUID(fullID: UUID): GameObject;
     getObjectByLocalID(ID: number): GameObject;
     getNumberOfObjects(): number;
+    getAllObjects(): GameObject[];
 }
