@@ -2,6 +2,7 @@ import {UUID} from '../UUID';
 import {AgentAnimationMessage} from '../messages/AgentAnimation';
 import {PacketFlags} from '../../enums/PacketFlags';
 import {CommandsBase} from './CommandsBase';
+import {Vector3} from '../Vector3';
 
 export class AgentCommands extends CommandsBase
 {
@@ -35,5 +36,28 @@ export class AgentCommands extends CommandsBase
     async stopAnimations(anim: UUID[]): Promise<void>
     {
         return await this.animate(anim, false);
+    }
+
+    setCamera(position: Vector3, lookAt: Vector3, viewDistance?: number, leftAxis?: Vector3, upAxis?: Vector3)
+    {
+        this.agent.cameraCenter = position;
+        this.agent.cameraLookAt = lookAt;
+        if (viewDistance !== undefined)
+        {
+            this.agent.cameraFar = viewDistance;
+        }
+        if (leftAxis !== undefined)
+        {
+            this.agent.cameraLeftAxis = leftAxis;
+        }
+        if (upAxis !== undefined)
+        {
+            this.agent.cameraUpAxis = upAxis;
+        }
+    }
+
+    setViewDistance(viewDistance: number)
+    {
+        this.agent.cameraFar = viewDistance;
     }
 }

@@ -40,7 +40,11 @@ export declare class Agent {
     uiFlags: {
         'allowFirstLife'?: boolean;
     };
-    lookAt: Vector3;
+    cameraLookAt: Vector3;
+    cameraCenter: Vector3;
+    cameraLeftAxis: Vector3;
+    cameraUpAxis: Vector3;
+    cameraFar: number;
     maxGroups: number;
     agentFlags: number;
     startLocation: string;

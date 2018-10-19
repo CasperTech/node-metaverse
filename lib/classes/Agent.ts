@@ -19,9 +19,9 @@ import {RezSingleAttachmentFromInvMessage} from './messages/RezSingleAttachmentF
 import {AttachmentPoint} from '../enums/AttachmentPoint';
 import {Utils} from './Utils';
 import {ClientEvents} from './ClientEvents';
-import {IGameObject} from './interfaces/IGameObject';
 import Timer = NodeJS.Timer;
 import {ControlFlags, GroupChatSessionAgentListEvent, AgentFlags, PacketFlags, AssetType} from '..';
+import {GameObject} from './GameObject';
 
 export class Agent
 {
@@ -53,7 +53,11 @@ export class Agent
     uiFlags: {
         'allowFirstLife'?: boolean
     } = {};
-    lookAt: Vector3;
+    cameraLookAt: Vector3 = new Vector3([0.979546, 0.105575, -0.171303]);
+    cameraCenter: Vector3 = new Vector3([199.58, 203.95, 24.304]);
+    cameraLeftAxis: Vector3 = new Vector3([-1.0, 0.0, 0]);
+    cameraUpAxis: Vector3 = new Vector3([0.0, 0.0, 1.0]);
+    cameraFar = 1;
     maxGroups: number;
     agentFlags: number;
     startLocation: string;
@@ -164,11 +168,11 @@ export class Agent
             HeadRotation: Quaternion.getIdentity(),
             BodyRotation: Quaternion.getIdentity(),
             State: AgentState.None,
-            CameraCenter: new Vector3([199.58, 203.95, 24.304]),
-            CameraAtAxis: new Vector3([0.979546, 0.105575, -0.171303]),
-            CameraLeftAxis: new Vector3([-0.107158, 0.994242, 0]),
-            CameraUpAxis: new Vector3([0.170316, 0.018357, 0.985218]),
-            Far: 128,
+            CameraCenter: this.cameraCenter,
+            CameraAtAxis: this.cameraLookAt,
+            CameraLeftAxis: this.cameraLeftAxis,
+            CameraUpAxis: this.cameraUpAxis,
+            Far: this.cameraFar,
             ControlFlags: this.controlFlags,
             Flags: AgentFlags.None
         };
@@ -266,7 +270,7 @@ export class Agent
                             if (item.type === 6)
                             {
                                 let found = false;
-                                wornObjects.forEach((obj: IGameObject) =>
+                                wornObjects.forEach((obj: GameObject) =>
                                 {
                                     if (obj.hasNameValueEntry('AttachItemID'))
                                     {

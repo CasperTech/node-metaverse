@@ -151,7 +151,7 @@ class LoginResponse {
                     });
                     break;
                 case 'look_at':
-                    this.agent.lookAt = LoginResponse.parseVector3(val);
+                    this.agent.cameraLookAt = LoginResponse.parseVector3(val);
                     break;
                 case 'openid_url':
                     this.agent.openID.url = String(val);
