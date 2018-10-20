@@ -366,14 +366,14 @@ async function connect()
                     console.log('Found ' + searchResults.length + ' objects containing the string FINDME-*');
                     for (const obj of searchResults)
                     {
-                        console.log('Object: ' + obj.name + ', ' + obj.FullID.toString() + ', position: ' + obj.Position.toString() + ', land impact: ' + obj.ownershipCost)
+                        console.log('Object: ' + obj.name + ', ' + obj.FullID.toString() + ', position: ' + obj.Position.toString() + ', land impact: ' + obj.landImpact)
                     }
 
                     searchResults = await bot.clientCommands.region.findObjectsByName('rezcubes');
                     console.log('Found ' + searchResults.length + ' objects containing the string rezcubes');
                     for (const obj of searchResults)
                     {
-                        console.log('Object: ' + obj.name + ', ' + obj.FullID.toString() + ', position: ' + obj.Position.toString() + ', land impact: ' + obj.ownershipCost)
+                        console.log('Object: ' + obj.name + ', ' + obj.FullID.toString() + ', position: ' + obj.Position.toString() + ', land impact: ' + obj.landImpact)
                         for (const k of Object.keys(obj.NameValue))
                         {
                             console.log(k + ': ' + obj.NameValue[k])
