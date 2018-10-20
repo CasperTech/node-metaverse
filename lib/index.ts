@@ -54,6 +54,7 @@ import {ParticleDataFlags} from './enums/ParticleDataFlags';
 import {TextureFlags} from './enums/TextureFlags';
 import {SourcePattern} from './enums/SourcePattern';
 import {BlendFunc} from './enums/BlendFunc';
+import {PCode} from './enums/PCode';
 
 export {
     Bot,
@@ -88,6 +89,7 @@ export {
     TextureFlags,
     SourcePattern,
     BlendFunc,
+    PCode,
 
     // Events
     ChatEvent,

@@ -300,7 +300,8 @@ export class Bot
                     this.clientCommands.teleport.teleportTo(this.stayRegion, this.stayPosition, this.stayPosition).then(() =>
                     {
                         console.log('I found my way home.');
-                    }).catch(() => {
+                    }).catch(() =>
+                    {
                         console.log('Cannot teleport home right now.');
                     });
                 }

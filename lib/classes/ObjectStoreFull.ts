@@ -248,6 +248,15 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             this.readExtraParams(objData.ExtraParams, 0, this.objects[localID]);
             this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
+            if (this.objects[localID].NameValue['AttachItemID'])
+            {
+                this.objects[localID].IsAttachment = true;
+            }
+            else
+            {
+                this.objects[localID].IsAttachment = false;
+            }
+
             this.objectsByUUID[objData.FullID.toString()] = localID;
             if (!this.objectsByParent[parentID])
             {

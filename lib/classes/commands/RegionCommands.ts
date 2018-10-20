@@ -5,7 +5,7 @@ import {RegionHandleRequestMessage} from '../messages/RegionHandleRequest';
 import {Message} from '../../enums/Message';
 import {FilterResponse} from '../../enums/FilterResponse';
 import {RegionIDAndHandleReplyMessage} from '../messages/RegionIDAndHandleReply';
-import {PacketFlags, Vector3} from '../..';
+import {PacketFlags, PCode, Vector3} from '../..';
 import {ObjectGrabMessage} from '../messages/ObjectGrab';
 import {ObjectDeGrabMessage} from '../messages/ObjectDeGrab';
 import {ObjectGrabUpdateMessage} from '../messages/ObjectGrabUpdate';
@@ -14,7 +14,8 @@ import {ObjectSelectMessage} from '../messages/ObjectSelect';
 import {ObjectPropertiesMessage} from '../messages/ObjectProperties';
 import {Utils} from '../Utils';
 import {ObjectDeselectMessage} from '../messages/ObjectDeselect';
-import {PCode} from '../../enums/PCode';
+import * as micromatch from 'micromatch';
+import * as LLSD from "@caspertech/llsd";
 
 export class RegionCommands extends CommandsBase
 {
@@ -299,7 +300,102 @@ export class RegionCommands extends CommandsBase
                     console.error(totalRemaining + ' objects could not be resolved');
                 }
             }
+            const that  = this;
+            const getCosts = async function(objIDs: UUID[])
+            {
+                const result = await that.currentRegion.caps.capsRequestXML('GetObjectCost', {
+                    'object_ids': objIDs
+                });
+                const uuids = Object.keys(result);
+                for (const key of uuids)
+                {
+                    const costs = result[key];
+                    const obj: GameObject = that.currentRegion.objects.getObjectByUUID(new UUID(key));
+                    obj.linkPhysicsImpact = parseFloat(costs['linked_set_physics_cost']);
+                    obj.linkResourceImpact = parseFloat(costs['linked_set_resource_cost']);
+                    obj.physicaImpact = parseFloat(costs['physics_cost']);
+                    obj.resourceImpact = parseFloat(costs['resource_cost']);
+
+                    obj.landImpact = Math.ceil(obj.linkPhysicsImpact);
+                    if (obj.linkResourceImpact > obj.linkPhysicsImpact)
+                    {
+                        obj.landImpact = Math.ceil(obj.linkResourceImpact);
+                    }
+                }
+            };
+
+            let ids: UUID[] = [];
+            const promises: Promise<void>[] = [];
+            for (const obj of objects)
+            {
+                ids.push(new LLSD.UUID(obj.FullID));
+                if (ids.length > 255)
+                {
+                    promises.push(getCosts(ids));
+                    ids = [];
+                }
+            }
+            if (ids.length > 0)
+            {
+                promises.push(getCosts(ids));
+            }
+            await Promise.all(promises);
         }
+    }
+
+    async findObjectsByName(pattern: string | RegExp, minX?: number, maxX?: number, minY?: number, maxY?: number, minZ?: number, maxZ?: number): Promise<GameObject[]>
+    {
+        let objects: GameObject[] = [];
+        if (minX !== undefined && maxX !== undefined && minY !== undefined && maxY !== undefined && minZ !== undefined && maxZ !== undefined)
+        {
+            objects = await this.getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ, true);
+        }
+        else
+        {
+            objects = await this.getAllObjects(true);
+        }
+        const idCheck: {[key: string]: boolean} = {};
+        const matches: GameObject[] = [];
+        const it = function(go: GameObject)
+        {
+            if (go.name !== undefined)
+            {
+                let match = false;
+                if (pattern instanceof RegExp)
+                {
+                    if (pattern.test(go.name))
+                    {
+                        match = true;
+                    }
+                }
+                else
+                {
+                    match = micromatch.isMatch(go.name, pattern, {nocase: true});
+                }
+
+                if (match)
+                {
+                    const uuid = go.FullID.toString();
+                    if (!idCheck[uuid])
+                    {
+                        matches.push(go);
+                        idCheck[uuid] = true;
+                    }
+                }
+            }
+            if (go.children && go.children.length > 0)
+            {
+                for (const child of go.children)
+                {
+                    it(child);
+                }
+            }
+        };
+        for (const go of objects)
+        {
+            it(go);
+        }
+        return matches;
     }
 
     async getAllObjects(resolve: boolean = false): Promise<GameObject[]>

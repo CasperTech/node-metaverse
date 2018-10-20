@@ -5,7 +5,6 @@ import {ObjectUpdateMessage} from './messages/ObjectUpdate';
 import {ObjectUpdateCachedMessage} from './messages/ObjectUpdateCached';
 import {ObjectUpdateCompressedMessage} from './messages/ObjectUpdateCompressed';
 import {ImprovedTerseObjectUpdateMessage} from './messages/ImprovedTerseObjectUpdate';
-import {MultipleObjectUpdateMessage} from './messages/MultipleObjectUpdate';
 import {RequestMultipleObjectsMessage} from './messages/RequestMultipleObjects';
 import {Agent} from './Agent';
 import {UUID} from './UUID';
@@ -45,7 +44,6 @@ export class ObjectStoreLite implements IObjectStore
             Message.ObjectUpdateCached,
             Message.ObjectUpdateCompressed,
             Message.ImprovedTerseObjectUpdate,
-            Message.MultipleObjectUpdate,
             Message.KillObject
         ], (packet: Packet) =>
         {
@@ -68,10 +66,6 @@ export class ObjectStoreLite implements IObjectStore
                 case Message.ImprovedTerseObjectUpdate:
                     const objectUpdateTerse = packet.message as ImprovedTerseObjectUpdateMessage;
                     this.objectUpdateTerse(objectUpdateTerse);
-                    break;
-                case Message.MultipleObjectUpdate:
-                    const multipleObjectUpdate = packet.message as MultipleObjectUpdateMessage;
-                    this.objectUpdateMultiple(multipleObjectUpdate);
                     break;
                 case Message.KillObject:
                     const killObj = packet.message as KillObjectMessage;
@@ -117,6 +111,15 @@ export class ObjectStoreLite implements IObjectStore
             obj.PCode = objData.PCode;
 
             this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
+
+            if (this.objects[localID].NameValue['AttachItemID'])
+            {
+                this.objects[localID].IsAttachment = true;
+            }
+            else
+            {
+                this.objects[localID].IsAttachment = false;
+            }
 
             if (objData.PCode === PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString())
             {
@@ -354,15 +357,15 @@ export class ObjectStoreLite implements IObjectStore
     protected objectUpdateTerse(objectUpdateTerse: ImprovedTerseObjectUpdateMessage)
     {    }
 
-    protected objectUpdateMultiple(objectUpdateMultiple: MultipleObjectUpdateMessage)
-    {    }
-
     protected killObject(killObj: KillObjectMessage)
     {
         killObj.ObjectData.forEach((obj) =>
         {
             const objectID = obj.ID;
-            this.deleteObject(objectID);
+            if (this.objects[objectID])
+            {
+                this.deleteObject(objectID);
+            }
         });
     }
 

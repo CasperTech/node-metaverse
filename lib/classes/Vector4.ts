@@ -33,4 +33,8 @@ export class Vector4 extends vec4
         buf.writeFloatLE(this.z, pos + 8);
         buf.writeFloatLE(this.w, pos + 12);
     }
+    toString(): string
+    {
+        return '<' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + '>';
+    }
 }
