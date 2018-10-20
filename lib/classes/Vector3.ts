@@ -54,4 +54,8 @@ export class Vector3 extends vec3
             buf.writeFloatLE(this.z, pos + 8);
         }
     }
+    toString(): string
+    {
+        return '<' + this.x + ', ' + this.y + ', ' + this.z + '>';
+    }
 }

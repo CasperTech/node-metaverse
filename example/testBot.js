@@ -295,7 +295,7 @@ async function connect()
         bot.clientCommands.agent.setCamera(
             new nmv.Vector3([128, 128, height]),
             new nmv.Vector3([128, 128, 0]),
-            5000,
+            256,
             new nmv.Vector3([-1.0, 0, 0]),
             new nmv.Vector3([0.0, 1.0, 0]));
 
@@ -351,27 +351,34 @@ async function connect()
                     let totalObjects = 0;
                     let totalLandImpact = 0;
 
-                    const getLandImpact = function(obj)
-                    {
-                        let li = 0;
-                        if (obj.ownershipCost !== undefined && obj.ParentID === 0)
-                        {
-                            li += obj.ownershipCost;
-                        }
-                        /*for (const child of obj.children)
-                        {
-                            li += getLandImpact(child);
-                        }*/
-                        return li;
-                    };
-
                     for (const obj of objs)
                     {
                         totalObjects += (1 + obj.totalChildren);
-                        totalLandImpact += getLandImpact(obj);
+                        if (obj.landImpact)
+                        {
+                            totalLandImpact += obj.landImpact;
+                        }
                     }
 
                     console.log('Found ' + objs.length + ' linksets with ' + totalObjects + ' objects  in ' + (tmr2 - tmr) + 'ms. Land impact: ' + totalLandImpact);
+
+                    let searchResults = await bot.clientCommands.region.findObjectsByName('FINDME-*');
+                    console.log('Found ' + searchResults.length + ' objects containing the string FINDME-*');
+                    for (const obj of searchResults)
+                    {
+                        console.log('Object: ' + obj.name + ', ' + obj.FullID.toString() + ', position: ' + obj.Position.toString() + ', land impact: ' + obj.ownershipCost)
+                    }
+
+                    searchResults = await bot.clientCommands.region.findObjectsByName('rezcubes');
+                    console.log('Found ' + searchResults.length + ' objects containing the string rezcubes');
+                    for (const obj of searchResults)
+                    {
+                        console.log('Object: ' + obj.name + ', ' + obj.FullID.toString() + ', position: ' + obj.Position.toString() + ', land impact: ' + obj.ownershipCost)
+                        for (const k of Object.keys(obj.NameValue))
+                        {
+                            console.log(k + ': ' + obj.NameValue[k])
+                        }
+                    }
                 }
                 else
                 {

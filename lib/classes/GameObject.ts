@@ -42,6 +42,12 @@ export class GameObject
     resolvedAt?: number;
     totalChildren?: number;
 
+    landImpact?: number;
+    physicaImpact?: number;
+    resourceImpact?: number;
+    linkResourceImpact?: number;
+    linkPhysicsImpact?: number;
+    limitingType?: string;
 
     children?: GameObject[];
     rtreeEntry?: ITreeBoundingBox;

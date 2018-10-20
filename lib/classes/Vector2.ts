@@ -50,4 +50,8 @@ export class Vector2 extends vec2
             buf.writeFloatLE(this.y, pos + 4);
         }
     }
+    toString(): string
+    {
+        return '<' + this.x + ', ' + this.y + '>';
+    }
 }

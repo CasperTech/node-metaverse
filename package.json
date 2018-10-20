@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@types/long": "^4.0.0",
+    "@types/micromatch": "^3.1.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.11.6",
     "@types/request": "^2.47.1",
@@ -43,6 +44,7 @@
     "@caspertech/llsd": "^1.0.0",
     "ipaddr.js": "^1.8.1",
     "long": "^4.0.0",
+    "micromatch": "^3.1.10",
     "rbush-3d": "0.0.4",
     "request": "^2.88.0",
     "rxjs": "^6.3.3",

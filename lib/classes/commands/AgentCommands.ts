@@ -54,10 +54,12 @@ export class AgentCommands extends CommandsBase
         {
             this.agent.cameraUpAxis = upAxis;
         }
+        this.agent.sendAgentUpdate();
     }
 
     setViewDistance(viewDistance: number)
     {
         this.agent.cameraFar = viewDistance;
+        this.agent.sendAgentUpdate();
     }
 }

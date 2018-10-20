@@ -36,4 +36,8 @@ export class Quaternion extends quat
         buf.writeFloatLE(q.y, pos + 4);
         buf.writeFloatLE(q.z, pos + 8);
     }
+    toString(): string
+    {
+        return '<' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + '>';
+    }
 }
