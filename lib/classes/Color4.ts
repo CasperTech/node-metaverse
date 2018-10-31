@@ -1,9 +1,23 @@
+import {XMLElementOrXMLNode} from 'xmlbuilder';
+
 export class Color4
 {
     static black: Color4 = new Color4(0.0, 0.0, 0.0, 1.0);
     static white: Color4 = new Color4(1.0, 1.0, 1.0, 1.0);
 
-    constructor(public red: number | Buffer, public green: number, public blue: number | boolean, public alpha: number | boolean = 0)
+    static getXML(doc: XMLElementOrXMLNode, c?: Color4)
+    {
+        if (c === undefined)
+        {
+            c = Color4.white;
+        }
+        doc.ele('R', c.red);
+        doc.ele('G', c.green);
+        doc.ele('B', c.blue);
+        doc.ele('A', c.alpha);
+    }
+
+    constructor(public red: number | Buffer | number[], public green: number = 0, public blue: number | boolean = 0, public alpha: number | boolean = 0)
     {
         if (red instanceof Buffer && typeof blue === 'boolean')
         {
@@ -40,6 +54,13 @@ export class Color4
             {
                 this.alpha = 1.0 - this.alpha;
             }
+        }
+        if (Array.isArray(red))
+        {
+            this.green = red[1];
+            this.blue = red[2];
+            this.alpha = red[3];
+            this.red = red[0];
         }
     }
 }

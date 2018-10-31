@@ -55,6 +55,37 @@ import {TextureFlags} from './enums/TextureFlags';
 import {SourcePattern} from './enums/SourcePattern';
 import {BlendFunc} from './enums/BlendFunc';
 import {PCode} from './enums/PCode';
+import {Utils} from './classes/Utils';
+import {ObjectPhysicsDataEvent} from './events/ObjectPhysicsDataEvent';
+import {ParcelPropertiesEvent} from './events/ParcelPropertiesEvent';
+import {PrimFlags} from './enums/PrimFlags';
+import {TextureEntry} from './classes/TextureEntry';
+import {RegionEnvironment} from './classes/public/RegionEnvironment';
+import {Parcel} from './classes/public/Parcel';
+import {Material} from './classes/public/Material';
+import {GameObject} from './classes/public/GameObject';
+import {LightImageData} from './classes/public/LightImageData';
+import {LightData} from './classes/public/LightData';
+import {FlexibleData} from './classes/public/FlexibleData';
+import {MeshData} from './classes/public/MeshData';
+import {SculptData} from './classes/public/SculptData';
+import {SkyPreset} from './classes/public/interfaces/SkyPreset';
+import {WaterPreset} from './classes/public/interfaces/WaterPreset';
+import {NewObjectEvent} from './events/NewObjectEvent';
+import {ObjectKilledEvent} from './events/ObjectKilledEvent';
+import {ObjectUpdatedEvent} from './events/ObjectUpdatedEvent';
+import {Bumpiness} from './enums/Bumpiness';
+import {HoleType} from './enums/HoleType';
+import {LayerType} from './enums/LayerType';
+import {MappingType} from './enums/MappingType';
+import {PhysicsShapeType} from './enums/PhysicsShapeType';
+import {ParcelFlags} from './enums/ParcelFlags';
+import {ProfileShape} from './enums/ProfileShape';
+import {SculptType} from './enums/SculptType';
+import {Shininess} from './enums/Shininess';
+import {SimAccessFlags} from './enums/SimAccessFlags';
+import {TextureAnimFlags} from './enums/TextureAnimFlags';
+import {TransferStatus} from './enums/TransferStatus';
 
 export {
     Bot,
@@ -68,6 +99,8 @@ export {
     UUID,
     Vector3,
     Vector2,
+    Utils,
+    TextureEntry,
 
     // Flags
     AgentFlags,
@@ -90,6 +123,19 @@ export {
     SourcePattern,
     BlendFunc,
     PCode,
+    PrimFlags,
+    Bumpiness,
+    HoleType,
+    LayerType,
+    MappingType,
+    ParcelFlags,
+    PhysicsShapeType,
+    ProfileShape,
+    SculptType,
+    Shininess,
+    SimAccessFlags,
+    TextureAnimFlags,
+    TransferStatus,
 
     // Events
     ChatEvent,
@@ -113,12 +159,28 @@ export {
     FriendOnlineEvent,
     FriendRightsEvent,
     FriendRemovedEvent,
+    ObjectPhysicsDataEvent,
+    ParcelPropertiesEvent,
+    NewObjectEvent,
+    ObjectKilledEvent,
+    ObjectUpdatedEvent,
 
     // Public Classes
     Avatar,
     Friend,
+    FlexibleData,
+    LightData,
+    LightImageData,
+    GameObject,
+    Material,
+    Parcel,
+    RegionEnvironment,
+    SculptData,
+    MeshData,
 
     // Public Interfaces
     GlobalPosition,
-    MapLocation
+    MapLocation,
+    SkyPreset,
+    WaterPreset
 };

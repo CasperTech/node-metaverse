@@ -1,4 +1,7 @@
 import * as validator from 'validator';
+import * as builder from 'xmlbuilder';
+import {XMLElementOrXMLNode} from 'xmlbuilder';
+import * as Long from 'long';
 const uuid = require('uuid');
 
 export class UUID
@@ -13,6 +16,24 @@ export class UUID
     {
         const newUUID = uuid.v4();
         return new UUID(newUUID);
+    }
+
+    static getString(u?: UUID): string
+    {
+        if (u === undefined)
+        {
+            return UUID.zero().toString();
+        }
+        else
+        {
+            return u.toString();
+        }
+    }
+
+    static getXML(doc: XMLElementOrXMLNode, u?: UUID)
+    {
+        const str = UUID.getString(u);
+        doc.ele('UUID', str);
     }
 
     constructor(buf?: Buffer | string, pos?: number)
@@ -77,5 +98,30 @@ export class UUID
         {
             return cmp.equals(this.mUUID);
         }
+    }
+
+    public getBuffer()
+    {
+        const buf = Buffer.allocUnsafe(16);
+        this.writeToBuffer(buf, 0);
+        return buf;
+    }
+
+    public getLong()
+    {
+        const buf = this.getBuffer();
+        return new Long(buf.readUInt32LE(7), buf.readUInt32LE(12));
+    }
+
+    public bitwiseOr(w: UUID): UUID
+    {
+        const buf1 = this.getBuffer();
+        const buf2 = w.getBuffer();
+        const buf3 = Buffer.allocUnsafe(16);
+        for (let x = 0; x < 16; x++)
+        {
+            buf3[x] = buf1[x] ^ buf2[x];
+        }
+        return new UUID(buf3, 0);
     }
 }

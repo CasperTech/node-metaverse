@@ -22,6 +22,29 @@ export class Utils
             return buf.toString('utf8');
         }
     }
+    static JSONStringify(obj: object, space: number)
+    {
+        const cache: any[] = [];
+        return JSON.stringify(obj, function (key, value)
+        {
+            if (typeof value === 'object' && value !== null)
+            {
+                if (cache.indexOf(value) !== -1)
+                {
+                    try
+                    {
+                        return JSON.parse(JSON.stringify(value));
+                    }
+                    catch (error)
+                    {
+                        return 'Circular Reference';
+                    }
+                }
+                cache.push(value);
+            }
+            return value;
+        }, space);
+    }
     static BufferToString(buf: Buffer, startPos?: number):
     {
         readLength: number,

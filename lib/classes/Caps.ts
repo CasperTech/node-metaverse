@@ -189,6 +189,28 @@ export class Caps
         });
     }
 
+    requestGet(url: string): Promise<string>
+    {
+        return new Promise<string>((resolve, reject) =>
+        {
+            request({
+                'uri': url,
+                'rejectUnauthorized': false,
+                'method': 'GET'
+            }, (err, res, body) =>
+            {
+                if (err)
+                {
+                    reject(err);
+                }
+                else
+                {
+                    resolve(body);
+                }
+            });
+        });
+    }
+
     waitForSeedCapability(): Promise<void>
     {
         return new Promise((resolve, reject) =>
@@ -246,13 +268,54 @@ export class Caps
         });
     }
 
-    capsRequestXML(capability: string, data: any): Promise<any>
+    capsGetXML(capability: string): Promise<any>
     {
         return new Promise<any>((resolve, reject) =>
         {
             this.getCapability(capability).then((url) =>
             {
-                this.request(url, LLSD.LLSD.formatXML(data), 'application/llsd+xml').then((body: string) =>
+                this.requestGet(url).then((body: string) =>
+                {
+                    let result: any = null;
+                    try
+                    {
+                        result = LLSD.LLSD.parseXML(body);
+                    }
+                    catch (err)
+                    {
+                        console.error('Error parsing LLSD');
+                        console.error(body);
+                        reject(err);
+                    }
+                    resolve(result);
+                }).catch((err) =>
+                {
+                    console.error(err);
+                    reject(err);
+                });
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+        });
+    }
+
+    capsRequestXML(capability: string, data: any, debug = false): Promise<any>
+    {
+        if (debug)
+        {
+            console.log(data);
+        }
+        return new Promise<any>((resolve, reject) =>
+        {
+            this.getCapability(capability).then((url) =>
+            {
+                const xml = LLSD.LLSD.formatXML(data);
+                if (debug)
+                {
+                    console.log(xml);
+                }
+                this.request(url, xml, 'application/llsd+xml').then((body: string) =>
                 {
                     let result: any = null;
                     try

@@ -203,7 +203,7 @@ export class Bot
         return this.agent.agentID;
     }
 
-    async connectToSim(requested: boolean)
+    async connectToSim(requested: boolean = true)
     {
         this.agent.setCurrentRegion(this.currentRegion);
         const circuit = this.currentRegion.circuit;

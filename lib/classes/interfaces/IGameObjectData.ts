@@ -1,20 +1,24 @@
-import {Vector3} from './Vector3';
-import {UUID} from './UUID';
-import {Quaternion} from './Quaternion';
-import {Tree} from '../enums/Tree';
-import {SoundFlags} from '..';
-import {Vector4} from './Vector4';
-import {TextureEntry} from './TextureEntry';
-import {Color4} from './Color4';
-import {ParticleSystem} from './ParticleSystem';
-import {ITreeBoundingBox} from './interfaces/ITreeBoundingBox';
-import {NameValue} from './NameValue';
-import {PCode} from '../enums/PCode';
-import {Utils} from './Utils';
+import {UUID} from '../UUID';
 import * as Long from 'long';
+import {NameValue} from '../NameValue';
+import {Vector3} from '../Vector3';
+import {TextureEntry} from '../TextureEntry';
+import {Color4} from '../Color4';
+import {Quaternion} from '../Quaternion';
+import {Vector4} from '../Vector4';
+import {Tree} from '../../enums/Tree';
+import {PCode, SoundFlags} from '../..';
+import {ParticleSystem} from '../ParticleSystem';
+import {GameObject} from '../public/GameObject';
+import {FlexibleData} from '../public/FlexibleData';
+import {LightData} from '../public/LightData';
+import {LightImageData} from '../public/LightImageData';
+import {SculptData} from '../public/SculptData';
+import {MeshData} from '../public/MeshData';
 
-export class GameObject
+export interface IGameObjectData
 {
+    deleted: boolean;
     creatorID?: UUID;
     creationDate?: Long;
     baseMask?: number;
@@ -43,6 +47,7 @@ export class GameObject
     totalChildren?: number;
 
     landImpact?: number;
+    calculatedLandImpact?: number;
     physicaImpact?: number;
     resourceImpact?: number;
     linkResourceImpact?: number;
@@ -50,22 +55,18 @@ export class GameObject
     limitingType?: string;
 
     children?: GameObject[];
-    rtreeEntry?: ITreeBoundingBox;
-    ID = 0;
-    FullID = UUID.random();
-    ParentID = 0;
-    OwnerID = UUID.zero();
-    IsAttachment = false;
-    NameValue: {[key: string]: NameValue} = {};
-    PCode: PCode = PCode.None;
-
+    ID: number;
+    FullID: UUID;
+    ParentID?: number;
+    OwnerID: UUID;
+    IsAttachment: boolean;
+    NameValue: {[key: string]: NameValue};
+    PCode: PCode;
     State?: number;
     CRC?: number;
     Material?: number;
     ClickAction?: number;
     Scale?: Vector3;
-    ObjectData?: Buffer;
-    UpdateFlags?: number;
     Flags?: number;
     PathCurve?: number;
     ProfileCurve?: number;
@@ -86,12 +87,9 @@ export class GameObject
     ProfileEnd?: number;
     ProfileHollow?: number;
     TextureEntry?: TextureEntry;
-    TextureAnim?: Buffer;
-    Data?: Buffer;
     Text?: string;
     TextColor?: Color4;
     MediaURL?: string;
-    PSBlock?: Buffer;
     JointType?: number;
     JointPivot?: Vector3;
     JointAxisOrAnchor?: Vector3;
@@ -107,30 +105,14 @@ export class GameObject
     SoundFlags?: SoundFlags;
     SoundRadius?: number;
     Particles?: ParticleSystem;
-
-    constructor()
-    {
-        this.Position = Vector3.getZero();
-        this.Rotation = Quaternion.getIdentity();
-        this.AngularVelocity = Vector3.getZero();
-        this.TreeSpecies = 0;
-        this.SoundFlags = 0;
-        this.SoundRadius = 1.0;
-        this.SoundGain = 1.0;
-        this.ParentID = 0;
-    }
-
-    hasNameValueEntry(key: string): boolean
-    {
-        return this.NameValue[key] !== undefined;
-    }
-
-    getNameValueEntry(key: string): string
-    {
-        if (this.NameValue[key])
-        {
-            return this.NameValue[key].value;
-        }
-        return '';
-    }
+    FlexibleData?: FlexibleData;
+    LightData?: LightData;
+    LightImageData?: LightImageData;
+    SculptData?: SculptData;
+    MeshData?: MeshData;
+    density?: number;
+    friction?: number;
+    gravityMultiplier?: number;
+    physicsShapeType?: number;
+    restitution?: number;
 }
