@@ -1,10 +1,23 @@
 import {vec4} from '../tsm/vec4';
+import {XMLElementOrXMLNode} from 'xmlbuilder';
 
 export class Vector4 extends vec4
 {
     static getZero(): Vector4
     {
         return new Vector4();
+    }
+
+    static getXML(doc: XMLElementOrXMLNode, v?: Vector4)
+    {
+        if (v === undefined)
+        {
+            v = Vector4.getZero();
+        }
+        doc.ele('X', v.x);
+        doc.ele('Y', v.y);
+        doc.ele('Z', v.z);
+        doc.ele('W', v.w);
     }
 
     constructor(buf?: Buffer | number[], pos?: number)

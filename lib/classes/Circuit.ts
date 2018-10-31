@@ -1,6 +1,6 @@
 import {UUID} from './UUID';
-import {Socket} from 'dgram';
 import * as dgram from 'dgram';
+import {Socket} from 'dgram';
 import {Packet} from './Packet';
 import {MessageBase} from './MessageBase';
 import {PacketAckMessage} from './messages/PacketAck';
@@ -8,13 +8,17 @@ import {Message} from '../enums/Message';
 import {StartPingCheckMessage} from './messages/StartPingCheck';
 import {CompletePingCheckMessage} from './messages/CompletePingCheck';
 import {Subscription} from 'rxjs/internal/Subscription';
-import { filter } from 'rxjs/operators';
-import Timer = NodeJS.Timer;
+import {filter} from 'rxjs/operators';
 import {ClientEvents} from './ClientEvents';
 import {FilterResponse} from '../enums/FilterResponse';
 import {Subject} from 'rxjs/internal/Subject';
-import {PacketFlags} from '..';
+import {AssetType, PacketFlags, Utils} from '..';
 import {TimeoutError} from './TimeoutError';
+import {RequestXferMessage} from './messages/RequestXfer';
+import {SendXferPacketMessage} from './messages/SendXferPacket';
+import {ConfirmXferPacketMessage} from './messages/ConfirmXferPacket';
+import Timer = NodeJS.Timer;
+import {AbortXferMessage} from './messages/AbortXfer';
 
 export class Circuit
 {
@@ -77,6 +81,130 @@ export class Circuit
         packet.packetFlags = flags;
         this.sendPacket(packet);
         return packet.sequenceNumber;
+    }
+
+    XferFile(fileName: string, deleteOnCompletion: boolean, useBigPackets: boolean, vFileID: UUID, vFileType: AssetType, fromCache: boolean): Promise<Buffer>
+    {
+        return new Promise<Buffer>((resolve, reject) =>
+        {
+            let subscription: null | Subscription = null;
+            let timeout: Timer | null = null;
+            const progress = setInterval(() =>
+            {
+                console.log( '     ... Got ' + Object.keys(receivedChunks).length + ' packets');
+            }, 5000);
+            const resetTimeout = function ()
+            {
+                if (timeout !== null)
+                {
+                    clearTimeout(timeout);
+                }
+                timeout = setTimeout(() =>
+                {
+                    if (subscription !== null)
+                    {
+                        subscription.unsubscribe();
+                    }
+                    clearInterval(progress);
+                    reject(new Error('Xfer Timeout'));
+                }, 10000);
+            };
+            resetTimeout();
+            const xferRequest = new RequestXferMessage();
+            const transferID = UUID.random().getLong();
+            xferRequest.XferID = {
+                ID: transferID,
+                Filename: Utils.StringToBuffer(fileName),
+                FilePath: (fromCache) ? 4 : 0,
+                DeleteOnCompletion: deleteOnCompletion,
+                UseBigPackets: useBigPackets,
+                VFileID: vFileID,
+                VFileType: vFileType
+            };
+            this.sendMessage(xferRequest, PacketFlags.Reliable);
+            let finished = false;
+            let finishID = 0;
+            const receivedChunks: { [key: number]: Buffer } = {};
+
+            subscription = this.subscribeToMessages([
+                Message.SendXferPacket,
+                Message.AbortXfer
+            ], (packet: Packet) =>
+            {
+                switch (packet.message.id)
+                {
+                    case Message.AbortXfer:
+                    {
+                        const message = packet.message as AbortXferMessage;
+                        if (message.XferID.ID.compare(transferID) === 0)
+                        {
+                            if (timeout !== null)
+                            {
+                                clearTimeout(timeout);
+                            }
+                            if (subscription !== null)
+                            {
+                                subscription.unsubscribe();
+                            }
+                            clearInterval(progress);
+                            reject(new Error('Xfer Aborted'));
+                        }
+                        break;
+                    }
+                    case Message.SendXferPacket:
+                    {
+                        const message = packet.message as SendXferPacketMessage;
+                        if (message.XferID.ID.compare(transferID) === 0)
+                        {
+                            resetTimeout();
+                            const packetNum = message.XferID.Packet & 0x7FFFFFFF;
+                            const finishedNow = message.XferID.Packet & 0x80000000;
+                            receivedChunks[packetNum] = message.DataPacket.Data;
+                            const confirm = new ConfirmXferPacketMessage();
+                            confirm.XferID = {
+                                ID: transferID,
+                                Packet: packetNum
+                            };
+                            this.sendMessage(confirm, PacketFlags.Reliable);
+
+                            if (finishedNow)
+                            {
+                                finished = true;
+                                finishID = packetNum;
+                            }
+
+                            if (finished)
+                            {
+                                // Check if we have all the pieces
+                                for (let x = 0; x <= finishID; x++)
+                                {
+                                    if (!receivedChunks[x])
+                                    {
+                                        return;
+                                    }
+                                }
+                                const conc: Buffer[] = [];
+                                for (let x = 0; x <= finishID; x++)
+                                {
+                                    conc.push(receivedChunks[x]);
+                                }
+                                if (timeout !== null)
+                                {
+                                    clearTimeout(timeout);
+                                }
+                                if (subscription !== null)
+                                {
+                                    subscription.unsubscribe();
+                                }
+                                clearInterval(progress);
+                                resolve(Buffer.concat(conc));
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+        });
     }
 
     resend(sequenceNumber: number)

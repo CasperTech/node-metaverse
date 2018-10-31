@@ -7,6 +7,7 @@ export class TextureEntry
 {
     defaultTexture: TextureEntryFace | null;
     faces: TextureEntryFace[] = [];
+    binary: Buffer;
 
     static readFaceBitfield(buf: Buffer, pos: number): {
         result: boolean,
@@ -40,6 +41,7 @@ export class TextureEntry
 
     constructor(buf: Buffer)
     {
+        this.binary = buf;
         if (buf.length < 16)
         {
             this.defaultTexture = null;
@@ -47,7 +49,7 @@ export class TextureEntry
         else
         {
             this.defaultTexture = new TextureEntryFace(null);
-            let pos = 0;
+            const pos = 0;
             let i = pos;
 
             // Texture
@@ -241,7 +243,7 @@ export class TextureEntry
 
             // Material
             {
-                this.defaultTexture.materialb = buf[i++];
+                this.defaultTexture.material = buf[i++];
 
                 let done = false;
                 while (!done)
@@ -257,7 +259,7 @@ export class TextureEntry
                             if ((result.faceBits & bit) !== 0)
                             {
                                 this.createFace(face);
-                                this.faces[face].materialb = tmpByte;
+                                this.faces[face].material = tmpByte;
                             }
                         }
                     }
@@ -266,7 +268,7 @@ export class TextureEntry
 
             // Media
             {
-                this.defaultTexture.mediab = buf[i++];
+                this.defaultTexture.media = buf[i++];
 
                 let done = false;
                 while (i - pos < buf.length && !done)
@@ -282,7 +284,7 @@ export class TextureEntry
                             if ((result.faceBits & bit) !== 0)
                             {
                                 this.createFace(face);
-                                this.faces[face].mediab = tmpByte;
+                                this.faces[face].media = tmpByte;
                             }
                         }
                     }

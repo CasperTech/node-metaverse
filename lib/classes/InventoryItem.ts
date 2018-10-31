@@ -5,7 +5,7 @@ import {AssetType, InventoryItemFlags} from '..';
 
 export class InventoryItem
 {
-    assetID: UUID = UUID.zero();
+    assetID: UUID = UUID.zero();;
     inventoryType: InventoryType;
     name: string;
     salePrice: number;
@@ -26,5 +26,17 @@ export class InventoryItem
         owner: UUID;
         creator: UUID;
         group: UUID;
+        groupOwned?: boolean
+    } = {
+        baseMask: 0,
+        groupMask: 0,
+        nextOwnerMask: 0,
+        ownerMask: 0,
+        everyoneMask: 0,
+        lastOwner: UUID.zero(),
+        owner: UUID.zero(),
+        creator: UUID.zero(),
+        group: UUID.zero(),
+        groupOwned: false
     };
 }

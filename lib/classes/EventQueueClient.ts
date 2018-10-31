@@ -11,8 +11,8 @@ import {
     EventQueueStateChangeEvent,
     GroupChatEvent,
     GroupChatSessionAgentListEvent,
-    GroupChatSessionJoinEvent,
-    TeleportEvent
+    GroupChatSessionJoinEvent, ObjectPhysicsDataEvent, ParcelPropertiesEvent,
+    TeleportEvent, Vector3
 } from '..';
 
 export class EventQueueClient
@@ -102,112 +102,74 @@ export class EventQueueClient
 
                                         break;
                                     case 'ParcelProperties':
-                                        /*
-                                            {
-                                                "body": {
-                                                    "AgeVerificationBlock": [
-                                                    {
+                                    {
+                                        const body = event['body'];
+                                        const pprop = new ParcelPropertiesEvent();
+                                        pprop.RegionDenyAgeUnverified = body['AgeVerificationBlock'][0]['RegionDenyAgeUnverified'];
+                                        pprop.MediaDesc = body['MediaData'][0]['MediaDesc'];
+                                        pprop.MediaHeight = body['MediaData'][0]['MediaHeight'];
+                                        pprop.MediaLoop = body['MediaData'][0]['MediaLoop'];
+                                        pprop.MediaType = body['MediaData'][0]['MediaType'];
+                                        pprop.MediaWidth = body['MediaData'][0]['MediaWidth'];
+                                        pprop.ObscureMedia = body['MediaData'][0]['ObscureMedia'];
+                                        pprop.ObscureMusic = body['MediaData'][0]['ObscureMusic'];
+                                        pprop.AABBMax = new Vector3([parseInt(body['ParcelData'][0]['AABBMax'][0], 10), parseInt( body['ParcelData'][0]['AABBMax'][1], 10), parseInt(body['ParcelData'][0]['AABBMax'][2], 10)]);
+                                        pprop.AABBMin = new Vector3([parseInt(body['ParcelData'][0]['AABBMin'][0], 10), parseInt(body['ParcelData'][0]['AABBMin'][1], 10), parseInt( body['ParcelData'][0]['AABBMin'][2], 10)]);
+                                        pprop.AnyAVSounds = body['ParcelData'][0]['AnyAVSounds'];
+                                        pprop.Area = body['ParcelData'][0]['Area'];
+                                        pprop.AuctionID = Buffer.from(body['ParcelData'][0]['AuctionID'].toArray()).readUInt32LE(0);
+                                        pprop.AuthBuyerID = new UUID(String(body['ParcelData'][0]['AuthBuyerID']));
 
-                                                            "RegionDenyAgeUnverified": true
-                                                        }
-                                                    ],
-                                                    "MediaData": [
-                                                        {
-                                                            "MediaDesc": "",
-                                                            "MediaHeight": 0,
-                                                            "MediaLoop": 0,
-                                                            "MediaType": "text/html",
-                                                            "MediaWidth": 0,
-                                                            "ObscureMedia": 0,
-                                                            "ObscureMusic": 0
-                                                        }
-                                                    ],
-                                                    "ParcelData": [
-                                                        {
-                                                            "AABBMax": [
-                                                                256,
-                                                                256,
-                                                                50
-                                                            ],
-                                                            "AABBMin": [
-                                                                0,
-                                                                0,
-                                                                0
-                                                            ],
-                                                            "AnyAVSounds": true,
-                                                            "Area": 65536,
-                                                            "AuctionID": "AAAAAA==",
-                                                            "AuthBuyerID": "00000000-0000-0000-0000-000000000000",
-                                                            "Bitmap": "/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
-                                                            "Category": 0,
-                                                            "ClaimDate": 1333505995,
-                                                            "ClaimPrice": 0,
-                                                            "Desc": "adoption parent furry parent teen twin cub neko pets adult elf vamp toddleedoo baby child panel brother sister  numbers meshmerized  gacha adoptions adopt family mesh skin shape camp ngi youthspot foster kids mall  zoo train kid primbay\ndupli
-                                            city onlinker",
-                                                            "GroupAVSounds": true,
-                                                            "GroupID": "f2b75b49-8ebc-2a9c-f345-aa2f91adc908",
-                                                            "GroupPrims": 18677,
-                                                            "IsGroupOwned": true,
-                                                            "LandingType": 2,
-                                                            "LocalID": 15,
-                                                            "MaxPrims": 30000,
-                                                            "MediaAutoScale": 1,
-                                                            "MediaID": "6bd35c06-2b24-a83e-03f6-f547c65c8556",
-                                                            "MediaURL": "",
-                                                            "MusicURL": "http://142.4.209.63:8071",
-                                                            "Name": "Next Gen Inc. Adoption Agency on the :::: KiD GRiD :::",
-                                                            "OtherCleanTime": 0,
-                                                            "OtherCount": 4096,
-                                                            "OtherPrims": 312,
-                                                            "OwnerID": "f2b75b49-8ebc-2a9c-f345-aa2f91adc908",
-                                                            "OwnerPrims": 3,
-                                                            "ParcelFlags": "NiAUSw==",
-                                                            "ParcelPrimBonus": 1,
-                                                            "PassHours": 10,
-                                                            "PassPrice": 10,
-                                                            "PublicCount": 0,
-                                                            "RegionDenyAnonymous": true,
-                                                            "RegionDenyIdentified": true,
-                                                            "RegionDenyTransacted": true,
-                                                            "RegionPushOverride": true,
-                                                            "RentPrice": 0,
-                                                            "RequestResult": 0,
-                                                            "SalePrice": 1,
-                                                            "SeeAVs": true,
-                                                            "SelectedPrims": 1,
-                                                            "SelfCount": 0,
-                                                            "SequenceID": 0,
-                                                            "SimWideMaxPrims": 30000,
-                                                            "SimWideTotalPrims": 18993,
-                                                            "SnapSelection": true,
-                                                            "SnapshotID": "09c4101a-9406-2501-b9b7-dbb60260fd7a",
-                                                            "Status": 0,
-                                                            "TotalPrims": 18993,
-                                                            "UserLocation": [
-                                                                131.48399353027344,
-                                                                171.41600036621094,
-                                                                21.544700622558594
-                                                            ],
-                                                            "UserLookAt": [
-                                                                0.0325143001973629,
-                                                                -0.9994710087776184,
-                                                                0
-                                                            ]
-                                                        }
-                                                    ],
-                                                    "RegionAllowAccessBlock": [
-                                                        {
-                                                            "RegionAllowAccessOverride": true
-                                                        }
-                                                    ]
-                                                },
-                                                "message": "ParcelProperties"
-                                            }
-
-                                         */
+                                        pprop.Bitmap = Buffer.from(body['ParcelData'][0]['Bitmap'].toArray());
+                                        pprop.Category = body['ParcelData'][0]['Category'];
+                                        pprop.ClaimDate = body['ParcelData'][0]['ClaimDate'];
+                                        pprop.ClaimPrice = body['ParcelData'][0]['ClaimPrice'];
+                                        pprop.Desc = body['ParcelData'][0]['Desc'];
+                                        pprop.GroupAVSounds = body['ParcelData'][0]['GroupAVSounds'];
+                                        pprop.GroupID = new UUID(String(body['ParcelData'][0]['GroupID']));
+                                        pprop.GroupPrims = body['ParcelData'][0]['GroupPrims'];
+                                        pprop.IsGroupOwned = body['ParcelData'][0]['IsGroupOwned'];
+                                        pprop.LandingType = body['ParcelData'][0]['LandingType'];
+                                        pprop.LocalID = body['ParcelData'][0]['LocalID'];
+                                        pprop.MaxPrims = body['ParcelData'][0]['MaxPrims'];
+                                        pprop.MediaAutoScale = body['ParcelData'][0]['MediaAutoScale'];
+                                        pprop.MediaID = new UUID(String(body['ParcelData'][0]['MediaID']));
+                                        pprop.MediaURL = body['ParcelData'][0]['MediaURL'];
+                                        pprop.MusicURL = body['ParcelData'][0]['MusicURL'];
+                                        pprop.Name = body['ParcelData'][0]['Name'];
+                                        pprop.OtherCleanTime = body['ParcelData'][0]['OtherCleanTime'];
+                                        pprop.OtherCount = body['ParcelData'][0]['OtherCount'];
+                                        pprop.OtherPrims = body['ParcelData'][0]['OtherPrims'];
+                                        pprop.OwnerID = body['ParcelData'][0]['OwnerID'];
+                                        pprop.OwnerPrims = body['ParcelData'][0]['OwnerPrims'];
+                                        pprop.ParcelFlags = Buffer.from(body['ParcelData'][0]['ParcelFlags'].toArray()).readUInt32LE(0);
+                                        pprop.ParcelPrimBonus = body['ParcelData'][0]['ParcelPrimBonus'];
+                                        pprop.PassHours = body['ParcelData'][0]['PassHours'];
+                                        pprop.PassPrice = body['ParcelData'][0]['PassPrice'];
+                                        pprop.PublicCount = body['ParcelData'][0]['PublicCount'];
+                                        pprop.RegionDenyAnonymous = body['ParcelData'][0]['RegionDenyAnonymous'];
+                                        pprop.RegionDenyIdentified = body['ParcelData'][0]['RegionDenyIdentified'];
+                                        pprop.RegionPushOverride = body['ParcelData'][0]['RegionPushOverride'];
+                                        pprop.RegionDenyTransacted = body['ParcelData'][0]['RegionDenyTransacted'];
+                                        pprop.RentPrice = body['ParcelData'][0]['RentPrice'];
+                                        pprop.RequestResult = body['ParcelData'][0]['RequestResult'];
+                                        pprop.SalePrice = body['ParcelData'][0]['SalePrice'];
+                                        pprop.SeeAvs = body['ParcelData'][0]['SeeAVs'];
+                                        pprop.SelectedPrims = body['ParcelData'][0]['SelectedPrims'];
+                                        pprop.SelfCount = body['ParcelData'][0]['SelfCount'];
+                                        pprop.SequenceID = body['ParcelData'][0]['SequenceID'];
+                                        pprop.SimWideMaxPrims = body['ParcelData'][0]['SimWideMaxPrims'];
+                                        pprop.SimWideTotalPrims = body['ParcelData'][0]['SimWideTotalPrims'];
+                                        pprop.SnapSelection = body['ParcelData'][0]['SnapSelection'];
+                                        pprop.SnapshotID = new UUID(body['ParcelData'][0]['SnapshotID'].toString());
+                                        pprop.Status = body['ParcelData'][0]['Status'];
+                                        pprop.TotalPrims = body['ParcelData'][0]['TotalPrims'];
+                                        pprop.UserLocation = new Vector3([parseInt(body['ParcelData'][0]['UserLocation'][0], 10), parseInt(body['ParcelData'][0]['UserLocation'][1], 10), parseInt(body['ParcelData'][0]['UserLocation'][2], 10)]);
+                                        pprop.UserLookAt = new Vector3([parseInt(body['ParcelData'][0]['UserLookAt'][0], 10), parseInt(body['ParcelData'][0]['UserLookAt'][1], 10), parseInt(body['ParcelData'][0]['UserLookAt'][2], 10)]);
+                                        pprop.RegionAllowAccessOverride = body['RegionAllowAccessBlock'][0]['RegionAllowAccessOverride'];
+                                        this.clientEvents.onParcelPropertiesEvent.next(pprop);
                                         break;
+                                    }
                                     case 'AgentGroupDataUpdate':
                                         /*
                                         {
@@ -368,6 +330,20 @@ export class EventQueueClient
                                     }
                                     case 'ObjectPhysicsProperties':
                                     {
+                                        const objData = event['body']['ObjectData'];
+                                        for (const obj of objData)
+                                        {
+                                            const objPhysEvent = new ObjectPhysicsDataEvent();
+                                            objPhysEvent.localID = obj.LocalID;
+                                            objPhysEvent.density = obj.Density;
+                                            objPhysEvent.friction = obj.Friction;
+                                            objPhysEvent.gravityMultiplier = obj.GravityMultiplier;
+                                            objPhysEvent.physicsShapeType = obj.PhysicsShapeType;
+                                            objPhysEvent.restitution = obj.Restitution;
+
+                                            this.clientEvents.onPhysicsDataEvent.next(objPhysEvent);
+                                        }
+
                                         break;
                                     }
                                     case 'TeleportFinish':

@@ -1,4 +1,5 @@
 import {quat} from '../tsm/quat';
+import {XMLElementOrXMLNode} from 'xmlbuilder';
 
 export class Quaternion extends quat
 {
@@ -9,24 +10,47 @@ export class Quaternion extends quat
         return q;
     }
 
-    constructor(buf?: Buffer | number[], pos?: number)
+    static getXML(doc: XMLElementOrXMLNode, v?: Quaternion)
     {
-        if (buf !== undefined && pos !== undefined && buf instanceof Buffer)
+        if (v === undefined)
         {
-            const x = buf.readFloatLE(pos);
-            const y = buf.readFloatLE(pos + 4);
-            const z = buf.readFloatLE(pos + 8);
-            const xyzsum = 1.0 - x * x - y * y - z * z;
-            const w = (xyzsum > 0.0) ? Math.sqrt(xyzsum) : 0;
-            super([x, y, z, w]);
+            v = Quaternion.getIdentity();
         }
-        else if (buf !== undefined && Array.isArray(buf))
+        doc.ele('X', v.x);
+        doc.ele('Y', v.y);
+        doc.ele('Z', v.z);
+        doc.ele('W', v.w);
+    }
+
+    constructor(buf?: Buffer | number[] | Quaternion, pos?: number)
+    {
+        if (buf instanceof Quaternion)
         {
-            super(buf);
+            super();
+            this.x = buf.x;
+            this.y = buf.y;
+            this.z = buf.z;
+            this.w = buf.w;
         }
         else
         {
-            super();
+            if (buf !== undefined && pos !== undefined && buf instanceof Buffer)
+            {
+                const x = buf.readFloatLE(pos);
+                const y = buf.readFloatLE(pos + 4);
+                const z = buf.readFloatLE(pos + 8);
+                const xyzsum = 1.0 - x * x - y * y - z * z;
+                const w = (xyzsum > 0.0) ? Math.sqrt(xyzsum) : 0;
+                super([x, y, z, w]);
+            }
+            else if (buf !== undefined && Array.isArray(buf))
+            {
+                super(buf);
+            }
+            else
+            {
+                super();
+            }
         }
     }
     writeToBuffer(buf: Buffer, pos: number)

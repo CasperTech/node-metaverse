@@ -1,4 +1,5 @@
 import {vec3} from '../tsm/vec3';
+import {XMLElementOrXMLNode} from 'xmlbuilder';
 
 export class Vector3 extends vec3
 {
@@ -7,36 +8,57 @@ export class Vector3 extends vec3
         return new Vector3();
     }
 
-    constructor(buf?: Buffer | number[], pos?: number, double?: boolean)
+    static getXML(doc: XMLElementOrXMLNode, v?: Vector3)
     {
-        if (double === undefined)
+        if (v === undefined)
         {
-            double = false;
+            v = Vector3.getZero();
         }
-        if (buf !== undefined && pos !== undefined && buf instanceof Buffer)
+        doc.ele('X', v.x);
+        doc.ele('Y', v.y);
+        doc.ele('Z', v.z);
+    }
+
+    constructor(buf?: Buffer | number[] | Vector3, pos?: number, double?: boolean)
+    {
+        if (buf instanceof Vector3)
         {
-            if (!double)
-            {
-                const x = buf.readFloatLE(pos);
-                const y = buf.readFloatLE(pos + 4);
-                const z = buf.readFloatLE(pos + 8);
-                super([x, y, z]);
-            }
-            else
-            {
-                const x = buf.readDoubleLE(pos);
-                const y = buf.readDoubleLE(pos + 8);
-                const z = buf.readDoubleLE(pos + 16);
-                super([x, y, z]);
-            }
-        }
-        else if (buf !== undefined && Array.isArray(buf))
-        {
-            super(buf);
+            super();
+            this.x = buf.x;
+            this.y = buf.y;
+            this.z = buf.z;
         }
         else
         {
-            super();
+            if (double === undefined)
+            {
+                double = false;
+            }
+            if (buf !== undefined && pos !== undefined && buf instanceof Buffer)
+            {
+                if (!double)
+                {
+                    const x = buf.readFloatLE(pos);
+                    const y = buf.readFloatLE(pos + 4);
+                    const z = buf.readFloatLE(pos + 8);
+                    super([x, y, z]);
+                }
+                else
+                {
+                    const x = buf.readDoubleLE(pos);
+                    const y = buf.readDoubleLE(pos + 8);
+                    const z = buf.readDoubleLE(pos + 16);
+                    super([x, y, z]);
+                }
+            }
+            else if (buf !== undefined && Array.isArray(buf))
+            {
+                super(buf);
+            }
+            else
+            {
+                super();
+            }
         }
     }
     writeToBuffer(buf: Buffer, pos: number, double: boolean)
@@ -58,4 +80,6 @@ export class Vector3 extends vec3
     {
         return '<' + this.x + ', ' + this.y + ', ' + this.z + '>';
     }
+
+
 }

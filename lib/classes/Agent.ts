@@ -21,7 +21,7 @@ import {Utils} from './Utils';
 import {ClientEvents} from './ClientEvents';
 import Timer = NodeJS.Timer;
 import {ControlFlags, GroupChatSessionAgentListEvent, AgentFlags, PacketFlags, AssetType} from '..';
-import {GameObject} from './GameObject';
+import {GameObject} from './public/GameObject';
 
 export class Agent
 {
