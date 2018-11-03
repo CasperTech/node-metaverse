@@ -399,7 +399,7 @@ export class RegionCommands extends CommandsBase
                 if (objs[ky] !== undefined)
                 {
                     const o = objs[ky];
-                    if (o.FullID !== undefined && o.name !== undefined && o.Flags !== undefined && !(o.Flags & PrimFlags.InventoryEmpty) && (!o.inventory || o.inventory.length === 0))
+                    if ((o.resolveAttempts === undefined || o.resolveAttempts < 3) && o.FullID !== undefined && o.name !== undefined && o.Flags !== undefined && !(o.Flags & PrimFlags.InventoryEmpty) && (!o.inventory || o.inventory.length === 0))
                     {
                         console.log(' ... Downloading task inventory for object ' + o.FullID.toString() + ' (' + o.name + '), done ' + count + ' of ' + objectSet.length);
                         const req = new RequestTaskInventoryMessage();
@@ -670,6 +670,11 @@ export class RegionCommands extends CommandsBase
                         }
                         catch (error)
                         {
+                            if (o.resolveAttempts === undefined)
+                            {
+                                o.resolveAttempts = 0;
+                            }
+                            o.resolveAttempts++;
                             if (o.FullID !== undefined)
                             {
                                 console.error('Error downloading task inventory of ' + o.FullID.toString() + ':');

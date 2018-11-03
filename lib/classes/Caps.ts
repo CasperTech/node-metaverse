@@ -11,6 +11,8 @@ import {HTTPAssets} from '..';
 
 export class Caps
 {
+    static CAP_INVOCATION_INTERVAL_MS = 250;
+
     private region: Region;
     private onGotSeedCap: Subject<void> = new Subject<void>();
     private gotSeedCap = false;
@@ -18,6 +20,7 @@ export class Caps
     private clientEvents: ClientEvents;
     private agent: Agent;
     private active = false;
+    private capRateLimitTimers: {[key: string]: number} = {};
     eventQueueClient: EventQueueClient | null = null;
 
     constructor(agent: Agent, region: Region, seedURL: string, clientEvents: ClientEvents)
@@ -300,14 +303,39 @@ export class Caps
         });
     }
 
+    private waitForCapTimeout(cap: string): Promise<void>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            const timeToWait = (this.capRateLimitTimers[cap] + Caps.CAP_INVOCATION_INTERVAL_MS) - (new Date().getTime());
+            if (timeToWait > 0)
+            {
+                setTimeout(() =>
+                {
+                    resolve();
+                }, timeToWait);
+            }
+            else
+            {
+                resolve();
+            }
+        });
+    }
+
     capsRequestXML(capability: string, data: any, debug = false): Promise<any>
     {
         if (debug)
         {
             console.log(data);
         }
-        return new Promise<any>((resolve, reject) =>
+        return new Promise<any>(async (resolve, reject) =>
         {
+            const t = new Date().getTime();
+            if (this.capRateLimitTimers[capability] && (this.capRateLimitTimers[capability] + Caps.CAP_INVOCATION_INTERVAL_MS) > t)
+            {
+                await this.waitForCapTimeout(capability);
+            }
+            this.capRateLimitTimers[capability] = t;
             this.getCapability(capability).then((url) =>
             {
                 const xml = LLSD.LLSD.formatXML(data);
