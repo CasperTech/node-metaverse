@@ -136,7 +136,6 @@ export class AssetCommands extends CommandsBase
                         }
                         case Message.TransferAbort:
                         {
-                            console.log('GOT TRANSFERABORT');
                             const messg = packet.message as TransferAbortMessage;
                             if (!messg.TransferInfo.TransferID.equals(transferID))
                             {
@@ -155,7 +154,10 @@ export class AssetCommands extends CommandsBase
                         }
                         if (gotSize >= expectedSize)
                         {
-                            const packetNumbers = Object.keys(packets).sort();
+                            const packetNumbers = Object.keys(packets).sort((a: string, b: string): number =>
+                            {
+                                return parseInt(a, 10) - parseInt(b, 10);
+                            });
                             const buffers = [];
                             for (const pn of packetNumbers)
                             {

@@ -215,7 +215,7 @@ export class Bot
             Code: circuit.circuitCode
         };
 
-        await circuit.waitForAck(circuit.sendMessage(msg, PacketFlags.Reliable), 1000);
+        await circuit.waitForAck(circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
 
 
         const agentMovement: CompleteAgentMovementMessage = new CompleteAgentMovementMessage();
