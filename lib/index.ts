@@ -86,6 +86,9 @@ import {Shininess} from './enums/Shininess';
 import {SimAccessFlags} from './enums/SimAccessFlags';
 import {TextureAnimFlags} from './enums/TextureAnimFlags';
 import {TransferStatus} from './enums/TransferStatus';
+import {LLWearable} from './classes/LLWearable';
+import {ParticleSystem} from './classes/ParticleSystem';
+import {ExtraParams} from './classes/public/ExtraParams';
 
 export {
     Bot,
@@ -101,6 +104,9 @@ export {
     Vector2,
     Utils,
     TextureEntry,
+    LLWearable,
+    ParticleSystem,
+    ExtraParams,
 
     // Flags
     AgentFlags,

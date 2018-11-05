@@ -15,4 +15,9 @@ export class LightImageData
             this.params = new Vector3(buf, pos);
         }
     }
+    writeToBuffer(buf: Buffer, pos: number)
+    {
+        this.texture.writeToBuffer(buf, pos); pos = pos + 16;
+        this.params.writeToBuffer(buf, pos, false);
+    }
 }

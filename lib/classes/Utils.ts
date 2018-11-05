@@ -22,6 +22,12 @@ export class Utils
             return buf.toString('utf8');
         }
     }
+    static Clamp(value: number, min: number, max: number)
+    {
+        value = (value > max) ? max : value;
+        value = (value < min) ? min : value;
+        return value;
+    }
     static JSONStringify(obj: object, space: number)
     {
         const cache: any[] = [];
@@ -137,7 +143,13 @@ export class Utils
                 return '';
         }
     }
-
+    static FloatToByte(val: number, lower: number, upper: number)
+    {
+        val = Utils.Clamp(val, lower, upper);
+        val -= lower;
+        val /= (upper - lower);
+        return Math.round(val * 255);
+    }
     static ByteToFloat(byte: number, lower: number, upper: number)
     {
         const ONE_OVER_BYTEMAX: number = 1.0 / 255;

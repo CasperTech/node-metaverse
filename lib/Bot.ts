@@ -95,6 +95,7 @@ export class Bot
         this.currentRegion = response.region;
         this.agent = response.agent;
         this.clientCommands = new ClientCommands(response.region, response.agent, this);
+        this.currentRegion.clientCommands = this.clientCommands;
         return response;
     }
 
@@ -103,6 +104,7 @@ export class Bot
         this.closeCircuit();
         this.currentRegion = region;
         this.clientCommands = new ClientCommands(this.currentRegion, this.agent, this);
+        this.currentRegion.clientCommands = this.clientCommands;
         if (this.ping !== null)
         {
             clearInterval(this.ping);

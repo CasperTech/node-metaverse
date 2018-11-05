@@ -19,6 +19,8 @@ import {Color4} from './Color4';
 import {ParticleSystem} from './ParticleSystem';
 import {GameObject} from './public/GameObject';
 import {ObjectStoreLite} from './ObjectStoreLite';
+import {TextureAnim} from './public/TextureAnim';
+import {ExtraParams} from './public/ExtraParams';
 
 export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
 {
@@ -71,95 +73,8 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             obj.ClickAction = objData.ClickAction;
 
             obj.Scale = objData.Scale;
-            obj.ObjectData = objData.ObjectData;
-            const data: Buffer = objData.ObjectData;
-            let dataPos = 0;
+            obj.setObjectData(objData.ObjectData);
 
-            // noinspection FallThroughInSwitchStatementJS, TsLint
-            switch (data.length)
-            {
-                case 76:
-                    // Avatar collision normal;
-                    obj.CollisionPlane = new Vector4(objData.ObjectData, dataPos);
-                    dataPos += 16;
-                case 60:
-                    // Position
-                    obj.Position = new Vector3(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    obj.Velocity = new Vector3(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    obj.Acceleration = new Vector3(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    obj.Rotation = new Quaternion(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    obj.AngularVelocity = new Vector3(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    break;
-                case 48:
-                    obj.CollisionPlane = new Vector4(objData.ObjectData, dataPos);
-                    dataPos += 16;
-                case 32:
-                    obj.Position = new Vector3([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -0.5 * 256.0, 1.5 * 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -0.5 * 256.0, 1.5 * 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 3.0 * 256.0)
-                    ]);
-                    dataPos += 6;
-                    obj.Velocity = new Vector3([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                    ]);
-                    dataPos += 6;
-                    obj.Acceleration = new Vector3([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                    ]);
-                    dataPos += 6;
-                    obj.Rotation = new Quaternion([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -1.0, 1.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -1.0, 1.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -1.0, 1.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -1.0, 1.0)
-                    ]);
-                    dataPos += 8;
-                    obj.AngularVelocity = new Vector3([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                    ]);
-                    dataPos += 6;
-                    break;
-                case 16:
-                    obj.Position = new Vector3([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
-                    ]);
-                    obj.Velocity = new Vector3([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
-                    ]);
-                    obj.Acceleration = new Vector3([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
-                    ]);
-                    obj.Rotation = new Quaternion([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0)
-                    ]);
-                    obj.AngularVelocity = new Vector3([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
-                    ]);
-                    break;
-            }
             obj.ParentID = objData.ParentID;
 
             obj.Flags = objData.UpdateFlags;
@@ -182,22 +97,13 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             obj.ProfileEnd = objData.ProfileEnd;
             obj.ProfileHollow = objData.ProfileHollow;
             obj.TextureEntry = new TextureEntry(objData.TextureEntry);
-            obj.TextureAnim = objData.TextureAnim;
-
-            if (obj.TextureAnim.length >= 16)
-            {
-                this.readTextureAnim(obj);
-            }
+            obj.textureAnim = TextureAnim.from(objData.TextureAnim);
 
             const pcodeData = objData.Data;
             obj.Text = Utils.BufferToStringSimple(objData.Text);
             obj.TextColor = new Color4(objData.TextColor, 0, false, true);
             obj.MediaURL = Utils.BufferToStringSimple(objData.MediaURL);
-            obj.PSBlock = objData.PSBlock;
-            if (obj.PSBlock.length > 0)
-            {
-                obj.Particles = new ParticleSystem(obj.PSBlock, 0);
-            }
+            obj.Particles = ParticleSystem.from(objData.PSBlock);
             obj.Sound = objData.Sound;
             obj.OwnerID = objData.OwnerID;
             obj.SoundGain = objData.Gain;
@@ -261,8 +167,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     });
                 }
             }
-
-            this.readExtraParams(objData.ExtraParams, 0, this.objects[localID]);
+            this.objects[localID].extraParams = ExtraParams.from(objData.ExtraParams);
             this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
             this.objects[localID].IsAttachment = this.objects[localID].NameValue['AttachItemID'] !== undefined;
@@ -318,23 +223,6 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         if (rmo.ObjectData.length > 0)
         {
             this.circuit.sendMessage(rmo, 0);
-        }
-    }
-
-    private readTextureAnim(obj: GameObject)
-    {
-        let animPos = 0;
-        if (obj.TextureAnim !== undefined)
-        {
-            obj.TextureAnimFlags = obj.TextureAnim.readUInt8(animPos++);
-            obj.TextureAnimFace = obj.TextureAnim.readUInt8(animPos++);
-            obj.TextureAnimSizeX = obj.TextureAnim.readUInt8(animPos++);
-            obj.TextureAnimSizeY = obj.TextureAnim.readUInt8(animPos++);
-            obj.TextureAnimStart = obj.TextureAnim.readFloatLE(animPos);
-            animPos = animPos + 4;
-            obj.TextureAnimLength = obj.TextureAnim.readFloatLE(animPos);
-            animPos = animPos + 4;
-            obj.TextureAnimRate = obj.TextureAnim.readFloatLE(animPos);
         }
     }
 
@@ -464,13 +352,14 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 }
                 if (compressedflags & CompressedFlags.HasParticles)
                 {
-                    o.PSBlock = buf.slice(pos, pos + 86);
-                    o.Particles = new ParticleSystem(o.PSBlock, 0);
+                    o.Particles = ParticleSystem.from(buf.slice(pos, pos + 86));
                     pos += 86;
                 }
 
                 // Extra params
-                pos = this.readExtraParams(buf, pos, o);
+                const extraParamsLength = ExtraParams.getLengthOfParams(buf, pos);
+                o.extraParams = ExtraParams.from(buf.slice(pos, pos + extraParamsLength));
+                pos += extraParamsLength;
 
                 if (compressedflags & CompressedFlags.HasSound)
                 {
@@ -520,11 +409,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 {
                     const textureAnimLength = buf.readUInt32LE(pos);
                     pos = pos + 4;
-                    o.TextureAnim = buf.slice(pos, pos + textureAnimLength);
-                    if (o.TextureAnim.length >= 16)
-                    {
-                        this.readTextureAnim(o);
-                    }
+                    o.textureAnim = TextureAnim.from(buf.slice(pos, pos + textureAnimLength));
                 }
 
                 o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;

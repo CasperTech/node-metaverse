@@ -36,6 +36,44 @@ export class UUID
         doc.ele('UUID', str);
     }
 
+    static fromXMLJS(obj: any, param: string): false | UUID
+    {
+        if (obj[param] === undefined)
+        {
+            return false;
+        }
+        if (Array.isArray(obj[param]) && obj[param].length > 0)
+        {
+            obj[param] = obj[param][0];
+        }
+        if (typeof obj[param] === 'string')
+        {
+            if (validator.isUUID(obj[param]))
+            {
+                return new UUID(obj[param]);
+            }
+            return false;
+        }
+        if (typeof obj[param] === 'object')
+        {
+            if (obj[param]['UUID'] !== undefined && Array.isArray(obj[param]['UUID']) && obj[param]['UUID'].length > 0)
+            {
+                const u = obj[param]['UUID'][0];
+                if (typeof u === 'string')
+                {
+                    if (validator.isUUID(u))
+                    {
+                        return new UUID(u);
+                    }
+                    return false;
+                }
+                return false;
+            }
+            return false;
+        }
+        return false;
+    }
+
     constructor(buf?: Buffer | string, pos?: number)
     {
         if (buf !== undefined)

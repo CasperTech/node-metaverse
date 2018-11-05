@@ -8,28 +8,30 @@ import {ImprovedTerseObjectUpdateMessage} from './messages/ImprovedTerseObjectUp
 import {RequestMultipleObjectsMessage} from './messages/RequestMultipleObjects';
 import {Agent} from './Agent';
 import {UUID} from './UUID';
-import {ExtraParamType} from '../enums/ExtraParamType';
 import {Utils} from './Utils';
 import {ClientEvents} from './ClientEvents';
 import {KillObjectMessage} from './messages/KillObject';
 import {IObjectStore} from './interfaces/IObjectStore';
 import {NameValue} from './NameValue';
-import {BotOptionFlags, CompressedFlags, ObjectPhysicsDataEvent, PacketFlags, PCode, Vector3} from '..';
+import {
+    BotOptionFlags,
+    CompressedFlags,
+    NewObjectEvent,
+    ObjectPhysicsDataEvent,
+    ObjectUpdatedEvent,
+    PacketFlags,
+    PCode,
+    Vector3
+} from '..';
 import {GameObject} from './public/GameObject';
 import {RBush3D} from 'rbush-3d/dist';
 import {ITreeBoundingBox} from './interfaces/ITreeBoundingBox';
 import {FilterResponse} from '../enums/FilterResponse';
 import {ObjectSelectMessage} from './messages/ObjectSelect';
 import {ObjectDeselectMessage} from './messages/ObjectDeselect';
-import {FlexibleData} from './public/FlexibleData';
-import {LightImageData} from './public/LightImageData';
-import {LightData} from './public/LightData';
-import {MeshData} from './public/MeshData';
-import {SculptData} from './public/SculptData';
 import {Quaternion} from './Quaternion';
 import {Subscription} from 'rxjs/internal/Subscription';
-import {NewObjectEvent} from '../events/NewObjectEvent';
-import {ObjectUpdatedEvent} from '../events/ObjectUpdatedEvent';
+import {ExtraParams} from './public/ExtraParams';
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -445,7 +447,9 @@ export class ObjectStoreLite implements IObjectStore
             }
 
             // Extra params
-            pos = this.readExtraParams(buf, pos, o);
+            const extraParamsLength = ExtraParams.getLengthOfParams(buf, pos);
+            o.extraParams = ExtraParams.from(buf.slice(pos, pos + extraParamsLength));
+            pos = pos + extraParamsLength;
 
             if (compressedflags & CompressedFlags.HasSound)
             {
@@ -553,47 +557,6 @@ export class ObjectStoreLite implements IObjectStore
             delete this.objects[objectID];
         }
     }
-
-    readExtraParams(buf: Buffer, pos: number, o: GameObject): number
-    {
-        const startPos = pos;
-        if (pos >= buf.length)
-        {
-            return 0;
-        }
-        const extraParamCount = buf.readUInt8(pos++);
-        for (let k = 0; k < extraParamCount; k++)
-        {
-            const type: ExtraParamType = buf.readUInt16LE(pos);
-            pos = pos + 2;
-            const paramLength = buf.readUInt32LE(pos);
-            pos = pos + 4;
-
-            switch (type)
-            {
-                case ExtraParamType.Flexible:
-                    o.FlexibleData = new FlexibleData(buf, pos, paramLength);
-                    break;
-                case ExtraParamType.Light:
-                    o.LightData = new LightData(buf, pos, paramLength);
-                    break;
-                case ExtraParamType.LightImage:
-                    o.LightImageData = new LightImageData(buf, pos, paramLength);
-                    break;
-                case ExtraParamType.Mesh:
-                    o.MeshData = new MeshData(buf, pos, paramLength);
-                    break;
-                case ExtraParamType.Sculpt:
-                    o.SculptData = new SculptData(buf, pos, paramLength);
-                    break;
-            }
-
-            pos += paramLength;
-        }
-        o.ExtraParams = buf.slice(startPos, pos);
-        return pos;
-    }
-
     getObjectsByParent(parentID: number): GameObject[]
     {
         const list = this.objectsByParent[parentID];

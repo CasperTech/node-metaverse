@@ -10,28 +10,32 @@ import {ITreeBoundingBox} from '../interfaces/ITreeBoundingBox';
 import {NameValue} from '../NameValue';
 import * as Long from 'long';
 import {IGameObjectData} from '../interfaces/IGameObjectData';
-import {FlexibleData} from './FlexibleData';
-import {LightData} from './LightData';
-import {LightImageData} from './LightImageData';
-import {SculptData} from './SculptData';
-import {MeshData} from './MeshData';
-import {PCode, PrimFlags, SoundFlags} from '../..';
+import {
+    HoleType,
+    HTTPAssets,
+    PCode,
+    PhysicsShapeType,
+    PrimFlags,
+    ProfileShape, SculptType,
+    SoundFlags,
+    Utils
+} from '../..';
 import * as builder from 'xmlbuilder';
 import {XMLElementOrXMLNode} from 'xmlbuilder';
+import * as xml2js from 'xml2js';
 import {Region} from '../Region';
-import {TextureAnimFlags} from '../../enums/TextureAnimFlags';
-import {ProfileShape} from '../../enums/ProfileShape';
-import {HoleType} from '../../enums/HoleType';
-import {PhysicsShapeType} from '../../enums/PhysicsShapeType';
 import {InventoryItem} from '../InventoryItem';
+import {InventoryType} from '../../enums/InventoryType';
+import {LLWearable} from '../LLWearable';
+import {TextureAnim} from './TextureAnim';
+import {ExtraParams} from './ExtraParams';
 
 export class GameObject implements IGameObjectData
 {
     rtreeEntry?: ITreeBoundingBox;
-    TextureAnim?: Buffer;
-    Data?: Buffer;
-    ObjectData?: Buffer;
-    PSBlock?: Buffer;
+
+    textureAnim: TextureAnim;
+    extraParams: ExtraParams;
 
     deleted = false;
     creatorID?: UUID;
@@ -91,7 +95,6 @@ export class GameObject implements IGameObjectData
     PathEnd?: number;
     PathScaleX?: number;
     PathScaleY?: number;
-    ExtraParams?: Buffer;
     PathShearX?: number;
     PathShearY?: number;
     PathTwist?: number;
@@ -123,18 +126,6 @@ export class GameObject implements IGameObjectData
     SoundFlags?: SoundFlags;
     SoundRadius?: number;
     Particles?: ParticleSystem;
-    FlexibleData?: FlexibleData;
-    LightData?: LightData;
-    LightImageData?: LightImageData;
-    SculptData?: SculptData;
-    MeshData?: MeshData;
-    TextureAnimFlags?: TextureAnimFlags;
-    TextureAnimFace?: number;
-    TextureAnimSizeX?: number;
-    TextureAnimSizeY?: number;
-    TextureAnimStart?: number;
-    TextureAnimLength?: number;
-    TextureAnimRate?: number;
 
     density?: number;
     friction?: number;
@@ -147,6 +138,445 @@ export class GameObject implements IGameObjectData
     inventory: InventoryItem[] = [];
 
     resolveAttempts = 0;
+
+    private static getFromXMLJS(obj: any, param: string): any
+    {
+        if (obj[param] === undefined)
+        {
+            return false;
+        }
+        let retParam;
+        if (Array.isArray(obj[param]))
+        {
+            retParam = obj[param][0];
+        }
+        else
+        {
+            retParam = obj[param];
+        }
+        if (typeof retParam === 'string')
+        {
+            if (retParam.toLowerCase() === 'false')
+            {
+                return false;
+            }
+            if (retParam.toLowerCase() === 'true')
+            {
+                return true;
+            }
+            const numVar = parseInt(retParam, 10);
+            if (numVar >= Number.MIN_SAFE_INTEGER && numVar <= Number.MAX_SAFE_INTEGER && String(numVar) === retParam)
+            {
+                return numVar
+            }
+        }
+        return retParam;
+    }
+
+    private static partFromXMLJS(obj: any, root: boolean)
+    {
+        const go = new GameObject();
+        go.Flags = 0;
+        let prop: any;
+        if (this.getFromXMLJS(obj, 'AllowedDrop'))
+        {
+            go.Flags = go.Flags | PrimFlags.AllowInventoryDrop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'CreatorID'))
+        {
+            go.creatorID = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'FolderID'))
+        {
+            go.folderID = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'InventorySerial'))
+        {
+            go.inventorySerial = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'UUID'))
+        {
+            go.FullID = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'LocalId'))
+        {
+            go.ID = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'Name'))
+        {
+            go.name = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'Material'))
+        {
+            go.Material = prop;
+        }
+        if (prop = Vector3.fromXMLJS(obj, 'GroupPosition'))
+        {
+            if (root)
+            {
+                go.Position = prop;
+            }
+        }
+        if (prop = Vector3.fromXMLJS(obj, 'OffsetPosition'))
+        {
+            if (!root)
+            {
+                go.Position = prop;
+            }
+        }
+        if (prop = Quaternion.fromXMLJS(obj, 'RotationOffset'))
+        {
+            go.Rotation = prop;
+        }
+        if (prop = Vector3.fromXMLJS(obj, 'Velocity'))
+        {
+            go.Velocity = prop;
+        }
+        if (prop = Vector3.fromXMLJS(obj, 'AngularVelocity'))
+        {
+            go.AngularVelocity = prop;
+        }
+        if (prop = Vector3.fromXMLJS(obj, 'Acceleration'))
+        {
+            go.Acceleration = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'Description'))
+        {
+            go.description = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'Text'))
+        {
+            go.Text = prop;
+        }
+        if (prop = Color4.fromXMLJS(obj, 'Color'))
+        {
+            go.TextColor = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'SitName'))
+        {
+            go.sitName = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'TouchName'))
+        {
+            go.touchName = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'ClickAction'))
+        {
+            go.ClickAction = prop;
+        }
+        if (prop = Vector3.fromXMLJS(obj, 'Scale'))
+        {
+            go.Scale = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'ParentID'))
+        {
+            go.ParentID = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'Category'))
+        {
+            go.category = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'SalePrice'))
+        {
+            go.salePrice = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'ObjectSaleType'))
+        {
+            go.saleType = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'OwnershipCost'))
+        {
+            go.ownershipCost = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'GroupID'))
+        {
+            go.groupID = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'OwnerID'))
+        {
+            go.OwnerID = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'LastOwnerID'))
+        {
+            go.lastOwnerID = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'BaseMask'))
+        {
+            go.baseMask = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'OwnerMask'))
+        {
+            go.ownerMask = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'GroupMask'))
+        {
+            go.groupMask = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'EveryoneMask'))
+        {
+            go.everyoneMask = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'NextOwnerMask'))
+        {
+            go.nextOwnerMask = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'Flags'))
+        {
+            let flags = 0;
+            if (typeof prop === 'string')
+            {
+                const flagList = prop.split(' ');
+                for (const flag of flagList)
+                {
+                    const f: any = String(flag);
+                    if (PrimFlags[f])
+                    {
+                        flags = flags | parseInt(PrimFlags[f], 10);
+                    }
+                }
+            }
+            go.Flags = flags;
+        }
+        if (prop = this.getFromXMLJS(obj, 'TextureAnimation'))
+        {
+            const buf = Buffer.from(prop, 'base64');
+            go.textureAnim = TextureAnim.from(buf);
+        }
+        if (prop = this.getFromXMLJS(obj, 'ParticleSystem'))
+        {
+            const buf = Buffer.from(prop, 'base64');
+            go.Particles = ParticleSystem.from(buf);
+        }
+        if (prop = this.getFromXMLJS(obj, 'PhysicsShapeType'))
+        {
+            go.physicsShapeType = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'SoundID'))
+        {
+            go.Sound = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'SoundGain'))
+        {
+            go.SoundGain = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'SoundFlags'))
+        {
+            go.SoundFlags = prop;
+        }
+        if (prop = UUID.fromXMLJS(obj, 'SoundRadius'))
+        {
+            go.SoundRadius = prop;
+        }
+        if (prop = this.getFromXMLJS(obj, 'Shape'))
+        {
+            const shape = prop;
+            if (prop = this.getFromXMLJS(shape, 'ProfileCurve'))
+            {
+                go.ProfileCurve = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'TextureEntry'))
+            {
+                const buf = Buffer.from(prop, 'base64');
+                go.TextureEntry = new TextureEntry(buf);
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathBegin'))
+            {
+                go.PathBegin = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathCurve'))
+            {
+                go.PathCurve = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathEnd'))
+            {
+                go.PathEnd = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathRadiusOffset'))
+            {
+                go.PathRadiusOffset = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathRevolutions'))
+            {
+                go.PathRevolutions = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathScaleX'))
+            {
+                go.PathScaleX = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathScaleY'))
+            {
+                go.PathScaleY = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathShearX'))
+            {
+                go.PathShearX = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathSkew'))
+            {
+                go.PathSkew = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathTaperX'))
+            {
+                go.PathTaperX = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathTaperY'))
+            {
+                go.PathTaperY = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathTwist'))
+            {
+                go.PathTwist = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PathTwistBegin'))
+            {
+                go.PathTwistBegin = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'PCode'))
+            {
+                go.PCode = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'ProfileBegin'))
+            {
+                go.ProfileBegin = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'ProfileEnd'))
+            {
+                go.ProfileEnd = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'ProfileHollow'))
+            {
+                go.ProfileHollow = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'State'))
+            {
+                go.State = prop;
+            }
+            if (prop = this.getFromXMLJS(shape, 'ProfileShape'))
+            {
+                if (!go.ProfileCurve)
+                {
+                    go.ProfileCurve = 0;
+                }
+                go.ProfileCurve = go.ProfileCurve | parseInt(ProfileShape[prop], 10);
+            }
+            if (prop = this.getFromXMLJS(shape, 'HollowShape'))
+            {
+                if (!go.ProfileCurve)
+                {
+                    go.ProfileCurve = 0;
+                }
+                go.ProfileCurve = go.ProfileCurve | parseInt(HoleType[prop], 10);
+            }
+            if (this.getFromXMLJS(shape, 'SculptEntry'))
+            {
+                const type = this.getFromXMLJS(shape, 'SculptType');
+                if (type !== false && type !== undefined)
+                {
+                    const id = UUID.fromXMLJS(shape, 'SculptTexture');
+                    if (id instanceof UUID)
+                    {
+                        if (type & SculptType.Mesh)
+                        {
+                            go.extraParams.setMeshData(type, id);
+                        }
+                        else
+                        {
+                            go.extraParams.setSculptData(type, id);
+                        }
+                    }
+                }
+            }
+            if (this.getFromXMLJS(shape, 'FlexiEntry'))
+            {
+                const flexiSoftness = this.getFromXMLJS(shape, 'FlexiSoftness');
+                const flexiTension = this.getFromXMLJS(shape, 'FlexiTension');
+                const flexiDrag = this.getFromXMLJS(shape, 'FlexiDrag');
+                const flexiGravity = this.getFromXMLJS(shape, 'FlexiGravity');
+                const flexiWind = this.getFromXMLJS(shape, 'FlexiWind');
+                const flexiForceX = this.getFromXMLJS(shape, 'FlexiForceX');
+                const flexiForceY = this.getFromXMLJS(shape, 'FlexiForceY');
+                const flexiForceZ = this.getFromXMLJS(shape, 'FlexiForceZ');
+                if (flexiSoftness !== false &&
+                    flexiTension !== false &&
+                    flexiDrag && false &&
+                    flexiGravity !== false &&
+                    flexiWind !== false &&
+                    flexiForceX !== false &&
+                    flexiForceY !== false &&
+                    flexiForceZ !== false)
+                {
+                    go.extraParams.setFlexiData(flexiSoftness, flexiTension, flexiDrag, flexiGravity, flexiWind, new Vector3([flexiForceX, flexiForceY, flexiForceZ]));
+                }
+            }
+            if (this.getFromXMLJS(shape, 'LightEntry'))
+            {
+                const lightColorR = this.getFromXMLJS(shape, 'LightColorR');
+                const lightColorG = this.getFromXMLJS(shape, 'LightColorG');
+                const lightColorB = this.getFromXMLJS(shape, 'LightColorB');
+                const lightColorA = this.getFromXMLJS(shape, 'LightColorA');
+                const lightRadius = this.getFromXMLJS(shape, 'LightRadius');
+                const lightCutoff = this.getFromXMLJS(shape, 'LightCutoff');
+                const lightFalloff = this.getFromXMLJS(shape, 'LightFalloff');
+                const lightIntensity = this.getFromXMLJS(shape, 'LightIntensity');
+                if (lightColorR !== false &&
+                    lightColorG !== false &&
+                    lightColorB !== false &&
+                    lightColorA !== false &&
+                    lightRadius !== false &&
+                    lightCutoff !== false &&
+                    lightFalloff !== false &&
+                    lightIntensity !== false)
+                {
+                    go.extraParams.setLightData(
+                        new Color4(lightColorR, lightColorG, lightColorB, lightColorA),
+                        lightRadius,
+                        lightCutoff,
+                        lightFalloff,
+                        lightIntensity
+                    );
+                }
+            }
+            if (prop = this.getFromXMLJS(shape, 'ExtraParams'))
+            {
+                const buf = Buffer.from(prop, 'base64');
+                go.extraParams = ExtraParams.from(buf);
+            }
+        }
+        // TODO: TaskInventory
+
+
+
+        console.log('BURP');
+        process.exit(0);
+    }
+
+    static fromXML(xml: string)
+    {
+        return new Promise<GameObject>((resolve, reject) =>
+        {
+            xml2js.parseString(xml, (err, result) =>
+            {
+                if (err)
+                {
+                    reject(err);
+                }
+                else
+                {
+                    if (!result['SceneObjectGroup'])
+                    {
+                        throw new Error('SceneObjectGroup not found');
+                    }
+                    result = result['SceneObjectGroup'];
+                    if (!result['SceneObjectPart'])
+                    {
+                        throw new Error('Root part not found');
+                    }
+                    const rootPart = GameObject.partFromXMLJS(result['SceneObjectPart'][0], true);
+
+                }
+            });
+        });
+    }
 
     constructor()
     {
@@ -173,7 +603,7 @@ export class GameObject implements IGameObjectData
         return '';
     }
 
-    private getInventoryXML(xml: XMLElementOrXMLNode, inv: InventoryItem)
+    private async getInventoryXML(xml: XMLElementOrXMLNode, inv: InventoryItem)
     {
         if (!inv.assetID.equals(UUID.zero()))
         {
@@ -196,8 +626,25 @@ export class GameObject implements IGameObjectData
             }
             item.ele('CreationDate', inv.created.getTime() / 1000);
             item.ele('Description', inv.description);
-            item.ele('Flags', inv.flags);
             item.ele('InvType', inv.inventoryType);
+
+            // For wearables, OpenSim expects flags to include the wearable type
+            if (inv.inventoryType === InventoryType.Wearable && !inv.assetID.equals(UUID.zero()))
+            {
+                try
+                {
+                    const type = (inv.type === 5 ? HTTPAssets.ASSET_CLOTHING : HTTPAssets.ASSET_BODYPART);
+                    const data = await this.region.clientCommands.asset.downloadAsset(type, inv.assetID);
+                    const wearable: LLWearable = new LLWearable(data.toString('utf-8'));
+                    inv.flags = inv.flags | wearable.type;
+                }
+                catch (error)
+                {
+                    console.error(error);
+                }
+            }
+
+            item.ele('Flags', inv.flags);
             UUID.getXML(item.ele('ParentID'), this.FullID);
             UUID.getXML(item.ele('ParentPartID'), this.FullID);
             item.ele('Type', inv.type);
@@ -205,13 +652,12 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    private getXML(xml: XMLElementOrXMLNode, rootPrim: GameObject, linkNum: number)
+    private async getXML(xml: XMLElementOrXMLNode, rootPrim: GameObject, linkNum: number)
     {
         const sceneObjectPart = xml.ele('SceneObjectPart').att('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance').att('xmlns:xsd', 'http://www.w3.org/2001/XMLSchema');
         sceneObjectPart.ele('AllowedDrop', (this.Flags !== undefined && (this.Flags & PrimFlags.AllowInventoryDrop) !== 0) ? 'true' : 'false');
         UUID.getXML(sceneObjectPart.ele('CreatorID'), this.creatorID);
-        sceneObjectPart.ele('CreatorData', 'node-metaverse');
-        UUID.getXML(sceneObjectPart.ele('CreatorID'), this.folderID);
+        UUID.getXML(sceneObjectPart.ele('FolderID'), this.folderID);
         sceneObjectPart.ele('InventorySerial', this.inventorySerial);
         UUID.getXML(sceneObjectPart.ele('UUID'), this.FullID);
         sceneObjectPart.ele('LocalId', this.ID);
@@ -251,9 +697,9 @@ export class GameObject implements IGameObjectData
             {
                 shape.ele('TextureEntry', this.TextureEntry.binary.toString('base64'));
             }
-            if (this.ExtraParams)
+            if (this.extraParams)
             {
-                shape.ele('ExtraParams', this.ExtraParams.toString('base64'));
+                shape.ele('ExtraParams', this.extraParams.toBase64());
             }
             shape.ele('PathBegin', this.PathBegin);
             shape.ele('PathCurve', this.PathCurve);
@@ -283,48 +729,48 @@ export class GameObject implements IGameObjectData
                 shape.ele('ProfileShape', ProfileShape[profileShape]);
                 shape.ele('HollowShape', HoleType[holeType]);
             }
-            if (this.MeshData !== undefined)
+            if (this.extraParams !== undefined && this.extraParams.meshData !== null)
             {
-                shape.ele('SculptType', this.MeshData.type);
-                UUID.getXML(shape.ele('SculptTexture'), this.MeshData.meshData);
+                shape.ele('SculptType', this.extraParams.meshData.type);
+                UUID.getXML(shape.ele('SculptTexture'), this.extraParams.meshData.meshData);
                 shape.ele('SculptEntry', true);
             }
-            else if (this.SculptData !== undefined)
+            else if (this.extraParams !== undefined && this.extraParams.sculptData !== null)
             {
-                shape.ele('SculptType', this.SculptData.type);
-                UUID.getXML(shape.ele('SculptTexture'), this.SculptData.texture);
+                shape.ele('SculptType', this.extraParams.sculptData.type);
+                UUID.getXML(shape.ele('SculptTexture'), this.extraParams.sculptData.texture);
                 shape.ele('SculptEntry', true);
             }
             else
             {
                 shape.ele('SculptEntry', false);
             }
-            if (this.FlexibleData !== undefined)
+            if (this.extraParams !== undefined && this.extraParams.flexibleData !== null)
             {
-                shape.ele('FlexiSoftness', this.FlexibleData.Softness);
-                shape.ele('FlexiTension', this.FlexibleData.Tension);
-                shape.ele('FlexiDrag', this.FlexibleData.Drag);
-                shape.ele('FlexiGravity', this.FlexibleData.Gravity);
-                shape.ele('FlexiWind', this.FlexibleData.Wind);
-                shape.ele('FlexiForceX', this.FlexibleData.Force.x);
-                shape.ele('FlexiForceY', this.FlexibleData.Force.y);
-                shape.ele('FlexiForceZ', this.FlexibleData.Force.z);
+                shape.ele('FlexiSoftness', this.extraParams.flexibleData.Softness);
+                shape.ele('FlexiTension', this.extraParams.flexibleData.Tension);
+                shape.ele('FlexiDrag', this.extraParams.flexibleData.Drag);
+                shape.ele('FlexiGravity', this.extraParams.flexibleData.Gravity);
+                shape.ele('FlexiWind', this.extraParams.flexibleData.Wind);
+                shape.ele('FlexiForceX', this.extraParams.flexibleData.Force.x);
+                shape.ele('FlexiForceY', this.extraParams.flexibleData.Force.y);
+                shape.ele('FlexiForceZ', this.extraParams.flexibleData.Force.z);
                 shape.ele('FlexiEntry', true);
             }
             else
             {
                 shape.ele('FlexiEntry', false);
             }
-            if (this.LightData !== undefined)
+            if (this.extraParams !== undefined && this.extraParams.lightData !== null)
             {
-                shape.ele('LightColorR', this.LightData.Color.red);
-                shape.ele('LightColorG', this.LightData.Color.green);
-                shape.ele('LightColorB', this.LightData.Color.blue);
-                shape.ele('LightColorA', this.LightData.Color.alpha);
-                shape.ele('LightRadius', this.LightData.Radius);
-                shape.ele('LightCutoff', this.LightData.Cutoff);
-                shape.ele('LightFalloff', this.LightData.Falloff);
-                shape.ele('LightIntensity', this.LightData.Intensity);
+                shape.ele('LightColorR', this.extraParams.lightData.Color.red);
+                shape.ele('LightColorG', this.extraParams.lightData.Color.green);
+                shape.ele('LightColorB', this.extraParams.lightData.Color.blue);
+                shape.ele('LightColorA', this.extraParams.lightData.Color.alpha);
+                shape.ele('LightRadius', this.extraParams.lightData.Radius);
+                shape.ele('LightCutoff', this.extraParams.lightData.Cutoff);
+                shape.ele('LightFalloff', this.extraParams.lightData.Falloff);
+                shape.ele('LightIntensity', this.extraParams.lightData.Intensity);
                 shape.ele('LightEntry', true);
             }
             else
@@ -366,13 +812,13 @@ export class GameObject implements IGameObjectData
             }
         }
         sceneObjectPart.ele('Flags', flags.join(' '));
-        if (this.TextureAnim)
+        if (this.textureAnim)
         {
-            sceneObjectPart.ele('TextureAnimation', this.TextureAnim.toString('base64'));
+            sceneObjectPart.ele('TextureAnimation', this.textureAnim.toBase64());
         }
-        if (this.Particles && this.PSBlock)
+        if (this.Particles)
         {
-            sceneObjectPart.ele('ParticleSystem', this.PSBlock.toString('base64'));
+            sceneObjectPart.ele('ParticleSystem', this.Particles.toBase64());
         }
         if (this.physicsShapeType)
         {
@@ -391,22 +837,22 @@ export class GameObject implements IGameObjectData
             const inventory = sceneObjectPart.ele('TaskInventory');
             for (const inv of this.inventory)
             {
-                this.getInventoryXML(inventory, inv);
+                await this.getInventoryXML(inventory, inv);
             }
         }
     }
 
-    exportXML(): string
+    async exportXML(): Promise<string>
     {
         const document = builder.create('SceneObjectGroup');
         let linkNum = 1;
-        this.getXML(document, this, linkNum);
+        await this.getXML(document, this, linkNum);
         if (this.children && this.children.length > 0)
         {
             const otherParts = document.ele('OtherParts');
             for (const child of this.children)
             {
-                child.getXML(otherParts, this, ++linkNum);
+                await child.getXML(otherParts, this, ++linkNum);
             }
         }
         return document.end({pretty: true, allowEmpty: true});
@@ -499,16 +945,101 @@ export class GameObject implements IGameObjectData
             SoundFlags: this.SoundFlags,
             SoundRadius: this.SoundRadius,
             Particles: this.Particles,
-            FlexibleData: this.FlexibleData,
-            LightData: this.LightData,
-            LightImageData: this.LightImageData,
-            SculptData: this.SculptData,
-            MeshData: this.MeshData,
             density: this.density,
             friction: this.friction,
             gravityMultiplier: this.gravityMultiplier,
             physicsShapeType: this.physicsShapeType,
             restitution: this.restitution
+        }
+    }
+    setObjectData(data: Buffer)
+    {
+        let dataPos = 0;
+
+        // noinspection FallThroughInSwitchStatementJS, TsLint
+        switch (data.length)
+        {
+            case 76:
+                // Avatar collision normal;
+                this.CollisionPlane = new Vector4(data, dataPos);
+                dataPos += 16;
+            case 60:
+                // Position
+                this.Position = new Vector3(data, dataPos);
+                dataPos += 12;
+                this.Velocity = new Vector3(data, dataPos);
+                dataPos += 12;
+                this.Acceleration = new Vector3(data, dataPos);
+                dataPos += 12;
+                this.Rotation = new Quaternion(data, dataPos);
+                dataPos += 12;
+                this.AngularVelocity = new Vector3(data, dataPos);
+                dataPos += 12;
+                break;
+            case 48:
+                this.CollisionPlane = new Vector4(data, dataPos);
+                dataPos += 16;
+            case 32:
+                this.Position = new Vector3([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -0.5 * 256.0, 1.5 * 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -0.5 * 256.0, 1.5 * 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 3.0 * 256.0)
+                ]);
+                dataPos += 6;
+                this.Velocity = new Vector3([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                ]);
+                dataPos += 6;
+                this.Acceleration = new Vector3([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                ]);
+                dataPos += 6;
+                this.Rotation = new Quaternion([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -1.0, 1.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -1.0, 1.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -1.0, 1.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -1.0, 1.0)
+                ]);
+                dataPos += 8;
+                this.AngularVelocity = new Vector3([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                ]);
+                dataPos += 6;
+                break;
+            case 16:
+                this.Position = new Vector3([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
+                ]);
+                this.Velocity = new Vector3([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
+                ]);
+                this.Acceleration = new Vector3([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
+                ]);
+                this.Rotation = new Quaternion([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0)
+                ]);
+                this.AngularVelocity = new Vector3([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
+                ]);
+                break;
         }
     }
 }
