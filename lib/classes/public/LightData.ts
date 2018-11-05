@@ -9,22 +9,34 @@ export class LightData
     Falloff = 0.0;
     Intensity = 0.0;
 
-    constructor(buf: Buffer, pos: number, length: number)
+    constructor(buf?: Buffer, pos?: number, length?: number)
     {
-        if (length >= 16)
+        if (buf !== undefined && pos !== undefined && length !== undefined)
         {
-            this.Color = new Color4(buf, pos, false);
-            pos += 4;
-            this.Radius = buf.readFloatLE(pos);
-            pos += 4;
-            this.Cutoff = buf.readFloatLE(pos);
-            pos += 4;
-            this.Falloff = buf.readFloatLE(pos);
-            if (typeof this.Color.alpha === 'number')
+            if (length >= 16)
             {
-                this.Intensity = this.Color.alpha;
+                this.Color = new Color4(buf, pos, false);
+                pos += 4;
+                this.Radius = buf.readFloatLE(pos);
+                pos += 4;
+                this.Cutoff = buf.readFloatLE(pos);
+                pos += 4;
+                this.Falloff = buf.readFloatLE(pos);
+                if (typeof this.Color.alpha === 'number')
+                {
+                    this.Intensity = this.Color.alpha;
+                }
+                this.Color.alpha = 1.0;
             }
-            this.Color.alpha = 1.0;
         }
+    }
+    writeToBuffer(buf: Buffer, pos: number)
+    {
+        const tmpColour = new Color4(this.Color.getRed(), this.Color.getGreen(), this.Color.getBlue(), this.Color.getAlpha());
+        tmpColour.alpha = this.Intensity;
+        tmpColour.writeToBuffer(buf, pos); pos = pos + 4;
+        buf.writeFloatLE(this.Radius, pos); pos = pos + 4;
+        buf.writeFloatLE(this.Cutoff, pos); pos = pos + 4;
+        buf.writeFloatLE(this.Falloff, pos);
     }
 }

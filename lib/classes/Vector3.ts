@@ -19,6 +19,43 @@ export class Vector3 extends vec3
         doc.ele('Z', v.z);
     }
 
+    static fromXMLJS(obj: any, param: string): Vector3 | false
+    {
+        if (!obj[param])
+        {
+            return false;
+        }
+        let value = obj[param];
+        if (Array.isArray(value) && value.length > 0)
+        {
+            value = value[0];
+        }
+        if (typeof value === 'object')
+        {
+            if (value['X'] !== undefined && value['Y'] !== undefined && value['Z'] !== undefined)
+            {
+                let x = value['X'];
+                let y = value['Y'];
+                let z = value['Z'];
+                if (Array.isArray(x) && x.length > 0)
+                {
+                    x = x[0];
+                }
+                if (Array.isArray(y) && y.length > 0)
+                {
+                    y = y[0];
+                }
+                if (Array.isArray(z) && z.length > 0)
+                {
+                    z = z[0];
+                }
+                return new Vector3([x, y, z]);
+            }
+            return false;
+        }
+        return false;
+    }
+
     constructor(buf?: Buffer | number[] | Vector3, pos?: number, double?: boolean)
     {
         if (buf instanceof Vector3)

@@ -22,6 +22,48 @@ export class Quaternion extends quat
         doc.ele('W', v.w);
     }
 
+    static fromXMLJS(obj: any, param: string): Quaternion | false
+    {
+        if (!obj[param])
+        {
+            return false;
+        }
+        let value = obj[param];
+        if (Array.isArray(value) && value.length > 0)
+        {
+            value = value[0];
+        }
+        if (typeof value === 'object')
+        {
+            if (value['X'] !== undefined && value['Y'] !== undefined && value['Z'] !== undefined && value['W'] !== undefined)
+            {
+                let x = value['X'];
+                let y = value['Y'];
+                let z = value['Z'];
+                let w = value['W'];
+                if (Array.isArray(x) && x.length > 0)
+                {
+                    x = x[0];
+                }
+                if (Array.isArray(y) && y.length > 0)
+                {
+                    y = y[0];
+                }
+                if (Array.isArray(z) && z.length > 0)
+                {
+                    z = z[0];
+                }
+                if (Array.isArray(w) && w.length > 0)
+                {
+                    w = w[0];
+                }
+                return new Quaternion([x, y, z, w]);
+            }
+            return false;
+        }
+        return false;
+    }
+
     constructor(buf?: Buffer | number[] | Quaternion, pos?: number)
     {
         if (buf instanceof Quaternion)

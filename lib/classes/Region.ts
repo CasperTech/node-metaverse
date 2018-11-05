@@ -34,6 +34,7 @@ import {Color4} from './Color4';
 import {SkyPreset} from './public/interfaces/SkyPreset';
 import {Vector4} from './Vector4';
 import {WaterPreset} from './public/interfaces/WaterPreset';
+import {ClientCommands} from './ClientCommands';
 
 export class Region
 {
@@ -98,6 +99,7 @@ export class Region
     caps: Caps;
     comms: Comms;
     clientEvents: ClientEvents;
+    clientCommands: ClientCommands;
     options: BotOptionFlags;
     agent: Agent;
     messageSubscription: Subscription;
