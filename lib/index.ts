@@ -89,6 +89,8 @@ import {TransferStatus} from './enums/TransferStatus';
 import {LLWearable} from './classes/LLWearable';
 import {ParticleSystem} from './classes/ParticleSystem';
 import {ExtraParams} from './classes/public/ExtraParams';
+import {LLMesh} from './classes/public/LLMesh';
+import {FolderType} from './enums/FolderType';
 
 export {
     Bot,
@@ -98,7 +100,6 @@ export {
     ClientEvents,
     BVH,
     ChatSourceType,
-    BotOptionFlags,
     UUID,
     Vector3,
     Vector2,
@@ -107,9 +108,11 @@ export {
     LLWearable,
     ParticleSystem,
     ExtraParams,
+    FolderType,
 
     // Flags
     AgentFlags,
+    BotOptionFlags,
     CompressedFlags,
     ControlFlags,
     DecodeFlags,
@@ -183,6 +186,7 @@ export {
     RegionEnvironment,
     SculptData,
     MeshData,
+    LLMesh,
 
     // Public Interfaces
     GlobalPosition,

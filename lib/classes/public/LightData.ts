@@ -39,4 +39,10 @@ export class LightData
         buf.writeFloatLE(this.Cutoff, pos); pos = pos + 4;
         buf.writeFloatLE(this.Falloff, pos);
     }
+    getBuffer(): Buffer
+    {
+        const buf = Buffer.allocUnsafe(16);
+        this.writeToBuffer(buf, 0);
+        return buf;
+    }
 }

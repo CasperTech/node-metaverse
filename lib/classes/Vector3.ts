@@ -56,9 +56,16 @@ export class Vector3 extends vec3
         return false;
     }
 
-    constructor(buf?: Buffer | number[] | Vector3, pos?: number, double?: boolean)
+    constructor(buf?: Buffer | number[] | Vector3 | vec3, pos?: number, double?: boolean)
     {
-        if (buf instanceof Vector3)
+        if (buf instanceof vec3)
+        {
+            super();
+            this.x = buf.x;
+            this.y = buf.y;
+            this.z = buf.z;
+        }
+        else if (buf instanceof Vector3)
         {
             super();
             this.x = buf.x;
@@ -117,6 +124,18 @@ export class Vector3 extends vec3
     {
         return '<' + this.x + ', ' + this.y + ', ' + this.z + '>';
     }
-
-
+    getBuffer(double: boolean = false): Buffer
+    {
+        const buf = Buffer.allocUnsafe((double) ? 24 : 12);
+        this.writeToBuffer(buf, 0, double);
+        return buf;
+    }
+    compareApprox(vec: Vector3)
+    {
+        return vec.equals(this, 0.00001);
+    }
+    toArray()
+    {
+        return [this.x, this.y, this.z];
+    }
 }

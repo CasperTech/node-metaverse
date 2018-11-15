@@ -34,4 +34,10 @@ export class FlexibleData
         buf[pos++] = (this.Wind) * 10;
         this.Force.writeToBuffer(buf, pos, false);
     }
+    getBuffer(): Buffer
+    {
+        const buf = Buffer.allocUnsafe(16);
+        this.writeToBuffer(buf, 0);
+        return buf;
+    }
 }

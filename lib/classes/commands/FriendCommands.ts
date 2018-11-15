@@ -8,7 +8,19 @@ import {Packet} from '../Packet';
 import {OnlineNotificationMessage} from '../messages/OnlineNotification';
 import {OfflineNotificationMessage} from '../messages/OfflineNotification';
 import {TerminateFriendshipMessage} from '../messages/TerminateFriendship';
-import {AssetType, Friend, FriendOnlineEvent, FriendRemovedEvent, FriendRequestEvent, FriendRightsEvent, MapInfoReplyEvent, MapLocation, PacketFlags, RightsFlags, UUID, Vector3} from '../..';
+import {
+    FolderType,
+    Friend,
+    FriendOnlineEvent,
+    FriendRemovedEvent,
+    FriendRequestEvent,
+    FriendRightsEvent,
+    MapLocation,
+    PacketFlags,
+    RightsFlags,
+    UUID,
+    Vector3
+} from '../..';
 import {AcceptFriendshipMessage} from '../messages/AcceptFriendship';
 import {ImprovedInstantMessageMessage} from '../messages/ImprovedInstantMessage';
 import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
@@ -249,7 +261,7 @@ export class FriendCommands extends CommandsBase
         accept.FolderData = [];
         accept.FolderData.push(
             {
-                'FolderID': this.agent.inventory.findFolderForType(AssetType.CallingCard)
+                'FolderID': this.agent.inventory.findFolderForType(FolderType.CallingCard)
             }
         );
         const sequenceNo = this.circuit.sendMessage(accept, PacketFlags.Reliable);

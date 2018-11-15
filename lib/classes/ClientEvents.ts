@@ -23,6 +23,7 @@ import {Subject} from 'rxjs/internal/Subject';
 import {NewObjectEvent} from '../events/NewObjectEvent';
 import {ObjectUpdatedEvent} from '../events/ObjectUpdatedEvent';
 import {ObjectKilledEvent} from '../events/ObjectKilledEvent';
+import {SelectedObjectEvent} from '../events/SelectedObjectEvent';
 
 
 export class ClientEvents
@@ -50,4 +51,5 @@ export class ClientEvents
     onNewObjectEvent: Subject<NewObjectEvent> = new Subject<NewObjectEvent>();
     onObjectUpdatedEvent: Subject<ObjectUpdatedEvent> = new Subject<ObjectUpdatedEvent>();
     onObjectKilledEvent: Subject<ObjectKilledEvent> = new Subject<ObjectKilledEvent>();
+    onSelectedObjectEvent: Subject<SelectedObjectEvent> = new Subject<SelectedObjectEvent>();
 }

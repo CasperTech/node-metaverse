@@ -139,11 +139,31 @@ export class Color4
         return 0;
     }
 
-    writeToBuffer(buf: Buffer, pos: number)
+    writeToBuffer(buf: Buffer, pos: number, inverted: boolean = false)
     {
-        buf.writeUInt8(Utils.FloatToByte(this.getRed(), 0, 1.0), pos++);
-        buf.writeUInt8(Utils.FloatToByte(this.getGreen(), 0, 1.0), pos++);
-        buf.writeUInt8(Utils.FloatToByte(this.getBlue(), 0, 1.0), pos++);
-        buf.writeUInt8(Utils.FloatToByte(this.getAlpha(), 0, 1.0), pos);
+        buf.writeUInt8(Utils.FloatToByte(this.getRed(), 0, 1.0), pos);
+        buf.writeUInt8(Utils.FloatToByte(this.getGreen(), 0, 1.0), pos + 1);
+        buf.writeUInt8(Utils.FloatToByte(this.getBlue(), 0, 1.0), pos + 2);
+        buf.writeUInt8(Utils.FloatToByte(this.getAlpha(), 0, 1.0), pos + 3);
+
+        if (inverted)
+        {
+            buf[pos] = (255 - buf[pos]);
+            buf[pos + 1] = (255 - buf[pos + 1]);
+            buf[pos + 2] = (255 - buf[pos + 2]);
+            buf[pos + 3] = (255 - buf[pos + 3]);
+        }
+    }
+
+    getBuffer(inverted: boolean = false): Buffer
+    {
+        const buf = Buffer.allocUnsafe(4);
+        this.writeToBuffer(buf, 0, inverted);
+        return buf;
+    }
+
+    equals(other: Color4): boolean
+    {
+        return (this.red === other.red && this.green === other.green && this.blue === other.blue && this.alpha === other.alpha);
     }
 }
