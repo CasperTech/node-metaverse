@@ -11,7 +11,10 @@ import {HTTPAssets} from '..';
 
 export class Caps
 {
-    static CAP_INVOCATION_INTERVAL_MS = 250;
+    static CAP_INVOCATION_DELAY_MS: {[key: string]: number} = {
+        'NewFileAgentInventory': 2000,
+        'FetchInventory2': 200
+    };
 
     private region: Region;
     private onGotSeedCap: Subject<void> = new Subject<void>();
@@ -20,7 +23,7 @@ export class Caps
     private clientEvents: ClientEvents;
     private agent: Agent;
     private active = false;
-    private capRateLimitTimers: {[key: string]: number} = {};
+    private timeLastCapExecuted: {[key: string]: number} = {};
     eventQueueClient: EventQueueClient | null = null;
 
     constructor(agent: Agent, region: Region, seedURL: string, clientEvents: ClientEvents)
@@ -303,21 +306,36 @@ export class Caps
         });
     }
 
-    private waitForCapTimeout(cap: string): Promise<void>
+    private waitForCapTimeout(capName: string): Promise<void>
     {
         return new Promise((resolve, reject) =>
         {
-            const timeToWait = (this.capRateLimitTimers[cap] + Caps.CAP_INVOCATION_INTERVAL_MS) - (new Date().getTime());
-            if (timeToWait > 0)
+            if (!Caps.CAP_INVOCATION_DELAY_MS[capName])
             {
-                setTimeout(() =>
-                {
-                    resolve();
-                }, timeToWait);
+                resolve();
             }
             else
             {
-                resolve();
+                if (!this.timeLastCapExecuted[capName] || this.timeLastCapExecuted[capName] < (new Date().getTime() - Caps.CAP_INVOCATION_DELAY_MS[capName]))
+                {
+                    this.timeLastCapExecuted[capName] = new Date().getTime();
+                }
+                else
+                {
+                    this.timeLastCapExecuted[capName] += Caps.CAP_INVOCATION_DELAY_MS[capName];
+                }
+                const timeToWait = this.timeLastCapExecuted[capName] - new Date().getTime();
+                if (timeToWait > 0)
+                {
+                    setTimeout(() =>
+                    {
+                        resolve();
+                    }, timeToWait);
+                }
+                else
+                {
+                    resolve();
+                }
             }
         });
     }
@@ -333,14 +351,12 @@ export class Caps
                 try
                 {
                     result = LLSD.LLSD.parseXML(body);
+                    resolve(result);
                 }
                 catch (err)
                 {
-                    console.error('Error parsing LLSD');
-                    console.error(body);
                     reject(err);
                 }
-                resolve(result);
             }).catch((err) =>
             {
                 console.error(err);
@@ -356,14 +372,19 @@ export class Caps
             console.log(data);
         }
 
-        const t = new Date().getTime();
-        if (this.capRateLimitTimers[capability] && (this.capRateLimitTimers[capability] + Caps.CAP_INVOCATION_INTERVAL_MS) > t)
-        {
-            await this.waitForCapTimeout(capability);
-        }
-        this.capRateLimitTimers[capability] = t;
+        await this.waitForCapTimeout(capability);
+
         const url = await this.getCapability(capability);
-        return await this.capsPerformXMLRequest(url, data);
+        try
+        {
+            return await this.capsPerformXMLRequest(url, data);
+        }
+        catch (error)
+        {
+            console.log('Error with cap ' + capability);
+            console.log(error);
+            throw error;
+        }
     }
 
     shutdown()
