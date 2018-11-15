@@ -162,4 +162,17 @@ export class UUID
         }
         return new UUID(buf3, 0);
     }
+
+    public CRC(): number
+    {
+        let retval = 0;
+        const bytes: Buffer = this.getBuffer();
+
+        retval += ((bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]);
+        retval += ((bytes[7] << 24) + (bytes[6] << 16) + (bytes[5] << 8) + bytes[4]);
+        retval += ((bytes[11] << 24) + (bytes[10] << 16) + (bytes[9] << 8) + bytes[8]);
+        retval += ((bytes[15] << 24) + (bytes[14] << 16) + (bytes[13] << 8) + bytes[12]);
+
+        return retval;
+    }
 }

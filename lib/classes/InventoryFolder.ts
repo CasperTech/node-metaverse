@@ -5,11 +5,12 @@ import * as path from 'path';
 import * as LLSD from '@caspertech/llsd';
 import {InventorySortOrder} from '../enums/InventorySortOrder';
 import {Agent} from './Agent';
-import {AssetType} from '..';
+import {FolderType} from '..';
+import {Inventory} from './Inventory';
 
 export class InventoryFolder
 {
-    typeDefault: AssetType;
+    typeDefault: FolderType;
     version: number;
     name: string;
     folderID: UUID;
@@ -111,7 +112,7 @@ export class InventoryFolder
                                     item.permissions.owner = new UUID(item.permissions.owner.mUUID);
                                     item.permissions.creator = new UUID(item.permissions.creator.mUUID);
                                     item.permissions.group = new UUID(item.permissions.group.mUUID);
-                                    this.items.push(item);
+                                    this.addItem(item);
                                 });
                                 resolve();
                             }
@@ -132,6 +133,37 @@ export class InventoryFolder
                 reject(new Error('Cache miss'));
             }
         });
+    }
+
+    async removeItem(itemID: UUID, save: boolean = false)
+    {
+        if (this.agent.inventory.itemsByID[itemID.toString()])
+        {
+            delete this.agent.inventory.itemsByID[itemID.toString()];
+            this.items = this.items.filter((item) =>
+            {
+                console.log(item.itemID + ' vs ' + JSON.stringify(itemID));
+                return !item.itemID.equals(itemID);
+            })
+        }
+        if (save)
+        {
+            await this.saveCache();
+        }
+    }
+
+    async addItem(item: InventoryItem, save: boolean = false)
+    {
+        if (this.agent.inventory.itemsByID[item.itemID.toString()])
+        {
+            await this.removeItem(item.itemID, false);
+        }
+        this.items.push(item);
+        this.agent.inventory.itemsByID[item.itemID.toString()] = item;
+        if (save)
+        {
+            await this.saveCache();
+        }
     }
 
     populate()
@@ -186,7 +218,7 @@ export class InventoryFolder
                                 creator: new UUID(item['permissions']['creator_id'].toString()),
                                 group: new UUID(item['permissions']['group_id'].toString())
                             };
-                            this.items.push(invItem);
+                            this.addItem(invItem);
                         });
                         this.saveCache().then(() =>
                         {

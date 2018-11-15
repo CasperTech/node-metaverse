@@ -21,6 +21,7 @@ import {
     ObjectUpdatedEvent,
     PacketFlags,
     PCode,
+    PrimFlags,
     Vector3
 } from '..';
 import {GameObject} from './public/GameObject';
@@ -32,6 +33,8 @@ import {ObjectDeselectMessage} from './messages/ObjectDeselect';
 import {Quaternion} from './Quaternion';
 import {Subscription} from 'rxjs/internal/Subscription';
 import {ExtraParams} from './public/ExtraParams';
+import {ObjectPropertiesMessage} from './messages/ObjectProperties';
+import {SelectedObjectEvent} from '../events/SelectedObjectEvent';
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -45,7 +48,9 @@ export class ObjectStoreLite implements IObjectStore
     protected requestedObjects: {[key: number]: boolean} = {};
     protected deadObjects: number[] = [];
     protected persist = false;
+    protected pendingObjectProperties: {[key: string]: any} = {};
     private physicsSubscription: Subscription;
+    private selectedPrimsWithoutUpdate: {[key: number]: boolean} = {};
 
     rtree?: RBush3D;
 
@@ -61,11 +66,28 @@ export class ObjectStoreLite implements IObjectStore
             Message.ObjectUpdateCached,
             Message.ObjectUpdateCompressed,
             Message.ImprovedTerseObjectUpdate,
+            Message.ObjectProperties,
             Message.KillObject
         ], async (packet: Packet) =>
         {
             switch (packet.message.id)
             {
+                case Message.ObjectProperties:
+                    const objProp = packet.message as ObjectPropertiesMessage;
+                    for (const obj of objProp.ObjectData)
+                    {
+                        const obje = this.objectsByUUID[obj.ObjectID.toString()];
+                        if (obje !== undefined && this.objects[obje] !== undefined)
+                        {
+                            const o = this.objects[obje];
+                            this.applyObjectProperties(o, obj);
+                        }
+                        else
+                        {
+                            this.pendingObjectProperties[obj.ObjectID.toString()] = obj;
+                        }
+                    }
+                    break;
                 case Message.ObjectUpdate:
                     const objectUpdate = packet.message as ObjectUpdateMessage;
                     this.objectUpdate(objectUpdate);
@@ -102,6 +124,92 @@ export class ObjectStoreLite implements IObjectStore
                 this.objects[evt.localID].friction = evt.friction;
             }
         });
+
+        setInterval(() =>
+        {
+            let selectObjects = [];
+            for (const key of Object.keys(this.selectedPrimsWithoutUpdate))
+            {
+                selectObjects.push(key);
+            }
+            function shuffle(a: any)
+            {
+                let j, x, i;
+                for (i = a.length - 1; i > 0; i--)
+                {
+                    j = Math.floor(Math.random() * (i + 1));
+                    x = a[i];
+                    a[i] = a[j];
+                    a[j] = x;
+                }
+                return a;
+            }
+            selectObjects = shuffle(selectObjects);
+            if (selectObjects.length > 10)
+            {
+                selectObjects = selectObjects.slice(0, 20);
+            }
+            if (selectObjects.length > 0)
+            {
+                const selectObject = new ObjectSelectMessage();
+                selectObject.AgentData = {
+                    AgentID: this.agent.agentID,
+                    SessionID: this.circuit.sessionID
+                };
+                selectObject.ObjectData = [];
+                for (const id of selectObjects)
+                {
+                    selectObject.ObjectData.push({
+                        ObjectLocalID: id
+                    });
+                }
+                this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+            }
+        }, 1000)
+    }
+
+    private applyObjectProperties(o: GameObject, obj: any)
+    {
+        if (this.selectedPrimsWithoutUpdate[o.ID])
+        {
+            delete this.selectedPrimsWithoutUpdate[o.ID];
+        }
+        o.creatorID = obj.CreatorID;
+        o.creationDate = obj.CreationDate;
+        o.baseMask = obj.BaseMask;
+        o.ownerMask = obj.OwnerMask;
+        o.groupMask = obj.GroupMask;
+        o.everyoneMask = obj.EveryoneMask;
+        o.nextOwnerMask = obj.NextOwnerMask;
+        o.ownershipCost = obj.OwnershipCost;
+        o.saleType = obj.SaleType;
+        o.salePrice = obj.SalePrice;
+        o.aggregatePerms = obj.AggregatePerms;
+        o.aggregatePermTextures = obj.AggregatePermTextures;
+        o.aggregatePermTexturesOwner = obj.AggregatePermTexturesOwner;
+        o.category = obj.Category;
+        o.inventorySerial = obj.InventorySerial;
+        o.itemID = obj.ItemID;
+        o.folderID = obj.FolderID;
+        o.fromTaskID = obj.FromTaskID;
+        o.groupID = obj.GroupID;
+        o.lastOwnerID = obj.LastOwnerID;
+        o.name = Utils.BufferToStringSimple(obj.Name);
+        o.description = Utils.BufferToStringSimple(obj.Description);
+        o.touchName = Utils.BufferToStringSimple(obj.TouchName);
+        o.sitName = Utils.BufferToStringSimple(obj.SitName);
+        o.textureID = Utils.BufferToStringSimple(obj.TextureID);
+        o.resolvedAt = new Date().getTime() / 1000;
+
+        if (o.Flags !== undefined)
+        {
+            if (o.Flags & PrimFlags.CreateSelected)
+            {
+                const evt = new SelectedObjectEvent();
+                evt.object = o;
+                this.clientEvents.onSelectedObjectEvent.next(evt);
+            }
+        }
     }
 
     protected async requestMissingObject(localID: number, attempt = 0)
@@ -302,6 +410,10 @@ export class ObjectStoreLite implements IObjectStore
             newObj.localID = obj.ID;
             newObj.objectID = obj.FullID;
             newObj.object = obj;
+            if (obj.Flags !== undefined && obj.Flags & PrimFlags.CreateSelected && !this.pendingObjectProperties[obj.FullID.toString()])
+            {
+                this.selectedPrimsWithoutUpdate[obj.ID] = true;
+            }
             this.clientEvents.onNewObjectEvent.next(newObj);
         }
         else
@@ -311,6 +423,11 @@ export class ObjectStoreLite implements IObjectStore
             updObj.objectID = obj.FullID;
             updObj.object = obj;
             this.clientEvents.onObjectUpdatedEvent.next(updObj);
+        }
+        if (this.pendingObjectProperties[obj.FullID.toString()])
+        {
+            this.applyObjectProperties(obj, this.pendingObjectProperties[obj.FullID.toString()]);
+            delete this.pendingObjectProperties[obj.FullID.toString()];
         }
     }
 

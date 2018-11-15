@@ -632,6 +632,10 @@ export class mat4
 
         return this;
     }
+    toArray()
+    {
+        return Array.from(this.values);
+    }
 }
 
 

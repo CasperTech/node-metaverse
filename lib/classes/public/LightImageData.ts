@@ -20,4 +20,10 @@ export class LightImageData
         this.texture.writeToBuffer(buf, pos); pos = pos + 16;
         this.params.writeToBuffer(buf, pos, false);
     }
+    getBuffer(): Buffer
+    {
+        const buf = Buffer.allocUnsafe(28);
+        this.writeToBuffer(buf, 0);
+        return buf;
+    }
 }

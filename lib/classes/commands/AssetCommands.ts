@@ -2,11 +2,10 @@ import {CommandsBase} from './CommandsBase';
 import {UUID} from '../UUID';
 import * as LLSD from '@caspertech/llsd';
 import {Utils} from '../Utils';
-import {AssetType, HTTPAssets, PacketFlags} from '../..';
+import {AssetType, FolderType, HTTPAssets, LLMesh, Material, PacketFlags, TransferStatus} from '../..';
 import {PermissionMask} from '../../enums/PermissionMask';
 import * as zlib from 'zlib';
 import {ZlibOptions} from 'zlib';
-import {Material} from '../public/Material';
 import {Color4} from '../Color4';
 import {TransferRequestMessage} from '../messages/TransferRequest';
 import {TransferChannelType} from '../../enums/TransferChannelType';
@@ -16,7 +15,6 @@ import {Message} from '../../enums/Message';
 import {Packet} from '../Packet';
 import {TransferPacketMessage} from '../messages/TransferPacket';
 import {TransferAbortMessage} from '../messages/TransferAbort';
-import {TransferStatus} from '../../enums/TransferStatus';
 
 export class AssetCommands extends CommandsBase
 {
@@ -205,7 +203,12 @@ export class AssetCommands extends CommandsBase
                         return;
                     }
                     const binData = new LLSD.Binary(Array.from(reslt), 'BASE64');
-                    const obj = LLSD.LLSD.parseBinary(binData);
+                    const llsdResult = LLSD.LLSD.parseBinary(binData);
+                    let obj = [];
+                    if (llsdResult.result)
+                    {
+                        obj = llsdResult.result;
+                    }
                     if (obj.length > 0)
                     {
                         for (const mat of obj)
@@ -313,6 +316,83 @@ export class AssetCommands extends CommandsBase
         }
     }
 
+    async uploadMesh(name: string, description: string, mesh: Buffer, confirmCostCallback: (cost: number) => boolean): Promise<UUID>
+    {
+        const decodedMesh = await LLMesh.from(mesh);
+        if (!decodedMesh.creatorID.equals(this.agent.agentID) && !decodedMesh.creatorID.equals(UUID.zero()))
+        {
+            throw new Error('Unable to upload - copyright violation');
+        }
+        const faces = [];
+        const faceCount = decodedMesh.lodLevels['high_lod'].length;
+        for (let x = 0; x < faceCount; x++)
+        {
+            faces.push({
+                'diffuse_color': [1.000000000000001, 1.000000000000001, 1.000000000000001, 1.000000000000001],
+                'fullbright': false
+            });
+        }
+        const prim = {
+            'face_list': faces,
+            'position': [0.000000000000001, 0.000000000000001, 0.000000000000001],
+            'rotation': [0.000000000000001, 0.000000000000001, 0.000000000000001, 1.000000000000001],
+            'scale': [2.000000000000001, 2.000000000000001, 2.000000000000001],
+            'material': 3,
+            'physics_shape_type': 2,
+            'mesh': 0
+        };
+        const assetResources = {
+            'instance_list': [prim],
+            'mesh_list': [new LLSD.Binary(Array.from(mesh))],
+            'texture_list': [],
+            'metric': 'MUT_Unspecified'
+        };
+        const uploadMap = {
+            'name': name,
+            'description': description,
+            'asset_resources': assetResources,
+            'asset_type': 'mesh',
+            'inventory_type': 'object',
+            'folder_id': new LLSD.UUID(await this.agent.inventory.findFolderForType(FolderType.Object)),
+            'texture_folder_id': new LLSD.UUID(await this.agent.inventory.findFolderForType(FolderType.Texture)),
+            'everyone_mask': PermissionMask.All,
+            'group_mask': PermissionMask.All,
+            'next_owner_mask': PermissionMask.All
+        };
+        const result = await this.currentRegion.caps.capsRequestXML('NewFileAgentInventory', uploadMap);
+        if (result['state'] === 'upload' && result['upload_price'])
+        {
+            const cost = result['upload_price'];
+            if (await confirmCostCallback(cost))
+            {
+                const uploader = result['uploader'];
+                const uploadResult = await this.currentRegion.caps.capsPerformXMLRequest(uploader, assetResources);
+                if (uploadResult['new_inventory_item'] && uploadResult['new_asset'])
+                {
+                    const inventoryItem = new UUID(uploadResult['new_inventory_item'].toString());
+                    const item = await this.agent.inventory.fetchInventoryItem(inventoryItem);
+                    if (item !== null)
+                    {
+                        item.assetID = new UUID(uploadResult['new_asset'].toString());
+                    }
+                    return inventoryItem;
+                }
+                else
+                {
+
+                    throw new Error('Upload failed - no new inventory item returned');
+                }
+            }
+            throw new Error('Upload cost declined')
+        }
+        else
+        {
+            console.log(result);
+            console.log(JSON.stringify(result.error));
+            throw new Error('Upload failed');
+        }
+    }
+
     uploadAsset(type: HTTPAssets, data: Buffer, name: string, description: string): Promise<UUID>
     {
         return new Promise<UUID>((resolve, reject) =>
@@ -325,9 +405,9 @@ export class AssetCommands extends CommandsBase
                     'inventory_type': Utils.HTTPAssetTypeToInventoryType(type),
                     'name': name,
                     'description': description,
-                    'everyone_mask': (1 << 13) | (1 << 14) | (1 << 15) | (1 << 19),
-                    'group_mask': (1 << 13) | (1 << 14) | (1 << 15) | (1 << 19),
-                    'next_owner_mask': (1 << 13) | (1 << 14) | (1 << 15) | (1 << 19),
+                    'everyone_mask': PermissionMask.All,
+                    'group_mask': PermissionMask.All,
+                    'next_owner_mask': PermissionMask.All,
                     'expected_upload_cost': 0
                 }).then((response: any) =>
                 {
@@ -342,10 +422,39 @@ export class AssetCommands extends CommandsBase
                             reject(err);
                         });
                     }
+                    else if (response['error'])
+                    {
+                        reject(response['error']['message']);
+                    }
+                    else
+                    {
+                        reject('Unable to upload asset');
+                    }
                 }).catch((err) =>
                 {
+                    console.log('Got err');
                     console.log(err);
+                    reject(err);
                 })
+            }
+            else
+            {
+                if (!this.agent)
+                {
+                    throw(new Error('Missing agent'));
+                }
+                else if (!this.agent.inventory)
+                {
+                    throw(new Error('Missing agent inventory'));
+                }
+                else if (!this.agent.inventory.main)
+                {
+                    throw new Error('Missing agent inventory main skeleton');
+                }
+                else if (!this.agent.inventory.main.root)
+                {
+                    throw new Error('Missing agent inventory main skeleton root');
+                }
             }
         });
     }

@@ -23,4 +23,10 @@ export class MeshData
         this.meshData.writeToBuffer(buf, pos); pos = pos + 16;
         buf.writeUInt8(this.type, pos);
     }
+    getBuffer(): Buffer
+    {
+        const buf = Buffer.allocUnsafe(17);
+        this.writeToBuffer(buf, 0);
+        return buf;
+    }
 }

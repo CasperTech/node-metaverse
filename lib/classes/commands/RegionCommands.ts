@@ -5,19 +5,26 @@ import {RegionHandleRequestMessage} from '../messages/RegionHandleRequest';
 import {Message} from '../../enums/Message';
 import {FilterResponse} from '../../enums/FilterResponse';
 import {RegionIDAndHandleReplyMessage} from '../messages/RegionIDAndHandleReply';
-import {AssetType, PacketFlags, PCode, Vector3} from '../..';
+import {
+    AssetType,
+    GameObject,
+    InventoryItemFlags,
+    NewObjectEvent,
+    PacketFlags,
+    Parcel,
+    PCode,
+    PrimFlags,
+    Vector3
+} from '../..';
 import {ObjectGrabMessage} from '../messages/ObjectGrab';
 import {ObjectDeGrabMessage} from '../messages/ObjectDeGrab';
 import {ObjectGrabUpdateMessage} from '../messages/ObjectGrabUpdate';
-import {GameObject} from '../public/GameObject';
 import {ObjectSelectMessage} from '../messages/ObjectSelect';
 import {ObjectPropertiesMessage} from '../messages/ObjectProperties';
 import {Utils} from '../Utils';
 import {ObjectDeselectMessage} from '../messages/ObjectDeselect';
 import * as micromatch from 'micromatch';
 import * as LLSD from '@caspertech/llsd';
-import {PrimFlags} from '../../enums/PrimFlags';
-import {Parcel} from '../public/Parcel';
 import {ParcelPropertiesRequestMessage} from '../messages/ParcelPropertiesRequest';
 import {RequestTaskInventoryMessage} from '../messages/RequestTaskInventory';
 import {ReplyTaskInventoryMessage} from '../messages/ReplyTaskInventory';
@@ -25,8 +32,14 @@ import {InventoryItem} from '../InventoryItem';
 import {AssetTypeLL} from '../../enums/AssetTypeLL';
 import {SaleTypeLL} from '../../enums/SaleTypeLL';
 import {InventoryTypeLL} from '../../enums/InventoryTypeLL';
+import {ObjectAddMessage} from '../messages/ObjectAdd';
+import {Quaternion} from '../Quaternion';
 import Timer = NodeJS.Timer;
-import {NewObjectEvent} from '../../events/NewObjectEvent';
+import {RezObjectMessage} from '../messages/RezObject';
+import {PermissionMask} from '../../enums/PermissionMask';
+import {from} from 'rxjs';
+import {SelectedObjectEvent} from '../../events/SelectedObjectEvent';
+import uuid = require('uuid');
 
 export class RegionCommands extends CommandsBase
 {
@@ -305,7 +318,7 @@ export class RegionCommands extends CommandsBase
         return this.currentRegion.regionName;
     }
 
-    private async resolveObjects(objects: GameObject[], onlyUnresolved: boolean = false)
+    private async resolveObjects(objects: GameObject[], onlyUnresolved: boolean = false, skipInventory = false)
     {
         // First, create a map of all object IDs
         const objs: {[key: number]: GameObject} = {};
@@ -396,7 +409,7 @@ export class RegionCommands extends CommandsBase
             {
                 count++;
                 const ky = parseInt(k, 10);
-                if (objs[ky] !== undefined)
+                if (objs[ky] !== undefined && !skipInventory)
                 {
                     const o = objs[ky];
                     if ((o.resolveAttempts === undefined || o.resolveAttempts < 3) && o.FullID !== undefined && o.name !== undefined && o.Flags !== undefined && !(o.Flags & PrimFlags.InventoryEmpty) && (!o.inventory || o.inventory.length === 0))
@@ -786,7 +799,8 @@ export class RegionCommands extends CommandsBase
                     resolve(event.object);
                 }
             });
-            tmr = setTimeout(() => {
+            tmr = setTimeout(() =>
+            {
                 subscription.unsubscribe();
                 reject(new Error('Timeout'));
             }, timeout)
@@ -810,10 +824,269 @@ export class RegionCommands extends CommandsBase
                     resolve(event.object);
                 }
             });
-            tmr = setTimeout(() => {
+            tmr = setTimeout(() =>
+            {
                 subscription.unsubscribe();
                 reject(new Error('Timeout'));
             }, timeout)
+        });
+    }
+
+    private async buildPart(obj: GameObject, posOffset: Vector3,  meshCallback: (object: GameObject, meshData: UUID) => UUID | null)
+    {
+        // Rez a prim
+        let newObject: GameObject;
+        if (obj.extraParams !== undefined && obj.extraParams.meshData !== null)
+        {
+            const inventoryID: UUID | null = await meshCallback(obj, obj.extraParams.meshData.meshData);
+            if (inventoryID !== null)
+            {
+                newObject = await this.createPrim(obj, posOffset, inventoryID);
+            }
+            else
+            {
+                newObject = await this.createPrim(obj, posOffset);
+            }
+        }
+        else
+        {
+            newObject = await this.createPrim(obj, posOffset);
+        }
+        await newObject.setExtraParams(obj.extraParams);
+        if (obj.TextureEntry !== undefined)
+        {
+            await newObject.setTextureEntry(obj.TextureEntry);
+        }
+        if (obj.name !== undefined)
+        {
+            await newObject.setName(obj.name);
+        }
+        if (obj.description !== undefined)
+        {
+            await newObject.setDescription(obj.description);
+        }
+        return newObject;
+    }
+
+    buildObject(obj: GameObject, meshCallback: (object: GameObject, meshData: UUID) => UUID | null): Promise<GameObject>
+    {
+        return new Promise<GameObject>(async (resolve, reject) =>
+        {
+
+            const parts = [];
+            console.log('Rezzing root prim');
+            parts.push(this.buildPart(obj, Vector3.getZero(), meshCallback));
+            console.log('Building child prims');
+            if (obj.children && obj.Position)
+            {
+                for (const child of obj.children)
+                {
+                    parts.push(this.buildPart(child, obj.Position, meshCallback));
+                }
+            }
+            Promise.all(parts).then(async (results) =>
+            {
+                console.log('Linking prims');
+                const rootObj = results[0];
+                for (const childObject of results)
+                {
+                    if (childObject !== rootObj)
+                    {
+                        await childObject.linkTo(rootObj);
+                    }
+                }
+                console.log('All done');
+                resolve(rootObj);
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+        });
+    }
+
+    private echo(st: string): boolean
+    {
+        //console.log(st);
+        return true;
+    }
+
+    createPrim(obj: GameObject, posOffset: Vector3, inventoryID?: UUID): Promise<GameObject>
+    {
+        console.log('Create prim');
+        return new Promise(async (resolve, reject) =>
+        {
+            const timeRequested = (new Date().getTime() / 1000) - this.currentRegion.timeOffset;
+
+            if (obj.Position === undefined)
+            {
+                obj.Position = Vector3.getZero();
+            }
+            if (obj.Rotation === undefined)
+            {
+                obj.Rotation = Quaternion.getIdentity();
+            }
+            let finalPos = Vector3.getZero();
+            let finalRot = Quaternion.getIdentity();
+            if (posOffset.x === 0.0 && posOffset.y === 0.0 && posOffset.z === 0.0)
+            {
+                finalPos = obj.Position;
+                finalRot = obj.Rotation;
+            }
+            else
+            {
+                const finalPosOffset: Vector3 = obj.Position;
+                finalPos = new Vector3(new Vector3(finalPosOffset).add(new Vector3(posOffset)));
+                finalRot = obj.Rotation;
+            }
+            let msg: ObjectAddMessage | RezObjectMessage | null = null;
+            let fromInventory = false;
+            if (inventoryID === undefined || this.agent.inventory.itemsByID[inventoryID.toString()] === undefined)
+            {
+                console.log('Regular prim');
+                // First, rez object in scene
+                msg = new ObjectAddMessage();
+                msg.AgentData = {
+                    AgentID: this.agent.agentID,
+                    SessionID: this.circuit.sessionID,
+                    GroupID: UUID.zero()
+                };
+                msg.ObjectData = {
+                    PCode: Utils.numberOrZero(obj.PCode),
+                    Material: Utils.numberOrZero(obj.Material),
+                    AddFlags: PrimFlags.CreateSelected,
+                    PathCurve: Utils.numberOrZero(obj.PathCurve),
+                    ProfileCurve: Utils.numberOrZero(obj.ProfileCurve),
+                    PathBegin: Utils.packBeginCut(Utils.numberOrZero(obj.PathBegin)),
+                    PathEnd: Utils.packEndCut(Utils.numberOrZero(obj.PathEnd)),
+                    PathScaleX: Utils.packPathScale(Utils.numberOrZero(obj.PathScaleX)),
+                    PathScaleY: Utils.packPathScale(Utils.numberOrZero(obj.PathScaleY)),
+                    PathShearX: Utils.packPathShear(Utils.numberOrZero(obj.PathShearX)),
+                    PathShearY: Utils.packPathShear(Utils.numberOrZero(obj.PathShearY)),
+                    PathTwist: Utils.packPathTwist(Utils.numberOrZero(obj.PathTwist)),
+                    PathTwistBegin: Utils.packPathTwist(Utils.numberOrZero(obj.PathTwistBegin)),
+                    PathRadiusOffset: Utils.packPathTwist(Utils.numberOrZero(obj.PathRadiusOffset)),
+                    PathTaperX: Utils.packPathTaper(Utils.numberOrZero(obj.PathTaperX)),
+                    PathTaperY: Utils.packPathTaper(Utils.numberOrZero(obj.PathTaperY)),
+                    PathRevolutions: Utils.packPathRevolutions(Utils.numberOrZero(obj.PathRevolutions)),
+                    PathSkew: Utils.packPathTwist(Utils.numberOrZero(obj.PathSkew)),
+                    ProfileBegin: Utils.packBeginCut(Utils.numberOrZero(obj.ProfileBegin)),
+                    ProfileEnd: Utils.packEndCut(Utils.numberOrZero(obj.ProfileEnd)),
+                    ProfileHollow: Utils.packProfileHollow(Utils.numberOrZero(obj.ProfileHollow)),
+                    BypassRaycast: 1,
+                    RayStart: finalPos,
+                    RayEnd: finalPos,
+                    RayTargetID: UUID.zero(),
+                    RayEndIsIntersection: 0,
+                    Scale: Utils.vector3OrZero(obj.Scale),
+                    Rotation: finalRot,
+                    State: Utils.numberOrZero(obj.State)
+                };
+            }
+            else
+            {
+                console.log('Rezzing ' + this.agent.inventory.itemsByID[inventoryID.toString()].name);
+                fromInventory = true;
+                const invItem = this.agent.inventory.itemsByID[inventoryID.toString()];
+                const queryID = UUID.random();
+                msg = new RezObjectMessage();
+                msg.AgentData = {
+                    AgentID: this.agent.agentID,
+                    SessionID: this.circuit.sessionID,
+                    GroupID: UUID.zero()
+                };
+                msg.RezData = {
+                    FromTaskID: UUID.zero(),
+                    BypassRaycast: 1,
+                    RayStart: finalPos,
+                    RayEnd: finalPos,
+                    RayTargetID: UUID.zero(),
+                    RayEndIsIntersection: false,
+                    RezSelected: true,
+                    RemoveItem: false,
+                    ItemFlags: invItem.flags,
+                    GroupMask: PermissionMask.All,
+                    EveryoneMask: PermissionMask.All,
+                    NextOwnerMask: PermissionMask.All,
+                };
+                msg.InventoryData = {
+                    ItemID: invItem.itemID,
+                    FolderID: invItem.parentID,
+                    CreatorID: invItem.permissions.creator,
+                    OwnerID: invItem.permissions.owner,
+                    GroupID: invItem.permissions.group,
+                    BaseMask: invItem.permissions.baseMask,
+                    OwnerMask: invItem.permissions.ownerMask,
+                    GroupMask: invItem.permissions.groupMask,
+                    EveryoneMask: invItem.permissions.everyoneMask,
+                    NextOwnerMask: invItem.permissions.nextOwnerMask,
+                    GroupOwned: false,
+                    TransactionID: queryID,
+                    Type: invItem.type,
+                    InvType: invItem.inventoryType,
+                    Flags: invItem.flags,
+                    SaleType: invItem.saleType,
+                    SalePrice: invItem.salePrice,
+                    Name: Utils.StringToBuffer(invItem.name),
+                    Description: Utils.StringToBuffer(invItem.description),
+                    CreationDate: Math.round(invItem.created.getTime() / 1000),
+                    CRC: 0,
+                };
+            }
+
+            const objSub = this.currentRegion.clientEvents.onSelectedObjectEvent.subscribe(async (evt: SelectedObjectEvent) =>
+            {
+                if (evt.object.creatorID !== undefined &&
+                    evt.object.creatorID.equals(this.agent.agentID) &&
+                    evt.object.creationDate !== undefined &&
+                    !evt.object.claimedForBuild)
+                {
+                    let claim = false;
+                    const creationDate = evt.object.creationDate.toNumber() / 1000000;
+                    if (fromInventory && inventoryID !== undefined && evt.object.itemID.equals(inventoryID))
+                    {
+                        claim = true;
+                    }
+                    else if (!fromInventory && evt.object.itemID.equals(UUID.zero()) && creationDate > timeRequested)
+                    {
+                        claim = true;
+                    }
+                    if (claim)
+                    {
+                        evt.object.claimedForBuild = true;
+                        objSub.unsubscribe();
+
+                        if (!fromInventory)
+                        {
+                            await evt.object.setShape(obj.PathCurve, obj.ProfileCurve, obj.PathBegin, obj.PathEnd, obj.PathScaleX, obj.PathScaleY, obj.PathShearX, obj.PathShearY, obj.PathTwist, obj.PathTwistBegin, obj.PathRadiusOffset, obj.PathTaperX, obj.PathTaperY, obj.PathRevolutions, obj.PathSkew, obj.ProfileBegin, obj.ProfileEnd, obj.ProfileHollow);
+                        }
+
+
+                        // Set the object's position properly
+                        try
+                        {
+                            await evt.object.setGeometry(finalPos, finalRot, obj.Scale);
+                        }
+                        catch (error)
+                        {
+                            console.log('Failed to set object position :/');
+                        }
+                        resolve(evt.object);
+                    }
+                }
+            });
+            if (obj.Position !== undefined && obj.Scale !== undefined)
+            {
+                // Move the camera to look directly at prim for faster capture
+                const campos = new Vector3(finalPos);
+                campos.z += 5.0 + obj.Scale.z;
+                console.log('Moving camera to ' + campos.toString());
+                await this.currentRegion.clientCommands.agent.setCamera(campos, finalPos, 4096, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
+            }
+            if (msg !== null)
+            {
+                this.circuit.sendMessage(msg, PacketFlags.Reliable);
+                console.log('Requested rez');
+            }
         });
     }
 

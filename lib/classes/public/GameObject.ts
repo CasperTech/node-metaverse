@@ -12,11 +12,12 @@ import * as Long from 'long';
 import {IGameObjectData} from '../interfaces/IGameObjectData';
 import {
     HoleType,
-    HTTPAssets,
+    HTTPAssets, PacketFlags,
     PCode,
     PhysicsShapeType,
     PrimFlags,
-    ProfileShape, SculptType,
+    ProfileShape,
+    SculptType,
     SoundFlags,
     Utils
 } from '../..';
@@ -29,6 +30,16 @@ import {InventoryType} from '../../enums/InventoryType';
 import {LLWearable} from '../LLWearable';
 import {TextureAnim} from './TextureAnim';
 import {ExtraParams} from './ExtraParams';
+import {ObjectExtraParamsMessage} from '../messages/ObjectExtraParams';
+import {ExtraParamType} from '../../enums/ExtraParamType';
+import {ObjectImageMessage} from '../messages/ObjectImage';
+import {ObjectNameMessage} from '../messages/ObjectName';
+import {ObjectDescriptionMessage} from '../messages/ObjectDescription';
+import {ObjectPositionMessage} from '../messages/ObjectPosition';
+import {MultipleObjectUpdateMessage} from '../messages/MultipleObjectUpdate';
+import {UpdateType} from '../../enums/UpdateType';
+import {ObjectLinkMessage} from '../messages/ObjectLink';
+import {ObjectShapeMessage} from '../messages/ObjectShape';
 
 export class GameObject implements IGameObjectData
 {
@@ -139,11 +150,13 @@ export class GameObject implements IGameObjectData
 
     resolveAttempts = 0;
 
+    claimedForBuild = false;
+
     private static getFromXMLJS(obj: any, param: string): any
     {
         if (obj[param] === undefined)
         {
-            return false;
+            return undefined;
         }
         let retParam;
         if (Array.isArray(obj[param]))
@@ -178,149 +191,149 @@ export class GameObject implements IGameObjectData
         const go = new GameObject();
         go.Flags = 0;
         let prop: any;
-        if (this.getFromXMLJS(obj, 'AllowedDrop'))
+        if (this.getFromXMLJS(obj, 'AllowedDrop') !== undefined)
         {
             go.Flags = go.Flags | PrimFlags.AllowInventoryDrop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'CreatorID'))
+        if ((prop = UUID.fromXMLJS(obj, 'CreatorID')) !== undefined)
         {
             go.creatorID = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'FolderID'))
+        if ((prop = UUID.fromXMLJS(obj, 'FolderID')) !== undefined)
         {
             go.folderID = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'InventorySerial'))
+        if ((prop = this.getFromXMLJS(obj, 'InventorySerial')) !== undefined)
         {
             go.inventorySerial = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'UUID'))
+        if ((prop = UUID.fromXMLJS(obj, 'UUID')) !== undefined)
         {
             go.FullID = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'LocalId'))
+        if ((prop = this.getFromXMLJS(obj, 'LocalId')) !== undefined)
         {
             go.ID = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'Name'))
+        if ((prop = this.getFromXMLJS(obj, 'Name')) !== undefined)
         {
             go.name = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'Material'))
+        if ((prop = this.getFromXMLJS(obj, 'Material')) !== undefined)
         {
             go.Material = prop;
         }
-        if (prop = Vector3.fromXMLJS(obj, 'GroupPosition'))
+        if ((prop = Vector3.fromXMLJS(obj, 'GroupPosition')) !== undefined)
         {
             if (root)
             {
                 go.Position = prop;
             }
         }
-        if (prop = Vector3.fromXMLJS(obj, 'OffsetPosition'))
+        if ((prop = Vector3.fromXMLJS(obj, 'OffsetPosition')) !== undefined)
         {
             if (!root)
             {
                 go.Position = prop;
             }
         }
-        if (prop = Quaternion.fromXMLJS(obj, 'RotationOffset'))
+        if ((prop = Quaternion.fromXMLJS(obj, 'RotationOffset')) !== undefined)
         {
             go.Rotation = prop;
         }
-        if (prop = Vector3.fromXMLJS(obj, 'Velocity'))
+        if ((prop = Vector3.fromXMLJS(obj, 'Velocity')) !== undefined)
         {
             go.Velocity = prop;
         }
-        if (prop = Vector3.fromXMLJS(obj, 'AngularVelocity'))
+        if ((prop = Vector3.fromXMLJS(obj, 'AngularVelocity')) !== undefined)
         {
             go.AngularVelocity = prop;
         }
-        if (prop = Vector3.fromXMLJS(obj, 'Acceleration'))
+        if ((prop = Vector3.fromXMLJS(obj, 'Acceleration')) !== undefined)
         {
             go.Acceleration = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'Description'))
+        if ((prop = this.getFromXMLJS(obj, 'Description')) !== undefined)
         {
             go.description = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'Text'))
+        if ((prop = this.getFromXMLJS(obj, 'Text')) !== undefined)
         {
             go.Text = prop;
         }
-        if (prop = Color4.fromXMLJS(obj, 'Color'))
+        if ((prop = Color4.fromXMLJS(obj, 'Color')) !== undefined)
         {
             go.TextColor = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'SitName'))
+        if ((prop = this.getFromXMLJS(obj, 'SitName')) !== undefined)
         {
             go.sitName = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'TouchName'))
+        if ((prop = this.getFromXMLJS(obj, 'TouchName')) !== undefined)
         {
             go.touchName = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'ClickAction'))
+        if ((prop = this.getFromXMLJS(obj, 'ClickAction')) !== undefined)
         {
             go.ClickAction = prop;
         }
-        if (prop = Vector3.fromXMLJS(obj, 'Scale'))
+        if ((prop = Vector3.fromXMLJS(obj, 'Scale')) !== undefined)
         {
             go.Scale = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'ParentID'))
+        if ((prop = this.getFromXMLJS(obj, 'ParentID')) !== undefined)
         {
             go.ParentID = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'Category'))
+        if ((prop = this.getFromXMLJS(obj, 'Category')) !== undefined)
         {
             go.category = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'SalePrice'))
+        if ((prop = this.getFromXMLJS(obj, 'SalePrice')) !== undefined)
         {
             go.salePrice = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'ObjectSaleType'))
+        if ((prop = this.getFromXMLJS(obj, 'ObjectSaleType')) !== undefined)
         {
             go.saleType = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'OwnershipCost'))
+        if ((prop = this.getFromXMLJS(obj, 'OwnershipCost')) !== undefined)
         {
             go.ownershipCost = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'GroupID'))
+        if ((prop = UUID.fromXMLJS(obj, 'GroupID')) !== undefined)
         {
             go.groupID = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'OwnerID'))
+        if ((prop = UUID.fromXMLJS(obj, 'OwnerID')) !== undefined)
         {
             go.OwnerID = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'LastOwnerID'))
+        if ((prop = UUID.fromXMLJS(obj, 'LastOwnerID')) !== undefined)
         {
             go.lastOwnerID = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'BaseMask'))
+        if ((prop = this.getFromXMLJS(obj, 'BaseMask')) !== undefined)
         {
             go.baseMask = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'OwnerMask'))
+        if ((prop = this.getFromXMLJS(obj, 'OwnerMask')) !== undefined)
         {
             go.ownerMask = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'GroupMask'))
+        if ((prop = this.getFromXMLJS(obj, 'GroupMask')) !== undefined)
         {
             go.groupMask = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'EveryoneMask'))
+        if ((prop = this.getFromXMLJS(obj, 'EveryoneMask')) !== undefined)
         {
             go.everyoneMask = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'NextOwnerMask'))
+        if ((prop = this.getFromXMLJS(obj, 'NextOwnerMask')) !== undefined)
         {
             go.nextOwnerMask = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'Flags'))
+        if ((prop = this.getFromXMLJS(obj, 'Flags')) !== undefined)
         {
             let flags = 0;
             if (typeof prop === 'string')
@@ -337,121 +350,125 @@ export class GameObject implements IGameObjectData
             }
             go.Flags = flags;
         }
-        if (prop = this.getFromXMLJS(obj, 'TextureAnimation'))
+        if ((prop = this.getFromXMLJS(obj, 'TextureAnimation')) !== undefined)
         {
             const buf = Buffer.from(prop, 'base64');
             go.textureAnim = TextureAnim.from(buf);
         }
-        if (prop = this.getFromXMLJS(obj, 'ParticleSystem'))
+        if ((prop = this.getFromXMLJS(obj, 'ParticleSystem')) !== undefined)
         {
             const buf = Buffer.from(prop, 'base64');
             go.Particles = ParticleSystem.from(buf);
         }
-        if (prop = this.getFromXMLJS(obj, 'PhysicsShapeType'))
+        if ((prop = this.getFromXMLJS(obj, 'PhysicsShapeType')) !== undefined)
         {
             go.physicsShapeType = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'SoundID'))
+        if ((prop = UUID.fromXMLJS(obj, 'SoundID')) !== undefined)
         {
             go.Sound = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'SoundGain'))
+        if ((prop = UUID.fromXMLJS(obj, 'SoundGain')) !== undefined)
         {
             go.SoundGain = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'SoundFlags'))
+        if ((prop = UUID.fromXMLJS(obj, 'SoundFlags')) !== undefined)
         {
             go.SoundFlags = prop;
         }
-        if (prop = UUID.fromXMLJS(obj, 'SoundRadius'))
+        if ((prop = UUID.fromXMLJS(obj, 'SoundRadius')) !== undefined)
         {
             go.SoundRadius = prop;
         }
-        if (prop = this.getFromXMLJS(obj, 'Shape'))
+        if ((prop = this.getFromXMLJS(obj, 'Shape')) !== undefined)
         {
             const shape = prop;
-            if (prop = this.getFromXMLJS(shape, 'ProfileCurve'))
+            if ((prop = this.getFromXMLJS(shape, 'ProfileCurve')) !== undefined)
             {
                 go.ProfileCurve = prop;
             }
-            if (prop = this.getFromXMLJS(shape, 'TextureEntry'))
+            if ((prop = this.getFromXMLJS(shape, 'TextureEntry')) !== undefined)
             {
                 const buf = Buffer.from(prop, 'base64');
-                go.TextureEntry = new TextureEntry(buf);
+                go.TextureEntry = TextureEntry.from(buf);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathBegin'))
+            if ((prop = this.getFromXMLJS(shape, 'PathBegin')) !== undefined)
             {
-                go.PathBegin = prop;
+                go.PathBegin = Utils.unpackBeginCut(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathCurve'))
+            if ((prop = this.getFromXMLJS(shape, 'PathCurve')) !== undefined)
             {
                 go.PathCurve = prop;
             }
-            if (prop = this.getFromXMLJS(shape, 'PathEnd'))
+            if ((prop = this.getFromXMLJS(shape, 'PathEnd')) !== undefined)
             {
-                go.PathEnd = prop;
+                go.PathEnd = Utils.unpackEndCut(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathRadiusOffset'))
+            if ((prop = this.getFromXMLJS(shape, 'PathRadiusOffset')) !== undefined)
             {
-                go.PathRadiusOffset = prop;
+                go.PathRadiusOffset = Utils.unpackPathTwist(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathRevolutions'))
+            if ((prop = this.getFromXMLJS(shape, 'PathRevolutions')) !== undefined)
             {
-                go.PathRevolutions = prop;
+                go.PathRevolutions = Utils.unpackPathRevolutions(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathScaleX'))
+            if ((prop = this.getFromXMLJS(shape, 'PathScaleX')) !== undefined)
             {
-                go.PathScaleX = prop;
+                go.PathScaleX = Utils.unpackPathScale(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathScaleY'))
+            if ((prop = this.getFromXMLJS(shape, 'PathScaleY')) !== undefined)
             {
-                go.PathScaleY = prop;
+                go.PathScaleY = Utils.unpackPathScale(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathShearX'))
+            if ((prop = this.getFromXMLJS(shape, 'PathShearX')) !== undefined)
             {
-                go.PathShearX = prop;
+                go.PathShearX = Utils.unpackPathShear(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathSkew'))
+            if ((prop = this.getFromXMLJS(shape, 'PathShearY')) !== undefined)
             {
-                go.PathSkew = prop;
+                go.PathShearY = Utils.unpackPathShear(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathTaperX'))
+            if ((prop = this.getFromXMLJS(shape, 'PathSkew')) !== undefined)
             {
-                go.PathTaperX = prop;
+                go.PathSkew = Utils.unpackPathShear(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathTaperY'))
+            if ((prop = this.getFromXMLJS(shape, 'PathTaperX')) !== undefined)
             {
-                go.PathTaperY = prop;
+                go.PathTaperX = Utils.unpackPathTaper(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathTwist'))
+            if ((prop = this.getFromXMLJS(shape, 'PathTaperY')) !== undefined)
             {
-                go.PathTwist = prop;
+                go.PathTaperY = Utils.unpackPathTaper(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PathTwistBegin'))
+            if ((prop = this.getFromXMLJS(shape, 'PathTwist')) !== undefined)
             {
-                go.PathTwistBegin = prop;
+                go.PathTwist = Utils.unpackPathTwist(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'PCode'))
+            if ((prop = this.getFromXMLJS(shape, 'PathTwistBegin')) !== undefined)
+            {
+                go.PathTwistBegin = Utils.unpackPathTwist(prop);
+            }
+            if ((prop = this.getFromXMLJS(shape, 'PCode')) !== undefined)
             {
                 go.PCode = prop;
             }
-            if (prop = this.getFromXMLJS(shape, 'ProfileBegin'))
+            if ((prop = this.getFromXMLJS(shape, 'ProfileBegin')) !== undefined)
             {
-                go.ProfileBegin = prop;
+                go.ProfileBegin = Utils.unpackBeginCut(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'ProfileEnd'))
+            if ((prop = this.getFromXMLJS(shape, 'ProfileEnd')) !== undefined)
             {
-                go.ProfileEnd = prop;
+                go.ProfileEnd = Utils.unpackEndCut(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'ProfileHollow'))
+            if ((prop = this.getFromXMLJS(shape, 'ProfileHollow')) !== undefined)
             {
-                go.ProfileHollow = prop;
+                go.ProfileHollow = Utils.unpackProfileHollow(prop);
             }
-            if (prop = this.getFromXMLJS(shape, 'State'))
+            if ((prop = this.getFromXMLJS(shape, 'State')) !== undefined)
             {
                 go.State = prop;
             }
-            if (prop = this.getFromXMLJS(shape, 'ProfileShape'))
+            if ((prop = this.getFromXMLJS(shape, 'ProfileShape')) !== undefined)
             {
                 if (!go.ProfileCurve)
                 {
@@ -459,7 +476,7 @@ export class GameObject implements IGameObjectData
                 }
                 go.ProfileCurve = go.ProfileCurve | parseInt(ProfileShape[prop], 10);
             }
-            if (prop = this.getFromXMLJS(shape, 'HollowShape'))
+            if ((prop = this.getFromXMLJS(shape, 'HollowShape')) !== undefined)
             {
                 if (!go.ProfileCurve)
                 {
@@ -467,7 +484,7 @@ export class GameObject implements IGameObjectData
                 }
                 go.ProfileCurve = go.ProfileCurve | parseInt(HoleType[prop], 10);
             }
-            if (this.getFromXMLJS(shape, 'SculptEntry'))
+            if (this.getFromXMLJS(shape, 'SculptEntry') !== undefined)
             {
                 const type = this.getFromXMLJS(shape, 'SculptType');
                 if (type !== false && type !== undefined)
@@ -475,6 +492,10 @@ export class GameObject implements IGameObjectData
                     const id = UUID.fromXMLJS(shape, 'SculptTexture');
                     if (id instanceof UUID)
                     {
+                        if (!go.extraParams)
+                        {
+                            go.extraParams = new ExtraParams();
+                        }
                         if (type & SculptType.Mesh)
                         {
                             go.extraParams.setMeshData(type, id);
@@ -486,7 +507,7 @@ export class GameObject implements IGameObjectData
                     }
                 }
             }
-            if (this.getFromXMLJS(shape, 'FlexiEntry'))
+            if (this.getFromXMLJS(shape, 'FlexiEntry') !== undefined)
             {
                 const flexiSoftness = this.getFromXMLJS(shape, 'FlexiSoftness');
                 const flexiTension = this.getFromXMLJS(shape, 'FlexiTension');
@@ -505,10 +526,14 @@ export class GameObject implements IGameObjectData
                     flexiForceY !== false &&
                     flexiForceZ !== false)
                 {
+                    if (!go.extraParams)
+                    {
+                        go.extraParams = new ExtraParams();
+                    }
                     go.extraParams.setFlexiData(flexiSoftness, flexiTension, flexiDrag, flexiGravity, flexiWind, new Vector3([flexiForceX, flexiForceY, flexiForceZ]));
                 }
             }
-            if (this.getFromXMLJS(shape, 'LightEntry'))
+            if (this.getFromXMLJS(shape, 'LightEntry') !== undefined)
             {
                 const lightColorR = this.getFromXMLJS(shape, 'LightColorR');
                 const lightColorG = this.getFromXMLJS(shape, 'LightColorG');
@@ -527,6 +552,10 @@ export class GameObject implements IGameObjectData
                     lightFalloff !== false &&
                     lightIntensity !== false)
                 {
+                    if (!go.extraParams)
+                    {
+                        go.extraParams = new ExtraParams();
+                    }
                     go.extraParams.setLightData(
                         new Color4(lightColorR, lightColorG, lightColorB, lightColorA),
                         lightRadius,
@@ -536,18 +565,14 @@ export class GameObject implements IGameObjectData
                     );
                 }
             }
-            if (prop = this.getFromXMLJS(shape, 'ExtraParams'))
+            if ((prop = this.getFromXMLJS(shape, 'ExtraParams')) !== undefined)
             {
                 const buf = Buffer.from(prop, 'base64');
                 go.extraParams = ExtraParams.from(buf);
             }
         }
         // TODO: TaskInventory
-
-
-
-        console.log('BURP');
-        process.exit(0);
+        return go;
     }
 
     static fromXML(xml: string)
@@ -572,7 +597,21 @@ export class GameObject implements IGameObjectData
                         throw new Error('Root part not found');
                     }
                     const rootPart = GameObject.partFromXMLJS(result['SceneObjectPart'][0], true);
-
+                    rootPart.children = [];
+                    rootPart.totalChildren = 0;
+                    if (result['OtherParts'] && Array.isArray(result['OtherParts']) && result['OtherParts'].length > 0)
+                    {
+                        const obj = result['OtherParts'][0];
+                        if (obj['SceneObjectPart'])
+                        {
+                            for (const part of obj['SceneObjectPart'])
+                            {
+                                rootPart.children.push(GameObject.partFromXMLJS(part, false));
+                                rootPart.totalChildren++;
+                            }
+                        }
+                    }
+                    resolve(rootPart);
                 }
             });
         });
@@ -601,6 +640,359 @@ export class GameObject implements IGameObjectData
             return this.NameValue[key].value;
         }
         return '';
+    }
+
+    setIfDefined(def?: number, v?: number)
+    {
+        if (def === undefined)
+        {
+            def = 0;
+        }
+        if (v === undefined)
+        {
+            return def;
+        }
+        else
+        {
+            return v;
+        }
+    }
+
+    async setShape(PathCurve?: number,
+                   ProfileCurve?: number,
+                   PathBegin?: number,
+                   PathEnd?: number,
+                   PathScaleX?: number,
+                   PathScaleY?: number,
+                   PathShearX?: number,
+                   PathShearY?: number,
+                   PathTwist?: number,
+                   PathTwistBegin?: number,
+                   PathRadiusOffset?: number,
+                   PathTaperX?: number,
+                   PathTaperY?: number,
+                   PathRevolutions?: number,
+                   PathSkew?: number,
+                   ProfileBegin?: number,
+                   ProfileEnd?: number,
+                   ProfileHollow?: number)
+    {
+        this.PathCurve = this.setIfDefined(this.PathCurve, PathCurve);
+        this.ProfileCurve = this.setIfDefined(this.ProfileCurve, ProfileCurve);
+        this.PathBegin = this.setIfDefined(this.PathBegin, PathBegin);
+        this.PathEnd = this.setIfDefined(this.PathEnd, PathEnd);
+        this.PathScaleX = this.setIfDefined(this.PathScaleX, PathScaleX);
+        this.PathScaleY = this.setIfDefined(this.PathScaleY, PathScaleY);
+        this.PathShearX = this.setIfDefined(this.PathShearX, PathShearX);
+        this.PathShearY = this.setIfDefined(this.PathShearY, PathShearY);
+        this.PathTwist = this.setIfDefined(this.PathTwist, PathTwist);
+        this.PathTwistBegin = this.setIfDefined(this.PathTwistBegin, PathTwistBegin);
+        this.PathRadiusOffset = this.setIfDefined(this.PathRadiusOffset, PathRadiusOffset);
+        this.PathTaperX = this.setIfDefined(this.PathTaperX, PathTaperX);
+        this.PathTaperY = this.setIfDefined(this.PathTaperY, PathTaperY);
+        this.PathRevolutions = this.setIfDefined(this.PathRevolutions, PathRevolutions);
+        this.PathSkew = this.setIfDefined(this.PathSkew, PathSkew);
+        this.ProfileBegin = this.setIfDefined(this.ProfileBegin, ProfileBegin);
+        this.ProfileEnd = this.setIfDefined(this.ProfileEnd, ProfileEnd);
+        this.ProfileHollow = this.setIfDefined(this.ProfileHollow, ProfileHollow);
+        if (!this.region)
+        {
+            return;
+        }
+        const msg = new ObjectShapeMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                ObjectLocalID: this.ID,
+                PathCurve: this.PathCurve,
+                ProfileCurve: this.ProfileCurve,
+                PathBegin: Utils.packBeginCut(this.PathBegin),
+                PathEnd: Utils.packEndCut(this.PathEnd),
+                PathScaleX: Utils.packPathScale(this.PathScaleX),
+                PathScaleY: Utils.packPathScale(this.PathScaleY),
+                PathShearX: Utils.packPathShear(this.PathShearX),
+                PathShearY: Utils.packPathShear(this.PathShearY),
+                PathTwist: Utils.packPathTwist(this.PathTwist),
+                PathTwistBegin: Utils.packPathTwist(this.PathTwistBegin),
+                PathRadiusOffset: Utils.packPathTwist(this.PathRadiusOffset),
+                PathTaperX: Utils.packPathTaper(this.PathTaperX),
+                PathTaperY: Utils.packPathTaper(this.PathTaperY),
+                PathRevolutions: Utils.packPathRevolutions(this.PathRevolutions),
+                PathSkew: Utils.packPathTwist(this.PathSkew),
+                ProfileBegin: Utils.packBeginCut(this.ProfileBegin),
+                ProfileEnd: Utils.packEndCut(this.ProfileEnd),
+                ProfileHollow: Utils.packProfileHollow(this.ProfileHollow)
+            }
+        ];
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    async setName(name: string)
+    {
+        this.name = name;
+        if (!this.region)
+        {
+            return;
+        }
+        const msg = new ObjectNameMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                LocalID: this.ID,
+                Name: Utils.StringToBuffer(name)
+            }
+        ];
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    private compareParam(name: string, param1: number | undefined, param2: number | undefined): boolean
+    {
+        if (param1 === undefined)
+        {
+            param1 = 0;
+        }
+        if (param2 === undefined)
+        {
+            param2 = 0;
+        }
+        if (Math.abs(param1 - param2) < 0.0001)
+        {
+            return true;
+        }
+        else
+        {
+            console.log('Failed ' + name + ' - ' + param1 + ' vs ' + param2);
+            return false;
+        }
+    }
+
+    compareShape(obj: GameObject): boolean
+    {
+        return this.compareParam('PathCurve', this.PathCurve, obj.PathCurve) &&
+        this.compareParam('ProfileCurve', this.ProfileCurve, obj.ProfileCurve) &&
+        this.compareParam('PathBegin', this.PathBegin, obj.PathBegin) &&
+        this.compareParam('PathEnd', this.PathEnd, obj.PathEnd) &&
+        this.compareParam('PathScaleX', this.PathScaleX, obj.PathScaleX) &&
+        this.compareParam('PathScaleY', this.PathScaleY, obj.PathScaleY) &&
+        this.compareParam('PathShearX', this.PathShearX, obj.PathShearX) &&
+        this.compareParam('PathShearY', this.PathShearY, obj.PathShearY) &&
+        this.compareParam('PathTwist', this.PathTwist, obj.PathTwist) &&
+        this.compareParam('PathTwistBegin', this.PathTwistBegin, obj.PathTwistBegin) &&
+        this.compareParam('PathRadiusOffset', this.PathRadiusOffset, obj.PathRadiusOffset) &&
+        this.compareParam('PathTaperX', this.PathTaperX, obj.PathTaperX) &&
+        this.compareParam('PathTaperY', this.PathTaperY, obj.PathTaperY) &&
+        this.compareParam('PathRevolutions', this.PathRevolutions, obj.PathRevolutions) &&
+        this.compareParam('PathSkew', this.PathSkew, obj.PathSkew) &&
+        this.compareParam('ProfileBegin', this.ProfileBegin, obj.ProfileBegin) &&
+        this.compareParam('ProfileEnd', this.ProfileEnd, obj.ProfileEnd) &&
+            this.compareParam('PRofileHollow', this.ProfileHollow, obj.ProfileHollow);
+    }
+
+    async setGeometry(pos?: Vector3, rot?: Quaternion, scale?: Vector3)
+    {
+        const data = [];
+        if (pos !== undefined)
+        {
+            this.Position = pos;
+            data.push({
+                ObjectLocalID: this.ID,
+                Type: UpdateType.Position,
+                Data: pos.getBuffer()
+            });
+        }
+        if (rot !== undefined)
+        {
+            this.Rotation = rot;
+            data.push({
+                ObjectLocalID: this.ID,
+                Type: UpdateType.Rotation,
+                Data: rot.getBuffer()
+            })
+        }
+        if (scale !== undefined)
+        {
+            this.Scale = scale;
+            data.push({
+                ObjectLocalID: this.ID,
+                Type: UpdateType.Scale,
+                Data: scale.getBuffer()
+            })
+        }
+        if (!this.region || data.length === 0)
+        {
+            return;
+        }
+        const msg = new MultipleObjectUpdateMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = data;
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
+    }
+
+    async linkTo(root: GameObject)
+    {
+        const msg = new ObjectLinkMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                ObjectLocalID: root.ID
+            },
+            {
+                ObjectLocalID: this.ID
+            }
+        ];
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
+    }
+
+    async setDescription(desc: string)
+    {
+        this.description = desc;
+        if (!this.region)
+        {
+            return;
+        }
+        const msg = new ObjectDescriptionMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                LocalID: this.ID,
+                Description: Utils.StringToBuffer(desc)
+            }
+        ];
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    async setTextureEntry(e: TextureEntry)
+    {
+        this.TextureEntry = e;
+        if (!this.region)
+        {
+            return;
+        }
+
+        await this.setTextureAndMediaURL();
+    }
+
+    private async setTextureAndMediaURL()
+    {
+        const msg = new ObjectImageMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        if (this.MediaURL === undefined)
+        {
+            this.MediaURL = '';
+        }
+        if (this.TextureEntry === undefined)
+        {
+            this.TextureEntry = new TextureEntry();
+        }
+        msg.ObjectData = [
+            {
+                ObjectLocalID: this.ID,
+                TextureEntry: this.TextureEntry.toBuffer(),
+                MediaURL: Utils.StringToBuffer(this.MediaURL)
+            }
+        ];
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    async setExtraParams(ex: ExtraParams)
+    {
+        this.extraParams = ex;
+        if (!this.region)
+        {
+            return;
+        }
+
+        // Set ExtraParams
+        const msg = new ObjectExtraParamsMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [];
+        let params = 0;
+        if (ex.lightData !== null)
+        {
+            params++;
+            const data = ex.lightData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.Light,
+                ParamInUse: (ex.lightData.Intensity !== 0.0),
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.flexibleData !== null)
+        {
+            params++;
+            const data = ex.flexibleData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.Flexible,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.lightImageData !== null)
+        {
+            params++;
+            const data = ex.lightImageData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.LightImage,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.sculptData !== null)
+        {
+            params++;
+            const data = ex.sculptData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.Sculpt,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.meshData !== null)
+        {
+            params++;
+            const data = ex.meshData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.Mesh,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (params > 0)
+        {
+            const ack = this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
+            await this.region.circuit.waitForAck(ack, 10000);
+        }
     }
 
     private async getInventoryXML(xml: XMLElementOrXMLNode, inv: InventoryItem)
@@ -695,29 +1087,30 @@ export class GameObject implements IGameObjectData
             shape.ele('ProfileCurve', this.ProfileCurve);
             if (this.TextureEntry)
             {
-                shape.ele('TextureEntry', this.TextureEntry.binary.toString('base64'));
+                shape.ele('TextureEntry', this.TextureEntry.toBase64());
             }
             if (this.extraParams)
             {
                 shape.ele('ExtraParams', this.extraParams.toBase64());
             }
-            shape.ele('PathBegin', this.PathBegin);
+            shape.ele('PathBegin', Utils.packBeginCut(Utils.numberOrZero(this.PathBegin)));
             shape.ele('PathCurve', this.PathCurve);
-            shape.ele('PathEnd', this.PathEnd);
-            shape.ele('PathRadiusOffset', this.PathRadiusOffset);
-            shape.ele('PathRevolutions', this.PathRevolutions);
-            shape.ele('PathScaleX', this.PathScaleX);
-            shape.ele('PathScaleY', this.PathScaleY);
-            shape.ele('PathShearX', this.PathShearX);
-            shape.ele('PathSkew', this.PathSkew);
-            shape.ele('PathTaperX', this.PathTaperX);
-            shape.ele('PathTaperY', this.PathTaperY);
-            shape.ele('PathTwist', this.PathTwist);
-            shape.ele('PathTwistBegin', this.PathTwistBegin);
+            shape.ele('PathEnd', Utils.packEndCut(Utils.numberOrZero(this.PathEnd)));
+            shape.ele('PathRadiusOffset', Utils.packPathTwist(Utils.numberOrZero(this.PathRadiusOffset)));
+            shape.ele('PathRevolutions', Utils.packPathRevolutions(Utils.numberOrZero(this.PathRevolutions)));
+            shape.ele('PathScaleX', Utils.packPathScale(Utils.numberOrZero(this.PathScaleX)));
+            shape.ele('PathScaleY', Utils.packPathScale(Utils.numberOrZero(this.PathScaleY)));
+            shape.ele('PathShearX', Utils.packPathShear(Utils.numberOrZero(this.PathShearX)));
+            shape.ele('PathShearY', Utils.packPathShear(Utils.numberOrZero(this.PathShearY)));
+            shape.ele('PathSkew',  Utils.packPathTwist(Utils.numberOrZero(this.PathSkew)));
+            shape.ele('PathTaperX',  Utils.packPathTaper(Utils.numberOrZero(this.PathTaperX)));
+            shape.ele('PathTaperY',  Utils.packPathTaper(Utils.numberOrZero(this.PathTaperY)));
+            shape.ele('PathTwist',  Utils.packPathTwist(Utils.numberOrZero(this.PathTwist)));
+            shape.ele('PathTwistBegin',  Utils.packPathTwist(Utils.numberOrZero(this.PathTwistBegin)));
             shape.ele('PCode', this.PCode);
-            shape.ele('ProfileBegin', this.ProfileBegin);
-            shape.ele('ProfileEnd', this.ProfileEnd);
-            shape.ele('ProfileHollow', this.ProfileHollow);
+            shape.ele('ProfileBegin',  Utils.packBeginCut(Utils.numberOrZero(this.ProfileBegin)));
+            shape.ele('ProfileEnd',  Utils.packEndCut(Utils.numberOrZero(this.ProfileEnd)));
+            shape.ele('ProfileHollow',  Utils.packProfileHollow(Utils.numberOrZero(this.ProfileHollow)));
             shape.ele('State', this.State);
 
             if (this.ProfileCurve)

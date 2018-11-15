@@ -35,6 +35,7 @@ import {SkyPreset} from './public/interfaces/SkyPreset';
 import {Vector4} from './Vector4';
 import {WaterPreset} from './public/interfaces/WaterPreset';
 import {ClientCommands} from './ClientCommands';
+import {SimulatorViewerTimeMessageMessage} from './messages/SimulatorViewerTimeMessage';
 
 export class Region
 {
@@ -118,6 +119,8 @@ export class Region
     parcelMap: number[][] = [];
 
     environment: RegionEnvironment;
+
+    timeOffset = 0;
 
     static IDCTColumn16(linein: number[], lineout: number[], column: number)
     {
@@ -421,12 +424,14 @@ export class Region
         });
 
         this.messageSubscription = this.circuit.subscribeToMessages([
-            Message.LayerData
+            Message.LayerData,
+            Message.SimulatorViewerTimeMessage
         ], (packet: Packet) =>
         {
             switch (packet.message.id)
             {
                 case Message.LayerData:
+                {
                     const layerData: LayerDataMessage = packet.message as LayerDataMessage;
                     const type: LayerType = layerData.LayerID.Type;
 
@@ -576,6 +581,14 @@ export class Region
                             break;
                     }
                     break;
+                }
+                case Message.SimulatorViewerTimeMessage:
+                {
+                    const msg = packet.message as SimulatorViewerTimeMessageMessage;
+                    const timeStamp = msg.TimeInfo.UsecSinceStart.toNumber() / 1000000;
+                    this.timeOffset = (new Date().getTime() / 1000) - timeStamp;
+                    break;
+                }
             }
         })
     }

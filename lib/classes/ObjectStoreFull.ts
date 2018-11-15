@@ -80,23 +80,23 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             obj.Flags = objData.UpdateFlags;
             obj.PathCurve = objData.PathCurve;
             obj.ProfileCurve = objData.ProfileCurve;
-            obj.PathBegin = objData.PathBegin;
-            obj.PathEnd = objData.PathEnd;
-            obj.PathScaleX = objData.PathScaleX;
-            obj.PathScaleY = objData.PathScaleY;
-            obj.PathShearX = objData.PathShearX;
-            obj.PathShearY = objData.PathShearY;
-            obj.PathTwist = objData.PathTwist;
-            obj.PathTwistBegin = objData.PathTwistBegin;
-            obj.PathRadiusOffset = objData.PathRadiusOffset;
-            obj.PathTaperX = objData.PathTaperX;
-            obj.PathTaperY = objData.PathTaperY;
-            obj.PathRevolutions = objData.PathRevolutions;
-            obj.PathSkew = objData.PathSkew;
-            obj.ProfileBegin = objData.ProfileBegin;
-            obj.ProfileEnd = objData.ProfileEnd;
-            obj.ProfileHollow = objData.ProfileHollow;
-            obj.TextureEntry = new TextureEntry(objData.TextureEntry);
+            obj.PathBegin = Utils.unpackBeginCut(objData.PathBegin);
+            obj.PathEnd = Utils.unpackEndCut(objData.PathEnd);
+            obj.PathScaleX = Utils.unpackPathScale(objData.PathScaleX);
+            obj.PathScaleY = Utils.unpackPathScale(objData.PathScaleY);
+            obj.PathShearX = Utils.unpackPathShear(objData.PathShearX);
+            obj.PathShearY = Utils.unpackPathShear(objData.PathShearY);
+            obj.PathTwist = Utils.unpackPathTwist(objData.PathTwist);
+            obj.PathTwistBegin = Utils.unpackPathTwist(objData.PathTwistBegin);
+            obj.PathRadiusOffset = Utils.unpackPathTwist(objData.PathRadiusOffset);
+            obj.PathTaperX = Utils.unpackPathTaper(objData.PathTaperX);
+            obj.PathTaperY = Utils.unpackPathTaper(objData.PathTaperY);
+            obj.PathRevolutions = Utils.unpackPathRevolutions(objData.PathRevolutions);
+            obj.PathSkew = Utils.unpackPathTwist(objData.PathSkew);
+            obj.ProfileBegin = Utils.unpackBeginCut(objData.ProfileBegin);
+            obj.ProfileEnd = Utils.unpackEndCut(objData.ProfileEnd);
+            obj.ProfileHollow = Utils.unpackProfileHollow(objData.ProfileHollow);
+            obj.TextureEntry = TextureEntry.from(objData.TextureEntry);
             obj.textureAnim = TextureAnim.from(objData.TextureAnim);
 
             const pcodeData = objData.Data;
@@ -378,31 +378,31 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     pos += result.readLength;
                 }
                 o.PathCurve = buf.readUInt8(pos++);
-                o.PathBegin = buf.readUInt16LE(pos);
+                o.PathBegin = Utils.unpackBeginCut(buf.readUInt16LE(pos));
                 pos = pos + 2;
-                o.PathEnd = buf.readUInt16LE(pos);
+                o.PathEnd = Utils.unpackEndCut(buf.readUInt16LE(pos));
                 pos = pos + 2;
-                o.PathScaleX = buf.readUInt8(pos++);
-                o.PathScaleY = buf.readUInt8(pos++);
-                o.PathShearX = buf.readUInt8(pos++);
-                o.PathShearY = buf.readUInt8(pos++);
-                o.PathTwist = buf.readUInt8(pos++);
-                o.PathTwistBegin = buf.readUInt8(pos++);
-                o.PathRadiusOffset = buf.readUInt8(pos++);
-                o.PathTaperX = buf.readUInt8(pos++);
-                o.PathTaperY = buf.readUInt8(pos++);
-                o.PathRevolutions = buf.readUInt8(pos++);
-                o.PathSkew = buf.readUInt8(pos++);
+                o.PathScaleX = Utils.unpackPathScale(buf.readUInt8(pos++));
+                o.PathScaleY = Utils.unpackPathScale(buf.readUInt8(pos++));
+                o.PathShearX = Utils.unpackPathShear(buf.readUInt8(pos++));
+                o.PathShearY = Utils.unpackPathShear(buf.readUInt8(pos++));
+                o.PathTwist = Utils.unpackPathTwist(buf.readUInt8(pos++));
+                o.PathTwistBegin = Utils.unpackPathTwist(buf.readUInt8(pos++));
+                o.PathRadiusOffset = Utils.unpackPathTwist(buf.readUInt8(pos++));
+                o.PathTaperX = Utils.unpackPathTaper(buf.readUInt8(pos++));
+                o.PathTaperY = Utils.unpackPathTaper(buf.readUInt8(pos++));
+                o.PathRevolutions = Utils.unpackPathRevolutions(buf.readUInt8(pos++));
+                o.PathSkew = Utils.unpackPathTwist(buf.readUInt8(pos++));
                 o.ProfileCurve = buf.readUInt8(pos++);
-                o.ProfileBegin = buf.readUInt16LE(pos);
+                o.ProfileBegin = Utils.unpackBeginCut(buf.readUInt16LE(pos));
                 pos = pos + 2;
-                o.ProfileEnd = buf.readUInt16LE(pos);
+                o.ProfileEnd = Utils.unpackEndCut(buf.readUInt16LE(pos));
                 pos = pos + 2;
-                o.ProfileHollow = buf.readUInt16LE(pos);
+                o.ProfileHollow = Utils.unpackProfileHollow(buf.readUInt16LE(pos));
                 pos = pos + 2;
                 const textureEntryLength = buf.readUInt32LE(pos);
                 pos = pos + 4;
-                o.TextureEntry = new TextureEntry(buf.slice(pos, pos + textureEntryLength));
+                o.TextureEntry = TextureEntry.from(buf.slice(pos, pos + textureEntryLength));
                 pos = pos + textureEntryLength;
 
                 if (compressedflags & CompressedFlags.TextureAnimation)
@@ -476,7 +476,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     if (objectData.TextureEntry.length > 0)
                     {
                         // No idea why the first four bytes are skipped here.
-                        this.objects[localID].TextureEntry = new TextureEntry(objectData.TextureEntry.slice(4));
+                        this.objects[localID].TextureEntry = TextureEntry.from(objectData.TextureEntry.slice(4));
                     }
                     this.insertIntoRtree(this.objects[localID]);
                 }

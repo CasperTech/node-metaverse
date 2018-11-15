@@ -322,51 +322,48 @@ export class Caps
         });
     }
 
-    capsRequestXML(capability: string, data: any, debug = false): Promise<any>
+    capsPerformXMLRequest(url: string, data: any): Promise<any>
+    {
+        return new Promise<any>(async (resolve, reject) =>
+        {
+            const xml = LLSD.LLSD.formatXML(data);
+            this.request(url, xml, 'application/llsd+xml').then((body: string) =>
+            {
+                let result: any = null;
+                try
+                {
+                    result = LLSD.LLSD.parseXML(body);
+                }
+                catch (err)
+                {
+                    console.error('Error parsing LLSD');
+                    console.error(body);
+                    reject(err);
+                }
+                resolve(result);
+            }).catch((err) =>
+            {
+                console.error(err);
+                reject(err);
+            });
+        });
+    }
+
+    async capsRequestXML(capability: string, data: any, debug = false): Promise<any>
     {
         if (debug)
         {
             console.log(data);
         }
-        return new Promise<any>(async (resolve, reject) =>
+
+        const t = new Date().getTime();
+        if (this.capRateLimitTimers[capability] && (this.capRateLimitTimers[capability] + Caps.CAP_INVOCATION_INTERVAL_MS) > t)
         {
-            const t = new Date().getTime();
-            if (this.capRateLimitTimers[capability] && (this.capRateLimitTimers[capability] + Caps.CAP_INVOCATION_INTERVAL_MS) > t)
-            {
-                await this.waitForCapTimeout(capability);
-            }
-            this.capRateLimitTimers[capability] = t;
-            this.getCapability(capability).then((url) =>
-            {
-                const xml = LLSD.LLSD.formatXML(data);
-                if (debug)
-                {
-                    console.log(xml);
-                }
-                this.request(url, xml, 'application/llsd+xml').then((body: string) =>
-                {
-                    let result: any = null;
-                    try
-                    {
-                        result = LLSD.LLSD.parseXML(body);
-                    }
-                    catch (err)
-                    {
-                        console.error('Error parsing LLSD');
-                        console.error(body);
-                        reject(err);
-                    }
-                    resolve(result);
-                }).catch((err) =>
-                {
-                    console.error(err);
-                    reject(err);
-                });
-            }).catch((err) =>
-            {
-                reject(err);
-            });
-        });
+            await this.waitForCapTimeout(capability);
+        }
+        this.capRateLimitTimers[capability] = t;
+        const url = await this.getCapability(capability);
+        return await this.capsPerformXMLRequest(url, data);
     }
 
     shutdown()

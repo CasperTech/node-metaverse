@@ -64,9 +64,17 @@ export class Quaternion extends quat
         return false;
     }
 
-    constructor(buf?: Buffer | number[] | Quaternion, pos?: number)
+    constructor(buf?: Buffer | number[] | Quaternion | quat, pos?: number)
     {
-        if (buf instanceof Quaternion)
+        if (buf instanceof quat)
+        {
+            super();
+            this.x = buf.x;
+            this.y = buf.y;
+            this.z = buf.z;
+            this.w = buf.z;
+        }
+        else if (buf instanceof Quaternion)
         {
             super();
             this.x = buf.x;
@@ -105,5 +113,33 @@ export class Quaternion extends quat
     toString(): string
     {
         return '<' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + '>';
+    }
+    getBuffer(): Buffer
+    {
+        const j = Buffer.allocUnsafe(12);
+        this.writeToBuffer(j, 0);
+        return j;
+    }
+    compareApprox(rot: Quaternion): boolean
+    {
+        return this.angleBetween(rot) < 0.0001 || rot.equals(this, 0.0001);
+    }
+    angleBetween(b: Quaternion): number
+    {
+        const a = this;
+        const aa = (a.x * a.x + a.y * a.y + a.z * a.z + a.w * a.w);
+        const bb = (b.x * b.x + b.y * b.y + b.z * b.z + b.w * b.w);
+        const aa_bb = aa * bb;
+        if (aa_bb === 0)
+        {
+            return 0.0;
+        }
+        const ab = (a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
+        const quotient = (ab * ab) / aa_bb;
+        if (quotient >= 1.0)
+        {
+            return 0.0;
+        }
+        return Math.acos(2 * quotient - 1);
     }
 }

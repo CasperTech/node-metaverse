@@ -65,4 +65,8 @@ export class Vector2 extends vec2
     {
         return '<' + this.x + ', ' + this.y + '>';
     }
+    toArray()
+    {
+        return [this.x, this.y];
+    }
 }
