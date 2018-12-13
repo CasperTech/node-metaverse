@@ -1,9 +1,11 @@
 import {CommandsBase} from './CommandsBase';
 import {InventoryFolder} from '../InventoryFolder';
-import {ChatSourceType, InventoryOfferedEvent, PacketFlags, UUID, Vector3} from '../..';
+import {AssetType, ChatSourceType, InventoryOfferedEvent, PacketFlags, UUID, Vector3} from '../..';
 import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
 import {ImprovedInstantMessageMessage} from '../messages/ImprovedInstantMessage';
 import {Utils} from '../Utils';
+import {InventoryType} from '../../enums/InventoryType';
+import {FolderType} from '../../enums/FolderType';
 
 export class InventoryCommands extends CommandsBase
 {
@@ -19,8 +21,8 @@ export class InventoryCommands extends CommandsBase
     {
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-
-        const folder = this.agent.inventory.findFolderForType(event.type);
+        const folderType = (event.type as unknown) as FolderType;
+        const folder = this.agent.inventory.findFolderForType(folderType);
         const binary = Buffer.allocUnsafe(16);
         folder.writeToBuffer(binary, 0);
 

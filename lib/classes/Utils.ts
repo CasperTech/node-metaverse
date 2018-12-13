@@ -1,12 +1,22 @@
 import * as Long from 'long';
-import {GlobalPosition, HTTPAssets} from '..';
+import {GlobalPosition, HTTPAssets, Vector3} from '..';
+import {Quaternion} from './Quaternion';
 
 export class Utils
 {
+    static TWO_PI = 6.283185307179586476925286766559;
+    static CUT_QUANTA = 0.00002;
+    static SCALE_QUANTA = 0.01;
+    static SHEAR_QUANTA = 0.01;
+    static TAPER_QUANTA = 0.01;
+    static REV_QUANTA = 0.015;
+    static HOLLOW_QUANTA = 0.00002;
+
     static StringToBuffer(str: string): Buffer
     {
         return Buffer.from(str + '\0', 'utf8');
     }
+
     static BufferToStringSimple(buf: Buffer, startPos?: number): string
     {
         if (buf.length === 0)
@@ -22,11 +32,53 @@ export class Utils
             return buf.toString('utf8');
         }
     }
-    static BufferToString(buf: Buffer, startPos?: number):
+
+    static Clamp(value: number, min: number, max: number)
     {
-        readLength: number,
-        result: string
+        value = (value > max) ? max : value;
+        value = (value < min) ? min : value;
+        return value;
     }
+
+    static fillArray<T>(value: T, count: number)
+    {
+        const arr: T[] = new Array<T>(count);
+        while (count--)
+        {
+            arr[count] = value;
+        }
+        return arr;
+    }
+
+    static JSONStringify(obj: object, space: number)
+    {
+        const cache: any[] = [];
+        return JSON.stringify(obj, function (key, value)
+        {
+            if (typeof value === 'object' && value !== null)
+            {
+                if (cache.indexOf(value) !== -1)
+                {
+                    try
+                    {
+                        return JSON.parse(JSON.stringify(value));
+                    }
+                    catch (error)
+                    {
+                        return 'Circular Reference';
+                    }
+                }
+                cache.push(value);
+            }
+            return value;
+        }, space);
+    }
+
+    static BufferToString(buf: Buffer, startPos?: number):
+        {
+            readLength: number,
+            result: string
+        }
     {
         if (buf.length === 0)
         {
@@ -115,6 +167,14 @@ export class Utils
         }
     }
 
+    static FloatToByte(val: number, lower: number, upper: number)
+    {
+        val = Utils.Clamp(val, lower, upper);
+        val -= lower;
+        val /= (upper - lower);
+        return Math.round(val * 255);
+    }
+
     static ByteToFloat(byte: number, lower: number, upper: number)
     {
         const ONE_OVER_BYTEMAX: number = 1.0 / 255;
@@ -147,16 +207,19 @@ export class Utils
         }
         return fval;
     }
+
     static Base64EncodeString(str: string): string
     {
         const buff = new Buffer(str, 'utf8');
         return buff.toString('base64');
     }
+
     static Base64DecodeString(str: string): string
     {
         const buff = new Buffer(str, 'base64');
         return buff.toString('utf8');
     }
+
     static HexToLong(hex: string)
     {
         while (hex.length < 16)
@@ -165,17 +228,224 @@ export class Utils
         }
         return new Long(parseInt(hex.substr(8), 16), parseInt(hex.substr(0, 8), 16));
     }
+
     static ReadRotationFloat(buf: Buffer, pos: number): number
     {
-        return ((buf[pos] | (buf[pos + 1] << 8)) / 32768.0) * (2 * Math.PI);
+        return ((buf[pos] | (buf[pos + 1] << 8)) / 32768.0) * Utils.TWO_PI;
     }
+
     static ReadGlowFloat(buf: Buffer, pos: number): number
     {
         return buf[pos] / 255;
     }
+
     static ReadOffsetFloat(buf: Buffer, pos: number): number
     {
         const offset = buf.readInt16LE(pos);
         return offset / 32767.0;
+    }
+
+    static TEOffsetShort(num: number)
+    {
+        num = Utils.Clamp(num, -1.0, 1.0);
+        num *= 32767.0;
+        return Math.round(num);
+    }
+
+    static IEEERemainder(x: number, y: number)
+    {
+        if (isNaN(x))
+        {
+            return x; // IEEE 754-2008: NaN payload must be preserved
+        }
+        if (isNaN(y))
+        {
+            return y; // IEEE 754-2008: NaN payload must be preserved
+        }
+        const regularMod = x % y;
+        if (isNaN(regularMod))
+        {
+            return NaN;
+        }
+        if (regularMod === 0)
+        {
+            if (Math.sign(x) < 0)
+            {
+                return -0;
+            }
+        }
+        const alternativeResult = regularMod - (Math.abs(y) * Math.sign(x));
+        if (Math.abs(alternativeResult) === Math.abs(regularMod))
+        {
+            const divisionResult = x / y;
+            const roundedResult = Math.round(divisionResult);
+            if (Math.abs(roundedResult) > Math.abs(divisionResult))
+            {
+                return alternativeResult;
+            }
+            else
+            {
+                return regularMod;
+            }
+        }
+        if (Math.abs(alternativeResult) < Math.abs(regularMod))
+        {
+            return alternativeResult;
+        }
+        else
+        {
+            return regularMod;
+        }
+    }
+
+    static TERotationShort(rotation: number)
+    {
+        return Math.floor(((Utils.IEEERemainder(rotation, Utils.TWO_PI) / Utils.TWO_PI) * 32768.0) + 0.5);
+    }
+
+    static TEGlowByte(glow: number)
+    {
+        return (glow * 255.0);
+    }
+
+    static NumberToByteBuffer(num: number): Buffer
+    {
+        const buf = Buffer.allocUnsafe(1);
+        buf.writeUInt8(num, 0);
+        return buf;
+    }
+
+    static NumberToShortBuffer(num: number): Buffer
+    {
+        const buf = Buffer.allocUnsafe(2);
+        buf.writeInt16LE(num, 0);
+        return buf;
+    }
+
+    static NumberToFloatBuffer(num: number): Buffer
+    {
+        const buf = Buffer.allocUnsafe(4);
+        buf.writeFloatLE(num, 0);
+        return buf;
+    }
+
+    static numberOrZero(num: number | undefined): number
+    {
+        if (num === undefined)
+        {
+            return 0;
+        }
+        return num;
+    }
+
+    static vector3OrZero(vec: Vector3 | undefined): Vector3
+    {
+        if (vec === undefined)
+        {
+            return Vector3.getZero();
+        }
+        return vec;
+    }
+
+    static quaternionOrZero(quat: Quaternion | undefined): Quaternion
+    {
+        if (quat === undefined)
+        {
+            return Quaternion.getIdentity();
+        }
+        return quat;
+    }
+
+    static packBeginCut(beginCut: number): number
+    {
+        return Math.round(beginCut / Utils.CUT_QUANTA);
+    }
+
+    static packEndCut(endCut: number): number
+    {
+        return (50000 - Math.round(endCut / Utils.CUT_QUANTA));
+    }
+
+    static packPathScale(pathScale: number): number
+    {
+        return (200 - Math.round(pathScale / Utils.SCALE_QUANTA));
+    }
+
+    static packPathShear(pathShear: number): number
+    {
+        return Math.round(pathShear / Utils.SHEAR_QUANTA);
+    }
+
+    static packPathTwist(pathTwist: number): number
+    {
+        return Math.round(pathTwist / Utils.SCALE_QUANTA);
+    }
+
+    static packPathTaper(pathTaper: number): number
+    {
+        return Math.round(pathTaper / Utils.TAPER_QUANTA);
+    }
+
+    static packPathRevolutions(pathRevolutions: number): number
+    {
+        return Math.round((pathRevolutions - 1) / Utils.REV_QUANTA);
+    }
+
+    static packProfileHollow(profileHollow: number): number
+    {
+        return Math.round(profileHollow / Utils.HOLLOW_QUANTA);
+    }
+
+    static unpackBeginCut(beginCut: number): number
+    {
+        return beginCut * Utils.CUT_QUANTA;
+    }
+
+    static unpackEndCut(endCut: number): number
+    {
+        return (50000 - endCut) * Utils.CUT_QUANTA;
+    }
+
+    static unpackPathScale(pathScale: number): number
+    {
+        return (200 - pathScale) * Utils.SCALE_QUANTA;
+    }
+
+    static unpackPathShear(pathShear: number): number
+    {
+        return pathShear * Utils.SHEAR_QUANTA;
+    }
+
+    static unpackPathTwist(pathTwist: number): number
+    {
+        return pathTwist * Utils.SCALE_QUANTA;
+    }
+
+    static unpackPathTaper(pathTaper: number): number
+    {
+        return pathTaper * Utils.TAPER_QUANTA;
+    }
+
+    static unpackPathRevolutions(pathRevolutions: number): number
+    {
+        return pathRevolutions * Utils.REV_QUANTA + 1;
+    }
+
+    static unpackProfileHollow(profileHollow: number): number
+    {
+        return profileHollow * Utils.HOLLOW_QUANTA;
+    }
+
+    static nullTerminatedString(str: string)
+    {
+        const index = str.indexOf('\0');
+        if (index === -1)
+        {
+            return str;
+        }
+        else
+        {
+            return str.substr(0, index - 1);
+        }
     }
 }

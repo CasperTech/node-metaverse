@@ -1,4 +1,7 @@
 import * as validator from 'validator';
+import * as builder from 'xmlbuilder';
+import {XMLElementOrXMLNode} from 'xmlbuilder';
+import * as Long from 'long';
 const uuid = require('uuid');
 
 export class UUID
@@ -13,6 +16,62 @@ export class UUID
     {
         const newUUID = uuid.v4();
         return new UUID(newUUID);
+    }
+
+    static getString(u?: UUID): string
+    {
+        if (u === undefined)
+        {
+            return UUID.zero().toString();
+        }
+        else
+        {
+            return u.toString();
+        }
+    }
+
+    static getXML(doc: XMLElementOrXMLNode, u?: UUID)
+    {
+        const str = UUID.getString(u);
+        doc.ele('UUID', str);
+    }
+
+    static fromXMLJS(obj: any, param: string): false | UUID
+    {
+        if (obj[param] === undefined)
+        {
+            return false;
+        }
+        if (Array.isArray(obj[param]) && obj[param].length > 0)
+        {
+            obj[param] = obj[param][0];
+        }
+        if (typeof obj[param] === 'string')
+        {
+            if (validator.isUUID(obj[param]))
+            {
+                return new UUID(obj[param]);
+            }
+            return false;
+        }
+        if (typeof obj[param] === 'object')
+        {
+            if (obj[param]['UUID'] !== undefined && Array.isArray(obj[param]['UUID']) && obj[param]['UUID'].length > 0)
+            {
+                const u = obj[param]['UUID'][0];
+                if (typeof u === 'string')
+                {
+                    if (validator.isUUID(u))
+                    {
+                        return new UUID(u);
+                    }
+                    return false;
+                }
+                return false;
+            }
+            return false;
+        }
+        return false;
     }
 
     constructor(buf?: Buffer | string, pos?: number)
@@ -77,5 +136,43 @@ export class UUID
         {
             return cmp.equals(this.mUUID);
         }
+    }
+
+    public getBuffer()
+    {
+        const buf = Buffer.allocUnsafe(16);
+        this.writeToBuffer(buf, 0);
+        return buf;
+    }
+
+    public getLong()
+    {
+        const buf = this.getBuffer();
+        return new Long(buf.readUInt32LE(7), buf.readUInt32LE(12));
+    }
+
+    public bitwiseOr(w: UUID): UUID
+    {
+        const buf1 = this.getBuffer();
+        const buf2 = w.getBuffer();
+        const buf3 = Buffer.allocUnsafe(16);
+        for (let x = 0; x < 16; x++)
+        {
+            buf3[x] = buf1[x] ^ buf2[x];
+        }
+        return new UUID(buf3, 0);
+    }
+
+    public CRC(): number
+    {
+        let retval = 0;
+        const bytes: Buffer = this.getBuffer();
+
+        retval += ((bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]);
+        retval += ((bytes[7] << 24) + (bytes[6] << 16) + (bytes[5] << 8) + bytes[4]);
+        retval += ((bytes[11] << 24) + (bytes[10] << 16) + (bytes[9] << 8) + bytes[8]);
+        retval += ((bytes[15] << 24) + (bytes[14] << 16) + (bytes[13] << 8) + bytes[12]);
+
+        return retval;
     }
 }

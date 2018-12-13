@@ -20,8 +20,8 @@ import {AttachmentPoint} from '../enums/AttachmentPoint';
 import {Utils} from './Utils';
 import {ClientEvents} from './ClientEvents';
 import Timer = NodeJS.Timer;
-import {ControlFlags, GroupChatSessionAgentListEvent, AgentFlags, PacketFlags, AssetType} from '..';
-import {GameObject} from './GameObject';
+import {ControlFlags, GroupChatSessionAgentListEvent, AgentFlags, PacketFlags, AssetType, FolderType} from '..';
+import {GameObject} from './public/GameObject';
 
 export class Agent
 {
@@ -245,7 +245,7 @@ export class Agent
             Object.keys(this.inventory.main.skeleton).forEach((uuid) =>
             {
                 const folder = this.inventory.main.skeleton[uuid];
-                if (folder.typeDefault === AssetType.CurrentOutfitFolder)
+                if (folder.typeDefault === FolderType.CurrentOutfit)
                 {
                     const folderID = folder.folderID;
 

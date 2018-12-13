@@ -95,6 +95,7 @@ export class Bot
         this.currentRegion = response.region;
         this.agent = response.agent;
         this.clientCommands = new ClientCommands(response.region, response.agent, this);
+        this.currentRegion.clientCommands = this.clientCommands;
         return response;
     }
 
@@ -103,6 +104,7 @@ export class Bot
         this.closeCircuit();
         this.currentRegion = region;
         this.clientCommands = new ClientCommands(this.currentRegion, this.agent, this);
+        this.currentRegion.clientCommands = this.clientCommands;
         if (this.ping !== null)
         {
             clearInterval(this.ping);
@@ -203,7 +205,7 @@ export class Bot
         return this.agent.agentID;
     }
 
-    async connectToSim(requested: boolean)
+    async connectToSim(requested: boolean = true)
     {
         this.agent.setCurrentRegion(this.currentRegion);
         const circuit = this.currentRegion.circuit;
@@ -215,7 +217,7 @@ export class Bot
             Code: circuit.circuitCode
         };
 
-        await circuit.waitForAck(circuit.sendMessage(msg, PacketFlags.Reliable), 1000);
+        await circuit.waitForAck(circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
 
 
         const agentMovement: CompleteAgentMovementMessage = new CompleteAgentMovementMessage();

@@ -14,9 +14,16 @@ import {
     ScriptDialogEvent,
     EventQueueStateChangeEvent,
     FriendOnlineEvent,
-    FriendRightsEvent, FriendRemovedEvent
+    FriendRightsEvent,
+    FriendRemovedEvent,
+    ObjectPhysicsDataEvent,
+    ParcelPropertiesEvent
 } from '..';
 import {Subject} from 'rxjs/internal/Subject';
+import {NewObjectEvent} from '../events/NewObjectEvent';
+import {ObjectUpdatedEvent} from '../events/ObjectUpdatedEvent';
+import {ObjectKilledEvent} from '../events/ObjectKilledEvent';
+import {SelectedObjectEvent} from '../events/SelectedObjectEvent';
 
 
 export class ClientEvents
@@ -39,4 +46,10 @@ export class ClientEvents
     onFriendOnline: Subject<FriendOnlineEvent> = new Subject<FriendOnlineEvent>();
     onFriendRights: Subject<FriendRightsEvent> = new Subject<FriendRightsEvent>();
     onFriendRemoved: Subject<FriendRemovedEvent> = new Subject<FriendRemovedEvent>();
+    onPhysicsDataEvent: Subject<ObjectPhysicsDataEvent> = new Subject<ObjectPhysicsDataEvent>();
+    onParcelPropertiesEvent: Subject<ParcelPropertiesEvent> = new Subject<ParcelPropertiesEvent>();
+    onNewObjectEvent: Subject<NewObjectEvent> = new Subject<NewObjectEvent>();
+    onObjectUpdatedEvent: Subject<ObjectUpdatedEvent> = new Subject<ObjectUpdatedEvent>();
+    onObjectKilledEvent: Subject<ObjectKilledEvent> = new Subject<ObjectKilledEvent>();
+    onSelectedObjectEvent: Subject<SelectedObjectEvent> = new Subject<SelectedObjectEvent>();
 }

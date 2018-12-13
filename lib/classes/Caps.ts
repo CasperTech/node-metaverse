@@ -11,6 +11,11 @@ import {HTTPAssets} from '..';
 
 export class Caps
 {
+    static CAP_INVOCATION_DELAY_MS: {[key: string]: number} = {
+        'NewFileAgentInventory': 2000,
+        'FetchInventory2': 200
+    };
+
     private region: Region;
     private onGotSeedCap: Subject<void> = new Subject<void>();
     private gotSeedCap = false;
@@ -18,6 +23,7 @@ export class Caps
     private clientEvents: ClientEvents;
     private agent: Agent;
     private active = false;
+    private timeLastCapExecuted: {[key: string]: number} = {};
     eventQueueClient: EventQueueClient | null = null;
 
     constructor(agent: Agent, region: Region, seedURL: string, clientEvents: ClientEvents)
@@ -189,6 +195,28 @@ export class Caps
         });
     }
 
+    requestGet(url: string): Promise<string>
+    {
+        return new Promise<string>((resolve, reject) =>
+        {
+            request({
+                'uri': url,
+                'rejectUnauthorized': false,
+                'method': 'GET'
+            }, (err, res, body) =>
+            {
+                if (err)
+                {
+                    reject(err);
+                }
+                else
+                {
+                    resolve(body);
+                }
+            });
+        });
+    }
+
     waitForSeedCapability(): Promise<void>
     {
         return new Promise((resolve, reject) =>
@@ -246,13 +274,13 @@ export class Caps
         });
     }
 
-    capsRequestXML(capability: string, data: any): Promise<any>
+    capsGetXML(capability: string): Promise<any>
     {
         return new Promise<any>((resolve, reject) =>
         {
             this.getCapability(capability).then((url) =>
             {
-                this.request(url, LLSD.LLSD.formatXML(data), 'application/llsd+xml').then((body: string) =>
+                this.requestGet(url).then((body: string) =>
                 {
                     let result: any = null;
                     try
@@ -276,6 +304,87 @@ export class Caps
                 reject(err);
             });
         });
+    }
+
+    private waitForCapTimeout(capName: string): Promise<void>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            if (!Caps.CAP_INVOCATION_DELAY_MS[capName])
+            {
+                resolve();
+            }
+            else
+            {
+                if (!this.timeLastCapExecuted[capName] || this.timeLastCapExecuted[capName] < (new Date().getTime() - Caps.CAP_INVOCATION_DELAY_MS[capName]))
+                {
+                    this.timeLastCapExecuted[capName] = new Date().getTime();
+                }
+                else
+                {
+                    this.timeLastCapExecuted[capName] += Caps.CAP_INVOCATION_DELAY_MS[capName];
+                }
+                const timeToWait = this.timeLastCapExecuted[capName] - new Date().getTime();
+                if (timeToWait > 0)
+                {
+                    setTimeout(() =>
+                    {
+                        resolve();
+                    }, timeToWait);
+                }
+                else
+                {
+                    resolve();
+                }
+            }
+        });
+    }
+
+    capsPerformXMLRequest(url: string, data: any): Promise<any>
+    {
+        return new Promise<any>(async (resolve, reject) =>
+        {
+            const xml = LLSD.LLSD.formatXML(data);
+            this.request(url, xml, 'application/llsd+xml').then((body: string) =>
+            {
+                let result: any = null;
+                try
+                {
+                    result = LLSD.LLSD.parseXML(body);
+                    resolve(result);
+                }
+                catch (err)
+                {
+                    reject(err);
+                }
+            }).catch((err) =>
+            {
+                console.error(err);
+                reject(err);
+            });
+        });
+    }
+
+    async capsRequestXML(capability: string, data: any, debug = false): Promise<any>
+    {
+        if (debug)
+        {
+            console.log(data);
+        }
+
+        await this.waitForCapTimeout(capability);
+
+        const url = await this.getCapability(capability);
+        try
+        {
+            return await this.capsPerformXMLRequest(url, data);
+        }
+        catch (error)
+        {
+            console.log('Error with cap ' + capability);
+            console.log(error);
+            throw error;
+        }
     }
 
     shutdown()

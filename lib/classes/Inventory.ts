@@ -2,7 +2,9 @@ import {UUID} from './UUID';
 import {ClientEvents} from './ClientEvents';
 import {InventoryFolder} from './InventoryFolder';
 import {Agent} from './Agent';
-import {AssetType} from '..';
+import {AssetType, FolderType} from '..';
+import * as LLSD from '@caspertech/llsd';
+import {InventoryItem} from './InventoryItem';
 
 export class Inventory
 {
@@ -19,6 +21,9 @@ export class Inventory
     } = {
         skeleton: {}
     };
+
+    itemsByID: {[key: string]: InventoryItem} = {};
+
     private clientEvents: ClientEvents;
     private agent: Agent;
 
@@ -59,25 +64,66 @@ export class Inventory
             return new InventoryFolder(this.main, this.agent);
         }
     }
-    findFolderForType(type: AssetType): UUID
+    findFolderForType(type: FolderType): UUID
     {
-        if (this.main.root === undefined)
+        const root = this.main.skeleton;
+        for (const key of Object.keys(root))
         {
-            return UUID.zero();
-        }
-        if (type === AssetType.Folder)
-        {
-            return this.main.root;
-        }
-        let found = UUID.zero();
-        Object.keys(this.main.skeleton).forEach((fUUID) =>
-        {
-            const folder = this.main.skeleton[fUUID];
-            if (folder.typeDefault === type)
+            const f = root[key];
+            if (f.typeDefault === type)
             {
-                found = folder.folderID;
+                return f.folderID;
             }
-        });
-        return found;
+        }
+        return this.getRootFolderMain().folderID;
+    }
+    async fetchInventoryItem(item: UUID): Promise<InventoryItem | null>
+    {
+        const params = {
+            'agent_id': new LLSD.UUID(this.agent.agentID),
+            'items': [
+                {
+                    'item_id': new LLSD.UUID(item),
+                    'owner_id': new LLSD.UUID(this.agent.agentID)
+                }
+            ]
+        };
+        const response = await this.agent.currentRegion.caps.capsRequestXML('FetchInventory2', params);
+        for (const receivedItem of response['items'])
+        {
+            const invItem = new InventoryItem();
+            invItem.assetID = new UUID(receivedItem['asset_id'].toString());
+            invItem.inventoryType = parseInt(receivedItem['inv_type'], 10);
+            invItem.type = parseInt(receivedItem['type'], 10);
+            invItem.itemID = item;
+            invItem.permissions = {
+                baseMask: parseInt(receivedItem['permissions']['base_mask'], 10),
+                nextOwnerMask: parseInt(receivedItem['permissions']['next_owner_mask'], 10),
+                groupMask: parseInt(receivedItem['permissions']['group_mask'], 10),
+                lastOwner: new UUID(receivedItem['permissions']['last_owner_id'].toString()),
+                owner: new UUID(receivedItem['permissions']['owner_id'].toString()),
+                creator: new UUID(receivedItem['permissions']['creator_id'].toString()),
+                group: new UUID(receivedItem['permissions']['group_id'].toString()),
+                ownerMask: parseInt(receivedItem['permissions']['owner_mask'], 10),
+                everyoneMask: parseInt(receivedItem['permissions']['everyone_mask'], 10),
+            };
+            invItem.flags = parseInt(receivedItem['flags'], 10);
+            invItem.description = receivedItem['desc'];
+            invItem.name = receivedItem['name'];
+            invItem.created = new Date(receivedItem['created_at'] * 1000);
+            invItem.parentID = new UUID(receivedItem['parent_id'].toString());
+            invItem.saleType = parseInt(receivedItem['sale_info']['sale_type'], 10);
+            invItem.salePrice = parseInt(receivedItem['sale_info']['sale_price'], 10);
+            if (this.main.skeleton[invItem.parentID.toString()])
+            {
+                await this.main.skeleton[invItem.parentID.toString()].addItem(invItem);
+            }
+            else
+            {
+                throw new Error('FolderID of ' + invItem.parentID.toString() + ' not found!');
+            }
+            return invItem;
+        }
+        return null;
     }
 }

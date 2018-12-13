@@ -1,10 +1,21 @@
 import {vec2} from '../tsm/vec2';
+import {XMLElementOrXMLNode} from 'xmlbuilder';
 
 export class Vector2 extends vec2
 {
     static getZero(): Vector2
     {
         return new Vector2();
+    }
+
+    static getXML(doc: XMLElementOrXMLNode, v?: Vector2)
+    {
+        if (v === undefined)
+        {
+            v = Vector2.getZero();
+        }
+        doc.ele('X', v.x);
+        doc.ele('Y', v.y);
     }
 
     constructor(buf?: Buffer | number[], pos?: number, double?: boolean)
@@ -53,5 +64,9 @@ export class Vector2 extends vec2
     toString(): string
     {
         return '<' + this.x + ', ' + this.y + '>';
+    }
+    toArray()
+    {
+        return [this.x, this.y];
     }
 }

@@ -9,17 +9,18 @@ import {UUID} from './UUID';
 import {Quaternion} from './Quaternion';
 import {Vector3} from './Vector3';
 import {Utils} from './Utils';
-import {PCode} from '../enums/PCode';
 import {ClientEvents} from './ClientEvents';
 import {IObjectStore} from './interfaces/IObjectStore';
-import {BotOptionFlags, CompressedFlags} from '..';
+import {BotOptionFlags, CompressedFlags, PacketFlags, PCode} from '..';
 import {RBush3D} from 'rbush-3d/dist';
 import {Vector4} from './Vector4';
 import {TextureEntry} from './TextureEntry';
 import {Color4} from './Color4';
 import {ParticleSystem} from './ParticleSystem';
-import {GameObject} from './GameObject';
+import {GameObject} from './public/GameObject';
 import {ObjectStoreLite} from './ObjectStoreLite';
+import {TextureAnim} from './public/TextureAnim';
+import {ExtraParams} from './public/ExtraParams';
 
 export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
 {
@@ -38,7 +39,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             const localID = objData.ID;
             const parentID = objData.ParentID;
             let addToParentList = true;
-
+            let newObject = false;
             if (this.objects[localID])
             {
                 if (this.objects[localID].ParentID !== parentID && this.objectsByParent[parentID])
@@ -49,15 +50,18 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                         this.objectsByParent[parentID].splice(ind, 1);
                     }
                 }
-                else
+                else if (this.objectsByParent[parentID])
                 {
                     addToParentList = false;
                 }
             }
             else
             {
+                newObject = true;
                 this.objects[localID] = new GameObject();
+                this.objects[localID].region = this.agent.currentRegion;
             }
+            this.objects[localID].deleted = false;
 
             const obj = this.objects[localID];
             obj.ID = objData.ID;
@@ -67,123 +71,39 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             obj.PCode = objData.PCode;
             obj.Material = objData.Material;
             obj.ClickAction = objData.ClickAction;
-            obj.Scale = objData.Scale;
-            obj.ObjectData = objData.ObjectData;
-            const data: Buffer = objData.ObjectData;
-            let dataPos = 0;
 
-            // noinspection FallThroughInSwitchStatementJS, TsLint
-            switch (data.length)
-            {
-                case 76:
-                    // Avatar collision normal;
-                    obj.CollisionPlane = new Vector4(objData.ObjectData, dataPos);
-                    dataPos += 16;
-                case 60:
-                    // Position
-                    obj.Position = new Vector3(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    obj.Velocity = new Vector3(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    obj.Acceleration = new Vector3(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    obj.Rotation = new Quaternion(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    obj.AngularVelocity = new Vector3(objData.ObjectData, dataPos);
-                    dataPos += 12;
-                    break;
-                case 48:
-                    obj.CollisionPlane = new Vector4(objData.ObjectData, dataPos);
-                    dataPos += 16;
-                case 32:
-                    obj.Position = new Vector3([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -0.5 * 256.0, 1.5 * 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -0.5 * 256.0, 1.5 * 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 3.0 * 256.0)
-                    ]);
-                    dataPos += 6;
-                    obj.Velocity = new Vector3([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                    ]);
-                    dataPos += 6;
-                    obj.Acceleration = new Vector3([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                    ]);
-                    dataPos += 6;
-                    obj.Rotation = new Quaternion([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -1.0, 1.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -1.0, 1.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -1.0, 1.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -1.0, 1.0)
-                    ]);
-                    dataPos += 8;
-                    obj.AngularVelocity = new Vector3([
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                        Utils.UInt16ToFloat(objData.ObjectData.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                    ]);
-                    dataPos += 6;
-                    break;
-                case 16:
-                    obj.Position = new Vector3([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
-                    ]);
-                    obj.Velocity = new Vector3([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
-                    ]);
-                    obj.Acceleration = new Vector3([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
-                    ]);
-                    obj.Rotation = new Quaternion([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -1.0, 1.0)
-                    ]);
-                    obj.AngularVelocity = new Vector3([
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0),
-                        Utils.ByteToFloat(objData.ObjectData.readUInt8(dataPos++), -256.0, 256.0)
-                    ]);
-                    break;
-            }
+            obj.Scale = objData.Scale;
+            obj.setObjectData(objData.ObjectData);
+
             obj.ParentID = objData.ParentID;
+
             obj.Flags = objData.UpdateFlags;
             obj.PathCurve = objData.PathCurve;
             obj.ProfileCurve = objData.ProfileCurve;
-            obj.PathBegin = objData.PathBegin;
-            obj.PathEnd = objData.PathEnd;
-            obj.PathScaleX = objData.PathScaleX;
-            obj.PathScaleY = objData.PathScaleY;
-            obj.PathShearX = objData.PathShearX;
-            obj.PathShearY = objData.PathShearY;
-            obj.PathTwist = objData.PathTwist;
-            obj.PathTwistBegin = objData.PathTwistBegin;
-            obj.PathRadiusOffset = objData.PathRadiusOffset;
-            obj.PathTaperX = objData.PathTaperX;
-            obj.PathTaperY = objData.PathTaperY;
-            obj.PathRevolutions = objData.PathRevolutions;
-            obj.PathSkew = objData.PathSkew;
-            obj.ProfileBegin = objData.ProfileBegin;
-            obj.ProfileEnd = objData.ProfileEnd;
-            obj.ProfileHollow = objData.ProfileHollow;
-            obj.TextureEntry = new TextureEntry(objData.TextureEntry);
-            obj.TextureAnim = objData.TextureAnim;
+            obj.PathBegin = Utils.unpackBeginCut(objData.PathBegin);
+            obj.PathEnd = Utils.unpackEndCut(objData.PathEnd);
+            obj.PathScaleX = Utils.unpackPathScale(objData.PathScaleX);
+            obj.PathScaleY = Utils.unpackPathScale(objData.PathScaleY);
+            obj.PathShearX = Utils.unpackPathShear(objData.PathShearX);
+            obj.PathShearY = Utils.unpackPathShear(objData.PathShearY);
+            obj.PathTwist = Utils.unpackPathTwist(objData.PathTwist);
+            obj.PathTwistBegin = Utils.unpackPathTwist(objData.PathTwistBegin);
+            obj.PathRadiusOffset = Utils.unpackPathTwist(objData.PathRadiusOffset);
+            obj.PathTaperX = Utils.unpackPathTaper(objData.PathTaperX);
+            obj.PathTaperY = Utils.unpackPathTaper(objData.PathTaperY);
+            obj.PathRevolutions = Utils.unpackPathRevolutions(objData.PathRevolutions);
+            obj.PathSkew = Utils.unpackPathTwist(objData.PathSkew);
+            obj.ProfileBegin = Utils.unpackBeginCut(objData.ProfileBegin);
+            obj.ProfileEnd = Utils.unpackEndCut(objData.ProfileEnd);
+            obj.ProfileHollow = Utils.unpackProfileHollow(objData.ProfileHollow);
+            obj.TextureEntry = TextureEntry.from(objData.TextureEntry);
+            obj.textureAnim = TextureAnim.from(objData.TextureAnim);
+
             const pcodeData = objData.Data;
             obj.Text = Utils.BufferToStringSimple(objData.Text);
             obj.TextColor = new Color4(objData.TextColor, 0, false, true);
             obj.MediaURL = Utils.BufferToStringSimple(objData.MediaURL);
-            obj.PSBlock = objData.PSBlock;
+            obj.Particles = ParticleSystem.from(objData.PSBlock);
             obj.Sound = objData.Sound;
             obj.OwnerID = objData.OwnerID;
             obj.SoundGain = objData.Gain;
@@ -202,6 +122,9 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     {
                         obj.TreeSpecies = pcodeData[0];
                     }
+                    break;
+                case PCode.Prim:
+
                     break;
             }
 
@@ -244,18 +167,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     });
                 }
             }
-
-            this.readExtraParams(objData.ExtraParams, 0, this.objects[localID]);
+            this.objects[localID].extraParams = ExtraParams.from(objData.ExtraParams);
             this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
-            if (this.objects[localID].NameValue['AttachItemID'])
-            {
-                this.objects[localID].IsAttachment = true;
-            }
-            else
-            {
-                this.objects[localID].IsAttachment = false;
-            }
+            this.objects[localID].IsAttachment = this.objects[localID].NameValue['AttachItemID'] !== undefined;
 
             this.objectsByUUID[objData.FullID.toString()] = localID;
             if (!this.objectsByParent[parentID])
@@ -275,6 +190,14 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             else
             {
                 this.insertIntoRtree(obj);
+                if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects[objData.ParentID])
+                {
+                    this.requestMissingObject(objData.ParentID);
+                }
+                if (obj.ParentID === 0)
+                {
+                    this.notifyObjectUpdate(newObject, obj);
+                }
             }
         }
     }
@@ -303,7 +226,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage)
+    protected async objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage)
     {
         for (const obj of objectUpdateCompressed.ObjectData)
         {
@@ -321,6 +244,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             {
                 newObj = true;
                 this.objects[localID] = new GameObject();
+                this.objects[localID].region = this.agent.currentRegion;
             }
             const o = this.objects[localID];
             o.ID = localID;
@@ -328,6 +252,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             o.FullID = fullID;
             o.Flags = flags;
             o.PCode = pcode;
+            o.deleted = false;
             o.State = buf.readUInt8(pos++);
             o.CRC = buf.readUInt32LE(pos);
             pos = pos + 4;
@@ -349,36 +274,38 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 o.AngularVelocity = new Vector3(buf, pos, false);
                 pos = pos + 12;
             }
+            let newParentID = 0;
             if (compressedflags & CompressedFlags.HasParent)
             {
-                const newParentID = buf.readUInt32LE(pos);
+                newParentID = buf.readUInt32LE(pos);
                 pos += 4;
-                let add = true;
-                if (!newObj)
-                {
-                    if (newParentID !== o.ParentID)
-                    {
-                        const index = this.objectsByParent[o.ParentID].indexOf(localID);
-                        if (index !== -1)
-                        {
-                            this.objectsByParent[o.ParentID].splice(index, 1);
-                        }
-                    }
-                    else
-                    {
-                        add = false;
-                    }
-                }
-                if (add)
-                {
-                    if (!this.objectsByParent[newParentID])
-                    {
-                        this.objectsByParent[newParentID] = [];
-                    }
-                    this.objectsByParent[newParentID].push(localID);
-                }
-                o.ParentID = newParentID;
             }
+            o.ParentID = newParentID;
+            let add = true;
+            if (!newObj && o.ParentID !== undefined)
+            {
+                if (newParentID !== o.ParentID)
+                {
+                    const index = this.objectsByParent[o.ParentID].indexOf(localID);
+                    if (index !== -1)
+                    {
+                        this.objectsByParent[o.ParentID].splice(index, 1);
+                    }
+                }
+                else if (this.objectsByParent[o.ParentID])
+                {
+                    add = false;
+                }
+            }
+            if (add)
+            {
+                if (!this.objectsByParent[newParentID])
+                {
+                    this.objectsByParent[newParentID] = [];
+                }
+                this.objectsByParent[newParentID].push(localID);
+            }
+
             if (pcode !== PCode.Avatar && newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly && (this.agent.localID !== 0 && o.ParentID !== this.agent.localID))
             {
                 // Drop object
@@ -387,6 +314,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             }
             else
             {
+                if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects[o.ParentID])
+                {
+                    this.requestMissingObject(o.ParentID);
+                }
                 if (compressedflags & CompressedFlags.Tree)
                 {
                     o.TreeSpecies = buf.readUInt8(pos++);
@@ -421,12 +352,14 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 }
                 if (compressedflags & CompressedFlags.HasParticles)
                 {
-                    o.Particles = new ParticleSystem(buf.slice(pos, pos + 86), 0);
+                    o.Particles = ParticleSystem.from(buf.slice(pos, pos + 86));
                     pos += 86;
                 }
 
                 // Extra params
-                pos = this.readExtraParams(buf, pos, o);
+                const extraParamsLength = ExtraParams.getLengthOfParams(buf, pos);
+                o.extraParams = ExtraParams.from(buf.slice(pos, pos + extraParamsLength));
+                pos += extraParamsLength;
 
                 if (compressedflags & CompressedFlags.HasSound)
                 {
@@ -445,42 +378,48 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     pos += result.readLength;
                 }
                 o.PathCurve = buf.readUInt8(pos++);
-                o.PathBegin = buf.readUInt16LE(pos);
+                o.PathBegin = Utils.unpackBeginCut(buf.readUInt16LE(pos));
                 pos = pos + 2;
-                o.PathEnd = buf.readUInt16LE(pos);
+                o.PathEnd = Utils.unpackEndCut(buf.readUInt16LE(pos));
                 pos = pos + 2;
-                o.PathScaleX = buf.readUInt8(pos++);
-                o.PathScaleY = buf.readUInt8(pos++);
-                o.PathShearX = buf.readUInt8(pos++);
-                o.PathShearY = buf.readUInt8(pos++);
-                o.PathTwist = buf.readUInt8(pos++);
-                o.PathTwistBegin = buf.readUInt8(pos++);
-                o.PathRadiusOffset = buf.readUInt8(pos++);
-                o.PathTaperX = buf.readUInt8(pos++);
-                o.PathTaperY = buf.readUInt8(pos++);
-                o.PathRevolutions = buf.readUInt8(pos++);
-                o.PathSkew = buf.readUInt8(pos++);
+                o.PathScaleX = Utils.unpackPathScale(buf.readUInt8(pos++));
+                o.PathScaleY = Utils.unpackPathScale(buf.readUInt8(pos++));
+                o.PathShearX = Utils.unpackPathShear(buf.readUInt8(pos++));
+                o.PathShearY = Utils.unpackPathShear(buf.readUInt8(pos++));
+                o.PathTwist = Utils.unpackPathTwist(buf.readUInt8(pos++));
+                o.PathTwistBegin = Utils.unpackPathTwist(buf.readUInt8(pos++));
+                o.PathRadiusOffset = Utils.unpackPathTwist(buf.readUInt8(pos++));
+                o.PathTaperX = Utils.unpackPathTaper(buf.readUInt8(pos++));
+                o.PathTaperY = Utils.unpackPathTaper(buf.readUInt8(pos++));
+                o.PathRevolutions = Utils.unpackPathRevolutions(buf.readUInt8(pos++));
+                o.PathSkew = Utils.unpackPathTwist(buf.readUInt8(pos++));
                 o.ProfileCurve = buf.readUInt8(pos++);
-                o.ProfileBegin = buf.readUInt16LE(pos);
+                o.ProfileBegin = Utils.unpackBeginCut(buf.readUInt16LE(pos));
                 pos = pos + 2;
-                o.ProfileEnd = buf.readUInt16LE(pos);
+                o.ProfileEnd = Utils.unpackEndCut(buf.readUInt16LE(pos));
                 pos = pos + 2;
-                o.ProfileHollow = buf.readUInt16LE(pos);
+                o.ProfileHollow = Utils.unpackProfileHollow(buf.readUInt16LE(pos));
                 pos = pos + 2;
                 const textureEntryLength = buf.readUInt32LE(pos);
                 pos = pos + 4;
-                o.TextureEntry = new TextureEntry(buf.slice(pos, pos + textureEntryLength));
+                o.TextureEntry = TextureEntry.from(buf.slice(pos, pos + textureEntryLength));
                 pos = pos + textureEntryLength;
 
                 if (compressedflags & CompressedFlags.TextureAnimation)
                 {
-                    // TODO: Properly parse textureAnim
+                    const textureAnimLength = buf.readUInt32LE(pos);
                     pos = pos + 4;
+                    o.textureAnim = TextureAnim.from(buf.slice(pos, pos + textureAnimLength));
                 }
 
                 o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
 
                 this.insertIntoRtree(o);
+
+                if (o.ParentID === 0)
+                {
+                    this.notifyObjectUpdate(newObj, o);
+                }
             }
         }
     }
@@ -537,25 +476,14 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     if (objectData.TextureEntry.length > 0)
                     {
                         // No idea why the first four bytes are skipped here.
-                        this.objects[localID].TextureEntry = new TextureEntry(objectData.TextureEntry.slice(4));
+                        this.objects[localID].TextureEntry = TextureEntry.from(objectData.TextureEntry.slice(4));
                     }
                     this.insertIntoRtree(this.objects[localID]);
                 }
                 else
                 {
-                    console.log('Received terse update for object ' + localID + ' which is not in the store, so requesting the object');
                     // We don't know about this object, so request it
-                    const rmo = new RequestMultipleObjectsMessage();
-                    rmo.AgentData = {
-                        AgentID: this.agent.agentID,
-                        SessionID: this.circuit.sessionID
-                    };
-                    rmo.ObjectData = [];
-                    rmo.ObjectData.push({
-                        CacheMissType: 0,
-                        ID: localID
-                    });
-                    this.circuit.sendMessage(rmo, 0);
+                    this.requestMissingObject(localID);
                 }
             }
         }
