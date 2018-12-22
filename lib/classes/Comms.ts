@@ -14,6 +14,7 @@ import {
     FriendRequestEvent,
     FriendResponseEvent,
     GroupChatEvent,
+    GroupNoticeEvent,
     GroupInviteEvent,
     InstantMessageEvent,
     InstantMessageEventFlags,
@@ -23,6 +24,7 @@ import {
     UUID
 } from '..';
 import {ScriptDialogMessage} from './messages/ScriptDialog';
+import * as uuid from 'uuid';
 
 export class Comms
 {
@@ -158,6 +160,17 @@ export class Comms
                         case InstantMessageDialog.FromTaskAsAlert:
                             break;
                         case InstantMessageDialog.GroupNotice:
+                            const groupNoticeEvent = new GroupNoticeEvent();
+                            groupNoticeEvent.from = im.AgentData.AgentID;
+                            groupNoticeEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            groupNoticeEvent.groupID = new UUID(im.MessageBlock.BinaryBucket, 2);
+                            const message = Utils.BufferToStringSimple(im.MessageBlock.Message).split('|');
+                            groupNoticeEvent.subject = message[0];
+                            if (message.length > 1)
+                            {
+                                groupNoticeEvent.message = message[1];
+                            }
+                            this.clientEvents.onGroupNotice.next(groupNoticeEvent);
                             break;
                         case InstantMessageDialog.GroupNoticeInventoryAccepted:
                             break;

@@ -161,6 +161,13 @@ bot.clientEvents.onGroupChat.subscribe(async (GroupChatEvent) =>
     }
 });
 
+bot.clientEvents.onGroupNotice.subscribe(async(GroupNoticeEvent) =>
+{
+    console.log('Group notice from ' + GroupNoticeEvent.fromName + ' (' + GroupNoticeEvent.from + '), from group ID ' + GroupNoticeEvent.groupID);
+    console.log('Subject: ' + GroupNoticeEvent.subject);
+    console.log('Message: ' + GroupNoticeEvent.message);
+});
+
 bot.clientEvents.onGroupInvite.subscribe(async (GroupInviteEvent) =>
 {
 

@@ -4,6 +4,7 @@ import {
     FriendRequestEvent,
     FriendResponseEvent,
     GroupChatEvent,
+    GroupNoticeEvent,
     GroupChatSessionAgentListEvent,
     GroupChatSessionJoinEvent,
     GroupInviteEvent,
@@ -38,6 +39,7 @@ export class ClientEvents
     onDisconnected: Subject<DisconnectEvent>  = new Subject<DisconnectEvent>();
     onCircuitLatency: Subject<number> = new Subject<number>();
     onGroupChat: Subject<GroupChatEvent> = new Subject<GroupChatEvent>();
+    onGroupNotice: Subject<GroupNoticeEvent> = new Subject<GroupNoticeEvent>();
     onGroupChatSessionJoin: Subject<GroupChatSessionJoinEvent> = new Subject<GroupChatSessionJoinEvent>();
     onGroupChatAgentListUpdate: Subject<GroupChatSessionAgentListEvent> = new Subject<GroupChatSessionAgentListEvent>();
     onFriendResponse: Subject<FriendResponseEvent> = new Subject<FriendResponseEvent>();
