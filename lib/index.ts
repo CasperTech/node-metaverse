@@ -21,6 +21,7 @@ import {DisconnectEvent} from './events/DisconnectEvent';
 import {GroupChatEvent} from './events/GroupChatEvent';
 import {GroupChatSessionJoinEvent} from './events/GroupChatSessionJoinEvent';
 import {GroupChatSessionAgentListEvent} from './events/GroupChatSessionAgentListEvent';
+import {GroupNoticeEvent} from './events/GroupNoticeEvent';
 import {RegionInfoReplyEvent} from './events/RegionInfoReplyEvent';
 import {MapInfoReplyEvent} from './events/MapInfoReplyEvent';
 import {MapInfoRangeReplyEvent} from './events/MapInfoRangeReplyEvent';
@@ -74,6 +75,8 @@ import {WaterPreset} from './classes/public/interfaces/WaterPreset';
 import {NewObjectEvent} from './events/NewObjectEvent';
 import {ObjectKilledEvent} from './events/ObjectKilledEvent';
 import {ObjectUpdatedEvent} from './events/ObjectUpdatedEvent';
+import {GroupProfileReplyEvent} from './events/GroupProfileReplyEvent';
+import {AvatarPropertiesReplyEvent} from './events/AvatarPropertiesReplyEvent';
 import {Bumpiness} from './enums/Bumpiness';
 import {HoleType} from './enums/HoleType';
 import {LayerType} from './enums/LayerType';
@@ -154,6 +157,7 @@ export {
     GroupChatEvent,
     GroupChatSessionAgentListEvent,
     GroupChatSessionJoinEvent,
+    GroupNoticeEvent,
     GroupInviteEvent,
     InstantMessageEvent,
     InventoryOfferedEvent,
@@ -173,6 +177,8 @@ export {
     NewObjectEvent,
     ObjectKilledEvent,
     ObjectUpdatedEvent,
+    GroupProfileReplyEvent,
+    AvatarPropertiesReplyEvent,
 
     // Public Classes
     Avatar,
