@@ -296,7 +296,9 @@ export class GroupCommands extends CommandsBase
         });
     }
 
-    async ejectFromGroupBulk(groupID: UUID | string, sendTo: UUID[] | string[]): Promise<void>
+    async ejectFromGroupBulk(groupID: UUID | string, sendTo: {
+        ejecteeID: UUID | string
+    }[]): Promise<void>
     {
         if (typeof groupID === 'string')
         {
@@ -314,16 +316,18 @@ export class GroupCommands extends CommandsBase
         };
         msg.EjectData = [];
 
-        for (let ejecteeID of sendTo)
+        sendTo.forEach((to) =>
         {
-            if (typeof ejecteeID === 'string')
+            if (typeof to.ejecteeID === 'string')
             {
-                ejecteeID = new UUID(ejecteeID);
+                to.ejecteeID = new UUID(to.ejecteeID);
             }
             msg.EjectData.push({
-                EjecteeID: ejecteeID
+                EjecteeID: to.ejecteeID
             });
-        };
+        });
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
 
         const sequenceNo = this.circuit.sendMessage(msg, PacketFlags.Reliable);
         return await this.circuit.waitForAck(sequenceNo, 10000);
@@ -331,13 +335,9 @@ export class GroupCommands extends CommandsBase
 
     async ejectFromGroup(groupID: UUID | string, ejecteeID: UUID | string): Promise<void>
     {
-        if (typeof ejecteeID === 'string')
-        {
-            ejecteeID = new UUID(ejecteeID);
-        }
-
-        const sendTo: UUID[] = [ejecteeID];
-
+        const sendTo = [{
+            ejecteeID: ejecteeID
+        }];
         return await this.ejectFromGroupBulk(groupID, sendTo);
     }
 
