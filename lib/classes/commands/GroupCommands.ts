@@ -16,6 +16,9 @@ import {FilterResponse} from '../../enums/FilterResponse';
 import * as LLSD from '@caspertech/llsd';
 import {GroupInviteEvent} from '../..';
 import {EjectGroupMemberRequestMessage} from '../messages/EjectGroupMemberRequest';
+import {GroupProfileRequestMessage} from '../messages/GroupProfileRequest';
+import {GroupProfileReplyMessage} from '../messages/GroupProfileReply';
+import {GroupProfileReplyEvent} from '../..';
 
 export class GroupCommands extends CommandsBase
 {
@@ -336,5 +339,57 @@ export class GroupCommands extends CommandsBase
         const sendTo: UUID[] = [ejecteeID];
 
         return await this.ejectFromGroupBulk(groupID, sendTo);
+    }
+
+    async getGroupProfile(groupID: UUID | string): Promise<GroupProfileReplyEvent>
+    {
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
+
+        const msg: GroupProfileRequestMessage = new GroupProfileRequestMessage();
+
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        msg.GroupData = {
+            GroupID: groupID
+        };
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+
+        const groupProfileReply: GroupProfileReplyMessage = (await this.circuit.waitForMessage(Message.GroupProfileReply, 10000, (packet: GroupProfileReplyMessage): FilterResponse =>
+        {
+            const replyMessage: GroupProfileReplyMessage = packet as GroupProfileReplyMessage;
+            if (replyMessage.GroupData.GroupID.equals(groupID))
+            {
+                console.log('groupProfileReply Finish');
+                return FilterResponse.Finish;
+            }
+            console.log('groupProfileReply NoMatch');
+            return FilterResponse.NoMatch;
+        })) as GroupProfileReplyMessage;
+
+        return new class implements GroupProfileReplyEvent
+        {
+            GroupID = groupProfileReply.GroupData.GroupID;
+            Name = Utils.BufferToStringSimple(groupProfileReply.GroupData.Name);
+            Charter =  Utils.BufferToStringSimple(groupProfileReply.GroupData.Charter);
+            ShowInList = groupProfileReply.GroupData.ShowInList;
+            MemberTitle = Utils.BufferToStringSimple(groupProfileReply.GroupData.MemberTitle);
+            PowersMask = groupProfileReply.GroupData.PowersMask;
+            InsigniaID = groupProfileReply.GroupData.InsigniaID;
+            FounderID = groupProfileReply.GroupData.FounderID;
+            MembershipFee = groupProfileReply.GroupData.MembershipFee;
+            OpenEnrollment = groupProfileReply.GroupData.OpenEnrollment;
+            Money = groupProfileReply.GroupData.Money;
+            GroupMembershipCount = groupProfileReply.GroupData.GroupMembershipCount;
+            GroupRolesCount = groupProfileReply.GroupData.GroupRolesCount;
+            AllowPublish = groupProfileReply.GroupData.AllowPublish;
+            MaturePublish = groupProfileReply.GroupData.MaturePublish;
+            OwnerRole = groupProfileReply.GroupData.OwnerRole;
+        };
     }
 }

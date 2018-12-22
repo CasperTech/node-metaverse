@@ -3,6 +3,13 @@ import {AgentAnimationMessage} from '../messages/AgentAnimation';
 import {PacketFlags} from '../../enums/PacketFlags';
 import {CommandsBase} from './CommandsBase';
 import {Vector3} from '../Vector3';
+import {Message} from '../../enums/Message';
+import {Packet} from '../Packet';
+import {Utils} from '../Utils';
+import {FilterResponse} from '../../enums/FilterResponse';
+import {AvatarPropertiesReplyMessage} from '../messages/AvatarPropertiesReply';
+import {AvatarPropertiesReplyEvent} from '../..';
+import {AvatarPropertiesRequestMessage} from '../messages/AvatarPropertiesRequest';
 
 export class AgentCommands extends CommandsBase
 {
@@ -61,5 +68,46 @@ export class AgentCommands extends CommandsBase
     {
         this.agent.cameraFar = viewDistance;
         this.agent.sendAgentUpdate();
+    }
+
+    async getAvatarProperties(avatarID: UUID | string): Promise<AvatarPropertiesReplyEvent>
+    {
+        if (typeof avatarID === 'string')
+        {
+            avatarID = new UUID(avatarID);
+        }
+
+        const msg: AvatarPropertiesRequestMessage = new AvatarPropertiesRequestMessage();
+
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID,
+            AvatarID: avatarID
+        };
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+
+        const avatarPropertiesReply: AvatarPropertiesReplyMessage = (await this.circuit.waitForMessage(Message.AvatarPropertiesReply, 10000, (packet: AvatarPropertiesReplyMessage): FilterResponse =>
+        {
+            const replyMessage: AvatarPropertiesReplyMessage = packet as AvatarPropertiesReplyMessage;
+            if (replyMessage.AgentData.AvatarID.equals(avatarID))
+            {
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.NoMatch;
+        })) as AvatarPropertiesReplyMessage;
+
+        return new class implements AvatarPropertiesReplyEvent
+        {
+            ImageID = avatarPropertiesReply.PropertiesData.ImageID;
+            FLImageID = avatarPropertiesReply.PropertiesData.FLImageID;
+            PartnerID = avatarPropertiesReply.PropertiesData.PartnerID;
+            AboutText = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.AboutText);
+            FLAboutText = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.FLAboutText);
+            BornOn = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.BornOn);
+            ProfileURL = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.ProfileURL);
+            CharterMember = parseInt(Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.CharterMember), 10); // avatarPropertiesReply.PropertiesData.CharterMember;
+            Flags = avatarPropertiesReply.PropertiesData.Flags;
+        };
     }
 }

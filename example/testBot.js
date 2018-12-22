@@ -163,7 +163,10 @@ bot.clientEvents.onGroupChat.subscribe(async (GroupChatEvent) =>
 
 bot.clientEvents.onGroupNotice.subscribe(async(GroupNoticeEvent) =>
 {
-    console.log('Group notice from ' + GroupNoticeEvent.fromName + ' (' + GroupNoticeEvent.from + '), from group ID ' + GroupNoticeEvent.groupID);
+    // Get group name
+    const groupProfile = await bot.clientCommands.group.getGroupProfile(GroupNoticeEvent.groupID);
+
+    console.log('Group notice from ' + GroupNoticeEvent.fromName + ' (' + GroupNoticeEvent.from + '), from group ' + groupProfile.Name + ' (' + GroupNoticeEvent.groupID + ')');
     console.log('Subject: ' + GroupNoticeEvent.subject);
     console.log('Message: ' + GroupNoticeEvent.message);
 });
