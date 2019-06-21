@@ -46,7 +46,7 @@
     "@caspertech/llsd": "^1.0.0",
     "ipaddr.js": "^1.8.1",
     "long": "^4.0.0",
-    "micromatch": "^3.1.10",
+    "micromatch": "^4.0.0",
     "moment": "^2.22.2",
     "rbush-3d": "0.0.4",
     "request": "^2.88.0",
