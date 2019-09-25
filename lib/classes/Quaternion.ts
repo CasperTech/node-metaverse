@@ -1,6 +1,5 @@
 import {quat} from '../tsm/quat';
-import {XMLElementOrXMLNode} from 'xmlbuilder';
-
+import {XMLNode} from 'xmlbuilder';
 export class Quaternion extends quat
 {
     static getIdentity(): Quaternion
@@ -10,7 +9,7 @@ export class Quaternion extends quat
         return q;
     }
 
-    static getXML(doc: XMLElementOrXMLNode, v?: Quaternion)
+    static getXML(doc: XMLNode, v?: Quaternion)
     {
         if (v === undefined)
         {

@@ -1,12 +1,12 @@
-import {XMLElementOrXMLNode} from 'xmlbuilder';
 import {Utils} from './Utils';
+import {XMLNode} from 'xmlbuilder';
 
 export class Color4
 {
     static black: Color4 = new Color4(0.0, 0.0, 0.0, 1.0);
     static white: Color4 = new Color4(1.0, 1.0, 1.0, 1.0);
 
-    static getXML(doc: XMLElementOrXMLNode, c?: Color4)
+    static getXML(doc: XMLNode, c?: Color4)
     {
         if (c === undefined)
         {

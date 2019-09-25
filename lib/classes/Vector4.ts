@@ -1,5 +1,5 @@
 import {vec4} from '../tsm/vec4';
-import {XMLElementOrXMLNode} from 'xmlbuilder';
+import {XMLNode} from 'xmlbuilder';
 
 export class Vector4 extends vec4
 {
@@ -8,7 +8,7 @@ export class Vector4 extends vec4
         return new Vector4();
     }
 
-    static getXML(doc: XMLElementOrXMLNode, v?: Vector4)
+    static getXML(doc: XMLNode, v?: Vector4)
     {
         if (v === undefined)
         {

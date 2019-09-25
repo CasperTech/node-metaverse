@@ -6,11 +6,9 @@
     "outDir": "dist",
     "sourceMap": true,
     "strict": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "types": ["node"]
   },
-  "files": [
-    "./node_modules/@types/node/index.d.ts"
-  ],
   "include": [
     "lib/**/*.ts"
   ],

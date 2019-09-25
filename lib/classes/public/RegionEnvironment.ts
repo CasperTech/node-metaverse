@@ -2,10 +2,9 @@ import {UUID} from '../UUID';
 import {Vector4} from '../Vector4';
 import {Color4} from '../Color4';
 import {Vector2} from '../Vector2';
-import {Vector3} from '../Vector3';
-import {XMLElementOrXMLNode} from 'xmlbuilder';
 import {SkyPreset} from './interfaces/SkyPreset';
 import {WaterPreset} from './interfaces/WaterPreset';
+import {XMLNode} from 'xmlbuilder';
 
 export class RegionEnvironment
 {
@@ -19,7 +18,7 @@ export class RegionEnvironment
     } = {};
     water: WaterPreset;
 
-    getXML(xml: XMLElementOrXMLNode)
+    getXML(xml: XMLNode)
     {
         const env = xml.ele('Environment');
         const dayCycle = env.ele('DayCycle');
