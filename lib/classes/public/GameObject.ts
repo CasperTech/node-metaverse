@@ -22,7 +22,6 @@ import {
     Utils
 } from '../..';
 import * as builder from 'xmlbuilder';
-import {XMLElementOrXMLNode} from 'xmlbuilder';
 import * as xml2js from 'xml2js';
 import {Region} from '../Region';
 import {InventoryItem} from '../InventoryItem';
@@ -35,11 +34,11 @@ import {ExtraParamType} from '../../enums/ExtraParamType';
 import {ObjectImageMessage} from '../messages/ObjectImage';
 import {ObjectNameMessage} from '../messages/ObjectName';
 import {ObjectDescriptionMessage} from '../messages/ObjectDescription';
-import {ObjectPositionMessage} from '../messages/ObjectPosition';
 import {MultipleObjectUpdateMessage} from '../messages/MultipleObjectUpdate';
 import {UpdateType} from '../../enums/UpdateType';
 import {ObjectLinkMessage} from '../messages/ObjectLink';
 import {ObjectShapeMessage} from '../messages/ObjectShape';
+import {XMLNode} from 'xmlbuilder';
 
 export class GameObject implements IGameObjectData
 {
@@ -995,7 +994,7 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    private async getInventoryXML(xml: XMLElementOrXMLNode, inv: InventoryItem)
+    private async getInventoryXML(xml: XMLNode, inv: InventoryItem)
     {
         if (!inv.assetID.equals(UUID.zero()))
         {
@@ -1044,7 +1043,7 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    private async getXML(xml: XMLElementOrXMLNode, rootPrim: GameObject, linkNum: number)
+    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number)
     {
         const sceneObjectPart = xml.ele('SceneObjectPart').att('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance').att('xmlns:xsd', 'http://www.w3.org/2001/XMLSchema');
         sceneObjectPart.ele('AllowedDrop', (this.Flags !== undefined && (this.Flags & PrimFlags.AllowInventoryDrop) !== 0) ? 'true' : 'false');

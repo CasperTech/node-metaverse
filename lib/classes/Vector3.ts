@@ -1,5 +1,5 @@
 import {vec3} from '../tsm/vec3';
-import {XMLElementOrXMLNode} from 'xmlbuilder';
+import {XMLNode} from 'xmlbuilder';
 
 export class Vector3 extends vec3
 {
@@ -8,15 +8,15 @@ export class Vector3 extends vec3
         return new Vector3();
     }
 
-    static getXML(doc: XMLElementOrXMLNode, v?: Vector3)
+    static getXML(doc: XMLNode, v?: Vector3)
     {
         if (v === undefined)
         {
             v = Vector3.getZero();
         }
-        doc.ele('X', v.x);
-        doc.ele('Y', v.y);
-        doc.ele('Z', v.z);
+        //doc.ele('X', v.x);
+        //doc.ele('Y', v.y);
+        //doc.ele('Z', v.z);
     }
 
     static fromXMLJS(obj: any, param: string): Vector3 | false

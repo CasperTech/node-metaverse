@@ -1,7 +1,6 @@
 import * as validator from 'validator';
-import * as builder from 'xmlbuilder';
-import {XMLElementOrXMLNode} from 'xmlbuilder';
 import * as Long from 'long';
+import {XMLNode} from 'xmlbuilder';
 const uuid = require('uuid');
 
 export class UUID
@@ -30,7 +29,7 @@ export class UUID
         }
     }
 
-    static getXML(doc: XMLElementOrXMLNode, u?: UUID)
+    static getXML(doc: XMLNode, u?: UUID)
     {
         const str = UUID.getString(u);
         doc.ele('UUID', str);
