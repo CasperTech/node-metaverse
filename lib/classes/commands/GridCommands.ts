@@ -251,6 +251,76 @@ export class GridCommands extends CommandsBase
         });
     }
 
+    avatarName2KeyAndName(name: string): Promise<{avatarKey: UUID, avatarName: string}>
+    {
+        const check = name.split('.');
+        if (check.length > 1)
+        {
+            name = check.join(' ');
+        }
+        else
+        {
+            name += ' resident';
+        }
+        name = name.toLowerCase();
+
+        const queryID = UUID.random();
+        return new Promise<{avatarKey: UUID, avatarName: string}>((resolve, reject) =>
+        {
+            const aprm = new AvatarPickerRequestMessage();
+            aprm.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID,
+                QueryID: queryID
+            };
+            aprm.Data = {
+                Name: Utils.StringToBuffer(name)
+            };
+
+            this.circuit.sendMessage(aprm, PacketFlags.Reliable);
+            this.circuit.waitForMessage<AvatarPickerReplyMessage>(Message.AvatarPickerReply, 10000, (apr: AvatarPickerReplyMessage): FilterResponse =>
+            {
+                if (apr.AgentData.QueryID.toString() === queryID.toString())
+                {
+                    return FilterResponse.Finish;
+                }
+                else
+                {
+                    return FilterResponse.NoMatch;
+                }
+            }).then((apr: AvatarPickerReplyMessage) =>
+            {
+                let foundKey: UUID | undefined;
+                let foundName: string | undefined;
+                apr.Data.forEach((dataBlock) =>
+                {
+                    const resultName = (Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' +
+                        Utils.BufferToStringSimple(dataBlock.LastName));
+                    if (resultName.toLowerCase() === name)
+                    {
+                        foundKey = dataBlock.AvatarID;
+                        foundName = resultName;
+                    }
+                });
+
+                if (foundKey !== undefined && foundName !== undefined)
+                {
+                    resolve({
+                        avatarName: foundName,
+                        avatarKey: foundKey
+                    });
+                }
+                else
+                {
+                    reject('Name not found')
+                }
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+        });
+    }
+
     avatarName2Key(name: string): Promise<UUID>
     {
         const check = name.split('.');
