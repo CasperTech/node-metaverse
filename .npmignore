@@ -2,6 +2,7 @@ tsconfig.json
 tslint.json
 .travis.yml
 lib/
+.idea/
 tools/
 example/
 docs/
