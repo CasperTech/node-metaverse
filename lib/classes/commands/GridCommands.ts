@@ -253,14 +253,10 @@ export class GridCommands extends CommandsBase
 
     avatarName2KeyAndName(name: string): Promise<{avatarKey: UUID, avatarName: string}>
     {
-        const check = name.split('.');
-        if (check.length > 1)
+        name = name.trim().replace('.', ' ');
+        if (name.trim().indexOf(' ') === -1)
         {
-            name = check.join(' ');
-        }
-        else
-        {
-            name += ' resident';
+            name = name.trim() + ' resident';
         }
         name = name.toLowerCase();
 
@@ -323,14 +319,10 @@ export class GridCommands extends CommandsBase
 
     avatarName2Key(name: string): Promise<UUID>
     {
-        const check = name.split('.');
-        if (check.length > 1)
+        name = name.trim().replace('.', ' ');
+        if (name.trim().indexOf(' ') === -1)
         {
-            name = check.join(' ');
-        }
-        else
-        {
-            name += ' resident';
+            name = name.trim() + ' resident';
         }
         name = name.toLowerCase();
 
