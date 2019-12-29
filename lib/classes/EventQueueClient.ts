@@ -314,13 +314,16 @@ export class EventQueueClient
                                                     gcsale.isModerator = false;
                                                     gcsale.entered = (updObj['transition'] === 'ENTER');
 
-                                                    if (updObj['can_voice_chat'] === true)
+                                                    if (gcsale.entered && updObj['info'])
                                                     {
-                                                        gcsale.canVoiceChat = true;
-                                                    }
-                                                    if (updObj['is_moderator'] === true)
-                                                    {
-                                                        gcsale.isModerator = true;
+                                                        if (updObj['info']['can_voice_chat'] === true)
+                                                        {
+                                                            gcsale.canVoiceChat = true;
+                                                        }
+                                                        if (updObj['info']['is_moderator'] === true)
+                                                        {
+                                                            gcsale.isModerator = true;
+                                                        }
                                                     }
                                                     this.clientEvents.onGroupChatAgentListUpdate.next(gcsale);
                                                 });
@@ -466,6 +469,7 @@ export class EventQueueClient
                     {
                         if (body.indexOf('<llsd>') !== -1)
                         {
+                            console.log(body);
                             const parsed = LLSD.LLSD.parseXML(body);
                             resolve(parsed);
                         }
