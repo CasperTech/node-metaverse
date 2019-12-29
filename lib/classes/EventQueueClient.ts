@@ -469,7 +469,6 @@ export class EventQueueClient
                     {
                         if (body.indexOf('<llsd>') !== -1)
                         {
-                            console.log(body);
                             const parsed = LLSD.LLSD.parseXML(body);
                             resolve(parsed);
                         }
