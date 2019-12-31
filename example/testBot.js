@@ -312,6 +312,18 @@ async function connect()
         
 
         //await bot.clientCommands.friends.grantFriendRights('d1cd5b71-6209-4595-9bf0-771bf689ce00', nmv.RightsFlags.CanModifyObjects | nmv.RightsFlags.CanSeeOnline | nmv.RightsFlags.CanSeeOnMap );
+
+        const parcelInMiddle = await bot.clientCommands.region.getParcelAt(128, 128);
+        console.log('Parcel at 128x128 is ' + parcelInMiddle.Name);
+
+        const parcels = await bot.clientCommands.region.getParcels();
+        console.log('Parcels on region:');
+        console.log('========================');
+        for (const p of parcels)
+        {
+            console.log(p.Name);
+        }
+        console.log('========================');
     }
     catch (error)
     {

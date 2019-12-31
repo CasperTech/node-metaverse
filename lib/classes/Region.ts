@@ -1,41 +1,46 @@
-import {Circuit} from './Circuit';
-import {Agent} from './Agent';
-import {Caps} from './Caps';
-import {Comms} from './Comms';
-import {ClientEvents} from './ClientEvents';
-import {IObjectStore} from './interfaces/IObjectStore';
-import {ObjectStoreFull} from './ObjectStoreFull';
-import {ObjectStoreLite} from './ObjectStoreLite';
-import {BotOptionFlags, PacketFlags, ParcelPropertiesEvent, RegionFlags, UUID, Vector2, Vector3} from '..';
-import {RequestRegionInfoMessage} from './messages/RequestRegionInfo';
-import {RegionInfoMessage} from './messages/RegionInfo';
-import {Message} from '../enums/Message';
-import {Utils} from './Utils';
-import {RegionHandshakeMessage} from './messages/RegionHandshake';
-import {MapNameRequestMessage} from './messages/MapNameRequest';
-import {GridLayerType} from '../enums/GridLayerType';
-import {MapBlockReplyMessage} from './messages/MapBlockReply';
-import {FilterResponse} from '../enums/FilterResponse';
+import { Circuit } from './Circuit';
+import { Agent } from './Agent';
+import { Caps } from './Caps';
+import { Comms } from './Comms';
+import { ClientEvents } from './ClientEvents';
+import { IObjectStore } from './interfaces/IObjectStore';
+import { ObjectStoreFull } from './ObjectStoreFull';
+import { ObjectStoreLite } from './ObjectStoreLite';
+import { BotOptionFlags, PacketFlags, ParcelPropertiesEvent, RegionFlags, UUID, Vector2, Vector3 } from '..';
+import { RequestRegionInfoMessage } from './messages/RequestRegionInfo';
+import { RegionInfoMessage } from './messages/RegionInfo';
+import { Message } from '../enums/Message';
+import { Utils } from './Utils';
+import { RegionHandshakeMessage } from './messages/RegionHandshake';
+import { MapNameRequestMessage } from './messages/MapNameRequest';
+import { GridLayerType } from '../enums/GridLayerType';
+import { MapBlockReplyMessage } from './messages/MapBlockReply';
+import { FilterResponse } from '../enums/FilterResponse';
 import * as Long from 'long';
-import {Packet} from './Packet';
-import {LayerDataMessage} from './messages/LayerData';
-import {LayerType} from '../enums/LayerType';
-import {Subscription} from 'rxjs/internal/Subscription';
-import {BitPack} from './BitPack';
+import { Packet } from './Packet';
+import { LayerDataMessage } from './messages/LayerData';
+import { LayerType } from '../enums/LayerType';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { BitPack } from './BitPack';
 import * as builder from 'xmlbuilder';
-import {SimAccessFlags} from '../enums/SimAccessFlags';
-import {Subject} from 'rxjs/internal/Subject';
-import {ParcelDwellRequestMessage} from './messages/ParcelDwellRequest';
-import {ParcelDwellReplyMessage} from './messages/ParcelDwellReply';
+import { SimAccessFlags } from '../enums/SimAccessFlags';
+import { Subject } from 'rxjs/internal/Subject';
+import { ParcelDwellRequestMessage } from './messages/ParcelDwellRequest';
+import { ParcelDwellReplyMessage } from './messages/ParcelDwellReply';
+import { Parcel } from './public/Parcel';
+import { RegionEnvironment } from './public/RegionEnvironment';
+import { Color4 } from './Color4';
+import { SkyPreset } from './public/interfaces/SkyPreset';
+import { Vector4 } from './Vector4';
+import { WaterPreset } from './public/interfaces/WaterPreset';
+import { ClientCommands } from './ClientCommands';
+import { SimulatorViewerTimeMessageMessage } from './messages/SimulatorViewerTimeMessage';
+import { ParcelOverlayMessage } from './messages/ParcelOverlay';
+import { ILandBlock } from './interfaces/ILandBlock';
+import { LandFlags } from '../enums/LandFlags';
+import { ParcelPropertiesRequestMessage } from './messages/ParcelPropertiesRequest';
+import { ParcelPropertiesMessage } from './messages/ParcelProperties';
 import Timer = NodeJS.Timer;
-import {Parcel} from './public/Parcel';
-import {RegionEnvironment} from './public/RegionEnvironment';
-import {Color4} from './Color4';
-import {SkyPreset} from './public/interfaces/SkyPreset';
-import {Vector4} from './Vector4';
-import {WaterPreset} from './public/interfaces/WaterPreset';
-import {ClientCommands} from './ClientCommands';
-import {SimulatorViewerTimeMessageMessage} from './messages/SimulatorViewerTimeMessage';
 
 export class Region
 {
@@ -48,6 +53,8 @@ export class Region
     regionName: string;
     regionOwner: UUID;
     regionID: UUID;
+    regionSizeX = 256;
+    regionSizeY = 256;
     regionHandle: Long;
     xCoordinate: number;
     yCoordinate: number;
@@ -114,13 +121,22 @@ export class Region
     parcelsComplete = false;
     parcelsCompleteEvent: Subject<void> = new Subject<void>();
 
+    parcelOverlayComplete = false;
+    parcelOverlayCompleteEvent: Subject<void> = new Subject<void>();
+
+    parcelOverlay: ILandBlock[] = [];
     parcels: {[key: number]: Parcel} = {};
     parcelsByUUID: {[key: string]: Parcel} = {};
     parcelMap: number[][] = [];
 
+
+    parcelCoordinates: {x: number, y: number}[] = [];
+
     environment: RegionEnvironment;
 
     timeOffset = 0;
+
+    private parcelOverlayReceived: {[key: number]: Buffer} = {};
 
     static IDCTColumn16(linein: number[], lineout: number[], column: number)
     {
@@ -257,6 +273,17 @@ export class Region
         this.setup = true;
     }
 
+    private static doesBitmapContainCoordinate(bitmap: Buffer, x: number, y: number): boolean
+    {
+        const mapBlockX = Math.floor(x / 4);
+        const mapBlockY = Math.floor(y / 4);
+
+        let index = (mapBlockY * 64) + mapBlockX;
+        const bit = index % 8;
+        index >>= 3;
+        return ((bitmap[index] & (1 << bit)) !== 0);
+    }
+
     constructor(agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
         if (!Region.setup)
@@ -295,141 +322,92 @@ export class Region
 
         this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe(async (parcelProperties: ParcelPropertiesEvent) =>
         {
-            // Get the parcel UUID
-            const msg = new ParcelDwellRequestMessage();
-            msg.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: this.circuit.sessionID
-            };
-            msg.Data = {
-                LocalID: parcelProperties.LocalID,
-                ParcelID: UUID.zero()
-            };
-
-            this.circuit.sendMessage(msg, PacketFlags.Reliable);
-            const dwellReply = await this.circuit.waitForMessage<ParcelDwellReplyMessage>(Message.ParcelDwellReply, 1000, (message: ParcelDwellReplyMessage): FilterResponse =>
-            {
-                if (message.Data.LocalID === parcelProperties.LocalID)
-                {
-                    return FilterResponse.Finish;
-                }
-                else
-                {
-                    return FilterResponse.NoMatch;
-                }
-            });
-            const parcelID: string = dwellReply.Data.ParcelID.toString();
-            let parcel = new Parcel();
-            if (this.parcelsByUUID[parcelID])
-            {
-                parcel = this.parcelsByUUID[parcelID];
-            }
-            parcel.LocalID = parcelProperties.LocalID;
-            parcel.ParcelID = dwellReply.Data.ParcelID;
-            parcel.RegionDenyAgeUnverified = parcelProperties.RegionDenyTransacted;
-            parcel.MediaDesc = parcelProperties.MediaDesc;
-            parcel.MediaHeight = parcelProperties.MediaHeight;
-            parcel.MediaLoop = parcelProperties.MediaLoop;
-            parcel.MediaType = parcelProperties.MediaType;
-            parcel.MediaWidth = parcelProperties.MediaWidth;
-            parcel.ObscureMedia = parcelProperties.ObscureMedia;
-            parcel.ObscureMusic = parcelProperties.ObscureMusic;
-            parcel.AABBMax = parcelProperties.AABBMax;
-            parcel.AABBMin = parcelProperties.AABBMin;
-            parcel.AnyAVSounds = parcelProperties.AnyAVSounds;
-            parcel.Area = parcelProperties.Area;
-            parcel.AuctionID = parcelProperties.AuctionID;
-            parcel.AuthBuyerID = parcelProperties.AuthBuyerID;
-            parcel.Bitmap = parcelProperties.Bitmap;
-            parcel.Category = parcelProperties.Category;
-            parcel.ClaimDate = parcelProperties.ClaimDate;
-            parcel.ClaimPrice = parcelProperties.ClaimPrice;
-            parcel.Desc = parcelProperties.Desc;
-            parcel.GroupAVSounds = parcelProperties.GroupAVSounds;
-            parcel.GroupID = parcelProperties.GroupID;
-            parcel.GroupPrims = parcelProperties.GroupPrims;
-            parcel.IsGroupOwned = parcelProperties.IsGroupOwned;
-            parcel.LandingType = parcelProperties.LandingType;
-            parcel.MaxPrims = parcelProperties.MaxPrims;
-            parcel.MediaAutoScale = parcelProperties.MediaAutoScale;
-            parcel.MediaID = parcelProperties.MediaID;
-            parcel.MediaURL = parcelProperties.MediaURL;
-            parcel.MusicURL = parcelProperties.MusicURL;
-            parcel.Name = parcelProperties.Name;
-            parcel.OtherCleanTime = parcelProperties.OtherCleanTime;
-            parcel.OtherCount = parcelProperties.OtherCount;
-            parcel.OtherPrims = parcelProperties.OtherPrims;
-            parcel.OwnerID = parcelProperties.OwnerID;
-            parcel.OwnerPrims = parcelProperties.OwnerPrims;
-            parcel.ParcelFlags = parcelProperties.ParcelFlags;
-            parcel.ParcelPrimBonus = parcelProperties.ParcelPrimBonus;
-            parcel.PassHours = parcelProperties.PassHours;
-            parcel.PassPrice = parcelProperties.PassPrice;
-            parcel.PublicCount = parcelProperties.PublicCount;
-            parcel.RegionDenyAnonymous = parcelProperties.RegionDenyAnonymous;
-            parcel.RegionDenyIdentified = parcelProperties.RegionDenyIdentified;
-            parcel.RegionPushOverride = parcelProperties.RegionPushOverride;
-            parcel.RegionDenyTransacted = parcelProperties.RegionDenyTransacted;
-            parcel.RentPrice = parcelProperties.RentPrice;
-            parcel.RequestResult = parcelProperties.RequestResult;
-            parcel.SalePrice = parcelProperties.SalePrice;
-            parcel.SeeAvs = parcelProperties.SeeAvs;
-            parcel.SelectedPrims = parcelProperties.SelectedPrims;
-            parcel.SelfCount = parcelProperties.SelfCount;
-            parcel.SequenceID = parcelProperties.SequenceID;
-            parcel.SimWideMaxPrims = parcelProperties.SimWideMaxPrims;
-            parcel.SimWideTotalPrims = parcelProperties.SimWideTotalPrims;
-            parcel.SnapSelection = parcelProperties.SnapSelection;
-            parcel.SnapshotID = parcelProperties.SnapshotID;
-            parcel.Status = parcelProperties.Status;
-            parcel.TotalPrims = parcelProperties.TotalPrims;
-            parcel.UserLocation = parcelProperties.UserLocation;
-            parcel.UserLookAt = parcelProperties.UserLookAt;
-            parcel.RegionAllowAccessOverride = parcelProperties.RegionAllowAccessOverride;
-            this.parcels[parcelProperties.LocalID] = parcel;
-
-            let foundEmpty = false;
-            for (let y = 0; y < 64; y++)
-            {
-                for (let x = 0; x < 64; x++)
-                {
-                    let index = (y * 64) + x;
-                    const bit = index % 8;
-                    index >>= 3;
-                    if ((parcel.Bitmap[index] & (1 << bit)) !== 0)
-                    {
-                        this.parcelMap[y][x] = parcel.LocalID;
-                    }
-                    else
-                    {
-                        if (this.parcelMap[y][x] === 0)
-                        {
-                            foundEmpty = true;
-                        }
-                    }
-                }
-            }
-            if (foundEmpty === false)
-            {
-                if (this.parcelsComplete === false)
-                {
-                    this.parcelsComplete = true;
-                    this.parcelsCompleteEvent.next();
-                }
-            }
-            else if (this.parcelsComplete === true)
-            {
-                this.parcelsComplete = false;
-            }
+            await this.resolveParcel(parcelProperties);
         });
 
         this.messageSubscription = this.circuit.subscribeToMessages([
+            Message.ParcelOverlay,
             Message.LayerData,
             Message.SimulatorViewerTimeMessage
         ], (packet: Packet) =>
         {
             switch (packet.message.id)
             {
+                case Message.ParcelOverlay:
+                {
+                    const parcelData: ParcelOverlayMessage = packet.message as ParcelOverlayMessage;
+                    const sequence = parcelData.ParcelData.SequenceID;
+
+                    if (this.parcelOverlayReceived[sequence] !== undefined)
+                    {
+                        this.parcelOverlayReceived = {};
+                    }
+
+                    this.parcelOverlayReceived[sequence] = parcelData.ParcelData.Data;
+                    let totalLength = 0;
+                    let highestSeq = 0;
+                    for (const seq of Object.keys(this.parcelOverlayReceived))
+                    {
+                        const sequenceID: number = parseInt(seq, 10);
+                        totalLength += this.parcelOverlayReceived[sequenceID].length;
+                        if (sequenceID > highestSeq)
+                        {
+                            highestSeq = sequenceID;
+                        }
+                    }
+                    if (totalLength !== (this.regionSizeX / 4) * (this.regionSizeY / 4))
+                    {
+                        // Overlay is incomplete
+                        return;
+                    }
+                    for (let x = 0; x <= highestSeq; x++)
+                    {
+                        if (this.parcelOverlayReceived[x] === undefined)
+                        {
+                            // Overlay is incomplete
+                            return;
+                        }
+                    }
+
+                    this.parcelOverlay = [];
+                    for (let seq = 0; seq <= highestSeq; seq++)
+                    {
+                        const data = this.parcelOverlayReceived[seq];
+                        for (let x = 0; x < data.length; x++)
+                        {
+                            const block = data.readUInt8(x);
+                            this.parcelOverlay.push({
+                                landType: block & 0xF,
+                                landFlags: block & ~ 0xF,
+                                parcelID: -1
+                            });
+                        }
+                    }
+
+                    this.parcelCoordinates = [];
+                    let currentParcelID = 0;
+                    for (let y = 63; y > -1; y--)
+                    {
+                        for (let x = 63; x > -1; x--)
+                        {
+                            if (this.parcelOverlay[(y * 64) + x].parcelID === -1)
+                            {
+                                this.parcelCoordinates.push({x, y});
+                                currentParcelID++;
+                                this.fillParcel(currentParcelID, x, y);
+                            }
+                        }
+                    }
+
+                    if (!this.parcelOverlayComplete)
+                    {
+                        this.parcelOverlayComplete = true;
+                        this.parcelOverlayCompleteEvent.next();
+                    }
+
+                    this.parcelOverlayReceived = {};
+                    break;
+                }
                 case Message.LayerData:
                 {
                     const layerData: LayerDataMessage = packet.message as LayerDataMessage;
@@ -592,29 +570,264 @@ export class Region
             }
         })
     }
-    getParcels(): Parcel[]
+
+    private async resolveParcel(parcelProperties: ParcelPropertiesEvent): Promise<Parcel>
     {
-        const found: {[key: number]: Parcel} = {};
+        // Get the parcel UUID
+        const msg = new ParcelDwellRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        msg.Data = {
+            LocalID: parcelProperties.LocalID,
+            ParcelID: UUID.zero()
+        };
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        const dwellReply = await this.circuit.waitForMessage<ParcelDwellReplyMessage>(Message.ParcelDwellReply, 10000, (message: ParcelDwellReplyMessage): FilterResponse =>
+        {
+            if (message.Data.LocalID === parcelProperties.LocalID)
+            {
+                return FilterResponse.Finish;
+            }
+            else
+            {
+                return FilterResponse.NoMatch;
+            }
+        });
+        const parcelID: string = dwellReply.Data.ParcelID.toString();
+        let parcel = new Parcel();
+        if (this.parcelsByUUID[parcelID])
+        {
+            parcel = this.parcelsByUUID[parcelID];
+        }
+        parcel.LocalID = parcelProperties.LocalID;
+        parcel.ParcelID = dwellReply.Data.ParcelID;
+        parcel.RegionDenyAgeUnverified = parcelProperties.RegionDenyTransacted;
+        parcel.MediaDesc = parcelProperties.MediaDesc;
+        parcel.MediaHeight = parcelProperties.MediaHeight;
+        parcel.MediaLoop = parcelProperties.MediaLoop;
+        parcel.MediaType = parcelProperties.MediaType;
+        parcel.MediaWidth = parcelProperties.MediaWidth;
+        parcel.ObscureMedia = parcelProperties.ObscureMedia;
+        parcel.ObscureMusic = parcelProperties.ObscureMusic;
+        parcel.AABBMax = parcelProperties.AABBMax;
+        parcel.AABBMin = parcelProperties.AABBMin;
+        parcel.AnyAVSounds = parcelProperties.AnyAVSounds;
+        parcel.Area = parcelProperties.Area;
+        parcel.AuctionID = parcelProperties.AuctionID;
+        parcel.AuthBuyerID = parcelProperties.AuthBuyerID;
+        parcel.Bitmap = parcelProperties.Bitmap;
+        parcel.Category = parcelProperties.Category;
+        parcel.ClaimDate = parcelProperties.ClaimDate;
+        parcel.ClaimPrice = parcelProperties.ClaimPrice;
+        parcel.Desc = parcelProperties.Desc;
+        parcel.GroupAVSounds = parcelProperties.GroupAVSounds;
+        parcel.GroupID = parcelProperties.GroupID;
+        parcel.GroupPrims = parcelProperties.GroupPrims;
+        parcel.IsGroupOwned = parcelProperties.IsGroupOwned;
+        parcel.LandingType = parcelProperties.LandingType;
+        parcel.MaxPrims = parcelProperties.MaxPrims;
+        parcel.MediaAutoScale = parcelProperties.MediaAutoScale;
+        parcel.MediaID = parcelProperties.MediaID;
+        parcel.MediaURL = parcelProperties.MediaURL;
+        parcel.MusicURL = parcelProperties.MusicURL;
+        parcel.Name = parcelProperties.Name;
+        parcel.OtherCleanTime = parcelProperties.OtherCleanTime;
+        parcel.OtherCount = parcelProperties.OtherCount;
+        parcel.OtherPrims = parcelProperties.OtherPrims;
+        parcel.OwnerID = parcelProperties.OwnerID;
+        parcel.OwnerPrims = parcelProperties.OwnerPrims;
+        parcel.ParcelFlags = parcelProperties.ParcelFlags;
+        parcel.ParcelPrimBonus = parcelProperties.ParcelPrimBonus;
+        parcel.PassHours = parcelProperties.PassHours;
+        parcel.PassPrice = parcelProperties.PassPrice;
+        parcel.PublicCount = parcelProperties.PublicCount;
+        parcel.RegionDenyAnonymous = parcelProperties.RegionDenyAnonymous;
+        parcel.RegionDenyIdentified = parcelProperties.RegionDenyIdentified;
+        parcel.RegionPushOverride = parcelProperties.RegionPushOverride;
+        parcel.RegionDenyTransacted = parcelProperties.RegionDenyTransacted;
+        parcel.RentPrice = parcelProperties.RentPrice;
+        parcel.RequestResult = parcelProperties.RequestResult;
+        parcel.SalePrice = parcelProperties.SalePrice;
+        parcel.SeeAvs = parcelProperties.SeeAvs;
+        parcel.SelectedPrims = parcelProperties.SelectedPrims;
+        parcel.SelfCount = parcelProperties.SelfCount;
+        parcel.SequenceID = parcelProperties.SequenceID;
+        parcel.SimWideMaxPrims = parcelProperties.SimWideMaxPrims;
+        parcel.SimWideTotalPrims = parcelProperties.SimWideTotalPrims;
+        parcel.SnapSelection = parcelProperties.SnapSelection;
+        parcel.SnapshotID = parcelProperties.SnapshotID;
+        parcel.Status = parcelProperties.Status;
+        parcel.TotalPrims = parcelProperties.TotalPrims;
+        parcel.UserLocation = parcelProperties.UserLocation;
+        parcel.UserLookAt = parcelProperties.UserLookAt;
+        parcel.RegionAllowAccessOverride = parcelProperties.RegionAllowAccessOverride;
+        this.parcels[parcelProperties.LocalID] = parcel;
+
+        let foundEmpty = false;
         for (let y = 0; y < 64; y++)
         {
             for (let x = 0; x < 64; x++)
             {
-                if (this.parcelMap[y][x] !== 0)
+                if (Region.doesBitmapContainCoordinate(parcel.Bitmap, x * 4, y * 4))
                 {
-                    const localID = this.parcelMap[y][x];
-                    if (!found[localID])
+                    this.parcelMap[y][x] = parcel.LocalID;
+                }
+                else
+                {
+                    if (this.parcelMap[y][x] === 0)
                     {
-                        found[localID] = this.parcels[localID];
+                        foundEmpty = true;
                     }
                 }
             }
         }
-        const result: Parcel[] = [];
-        for (const key of Object.keys(found))
+        if (!foundEmpty)
         {
-            result.push(found[parseInt(key, 10)]);
+            if (!this.parcelsComplete)
+            {
+                this.parcelsComplete = true;
+                this.parcelsCompleteEvent.next();
+            }
         }
-        return result;
+        else if (this.parcelsComplete)
+        {
+            this.parcelsComplete = false;
+        }
+        return parcel;
+    }
+
+    /* // This was useful for debugging, so leaving it here for the future
+    private drawParcelMap()
+    {
+        console.log('====================================================');
+        for (let y2 = 63; y2 > -1; y2--)
+        {
+            let row = '';
+            for (let x2 = 0; x2 < 64; x2++)
+            {
+                const parcelID = this.parcelOverlay[(y2 * 64) + x2].parcelID;
+                if (parcelID === -1)
+                {
+                    row += 'X';
+                }
+                else if (parcelID < 10)
+                {
+                    row += String(parcelID);
+                }
+                else
+                {
+                    row += '#';
+                }
+            }
+            console.log(row);
+        }
+    }
+     */
+
+    private fillParcel(parcelID: number, x: number, y: number)
+    {
+        if ( x < 0 || y < 0 || x > 63 || y > 63)
+        {
+            return;
+        }
+        if (this.parcelOverlay[(y * 64) + x].parcelID !== -1)
+        {
+            return;
+        }
+        this.parcelOverlay[(y * 64) + x].parcelID = parcelID;
+        const flags = this.parcelOverlay[(y * 64) + x].landFlags;
+        if (!(flags & LandFlags.BorderSouth))
+        {
+            this.fillParcel(parcelID, x, y - 1);
+        }
+        if (!(flags & LandFlags.BorderWest))
+        {
+            this.fillParcel(parcelID, x - 1, y);
+        }
+        if (x < 63 && !(this.parcelOverlay[(y * 64) + (x + 1)].landFlags & LandFlags.BorderWest))
+        {
+            this.fillParcel(parcelID, x + 1, y);
+        }
+        if (y < 63 && !(this.parcelOverlay[((y + 1) * 64) + x].landFlags & LandFlags.BorderSouth))
+        {
+            this.fillParcel(parcelID, x, y + 1);
+        }
+    }
+
+    public getParcelProperties(x: number, y: number): Promise<Parcel>
+    {
+        return new Promise<Parcel>((resolve, reject) =>
+        {
+            const request = new ParcelPropertiesRequestMessage();
+            request.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            request.ParcelData = {
+                North: y + 1,
+                East: x + 1,
+                South: y,
+                West: x,
+                SequenceID: -10000,
+                SnapSelection: false
+            };
+            this.circuit.sendMessage(request, PacketFlags.Reliable);
+            let messageAwait: Subscription | undefined = undefined;
+            let messageWaitTimer: number | undefined = undefined;
+
+            messageAwait = this.clientEvents.onParcelPropertiesEvent.subscribe(async (parcelProperties: ParcelPropertiesEvent) =>
+            {
+                if (Region.doesBitmapContainCoordinate(parcelProperties.Bitmap, x, y))
+                {
+                    if (messageAwait !== undefined)
+                    {
+                        messageAwait.unsubscribe();
+                        messageAwait = undefined;
+                    }
+                    if (messageWaitTimer !== undefined)
+                    {
+                        clearTimeout(messageWaitTimer);
+                        messageWaitTimer = undefined;
+                    }
+                    resolve(await this.resolveParcel(parcelProperties));
+                }
+            });
+
+            messageWaitTimer = setTimeout(() =>
+            {
+                if (messageAwait !== undefined)
+                {
+                    messageAwait.unsubscribe();
+                    messageAwait = undefined;
+                }
+                if (messageWaitTimer !== undefined)
+                {
+                    clearTimeout(messageWaitTimer);
+                    messageWaitTimer = undefined;
+                }
+                reject(new Error('Timed out'));
+            }, 10000) as any as number;
+        });
+    }
+
+    async getParcels(): Promise<Parcel[]>
+    {
+        await this.waitForParcelOverlay();
+        const parcels: Parcel[] = [];
+        for (const parcel of this.parcelCoordinates)
+        {
+            try
+            {
+                parcels.push(await this.getParcelProperties(parcel.x * 4.0, parcel.y * 4.0));
+            }
+            catch (error)
+            {
+                console.error(error);
+            }
+        }
+        return parcels;
     }
 
     resetParcels(): void
@@ -631,6 +844,35 @@ export class Region
         this.parcels = {};
         this.parcelsByUUID = {};
         this.parcelsComplete = false;
+    }
+
+    waitForParcelOverlay(): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            if (this.parcelOverlayComplete)
+            {
+                resolve();
+            }
+            else
+            {
+                let timeout: Timer | null = null;
+                const subscription = this.parcelOverlayCompleteEvent.subscribe(() =>
+                {
+                    if (timeout !== null)
+                    {
+                        clearTimeout(timeout);
+                    }
+                    subscription.unsubscribe();
+                    resolve();
+                });
+                timeout = setTimeout(() =>
+                {
+                    subscription.unsubscribe();
+                    reject(new Error('Timeout waiting for parcel overlay'));
+                }, 10000);
+            }
+        });
     }
 
     waitForParcels(): Promise<void>

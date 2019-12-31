@@ -25,7 +25,6 @@ import {Utils} from '../Utils';
 import {ObjectDeselectMessage} from '../messages/ObjectDeselect';
 import * as micromatch from 'micromatch';
 import * as LLSD from '@caspertech/llsd';
-import {ParcelPropertiesRequestMessage} from '../messages/ParcelPropertiesRequest';
 import {RequestTaskInventoryMessage} from '../messages/RequestTaskInventory';
 import {ReplyTaskInventoryMessage} from '../messages/ReplyTaskInventory';
 import {InventoryItem} from '../InventoryItem';
@@ -37,9 +36,7 @@ import {Quaternion} from '../Quaternion';
 import Timer = NodeJS.Timer;
 import {RezObjectMessage} from '../messages/RezObject';
 import {PermissionMask} from '../../enums/PermissionMask';
-import {from} from 'rxjs';
 import {SelectedObjectEvent} from '../../events/SelectedObjectEvent';
-import uuid = require('uuid');
 
 export class RegionCommands extends CommandsBase
 {
@@ -807,14 +804,14 @@ export class RegionCommands extends CommandsBase
         });
     }
 
-    private waitForObjectByUUID(uuid: UUID, timeout: number): Promise<GameObject>
+    private waitForObjectByUUID(objectID: UUID, timeout: number): Promise<GameObject>
     {
         return new Promise<GameObject>((resolve, reject) =>
         {
             let tmr: Timer | null = null;
             const subscription = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (event: NewObjectEvent) =>
             {
-                if (event.objectID.equals(uuid))
+                if (event.objectID.equals(objectID))
                 {
                     if (tmr !== null)
                     {
@@ -902,12 +899,6 @@ export class RegionCommands extends CommandsBase
                 reject(err);
             });
         });
-    }
-
-    private echo(st: string): boolean
-    {
-        //console.log(st);
-        return true;
     }
 
     createPrim(obj: GameObject, posOffset: Vector3, inventoryID?: UUID): Promise<GameObject>
@@ -1172,11 +1163,11 @@ export class RegionCommands extends CommandsBase
 
                 if (match)
                 {
-                    const uuid = go.FullID.toString();
-                    if (!idCheck[uuid])
+                    const fullID = go.FullID.toString();
+                    if (!idCheck[fullID])
                     {
                         matches.push(go);
-                        idCheck[uuid] = true;
+                        idCheck[fullID] = true;
                     }
                 }
             }
@@ -1195,45 +1186,13 @@ export class RegionCommands extends CommandsBase
         return matches;
     }
 
-    async getParcels(): Promise<Parcel[]>
+    getParcelAt(x: number, y: number): Promise<Parcel>
     {
-        this.currentRegion.resetParcels();
-        for (let y = 0; y < 64; y++)
-        {
-            for (let x = 0; x < 64; x++)
-            {
-                if (this.currentRegion.parcelMap[y][x] === 0)
-                {
-                    const request = new ParcelPropertiesRequestMessage();
-                    request.AgentData = {
-                        AgentID: this.agent.agentID,
-                        SessionID: this.circuit.sessionID
-                    };
-                    request.ParcelData = {
-                        North: (y + 1) * 4.0,
-                        East: (x + 1) * 4.0,
-                        South: y * 4.0,
-                        West: x * 4.0,
-                        SequenceID: 2147483647,
-                        SnapSelection: false
-                    };
-                    const seqNo = this.circuit.sendMessage(request, PacketFlags.Reliable);
-                    await this.circuit.waitForAck(seqNo, 10000);
-                    // Wait a second until we request the next one
-                    await function()
-                    {
-                        return new Promise<void>((resolve, reject) =>
-                        {
-                            setTimeout(() =>
-                            {
-                                resolve();
-                            }, 1000);
-                        })
-                    }();
-                }
-            }
-        }
-        await this.currentRegion.waitForParcels();
+        return this.currentRegion.getParcelProperties(x, y);
+    }
+
+    getParcels(): Promise<Parcel[]>
+    {
         return this.currentRegion.getParcels();
     }
 
@@ -1304,8 +1263,8 @@ export class RegionCommands extends CommandsBase
             let found = false;
             if (o.FullID)
             {
-                const uuid = o.FullID.toString();
-                if (stillAlive[uuid])
+                const fullID = o.FullID.toString();
+                if (stillAlive[fullID])
                 {
                     found = true;
                 }
