@@ -1,24 +1,23 @@
-import {CommandsBase} from './CommandsBase';
-import {UUID} from '../UUID';
-import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
-import {Utils} from '../Utils';
-import {PacketFlags} from '../../enums/PacketFlags';
-import {ImprovedInstantMessageMessage} from '../messages/ImprovedInstantMessage';
-import {Vector3} from '../Vector3';
-import {InviteGroupRequestMessage} from '../messages/InviteGroupRequest';
-import {GroupRole} from '../GroupRole';
-import {GroupRoleDataRequestMessage} from '../messages/GroupRoleDataRequest';
-import {Message} from '../../enums/Message';
-import {Packet} from '../Packet';
-import {GroupRoleDataReplyMessage} from '../messages/GroupRoleDataReply';
-import {GroupMember} from '../GroupMember';
-import {FilterResponse} from '../../enums/FilterResponse';
+import { CommandsBase } from './CommandsBase';
+import { UUID } from '../UUID';
+import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
+import { Utils } from '../Utils';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
+import { Vector3 } from '../Vector3';
+import { InviteGroupRequestMessage } from '../messages/InviteGroupRequest';
+import { GroupRole } from '../GroupRole';
+import { GroupRoleDataRequestMessage } from '../messages/GroupRoleDataRequest';
+import { Message } from '../../enums/Message';
+import { GroupRoleDataReplyMessage } from '../messages/GroupRoleDataReply';
+import { GroupMember } from '../GroupMember';
+import { FilterResponse } from '../../enums/FilterResponse';
 import * as LLSD from '@caspertech/llsd';
-import {GroupInviteEvent} from '../..';
-import {EjectGroupMemberRequestMessage} from '../messages/EjectGroupMemberRequest';
-import {GroupProfileRequestMessage} from '../messages/GroupProfileRequest';
-import {GroupProfileReplyMessage} from '../messages/GroupProfileReply';
-import {GroupProfileReplyEvent} from '../..';
+import { GroupInviteEvent, GroupProfileReplyEvent } from '../..';
+import { EjectGroupMemberRequestMessage } from '../messages/EjectGroupMemberRequest';
+import { GroupProfileRequestMessage } from '../messages/GroupProfileRequest';
+import { GroupProfileReplyMessage } from '../messages/GroupProfileReply';
+import { GroupBanAction } from '../../enums/GroupBanAction';
 
 export class GroupCommands extends CommandsBase
 {
@@ -174,6 +173,50 @@ export class GroupCommands extends CommandsBase
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         return await circuit.waitForAck(sequenceNo, 10000);
+    }
+
+    async unbanMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[])
+    {
+        this.banMembers(groupID, avatars, GroupBanAction.Unban);
+    }
+
+    async banMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[], groupAction: GroupBanAction = GroupBanAction.Ban)
+    {
+        const listOfIDs: string[] = [];
+
+        if (Array.isArray(avatars))
+        {
+            for (const av of avatars)
+            {
+                if (typeof av === 'string')
+                {
+                    listOfIDs.push(av);
+                }
+                else
+                {
+                    listOfIDs.push(av.toString());
+                }
+            }
+        }
+        else if (typeof avatars === 'string')
+        {
+            listOfIDs.push(avatars);
+        }
+        else
+        {
+            listOfIDs.push(avatars.toString());
+        }
+
+        const requestData: any = {
+            'ban_action': groupAction,
+            'ban_ids': []
+        };
+        for (const id of listOfIDs)
+        {
+            requestData.ban_ids.push(new LLSD.UUID(id));
+        }
+
+        await this.currentRegion.caps.capsRequestXML(['GroupAPIv1', {'group_id': groupID.toString()}], requestData);
     }
 
     getMemberList(groupID: UUID | string): Promise<GroupMember[]>
