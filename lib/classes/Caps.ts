@@ -32,6 +32,9 @@ export class Caps
         this.clientEvents = clientEvents;
         this.region = region;
         const req: string[] = [];
+        req.push('AbuseCategories');
+        req.push('AcceptFriendship');
+        req.push('AcceptGroupInvite');
         req.push('AgentPreferences');
         req.push('AgentState');
         req.push('AttachmentResources');
@@ -41,14 +44,14 @@ export class Caps
         req.push('ChatSessionRequest');
         req.push('CopyInventoryFromNotecard');
         req.push('CreateInventoryCategory');
+        req.push('DeclineFriendship');
+        req.push('DeclineGroupInvite');
         req.push('DispatchRegionInfo');
         req.push('DirectDelivery');
         req.push('EnvironmentSettings');
+        req.push('EstateAccess');
         req.push('EstateChangeInfo');
         req.push('EventQueueGet');
-        req.push('FacebookConnect');
-        req.push('FlickrConnect');
-        req.push('TwitterConnect');
         req.push('FetchLib2');
         req.push('FetchLibDescendents2');
         req.push('FetchInventory2');
@@ -81,6 +84,7 @@ export class Caps
         req.push('MeshUploadFlag');
         req.push('NavMeshGenerationStatus');
         req.push('NewFileAgentInventory');
+        req.push('ObjectAnimation');
         req.push('ObjectMedia');
         req.push('ObjectMediaNavigate');
         req.push('ObjectNavMeshProperties');
@@ -88,6 +92,7 @@ export class Caps
         req.push('ParcelVoiceInfoRequest');
         req.push('ProductInfoRequest');
         req.push('ProvisionVoiceAccountRequest');
+        req.push('ReadOfflineMsgs');
         req.push('RemoteParcelRequest');
         req.push('RenderMaterials');
         req.push('RequestTextureDownload');
@@ -116,6 +121,7 @@ export class Caps
         req.push('UpdateScriptAgent');
         req.push('UpdateScriptTask');
         req.push('UploadBakedTexture');
+        req.push('UserInfo');
         req.push('ViewerAsset');
         req.push('ViewerMetrics');
         req.push('ViewerStartAuction');
