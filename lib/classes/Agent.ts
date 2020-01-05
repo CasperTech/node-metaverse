@@ -261,7 +261,7 @@ export class Agent
                             requestFolder
                         ]
                     };
-                    this.currentRegion.caps.capsRequestXML('FetchInventoryDescendents2', requestedFolders).then((folderContents: any) =>
+                    this.currentRegion.caps.capsPostXML('FetchInventoryDescendents2', requestedFolders).then((folderContents: any) =>
                     {
                         const currentOutfitFolderContents = folderContents['folders'][0]['items'];
                         const wornObjects = this.currentRegion.objects.getObjectsByParent(this.localID);

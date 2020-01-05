@@ -724,7 +724,7 @@ export class RegionCommands extends CommandsBase
             const that  = this;
             const getCosts = async function(objIDs: UUID[])
             {
-                const result = await that.currentRegion.caps.capsRequestXML('GetObjectCost', {
+                const result = await that.currentRegion.caps.capsPostXML('GetObjectCost', {
                     'object_ids': objIDs
                 });
                 const uuids = Object.keys(result);
@@ -1229,7 +1229,7 @@ export class RegionCommands extends CommandsBase
             {
                 objRef[obj.FullID.toString()] = obj;
             }
-            const result = await this.currentRegion.caps.capsRequestXML('GetObjectCost', {
+            const result = await this.currentRegion.caps.capsPostXML('GetObjectCost', {
                 'object_ids': uuidList
             });
             for (const u of Object.keys(result))
