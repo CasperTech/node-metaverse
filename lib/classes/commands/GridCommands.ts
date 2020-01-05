@@ -226,6 +226,10 @@ export class GridCommands extends CommandsBase
                         mapBlock.name = Utils.BufferToStringSimple(data.Name);
                         mapBlock.accessFlags = data.Access;
                         mapBlock.mapImage = data.MapImageID;
+                        mapBlock.x = data.X;
+                        mapBlock.y = data.Y
+                        mapBlock.waterHeight = data.WaterHeight;
+                        mapBlock.regionFlags = data.RegionFlags;
                         response.regions.push(mapBlock);
                     }
                 });
