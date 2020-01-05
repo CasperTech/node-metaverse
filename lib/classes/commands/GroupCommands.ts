@@ -18,6 +18,7 @@ import { EjectGroupMemberRequestMessage } from '../messages/EjectGroupMemberRequ
 import { GroupProfileRequestMessage } from '../messages/GroupProfileRequest';
 import { GroupProfileReplyMessage } from '../messages/GroupProfileReply';
 import { GroupBanAction } from '../../enums/GroupBanAction';
+import { GroupBan } from '../GroupBan';
 
 export class GroupCommands extends CommandsBase
 {
@@ -183,7 +184,10 @@ export class GroupCommands extends CommandsBase
     async banMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[], groupAction: GroupBanAction = GroupBanAction.Ban)
     {
         const listOfIDs: string[] = [];
-
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
         if (Array.isArray(avatars))
         {
             for (const av of avatars)
@@ -216,59 +220,70 @@ export class GroupCommands extends CommandsBase
             requestData.ban_ids.push(new LLSD.UUID(id));
         }
 
-        await this.currentRegion.caps.capsRequestXML(['GroupAPIv1', {'group_id': groupID.toString()}], requestData);
+        await this.currentRegion.caps.capsPostXML(['GroupAPIv1', {'group_id': groupID.toString()}], requestData);
     }
 
-    getMemberList(groupID: UUID | string): Promise<GroupMember[]>
+    async getBanList(groupID: UUID | string): Promise<GroupBan[]>
     {
-        return new Promise<GroupMember[]>((resolve, reject) =>
+        if (typeof groupID === 'string')
         {
-            if (typeof groupID === 'string')
+            groupID = new UUID(groupID);
+        }
+        const result = await this.currentRegion.caps.capsGetXML(['GroupAPIv1', {'group_id': groupID.toString()}]);
+        const bans: GroupBan[] = [];
+        if (result.ban_list !== undefined)
+        {
+            for (const k of Object.keys(result.ban_list))
             {
-                groupID = new UUID(groupID);
+                bans.push(new GroupBan(new UUID(k), result.ban_list[k].ban_date));
             }
-            const result: GroupMember[] = [];
-            const requestData = {
-                'group_id': new LLSD.UUID(groupID.toString())
-            };
-            this.currentRegion.caps.capsRequestXML('GroupMemberData', requestData).then((response: any) =>
-            {
-                if (response['members'])
-                {
-                    Object.keys(response['members']).forEach((uuid) =>
-                    {
-                        const member = new GroupMember();
-                        const data = response['members'][uuid];
-                        member.AgentID = new UUID(uuid);
-                        member.OnlineStatus = data['last_login'];
-                        let powers = response['defaults']['default_powers'];
-                        if (data['powers'])
-                        {
-                            powers = data['powers'];
-                        }
-                        member.IsOwner = data['owner'] === 'Y';
+        }
+        return bans;
+    }
 
-                        let titleIndex = 0;
-                        if (data['title'])
-                        {
-                            titleIndex = data['title'];
-                        }
-                        member.Title = response['titles'][titleIndex];
-                        member.AgentPowers = Utils.HexToLong(powers);
+    async getMemberList(groupID: UUID | string): Promise<GroupMember[]>
+    {
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
+        const result: GroupMember[] = [];
+        const requestData = {
+            'group_id': new LLSD.UUID(groupID.toString())
+        };
 
-                        result.push(member);
-                    });
-                    resolve(result);
-                }
-                else
-                {
-                    reject(new Error('Bad response'));
-                }
-            }).catch((err) =>
+        const response: any = await this.currentRegion.caps.capsPostXML('GroupMemberData', requestData);
+        if (response['members'])
+        {
+            for (const uuid of Object.keys(response['members']))
             {
-                reject(err);
-            });
-        });
+                const member = new GroupMember();
+                const data = response['members'][uuid];
+                member.AgentID = new UUID(uuid);
+                member.OnlineStatus = data['last_login'];
+                let powers = response['defaults']['default_powers'];
+                if (data['powers'])
+                {
+                    powers = data['powers'];
+                }
+                member.IsOwner = data['owner'] === 'Y';
+
+                let titleIndex = 0;
+                if (data['title'])
+                {
+                    titleIndex = data['title'];
+                }
+                member.Title = response['titles'][titleIndex];
+                member.AgentPowers = Utils.HexToLong(powers);
+
+                result.push(member);
+            }
+            return result;
+        }
+        else
+        {
+            throw new Error('Bad response');
+        }
     }
 
     getGroupRoles(groupID: UUID | string): Promise<GroupRole[]>

@@ -187,7 +187,7 @@ export class InventoryFolder
                         requestFolder
                     ]
                 };
-                this.agent.currentRegion.caps.capsRequestXML('FetchInventoryDescendents2', requestedFolders).then((folderContents: any) =>
+                this.agent.currentRegion.caps.capsPostXML('FetchInventoryDescendents2', requestedFolders).then((folderContents: any) =>
                 {
                     if (folderContents['folders'] && folderContents['folders'][0] && folderContents['folders'][0]['items'])
                     {

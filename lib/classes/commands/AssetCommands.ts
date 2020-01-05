@@ -190,9 +190,9 @@ export class AssetCommands extends CommandsBase
                     reject(error);
                     return;
                 }
-                const result = await this.currentRegion.caps.capsRequestXML('RenderMaterials', {
+                const result = await this.currentRegion.caps.capsPostXML('RenderMaterials', {
                     'Zipped': new LLSD.LLSD.asBinary(res.toString('base64'))
-                }, false);
+                });
 
                 const resultZipped = Buffer.from(result['Zipped'].octets);
                 zlib.inflate(resultZipped, async (err: Error | null, reslt: Buffer) =>
@@ -359,14 +359,14 @@ export class AssetCommands extends CommandsBase
             'group_mask': PermissionMask.All,
             'next_owner_mask': PermissionMask.All
         };
-        const result = await this.currentRegion.caps.capsRequestXML('NewFileAgentInventory', uploadMap);
+        const result = await this.currentRegion.caps.capsPostXML('NewFileAgentInventory', uploadMap);
         if (result['state'] === 'upload' && result['upload_price'])
         {
             const cost = result['upload_price'];
             if (await confirmCostCallback(cost))
             {
                 const uploader = result['uploader'];
-                const uploadResult = await this.currentRegion.caps.capsPerformXMLRequest(uploader, assetResources);
+                const uploadResult = await this.currentRegion.caps.capsPerformXMLPost(uploader, assetResources);
                 if (uploadResult['new_inventory_item'] && uploadResult['new_asset'])
                 {
                     const inventoryItem = new UUID(uploadResult['new_inventory_item'].toString());
@@ -399,7 +399,7 @@ export class AssetCommands extends CommandsBase
         {
             if (this.agent && this.agent.inventory && this.agent.inventory.main && this.agent.inventory.main.root)
             {
-                this.currentRegion.caps.capsRequestXML('NewFileAgentInventory', {
+                this.currentRegion.caps.capsPostXML('NewFileAgentInventory', {
                     'folder_id': new LLSD.UUID(this.agent.inventory.main.root.toString()),
                     'asset_type': type,
                     'inventory_type': Utils.HTTPAssetTypeToInventoryType(type),

@@ -9,6 +9,7 @@ import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
 import Timer = NodeJS.Timer;
 import {GroupChatSessionJoinEvent, PacketFlags, ScriptDialogEvent} from '../..';
 import {ScriptDialogReplyMessage} from '../messages/ScriptDialogReply';
+import * as LLSD from "@caspertech/llsd";
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -358,50 +359,67 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    sendGroupMessage(groupID: UUID | string, message: string): Promise<number>
+    async moderateGroupChat(groupID: UUID | string, memberID: UUID | string, muteText: boolean, muteVoice: boolean)
     {
-        return new Promise<number>((resolve, reject) =>
+        if (typeof groupID === 'object')
         {
-            this.startGroupChatSession(groupID, message).then(() =>
-            {
-                if (typeof groupID === 'string')
-                {
-                    groupID = new UUID(groupID);
+            groupID = groupID.toString();
+        }
+        if (typeof memberID === 'object')
+        {
+            memberID = memberID.toString();
+        }
+        await this.startGroupChatSession(groupID, '');
+        const requested = {
+            'method': 'mute update',
+            'params': {
+                'agent_id': new LLSD.UUID(memberID),
+                'mute_info': {
+                    'voice': muteVoice,
+                    'text': muteText
                 }
-                const circuit = this.circuit;
-                const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-                const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-                im.AgentData = {
-                    AgentID: this.agent.agentID,
-                    SessionID: circuit.sessionID
-                };
-                im.MessageBlock = {
-                    FromGroup: false,
-                    ToAgentID: groupID,
-                    ParentEstateID: 0,
-                    RegionID: UUID.zero(),
-                    Position: Vector3.getZero(),
-                    Offline: 0,
-                    Dialog: InstantMessageDialog.SessionSend,
-                    ID: groupID,
-                    Timestamp: Math.floor(new Date().getTime() / 1000),
-                    FromAgentName: Utils.StringToBuffer(agentName),
-                    Message: Utils.StringToBuffer(message),
-                    BinaryBucket: Utils.StringToBuffer('')
-                };
-                im.EstateBlock = {
-                    EstateID: 0
-                };
-                const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-                return this.circuit.waitForAck(sequenceNo, 10000);
-            }).then(() =>
-            {
-                resolve(this.bot.clientCommands.group.getSessionAgentCount(groupID))
-            }).catch((err) =>
-            {
-                reject(err);
-            });
-        });
+            },
+            'session-id': new LLSD.UUID(groupID),
+        };
+        return this.currentRegion.caps.capsPostXML('ChatSessionRequest', requested);
+    }
+
+    async sendGroupMessage(groupID: UUID | string, message: string): Promise<number>
+    {
+        await this.startGroupChatSession(groupID, message);
+
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
+        const circuit = this.circuit;
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: groupID,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: 0,
+            Dialog: InstantMessageDialog.SessionSend,
+            ID: groupID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils.StringToBuffer(agentName),
+            Message: Utils.StringToBuffer(message),
+            BinaryBucket: Utils.StringToBuffer('')
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
+        await this.circuit.waitForAck(sequenceNo, 10000);
+
+        return this.bot.clientCommands.group.getSessionAgentCount(groupID);
     }
 
     respondToScriptDialog(event: ScriptDialogEvent, buttonIndex: number): Promise<void>

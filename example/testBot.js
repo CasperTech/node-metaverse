@@ -309,7 +309,62 @@ async function connect()
             new nmv.Vector3([-1.0, 0, 0]),
             new nmv.Vector3([0.0, 1.0, 0]));
 
-        
+
+        // Get group member list
+        try
+        {
+            const memberList = await bot.clientCommands.group.getMemberList('f0466f71-abf4-1559-db93-50352d13ae74');
+        }
+        catch (error)
+        {
+            // Probably access denied
+            console.error(error);
+        }
+
+        // Get group ban list
+        try
+        {
+            const banList = await bot.clientCommands.group.getBanList('f0466f71-abf4-1559-db93-50352d13ae74');
+        }
+        catch (error)
+        {
+            // Probably access denied
+            console.error(error);
+        }
+
+
+        // Moderate group member
+        try
+        {
+            const groupKey = '4b35083d-b51a-a148-c400-6f1038a5589e';
+            const avatarKey = '4300b952-d20e-4aa5-b3d6-d2e4d675880d';
+
+            // Note this will start a new group chat session if one does not already exist
+            await bot.clientCommands.comms.moderateGroupChat(groupKey, avatarKey, true, true);
+
+            // Now, the group mute stuff is often pretty useless because an avatar can just leave the session and re-join.
+            // Let's enforce it a little better.
+            const groupChatSubscriber = bot.clientEvents.onGroupChatAgentListUpdate.subscribe((event) =>
+            {
+                if (event.groupID.toString() === groupKey && event.agentID.toString() === avatarKey && event.entered)
+                {
+                    bot.clientCommands.comms.moderateGroupChat(groupKey, avatarKey, true, true).then(() =>
+                    {
+                        console.log('Re-enforced mute on ' + avatarKey);
+                    }).catch((err) =>
+                    {
+                       console.error(err);
+                    });
+                }
+            });
+
+            // Send a group message
+            await bot.clientCommands.comms.sendGroupMessage(groupKey, 'Test');
+        }
+        catch (error)
+        {
+            console.error(error);
+        }
 
         //await bot.clientCommands.friends.grantFriendRights('d1cd5b71-6209-4595-9bf0-771bf689ce00', nmv.RightsFlags.CanModifyObjects | nmv.RightsFlags.CanSeeOnline | nmv.RightsFlags.CanSeeOnMap );
 

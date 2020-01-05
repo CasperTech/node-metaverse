@@ -88,7 +88,7 @@ export class Inventory
                 }
             ]
         };
-        const response = await this.agent.currentRegion.caps.capsRequestXML('FetchInventory2', params);
+        const response = await this.agent.currentRegion.caps.capsPostXML('FetchInventory2', params);
         for (const receivedItem of response['items'])
         {
             const invItem = new InventoryItem();

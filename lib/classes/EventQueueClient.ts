@@ -46,7 +46,7 @@ export class EventQueueClient
             'ack': this.ack,
             'done': true
         };
-        this.capsRequestXML('EventQueueGet', req).then((data) =>
+        this.capsPostXML('EventQueueGet', req).then((data) =>
         {
             const state = new EventQueueStateChangeEvent();
             state.active = false;
@@ -60,7 +60,7 @@ export class EventQueueClient
             'done': this.done
         };
         const startTime = new Date().getTime();
-        this.capsRequestXML('EventQueueGet', req).then((data) =>
+        this.capsPostXML('EventQueueGet', req).then((data) =>
         {
             if (data['id'])
             {
@@ -278,11 +278,11 @@ export class EventQueueClient
                                             groupChatEvent.groupID = new UUID(messageParams['id'].toString());
                                             groupChatEvent.message = messageParams['message'];
 
-                                            const requestedFolders = {
+                                            const requested = {
                                                 'method': 'accept invitation',
                                                 'session-id': imSessionID
                                             };
-                                            this.caps.capsRequestXML('ChatSessionRequest', requestedFolders).then((ignore: any) =>
+                                            this.caps.capsPostXML('ChatSessionRequest', requested).then((ignore: any) =>
                                             {
                                                 this.agent.addChatSession(groupChatEvent.groupID);
 
@@ -456,7 +456,7 @@ export class EventQueueClient
         });
     }
 
-    capsRequestXML(capability: string, data: any, attempt: number = 0): Promise<any>
+    capsPostXML(capability: string, data: any, attempt: number = 0): Promise<any>
     {
         return new Promise<any>((resolve, reject) =>
         {
@@ -477,7 +477,7 @@ export class EventQueueClient
                             // Retry caps request three times before giving up
                             if (attempt < 3 && capability !== 'EventQueueGet')
                             {
-                                return this.capsRequestXML(capability, data, ++attempt);
+                                return this.capsPostXML(capability, data, ++attempt);
                             }
                             else
                             {
