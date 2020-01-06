@@ -1,4 +1,5 @@
-import {UUID} from '..';
+import { UUID } from '../classes/UUID';
+import * as Long from 'long';
 
 export class GroupProfileReplyEvent
 {

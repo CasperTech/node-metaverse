@@ -1,6 +1,6 @@
-import {Vector4} from '../../Vector4';
-import {Color4} from '../../Color4';
-import {Vector2} from '../../Vector2';
+import { Vector4 } from '../../Vector4';
+import { Color4 } from '../../Color4';
+import { Vector2 } from '../../Vector2';
 
 export interface SkyPreset
 {

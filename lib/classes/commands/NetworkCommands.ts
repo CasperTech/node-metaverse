@@ -1,6 +1,6 @@
-import {CommandsBase} from './CommandsBase';
-import {PacketFlags} from '../../enums/PacketFlags';
-import {AgentThrottleMessage} from '../messages/AgentThrottle';
+import { CommandsBase } from './CommandsBase';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { AgentThrottleMessage } from '../messages/AgentThrottle';
 
 export class NetworkCommands extends CommandsBase
 {

@@ -1,5 +1,6 @@
-import {UUID, Vector3} from '..';
-import {ParcelFlags} from '../enums/ParcelFlags';
+import { ParcelFlags } from '../enums/ParcelFlags';
+import { Vector3 } from '../classes/Vector3';
+import { UUID } from '../classes/UUID';
 
 export class ParcelPropertiesEvent
 {

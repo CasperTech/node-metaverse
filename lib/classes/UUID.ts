@@ -1,7 +1,7 @@
 import * as validator from 'validator';
 import * as Long from 'long';
-import {XMLNode} from 'xmlbuilder';
-const uuid = require('uuid');
+import { XMLNode } from 'xmlbuilder';
+import * as uuid from 'uuid';
 
 export class UUID
 {

@@ -1,9 +1,9 @@
-import {UUID} from './UUID';
-import {Color4} from './Color4';
-import {TextureFlags} from '../enums/TextureFlags';
-import {Bumpiness} from '../enums/Bumpiness';
-import {Shininess} from '../enums/Shininess';
-import {MappingType} from '../enums/MappingType';
+import { UUID } from './UUID';
+import { Color4 } from './Color4';
+import { TextureFlags } from '../enums/TextureFlags';
+import { Bumpiness } from '../enums/Bumpiness';
+import { Shininess } from '../enums/Shininess';
+import { MappingType } from '../enums/MappingType';
 
 export class TextureEntryFace
 {

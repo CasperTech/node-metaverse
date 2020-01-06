@@ -1,4 +1,6 @@
-import {AssetType, ChatSourceType, UUID} from '..';
+import { UUID } from '../classes/UUID';
+import { ChatSourceType } from '../enums/ChatSourceType';
+import { AssetType } from '../enums/AssetType';
 
 export class InventoryOfferedEvent
 {

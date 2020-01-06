@@ -1,5 +1,5 @@
-import {Message} from '../enums/Message';
-import {MessageFlags} from '..';
+import { Message } from '../enums/Message';
+import { MessageFlags } from '../enums/MessageFlags';
 
 export interface MessageBase
 {

@@ -1,20 +1,26 @@
-import {CommandsBase} from './CommandsBase';
-import {UUID} from '../UUID';
+import { CommandsBase } from './CommandsBase';
+import { UUID } from '../UUID';
 import * as LLSD from '@caspertech/llsd';
-import {Utils} from '../Utils';
-import {AssetType, FolderType, HTTPAssets, LLMesh, Material, PacketFlags, TransferStatus} from '../..';
-import {PermissionMask} from '../../enums/PermissionMask';
+import { Utils } from '../Utils';
+import { PermissionMask } from '../../enums/PermissionMask';
 import * as zlib from 'zlib';
-import {ZlibOptions} from 'zlib';
-import {Color4} from '../Color4';
-import {TransferRequestMessage} from '../messages/TransferRequest';
-import {TransferChannelType} from '../../enums/TransferChannelType';
-import {TransferSourceType} from '../../enums/TransferSourceTypes';
-import {TransferInfoMessage} from '../messages/TransferInfo';
-import {Message} from '../../enums/Message';
-import {Packet} from '../Packet';
-import {TransferPacketMessage} from '../messages/TransferPacket';
-import {TransferAbortMessage} from '../messages/TransferAbort';
+import { ZlibOptions } from 'zlib';
+import { Color4 } from '../Color4';
+import { TransferRequestMessage } from '../messages/TransferRequest';
+import { TransferChannelType } from '../../enums/TransferChannelType';
+import { TransferSourceType } from '../../enums/TransferSourceTypes';
+import { TransferInfoMessage } from '../messages/TransferInfo';
+import { Message } from '../../enums/Message';
+import { Packet } from '../Packet';
+import { TransferPacketMessage } from '../messages/TransferPacket';
+import { TransferAbortMessage } from '../messages/TransferAbort';
+import { AssetType } from '../../enums/AssetType';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { TransferStatus } from '../../enums/TransferStatus';
+import { Material } from '../public/Material';
+import { LLMesh } from '../public/LLMesh';
+import { FolderType } from '../../enums/FolderType';
+import { HTTPAssets } from '../../enums/HTTPAssets';
 
 export class AssetCommands extends CommandsBase
 {

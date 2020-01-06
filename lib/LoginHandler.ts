@@ -1,10 +1,10 @@
 import * as xmlrpc from 'xmlrpc';
 import * as crypto from 'crypto';
-import {LoginParameters} from './classes/LoginParameters';
-import {LoginResponse} from './classes/LoginResponse';
-import {ClientEvents} from './classes/ClientEvents';
-import {BotOptionFlags} from './enums/BotOptionFlags';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
+import { LoginParameters } from './classes/LoginParameters';
+import { LoginResponse } from './classes/LoginResponse';
+import { ClientEvents } from './classes/ClientEvents';
+import { BotOptionFlags } from './enums/BotOptionFlags';
 
 export class LoginHandler
 {

@@ -1,13 +1,12 @@
-import {GameObject} from './GameObject';
-import {ExtraParamType} from '../../enums/ExtraParamType';
-import {FlexibleData} from './FlexibleData';
-import {LightData} from './LightData';
-import {LightImageData} from './LightImageData';
-import {MeshData} from './MeshData';
-import {SculptData} from './SculptData';
-import {UUID} from '../UUID';
-import {Vector3} from '../Vector3';
-import {Color4} from '../Color4';
+import { ExtraParamType } from '../../enums/ExtraParamType';
+import { FlexibleData } from './FlexibleData';
+import { LightData } from './LightData';
+import { LightImageData } from './LightImageData';
+import { MeshData } from './MeshData';
+import { SculptData } from './SculptData';
+import { UUID } from '../UUID';
+import { Vector3 } from '../Vector3';
+import { Color4 } from '../Color4';
 
 export class ExtraParams
 {

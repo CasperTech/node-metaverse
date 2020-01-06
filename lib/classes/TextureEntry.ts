@@ -1,7 +1,7 @@
-import {TextureEntryFace} from './TextureEntryFace';
-import {UUID} from './UUID';
-import {Color4} from './Color4';
-import {Utils} from './Utils';
+import { TextureEntryFace } from './TextureEntryFace';
+import { UUID } from './UUID';
+import { Color4 } from './Color4';
+import { Utils } from './Utils';
 
 export class TextureEntry
 {

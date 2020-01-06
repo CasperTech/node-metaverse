@@ -1,24 +1,26 @@
-import {UUID} from './UUID';
+import { UUID } from './UUID';
 import * as dgram from 'dgram';
-import {Socket} from 'dgram';
-import {Packet} from './Packet';
-import {MessageBase} from './MessageBase';
-import {PacketAckMessage} from './messages/PacketAck';
-import {Message} from '../enums/Message';
-import {StartPingCheckMessage} from './messages/StartPingCheck';
-import {CompletePingCheckMessage} from './messages/CompletePingCheck';
-import {Subscription} from 'rxjs/internal/Subscription';
-import {filter} from 'rxjs/operators';
-import {ClientEvents} from './ClientEvents';
-import {FilterResponse} from '../enums/FilterResponse';
-import {Subject} from 'rxjs/internal/Subject';
-import {AssetType, PacketFlags, Utils} from '..';
-import {TimeoutError} from './TimeoutError';
-import {RequestXferMessage} from './messages/RequestXfer';
-import {SendXferPacketMessage} from './messages/SendXferPacket';
-import {ConfirmXferPacketMessage} from './messages/ConfirmXferPacket';
+import { Socket } from 'dgram';
+import { Packet } from './Packet';
+import { MessageBase } from './MessageBase';
+import { PacketAckMessage } from './messages/PacketAck';
+import { Message } from '../enums/Message';
+import { StartPingCheckMessage } from './messages/StartPingCheck';
+import { CompletePingCheckMessage } from './messages/CompletePingCheck';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { filter } from 'rxjs/operators';
+import { ClientEvents } from './ClientEvents';
+import { FilterResponse } from '../enums/FilterResponse';
+import { Subject } from 'rxjs/internal/Subject';
+import { TimeoutError } from './TimeoutError';
+import { RequestXferMessage } from './messages/RequestXfer';
+import { SendXferPacketMessage } from './messages/SendXferPacket';
+import { ConfirmXferPacketMessage } from './messages/ConfirmXferPacket';
+import { AbortXferMessage } from './messages/AbortXfer';
 import Timer = NodeJS.Timer;
-import {AbortXferMessage} from './messages/AbortXfer';
+import { PacketFlags } from '../enums/PacketFlags';
+import { AssetType } from '../enums/AssetType';
+import { Utils } from './Utils';
 
 export class Circuit
 {

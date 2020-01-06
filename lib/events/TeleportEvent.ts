@@ -1,4 +1,4 @@
-import {TeleportEventType} from '../enums/TeleportEventType';
+import { TeleportEventType } from '../enums/TeleportEventType';
 
 export class TeleportEvent
 {

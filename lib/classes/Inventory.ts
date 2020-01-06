@@ -1,10 +1,10 @@
-import {UUID} from './UUID';
-import {ClientEvents} from './ClientEvents';
-import {InventoryFolder} from './InventoryFolder';
-import {Agent} from './Agent';
-import {AssetType, FolderType} from '..';
+import { UUID } from './UUID';
+import { ClientEvents } from './ClientEvents';
+import { InventoryFolder } from './InventoryFolder';
+import { Agent } from './Agent';
 import * as LLSD from '@caspertech/llsd';
-import {InventoryItem} from './InventoryItem';
+import { InventoryItem } from './InventoryItem';
+import { FolderType } from '../enums/FolderType';
 
 export class Inventory
 {
@@ -89,8 +89,9 @@ export class Inventory
             ]
         };
         const response = await this.agent.currentRegion.caps.capsPostXML('FetchInventory2', params);
-        for (const receivedItem of response['items'])
+        if (response['items'].length > 0)
         {
+            const receivedItem = response['items'][0];
             const invItem = new InventoryItem();
             invItem.assetID = new UUID(receivedItem['asset_id'].toString());
             invItem.inventoryType = parseInt(receivedItem['inv_type'], 10);
@@ -124,6 +125,9 @@ export class Inventory
             }
             return invItem;
         }
-        return null;
+        else
+        {
+            return null;
+        }
     }
 }

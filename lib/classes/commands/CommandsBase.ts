@@ -1,7 +1,7 @@
-import {Region} from '../Region';
-import {Bot} from '../../Bot';
-import {Agent} from '../Agent';
-import {Circuit} from '../Circuit';
+import { Region } from '../Region';
+import { Bot } from '../../Bot';
+import { Agent } from '../Agent';
+import { Circuit } from '../Circuit';
 
 export class CommandsBase
 {

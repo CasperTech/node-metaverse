@@ -1,10 +1,10 @@
-import {UUID} from '../UUID';
-import {Vector4} from '../Vector4';
-import {Color4} from '../Color4';
-import {Vector2} from '../Vector2';
-import {SkyPreset} from './interfaces/SkyPreset';
-import {WaterPreset} from './interfaces/WaterPreset';
-import {XMLNode} from 'xmlbuilder';
+import { UUID } from '../UUID';
+import { Vector4 } from '../Vector4';
+import { Color4 } from '../Color4';
+import { Vector2 } from '../Vector2';
+import { SkyPreset } from './interfaces/SkyPreset';
+import { WaterPreset } from './interfaces/WaterPreset';
+import { XMLNode } from 'xmlbuilder';
 
 export class RegionEnvironment
 {

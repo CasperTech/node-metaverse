@@ -6,7 +6,6 @@ import { ClientEvents } from './ClientEvents';
 import { IObjectStore } from './interfaces/IObjectStore';
 import { ObjectStoreFull } from './ObjectStoreFull';
 import { ObjectStoreLite } from './ObjectStoreLite';
-import { BotOptionFlags, PacketFlags, ParcelPropertiesEvent, RegionFlags, UUID, Vector2, Vector3 } from '..';
 import { RequestRegionInfoMessage } from './messages/RequestRegionInfo';
 import { RegionInfoMessage } from './messages/RegionInfo';
 import { Message } from '../enums/Message';
@@ -39,8 +38,14 @@ import { ParcelOverlayMessage } from './messages/ParcelOverlay';
 import { ILandBlock } from './interfaces/ILandBlock';
 import { LandFlags } from '../enums/LandFlags';
 import { ParcelPropertiesRequestMessage } from './messages/ParcelPropertiesRequest';
-import { ParcelPropertiesMessage } from './messages/ParcelProperties';
 import Timer = NodeJS.Timer;
+import { UUID } from './UUID';
+import { RegionFlags } from '../enums/RegionFlags';
+import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
+import { PacketFlags } from '../enums/PacketFlags';
+import { Vector3 } from './Vector3';
+import { Vector2 } from './Vector2';
 
 export class Region
 {

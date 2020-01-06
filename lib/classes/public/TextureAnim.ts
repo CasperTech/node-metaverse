@@ -1,4 +1,5 @@
-import {TextureAnimFlags, Vector2} from '../..';
+import { TextureAnimFlags } from '../../enums/TextureAnimFlags';
+import { Vector2 } from '../Vector2';
 
 export class TextureAnim
 {

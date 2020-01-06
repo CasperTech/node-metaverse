@@ -1,11 +1,14 @@
-import {CommandsBase} from './CommandsBase';
-import {InventoryFolder} from '../InventoryFolder';
-import {AssetType, ChatSourceType, InventoryOfferedEvent, PacketFlags, UUID, Vector3} from '../..';
-import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
-import {ImprovedInstantMessageMessage} from '../messages/ImprovedInstantMessage';
-import {Utils} from '../Utils';
-import {InventoryType} from '../../enums/InventoryType';
-import {FolderType} from '../../enums/FolderType';
+import { CommandsBase } from './CommandsBase';
+import { InventoryFolder } from '../InventoryFolder';
+import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
+import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
+import { Utils } from '../Utils';
+import { FolderType } from '../../enums/FolderType';
+import { InventoryOfferedEvent } from '../../events/InventoryOfferedEvent';
+import { UUID } from '../UUID';
+import { Vector3 } from '../Vector3';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { ChatSourceType } from '../../enums/ChatSourceType';
 
 export class InventoryCommands extends CommandsBase
 {

@@ -1,5 +1,5 @@
 import * as Long from 'long';
-import {UUID} from '..';
+import { UUID } from '../classes/UUID';
 
 export class RegionInfoReplyEvent
 {

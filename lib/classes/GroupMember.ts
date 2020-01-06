@@ -1,4 +1,4 @@
-import {UUID} from './UUID';
+import { UUID } from './UUID';
 import * as Long from 'long';
 
 export class GroupMember

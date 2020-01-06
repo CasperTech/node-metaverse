@@ -13,12 +13,13 @@ import { GroupRoleDataReplyMessage } from '../messages/GroupRoleDataReply';
 import { GroupMember } from '../GroupMember';
 import { FilterResponse } from '../../enums/FilterResponse';
 import * as LLSD from '@caspertech/llsd';
-import { GroupInviteEvent, GroupProfileReplyEvent } from '../..';
 import { EjectGroupMemberRequestMessage } from '../messages/EjectGroupMemberRequest';
 import { GroupProfileRequestMessage } from '../messages/GroupProfileRequest';
 import { GroupProfileReplyMessage } from '../messages/GroupProfileReply';
 import { GroupBanAction } from '../../enums/GroupBanAction';
 import { GroupBan } from '../GroupBan';
+import { GroupInviteEvent } from '../../events/GroupInviteEvent';
+import { GroupProfileReplyEvent } from '../../events/GroupProfileReplyEvent';
 
 export class GroupCommands extends CommandsBase
 {

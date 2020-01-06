@@ -1,5 +1,5 @@
-import {UUID} from '..';
-import {GameObject} from '../classes/public/GameObject';
+import { GameObject } from '../classes/public/GameObject';
+import { UUID } from '../classes/UUID';
 
 export class NewObjectEvent
 {

@@ -1,40 +1,38 @@
-import {Circuit} from './Circuit';
-import {Packet} from './Packet';
-import {Message} from '../enums/Message';
-import {ObjectUpdateMessage} from './messages/ObjectUpdate';
-import {ObjectUpdateCachedMessage} from './messages/ObjectUpdateCached';
-import {ObjectUpdateCompressedMessage} from './messages/ObjectUpdateCompressed';
-import {ImprovedTerseObjectUpdateMessage} from './messages/ImprovedTerseObjectUpdate';
-import {RequestMultipleObjectsMessage} from './messages/RequestMultipleObjects';
-import {Agent} from './Agent';
-import {UUID} from './UUID';
-import {Utils} from './Utils';
-import {ClientEvents} from './ClientEvents';
-import {KillObjectMessage} from './messages/KillObject';
-import {IObjectStore} from './interfaces/IObjectStore';
-import {NameValue} from './NameValue';
-import {
-    BotOptionFlags,
-    CompressedFlags,
-    NewObjectEvent,
-    ObjectPhysicsDataEvent,
-    ObjectUpdatedEvent,
-    PacketFlags,
-    PCode,
-    PrimFlags,
-    Vector3
-} from '..';
-import {GameObject} from './public/GameObject';
-import {RBush3D} from 'rbush-3d/dist';
-import {ITreeBoundingBox} from './interfaces/ITreeBoundingBox';
-import {FilterResponse} from '../enums/FilterResponse';
-import {ObjectSelectMessage} from './messages/ObjectSelect';
-import {ObjectDeselectMessage} from './messages/ObjectDeselect';
-import {Quaternion} from './Quaternion';
-import {Subscription} from 'rxjs/internal/Subscription';
-import {ExtraParams} from './public/ExtraParams';
-import {ObjectPropertiesMessage} from './messages/ObjectProperties';
-import {SelectedObjectEvent} from '../events/SelectedObjectEvent';
+import { Circuit } from './Circuit';
+import { Packet } from './Packet';
+import { Message } from '../enums/Message';
+import { ObjectUpdateMessage } from './messages/ObjectUpdate';
+import { ObjectUpdateCachedMessage } from './messages/ObjectUpdateCached';
+import { ObjectUpdateCompressedMessage } from './messages/ObjectUpdateCompressed';
+import { ImprovedTerseObjectUpdateMessage } from './messages/ImprovedTerseObjectUpdate';
+import { RequestMultipleObjectsMessage } from './messages/RequestMultipleObjects';
+import { Agent } from './Agent';
+import { UUID } from './UUID';
+import { Utils } from './Utils';
+import { ClientEvents } from './ClientEvents';
+import { KillObjectMessage } from './messages/KillObject';
+import { IObjectStore } from './interfaces/IObjectStore';
+import { NameValue } from './NameValue';
+import { GameObject } from './public/GameObject';
+import { RBush3D } from 'rbush-3d/dist';
+import { ITreeBoundingBox } from './interfaces/ITreeBoundingBox';
+import { FilterResponse } from '../enums/FilterResponse';
+import { ObjectSelectMessage } from './messages/ObjectSelect';
+import { ObjectDeselectMessage } from './messages/ObjectDeselect';
+import { Quaternion } from './Quaternion';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { ExtraParams } from './public/ExtraParams';
+import { ObjectPropertiesMessage } from './messages/ObjectProperties';
+import { SelectedObjectEvent } from '../events/SelectedObjectEvent';
+import { PrimFlags } from '../enums/PrimFlags';
+import { PacketFlags } from '../enums/PacketFlags';
+import { PCode } from '../enums/PCode';
+import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { NewObjectEvent } from '../events/NewObjectEvent';
+import { ObjectUpdatedEvent } from '../events/ObjectUpdatedEvent';
+import { CompressedFlags } from '../enums/CompressedFlags';
+import { Vector3 } from './Vector3';
+import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 
 export class ObjectStoreLite implements IObjectStore
 {

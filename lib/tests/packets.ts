@@ -1,8 +1,9 @@
 import 'mocha';
 import * as fs from 'fs';
 import * as path from 'path';
-import {Packet} from '../classes/Packet';
-import {DecodeFlags, PacketFlags} from '..';
+import { Packet } from '../classes/Packet';
+import { DecodeFlags } from '../enums/DecodeFlags';
+import { PacketFlags } from '../enums/PacketFlags';
 
 function compareArrays(arr1: any[], arr2: any[])
 {
@@ -14,7 +15,8 @@ function compareArrays(arr1: any[], arr2: any[])
     )
     {
         return true;
-    } else
+    }
+    else
     {
         return false;
     }

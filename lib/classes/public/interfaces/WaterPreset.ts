@@ -1,7 +1,7 @@
-import {Vector3} from '../../Vector3';
-import {UUID} from '../../UUID';
-import {Color4} from '../../Color4';
-import {Vector2} from '../../Vector2';
+import { Vector3 } from '../../Vector3';
+import { UUID } from '../../UUID';
+import { Color4 } from '../../Color4';
+import { Vector2 } from '../../Vector2';
 
 export interface WaterPreset
 {

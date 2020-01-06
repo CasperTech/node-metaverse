@@ -1,5 +1,4 @@
-import {Color4} from '../Color4';
-import {Utils} from '../Utils';
+import { Color4 } from '../Color4';
 
 export class LightData
 {

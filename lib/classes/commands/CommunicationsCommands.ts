@@ -1,15 +1,17 @@
-import {CommandsBase} from './CommandsBase';
-import {UUID} from '../UUID';
-import {Utils} from '../Utils';
-import {ImprovedInstantMessageMessage} from '../messages/ImprovedInstantMessage';
-import {Vector3} from '../Vector3';
-import {ChatFromViewerMessage} from '../messages/ChatFromViewer';
-import {ChatType} from '../../enums/ChatType';
-import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
+import { CommandsBase } from './CommandsBase';
+import { UUID } from '../UUID';
+import { Utils } from '../Utils';
+import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
+import { Vector3 } from '../Vector3';
+import { ChatFromViewerMessage } from '../messages/ChatFromViewer';
+import { ChatType } from '../../enums/ChatType';
+import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
+import { ScriptDialogReplyMessage } from '../messages/ScriptDialogReply';
+import * as LLSD from '@caspertech/llsd';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { GroupChatSessionJoinEvent } from '../../events/GroupChatSessionJoinEvent';
+import { ScriptDialogEvent } from '../../events/ScriptDialogEvent';
 import Timer = NodeJS.Timer;
-import {GroupChatSessionJoinEvent, PacketFlags, ScriptDialogEvent} from '../..';
-import {ScriptDialogReplyMessage} from '../messages/ScriptDialogReply';
-import * as LLSD from "@caspertech/llsd";
 
 export class CommunicationsCommands extends CommandsBase
 {

@@ -1,4 +1,5 @@
-import {UUID, Vector3} from '..';
+import { UUID } from '../classes/UUID';
+import { Vector3 } from '../classes/Vector3';
 
 export class LureEvent
 {

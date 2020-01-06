@@ -1,5 +1,5 @@
-import {vec3} from '../tsm/vec3';
-import {XMLNode} from 'xmlbuilder';
+import { vec3 } from '../tsm/vec3';
+import { XMLNode } from 'xmlbuilder';
 
 export class Vector3 extends vec3
 {

@@ -1,44 +1,43 @@
-import {Vector3} from '../Vector3';
-import {UUID} from '../UUID';
-import {Quaternion} from '../Quaternion';
-import {Tree} from '../../enums/Tree';
-import {Vector4} from '../Vector4';
-import {TextureEntry} from '../TextureEntry';
-import {Color4} from '../Color4';
-import {ParticleSystem} from '../ParticleSystem';
-import {ITreeBoundingBox} from '../interfaces/ITreeBoundingBox';
-import {NameValue} from '../NameValue';
+import { Vector3 } from '../Vector3';
+import { UUID } from '../UUID';
+import { Quaternion } from '../Quaternion';
+import { Tree } from '../../enums/Tree';
+import { Vector4 } from '../Vector4';
+import { TextureEntry } from '../TextureEntry';
+import { Color4 } from '../Color4';
+import { ParticleSystem } from '../ParticleSystem';
+import { ITreeBoundingBox } from '../interfaces/ITreeBoundingBox';
+import { NameValue } from '../NameValue';
 import * as Long from 'long';
-import {IGameObjectData} from '../interfaces/IGameObjectData';
-import {
-    HoleType,
-    HTTPAssets, PacketFlags,
-    PCode,
-    PhysicsShapeType,
-    PrimFlags,
-    ProfileShape,
-    SculptType,
-    SoundFlags,
-    Utils
-} from '../..';
+import { IGameObjectData } from '../interfaces/IGameObjectData';
 import * as builder from 'xmlbuilder';
+import { XMLNode } from 'xmlbuilder';
 import * as xml2js from 'xml2js';
-import {Region} from '../Region';
-import {InventoryItem} from '../InventoryItem';
-import {InventoryType} from '../../enums/InventoryType';
-import {LLWearable} from '../LLWearable';
-import {TextureAnim} from './TextureAnim';
-import {ExtraParams} from './ExtraParams';
-import {ObjectExtraParamsMessage} from '../messages/ObjectExtraParams';
-import {ExtraParamType} from '../../enums/ExtraParamType';
-import {ObjectImageMessage} from '../messages/ObjectImage';
-import {ObjectNameMessage} from '../messages/ObjectName';
-import {ObjectDescriptionMessage} from '../messages/ObjectDescription';
-import {MultipleObjectUpdateMessage} from '../messages/MultipleObjectUpdate';
-import {UpdateType} from '../../enums/UpdateType';
-import {ObjectLinkMessage} from '../messages/ObjectLink';
-import {ObjectShapeMessage} from '../messages/ObjectShape';
-import {XMLNode} from 'xmlbuilder';
+import { Region } from '../Region';
+import { InventoryItem } from '../InventoryItem';
+import { InventoryType } from '../../enums/InventoryType';
+import { LLWearable } from '../LLWearable';
+import { TextureAnim } from './TextureAnim';
+import { ExtraParams } from './ExtraParams';
+import { ObjectExtraParamsMessage } from '../messages/ObjectExtraParams';
+import { ExtraParamType } from '../../enums/ExtraParamType';
+import { ObjectImageMessage } from '../messages/ObjectImage';
+import { ObjectNameMessage } from '../messages/ObjectName';
+import { ObjectDescriptionMessage } from '../messages/ObjectDescription';
+import { MultipleObjectUpdateMessage } from '../messages/MultipleObjectUpdate';
+import { UpdateType } from '../../enums/UpdateType';
+import { ObjectLinkMessage } from '../messages/ObjectLink';
+import { ObjectShapeMessage } from '../messages/ObjectShape';
+import { PrimFlags } from '../../enums/PrimFlags';
+import { Utils } from '../Utils';
+import { ProfileShape } from '../../enums/ProfileShape';
+import { HoleType } from '../../enums/HoleType';
+import { SculptType } from '../../enums/SculptType';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { HTTPAssets } from '../../enums/HTTPAssets';
+import { PhysicsShapeType } from '../../enums/PhysicsShapeType';
+import { PCode } from '../../enums/PCode';
+import { SoundFlags } from '../../enums/SoundFlags';
 
 export class GameObject implements IGameObjectData
 {

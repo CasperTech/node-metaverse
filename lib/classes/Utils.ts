@@ -1,6 +1,8 @@
 import * as Long from 'long';
-import {GlobalPosition, HTTPAssets, Vector3} from '..';
-import {Quaternion} from './Quaternion';
+import { Quaternion } from './Quaternion';
+import { GlobalPosition } from './public/interfaces/GlobalPosition';
+import { HTTPAssets } from '../enums/HTTPAssets';
+import { Vector3 } from './Vector3';
 
 export class Utils
 {

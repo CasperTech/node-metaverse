@@ -1,4 +1,4 @@
-import {GameObject} from '..';
+import { GameObject } from '../classes/public/GameObject';
 
 export class SelectedObjectEvent
 {

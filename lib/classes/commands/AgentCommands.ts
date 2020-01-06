@@ -1,15 +1,14 @@
-import {UUID} from '../UUID';
-import {AgentAnimationMessage} from '../messages/AgentAnimation';
-import {PacketFlags} from '../../enums/PacketFlags';
-import {CommandsBase} from './CommandsBase';
-import {Vector3} from '../Vector3';
-import {Message} from '../../enums/Message';
-import {Packet} from '../Packet';
-import {Utils} from '../Utils';
-import {FilterResponse} from '../../enums/FilterResponse';
-import {AvatarPropertiesReplyMessage} from '../messages/AvatarPropertiesReply';
-import {AvatarPropertiesReplyEvent} from '../..';
-import {AvatarPropertiesRequestMessage} from '../messages/AvatarPropertiesRequest';
+import { UUID } from '../UUID';
+import { AgentAnimationMessage } from '../messages/AgentAnimation';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { CommandsBase } from './CommandsBase';
+import { Vector3 } from '../Vector3';
+import { Message } from '../../enums/Message';
+import { Utils } from '../Utils';
+import { FilterResponse } from '../../enums/FilterResponse';
+import { AvatarPropertiesReplyMessage } from '../messages/AvatarPropertiesReply';
+import { AvatarPropertiesRequestMessage } from '../messages/AvatarPropertiesRequest';
+import { AvatarPropertiesReplyEvent } from '../../events/AvatarPropertiesReplyEvent';
 
 export class AgentCommands extends CommandsBase
 {
