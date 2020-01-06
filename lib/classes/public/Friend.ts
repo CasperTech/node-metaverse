@@ -1,5 +1,5 @@
-import {Avatar} from './Avatar';
-import {RightsFlags} from '../..';
+import { Avatar } from './Avatar';
+import { RightsFlags } from '../../enums/RightsFlags';
 
 export class Friend extends Avatar
 {

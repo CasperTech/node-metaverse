@@ -1,23 +1,28 @@
 import * as Long from 'long';
-import {MapItemReplyMessage} from '../messages/MapItemReply';
-import {Message} from '../../enums/Message';
-import {MapBlockReplyMessage} from '../messages/MapBlockReply';
-import {MapBlockRequestMessage} from '../messages/MapBlockRequest';
-import {UUID} from '../UUID';
-import {MapItemRequestMessage} from '../messages/MapItemRequest';
-import {Utils} from '../Utils';
-import {GridItemType} from '../../enums/GridItemType';
-import {CommandsBase} from './CommandsBase';
-import {AvatarPickerRequestMessage} from '../messages/AvatarPickerRequest';
-import {AvatarPickerReplyMessage} from '../messages/AvatarPickerReply';
-import {FilterResponse} from '../../enums/FilterResponse';
-import {MapNameRequestMessage} from '../messages/MapNameRequest';
-import {GridLayerType} from '../../enums/GridLayerType';
-import {MapBlock} from '../MapBlock';
-import {Avatar, MapInfoRangeReplyEvent, MapInfoReplyEvent, PacketFlags, RegionInfoReplyEvent, Vector2} from '../..';
-import {TimeoutError} from '../TimeoutError';
-import {UUIDNameRequestMessage} from '../messages/UUIDNameRequest';
-import {UUIDNameReplyMessage} from '../messages/UUIDNameReply';
+import { MapItemReplyMessage } from '../messages/MapItemReply';
+import { Message } from '../../enums/Message';
+import { MapBlockReplyMessage } from '../messages/MapBlockReply';
+import { MapBlockRequestMessage } from '../messages/MapBlockRequest';
+import { UUID } from '../UUID';
+import { MapItemRequestMessage } from '../messages/MapItemRequest';
+import { Utils } from '../Utils';
+import { GridItemType } from '../../enums/GridItemType';
+import { CommandsBase } from './CommandsBase';
+import { AvatarPickerRequestMessage } from '../messages/AvatarPickerRequest';
+import { AvatarPickerReplyMessage } from '../messages/AvatarPickerReply';
+import { FilterResponse } from '../../enums/FilterResponse';
+import { MapNameRequestMessage } from '../messages/MapNameRequest';
+import { GridLayerType } from '../../enums/GridLayerType';
+import { MapBlock } from '../MapBlock';
+import { TimeoutError } from '../TimeoutError';
+import { UUIDNameRequestMessage } from '../messages/UUIDNameRequest';
+import { UUIDNameReplyMessage } from '../messages/UUIDNameReply';
+import { RegionInfoReplyEvent } from '../../events/RegionInfoReplyEvent';
+import { MapInfoReplyEvent } from '../../events/MapInfoReplyEvent';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { Vector2 } from '../Vector2';
+import { MapInfoRangeReplyEvent } from '../../events/MapInfoRangeReplyEvent';
+import { Avatar } from '../public/Avatar';
 
 export class GridCommands extends CommandsBase
 {

@@ -1,30 +1,28 @@
-import {
-    ChatEvent,
-    DisconnectEvent,
-    FriendRequestEvent,
-    FriendResponseEvent,
-    GroupChatEvent,
-    GroupNoticeEvent,
-    GroupChatSessionAgentListEvent,
-    GroupChatSessionJoinEvent,
-    GroupInviteEvent,
-    InstantMessageEvent,
-    InventoryOfferedEvent,
-    LureEvent,
-    TeleportEvent,
-    ScriptDialogEvent,
-    EventQueueStateChangeEvent,
-    FriendOnlineEvent,
-    FriendRightsEvent,
-    FriendRemovedEvent,
-    ObjectPhysicsDataEvent,
-    ParcelPropertiesEvent
-} from '..';
-import {Subject} from 'rxjs/internal/Subject';
-import {NewObjectEvent} from '../events/NewObjectEvent';
-import {ObjectUpdatedEvent} from '../events/ObjectUpdatedEvent';
-import {ObjectKilledEvent} from '../events/ObjectKilledEvent';
-import {SelectedObjectEvent} from '../events/SelectedObjectEvent';
+import { Subject } from 'rxjs/internal/Subject';
+import { NewObjectEvent } from '../events/NewObjectEvent';
+import { ObjectUpdatedEvent } from '../events/ObjectUpdatedEvent';
+import { ObjectKilledEvent } from '../events/ObjectKilledEvent';
+import { SelectedObjectEvent } from '../events/SelectedObjectEvent';
+import { ChatEvent } from '../events/ChatEvent';
+import { InstantMessageEvent } from '../events/InstantMessageEvent';
+import { GroupInviteEvent } from '../events/GroupInviteEvent';
+import { FriendRequestEvent } from '../events/FriendRequestEvent';
+import { InventoryOfferedEvent } from '../events/InventoryOfferedEvent';
+import { LureEvent } from '../events/LureEvent';
+import { TeleportEvent } from '../events/TeleportEvent';
+import { DisconnectEvent } from '../events/DisconnectEvent';
+import { GroupChatEvent } from '../events/GroupChatEvent';
+import { GroupNoticeEvent } from '../events/GroupNoticeEvent';
+import { GroupChatSessionJoinEvent } from '../events/GroupChatSessionJoinEvent';
+import { GroupChatSessionAgentListEvent } from '../events/GroupChatSessionAgentListEvent';
+import { FriendResponseEvent } from '../events/FriendResponseEvent';
+import { ScriptDialogEvent } from '../events/ScriptDialogEvent';
+import { EventQueueStateChangeEvent } from '../events/EventQueueStateChangeEvent';
+import { FriendOnlineEvent } from '../events/FriendOnlineEvent';
+import { FriendRightsEvent } from '../events/FriendRightsEvent';
+import { FriendRemovedEvent } from '../events/FriendRemovedEvent';
+import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
+import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
 
 
 export class ClientEvents

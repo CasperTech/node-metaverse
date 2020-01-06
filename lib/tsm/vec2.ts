@@ -26,9 +26,9 @@
 
 ///<reference path='./common.ts' />
 
-import {mat3} from './mat3';
-import {mat2} from './mat2';
-import {vec3} from './vec3';
+import { mat3 } from './mat3';
+import { mat2 } from './mat2';
+import { vec3 } from './vec3';
 
 export class vec2
 {

@@ -150,7 +150,7 @@ fs.readFile('./msg_template.msg', (err, data) =>
             msgObjects.push(newMessage);
         });
 
-        fs.writeFile('./msg_template.json', JSON.stringify(msgObjects), (err) =>
+        fs.writeFile('./msg_template.json', JSON.stringify(msgObjects, null, 4), (err) =>
         {
             console.log("JSON written");
         });

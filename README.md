@@ -47,7 +47,7 @@ bot.login().then((response) =>
 Typescript
 
 ```typescript
-import {Bot, BotOptionFlags, LoginParameters} from '@caspertech/node-metaverse';
+import { Bot, BotOptionFlags, LoginParameters } from '@caspertech/node-metaverse';
 
 const loginParameters = new LoginParameters();
 loginParameters.firstName = 'firstName';

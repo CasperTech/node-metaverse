@@ -1,4 +1,4 @@
-import {UUID} from '..';
+import { UUID } from '../classes/UUID';
 
 export class FriendRequestEvent
 {

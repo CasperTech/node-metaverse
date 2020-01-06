@@ -1,36 +1,34 @@
-import {CommandsBase} from './CommandsBase';
-import {Region} from '../Region';
-import {Agent} from '../Agent';
-import {Bot} from '../../Bot';
-import {Subscription} from 'rxjs/internal/Subscription';
-import {Message} from '../../enums/Message';
-import {Packet} from '../Packet';
-import {OnlineNotificationMessage} from '../messages/OnlineNotification';
-import {OfflineNotificationMessage} from '../messages/OfflineNotification';
-import {TerminateFriendshipMessage} from '../messages/TerminateFriendship';
-import {
-    FolderType,
-    Friend,
-    FriendOnlineEvent,
-    FriendRemovedEvent,
-    FriendRequestEvent,
-    FriendRightsEvent,
-    MapLocation,
-    PacketFlags,
-    RightsFlags,
-    UUID,
-    Vector3
-} from '../..';
-import {AcceptFriendshipMessage} from '../messages/AcceptFriendship';
-import {ImprovedInstantMessageMessage} from '../messages/ImprovedInstantMessage';
-import {InstantMessageDialog} from '../../enums/InstantMessageDialog';
-import {Utils} from '../Utils';
-import {DeclineFriendshipMessage} from '../messages/DeclineFriendship';
-import {ChangeUserRightsMessage} from '../messages/ChangeUserRights';
-import {FindAgentMessage} from '../messages/FindAgent';
-import {IPAddress} from '../IPAddress';
-import {FilterResponse} from '../../enums/FilterResponse';
-import {GrantUserRightsMessage} from '../messages/GrantUserRights';
+import { CommandsBase } from './CommandsBase';
+import { Region } from '../Region';
+import { Agent } from '../Agent';
+import { Bot } from '../../Bot';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { Message } from '../../enums/Message';
+import { Packet } from '../Packet';
+import { OnlineNotificationMessage } from '../messages/OnlineNotification';
+import { OfflineNotificationMessage } from '../messages/OfflineNotification';
+import { TerminateFriendshipMessage } from '../messages/TerminateFriendship';
+import { AcceptFriendshipMessage } from '../messages/AcceptFriendship';
+import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
+import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
+import { Utils } from '../Utils';
+import { DeclineFriendshipMessage } from '../messages/DeclineFriendship';
+import { ChangeUserRightsMessage } from '../messages/ChangeUserRights';
+import { FindAgentMessage } from '../messages/FindAgent';
+import { IPAddress } from '../IPAddress';
+import { FilterResponse } from '../../enums/FilterResponse';
+import { GrantUserRightsMessage } from '../messages/GrantUserRights';
+import { Friend } from '../public/Friend';
+import { RightsFlags } from '../../enums/RightsFlags';
+import { FriendOnlineEvent } from '../../events/FriendOnlineEvent';
+import { FriendRemovedEvent } from '../../events/FriendRemovedEvent';
+import { FriendRightsEvent } from '../../events/FriendRightsEvent';
+import { UUID } from '../UUID';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { MapLocation } from '../public/interfaces/MapLocation';
+import { FriendRequestEvent } from '../../events/FriendRequestEvent';
+import { FolderType } from '../../enums/FolderType';
+import { Vector3 } from '../Vector3';
 
 export class FriendCommands extends CommandsBase
 {

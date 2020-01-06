@@ -1,4 +1,4 @@
-import {Friend} from '..';
+import { Friend } from '../classes/public/Friend';
 
 export class FriendOnlineEvent
 {

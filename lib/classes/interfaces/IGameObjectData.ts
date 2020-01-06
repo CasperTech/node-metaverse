@@ -1,20 +1,20 @@
-import {UUID} from '../UUID';
-import * as Long from 'long';
-import {NameValue} from '../NameValue';
-import {Vector3} from '../Vector3';
-import {TextureEntry} from '../TextureEntry';
-import {Color4} from '../Color4';
-import {Quaternion} from '../Quaternion';
-import {Vector4} from '../Vector4';
-import {Tree} from '../../enums/Tree';
-import {PCode, SoundFlags} from '../..';
-import {ParticleSystem} from '../ParticleSystem';
-import {GameObject} from '../public/GameObject';
-import {FlexibleData} from '../public/FlexibleData';
-import {LightData} from '../public/LightData';
-import {LightImageData} from '../public/LightImageData';
-import {SculptData} from '../public/SculptData';
-import {MeshData} from '../public/MeshData';
+import { PCode } from '../../enums/PCode';
+import { SoundFlags } from '../../enums/SoundFlags';
+import { GameObject } from '../public/GameObject';
+import { UUID } from '../UUID';
+import { Vector3 } from '../Vector3';
+import { Color4 } from '../Color4';
+import { Quaternion } from '../Quaternion';
+import { Vector4 } from '../Vector4';
+import { Tree } from '../../enums/Tree';
+import { ParticleSystem } from '../ParticleSystem';
+import { NameValue } from '../NameValue';
+import { TextureEntry } from '../TextureEntry';
+import { FlexibleData } from '../public/FlexibleData';
+import { LightData } from '../public/LightData';
+import { LightImageData } from '../public/LightImageData';
+import { SculptData } from '../public/SculptData';
+import { MeshData } from '../public/MeshData';
 
 export interface IGameObjectData
 {

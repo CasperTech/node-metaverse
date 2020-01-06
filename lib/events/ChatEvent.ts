@@ -1,6 +1,8 @@
-import {ChatAudibleLevel} from '../enums/ChatAudible';
-import {ChatType} from '../enums/ChatType';
-import {ChatSourceType, UUID, Vector3} from '..';
+import { ChatAudibleLevel } from '../enums/ChatAudible';
+import { ChatType } from '../enums/ChatType';
+import { UUID } from '../classes/UUID';
+import { ChatSourceType } from '../enums/ChatSourceType';
+import { Vector3 } from '../classes/Vector3';
 
 export class ChatEvent
 {

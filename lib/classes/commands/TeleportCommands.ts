@@ -1,13 +1,18 @@
-import {CommandsBase} from './CommandsBase';
-import {Region} from '../Region';
-import {TeleportEventType} from '../../enums/TeleportEventType';
-import {TeleportLureRequestMessage} from '../messages/TeleportLureRequest';
-import {Vector3} from '../Vector3';
-import {TeleportLocationRequestMessage} from '../messages/TeleportLocationRequest';
+import { CommandsBase } from './CommandsBase';
+import { Region } from '../Region';
+import { TeleportEventType } from '../../enums/TeleportEventType';
+import { TeleportLureRequestMessage } from '../messages/TeleportLureRequest';
+import { Vector3 } from '../Vector3';
+import { TeleportLocationRequestMessage } from '../messages/TeleportLocationRequest';
 import * as Long from 'long';
-import {LureEvent, PacketFlags, RegionInfoReplyEvent, TeleportEvent, TeleportFlags, Bot} from '../..';
-import {Agent} from '../Agent';
-import {Subscription} from 'rxjs/internal/Subscription';
+import { Agent } from '../Agent';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { TeleportEvent } from '../../events/TeleportEvent';
+import { LureEvent } from '../../events/LureEvent';
+import { TeleportFlags } from '../../enums/TeleportFlags';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { RegionInfoReplyEvent } from '../../events/RegionInfoReplyEvent';
+import { Bot } from '../../Bot';
 
 export class TeleportCommands extends CommandsBase
 {

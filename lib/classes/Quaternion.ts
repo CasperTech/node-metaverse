@@ -1,5 +1,6 @@
-import {quat} from '../tsm/quat';
-import {XMLNode} from 'xmlbuilder';
+import { quat } from '../tsm/quat';
+import { XMLNode } from 'xmlbuilder';
+
 export class Quaternion extends quat
 {
     static getIdentity(): Quaternion

@@ -1,5 +1,5 @@
-import {UUID} from './UUID';
-import { RegionFlags } from '..';
+import { UUID } from './UUID';
+import { RegionFlags } from '../enums/RegionFlags';
 
 export class MapBlock
 {

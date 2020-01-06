@@ -1,5 +1,5 @@
-import {UUID} from '../UUID';
-import {Vector3} from '../Vector3';
+import { UUID } from '../UUID';
+import { Vector3 } from '../Vector3';
 
 export class LightImageData
 {

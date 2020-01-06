@@ -1,8 +1,7 @@
-import {Vector3} from '../Vector3';
-import {UUID} from '../UUID';
+import { Vector3 } from '../Vector3';
+import { UUID } from '../UUID';
 import * as builder from 'xmlbuilder';
-import * as LLSD from '@caspertech/llsd';
-import {ParcelFlags} from '../../enums/ParcelFlags';
+import { ParcelFlags } from '../../enums/ParcelFlags';
 
 export class Parcel
 {

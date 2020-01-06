@@ -32,9 +32,9 @@
 
 ///<reference path='./common.ts' />
 
-import {mat4} from './mat4';
-import {mat3} from './mat3';
-import {vec3} from './vec3';
+import { mat4 } from './mat4';
+import { mat3 } from './mat3';
+import { vec3 } from './vec3';
 
 export class quat
 {

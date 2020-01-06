@@ -1,4 +1,4 @@
-import {UUID, Vector3} from '..';
+import { UUID } from '../classes/UUID';
 
 export class ScriptDialogEvent
 {

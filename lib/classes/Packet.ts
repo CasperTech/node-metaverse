@@ -1,8 +1,10 @@
-import {MessageBase} from './MessageBase';
-import {Zerocoder} from './Zerocoder';
-import {nameFromID} from './MessageClasses';
+import { MessageBase } from './MessageBase';
+import { Zerocoder } from './Zerocoder';
 import * as MessageClass from './MessageClasses';
-import {DecodeFlags, MessageFlags, PacketFlags} from '..';
+import { nameFromID } from './MessageClasses';
+import { MessageFlags } from '../enums/MessageFlags';
+import { PacketFlags } from '../enums/PacketFlags';
+import { DecodeFlags } from '../enums/DecodeFlags';
 
 export class Packet
 {

@@ -1,4 +1,4 @@
-import {PhysicsShapeType} from '../enums/PhysicsShapeType';
+import { PhysicsShapeType } from '../enums/PhysicsShapeType';
 
 export class ObjectPhysicsDataEvent
 {

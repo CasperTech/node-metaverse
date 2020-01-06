@@ -1,4 +1,5 @@
-import {Friend, RightsFlags} from '..';
+import { Friend } from '../classes/public/Friend';
+import { RightsFlags } from '../enums/RightsFlags';
 
 export class FriendRightsEvent
 {

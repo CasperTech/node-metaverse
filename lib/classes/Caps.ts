@@ -1,16 +1,15 @@
 import * as LLSD from '@caspertech/llsd';
 import * as request from 'request';
 import * as url from 'url';
-import {Region} from './Region';
-import {Subscription} from 'rxjs/internal/Subscription';
-import {EventQueueClient} from './EventQueueClient';
-import {UUID} from './UUID';
-import {ClientEvents} from './ClientEvents';
-import {Agent} from './Agent';
-import {Subject} from 'rxjs/internal/Subject';
-import {HTTPAssets} from '..';
-import { ParsedUrlQuery } from 'querystring';
+import { Region } from './Region';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { EventQueueClient } from './EventQueueClient';
+import { UUID } from './UUID';
+import { ClientEvents } from './ClientEvents';
+import { Agent } from './Agent';
+import { Subject } from 'rxjs/internal/Subject';
 import { ICapResponse } from './interfaces/ICapResponse';
+import { HTTPAssets } from '../enums/HTTPAssets';
 
 export class Caps
 {
@@ -150,7 +149,7 @@ export class Caps
         });
     }
 
-    downloadAsset(uuid: UUID, type: HTTPAssets): Promise<Buffer>
+    async downloadAsset(uuid: UUID, type: HTTPAssets): Promise<Buffer>
     {
         return new Promise<Buffer>((resolve, reject) =>
         {

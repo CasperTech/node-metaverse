@@ -378,6 +378,7 @@ export enum Message {
     AttachedSound = 65293,
     AttachedSoundGainChange = 65294,
     PreloadSound = 65295,
+    ObjectAnimation = 30,
     AssetUploadRequest = 4294902093,
     AssetUploadComplete = 4294902094,
     EmailMessageRequest = 4294902095,

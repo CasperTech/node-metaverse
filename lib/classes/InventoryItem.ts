@@ -1,7 +1,8 @@
-import {UUID} from './UUID';
-import {InventoryType} from '../enums/InventoryType';
-import {PermissionMask} from '../enums/PermissionMask';
-import {AssetType, InventoryItemFlags} from '..';
+import { UUID } from './UUID';
+import { InventoryType } from '../enums/InventoryType';
+import { PermissionMask } from '../enums/PermissionMask';
+import { InventoryItemFlags } from '../enums/InventoryItemFlags';
+import { AssetType } from '../enums/AssetType';
 
 export class InventoryItem
 {

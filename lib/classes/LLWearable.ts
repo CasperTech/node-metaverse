@@ -1,6 +1,6 @@
-import {UUID} from './UUID';
-import {WearableType} from '../enums/WearableType';
-import {SaleType} from '../enums/SaleType';
+import { UUID } from './UUID';
+import { WearableType } from '../enums/WearableType';
+import { SaleType } from '../enums/SaleType';
 
 export class LLWearable
 {

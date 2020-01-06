@@ -1,4 +1,4 @@
-import {mat4} from '../../../tsm/mat4';
+import { mat4 } from '../../../tsm/mat4';
 
 export interface LLSkin
 {

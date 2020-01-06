@@ -1,13 +1,12 @@
-import {Utils} from '../Utils';
 import * as zlib from 'zlib';
 import * as LLSD from '@caspertech/llsd';
-import {UUID} from '../UUID';
-import {LLSubMesh} from './interfaces/LLSubMesh';
-import {Vector3} from '../Vector3';
-import {Vector2} from '../Vector2';
-import {LLSkin} from './interfaces/LLSkin';
-import {mat4} from '../../tsm/mat4';
-import {LLPhysicsConvex} from './interfaces/LLPhysicsConvex';
+import { UUID } from '../UUID';
+import { LLSubMesh } from './interfaces/LLSubMesh';
+import { Vector3 } from '../Vector3';
+import { Vector2 } from '../Vector2';
+import { LLSkin } from './interfaces/LLSkin';
+import { mat4 } from '../../tsm/mat4';
+import { LLPhysicsConvex } from './interfaces/LLPhysicsConvex';
 
 export class LLMesh
 {

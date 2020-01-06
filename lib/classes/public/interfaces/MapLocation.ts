@@ -1,6 +1,6 @@
-import {UUID} from '../../UUID';
+import { UUID } from '../../UUID';
 import * as Long from 'long';
-import {Vector2} from '../../Vector2';
+import { Vector2 } from '../../Vector2';
 
 export interface MapLocation {
     'regionName': string;

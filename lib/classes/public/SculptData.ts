@@ -1,5 +1,5 @@
-import {UUID} from '../UUID';
-import {SculptType} from '../..';
+import { UUID } from '../UUID';
+import { SculptType } from '../../enums/SculptType';
 
 export class SculptData
 {

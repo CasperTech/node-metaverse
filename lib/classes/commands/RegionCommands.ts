@@ -1,42 +1,40 @@
-import {CommandsBase} from './CommandsBase';
-import {UUID} from '../UUID';
+import { CommandsBase } from './CommandsBase';
+import { UUID } from '../UUID';
+import { RegionHandleRequestMessage } from '../messages/RegionHandleRequest';
+import { Message } from '../../enums/Message';
+import { FilterResponse } from '../../enums/FilterResponse';
+import { RegionIDAndHandleReplyMessage } from '../messages/RegionIDAndHandleReply';
+import { ObjectGrabMessage } from '../messages/ObjectGrab';
+import { ObjectDeGrabMessage } from '../messages/ObjectDeGrab';
+import { ObjectGrabUpdateMessage } from '../messages/ObjectGrabUpdate';
+import { ObjectSelectMessage } from '../messages/ObjectSelect';
+import { ObjectPropertiesMessage } from '../messages/ObjectProperties';
+import { Utils } from '../Utils';
+import { ObjectDeselectMessage } from '../messages/ObjectDeselect';
+import { RequestTaskInventoryMessage } from '../messages/RequestTaskInventory';
+import { ReplyTaskInventoryMessage } from '../messages/ReplyTaskInventory';
+import { InventoryItem } from '../InventoryItem';
+import { AssetTypeLL } from '../../enums/AssetTypeLL';
+import { SaleTypeLL } from '../../enums/SaleTypeLL';
+import { InventoryTypeLL } from '../../enums/InventoryTypeLL';
+import { ObjectAddMessage } from '../messages/ObjectAdd';
+import { Quaternion } from '../Quaternion';
+import { RezObjectMessage } from '../messages/RezObject';
+import { PermissionMask } from '../../enums/PermissionMask';
+import { SelectedObjectEvent } from '../../events/SelectedObjectEvent';
+import Timer = NodeJS.Timer;
+import { PacketFlags } from '../../enums/PacketFlags';
+import { GameObject } from '../public/GameObject';
+import { PCode } from '../../enums/PCode';
+import { PrimFlags } from '../../enums/PrimFlags';
+import { AssetType } from '../../enums/AssetType';
+import { NewObjectEvent } from '../../events/NewObjectEvent';
+import { Vector3 } from '../Vector3';
+import { Parcel } from '../public/Parcel';
+
 import * as Long from 'long';
-import {RegionHandleRequestMessage} from '../messages/RegionHandleRequest';
-import {Message} from '../../enums/Message';
-import {FilterResponse} from '../../enums/FilterResponse';
-import {RegionIDAndHandleReplyMessage} from '../messages/RegionIDAndHandleReply';
-import {
-    AssetType,
-    GameObject,
-    InventoryItemFlags,
-    NewObjectEvent,
-    PacketFlags,
-    Parcel,
-    PCode,
-    PrimFlags,
-    Vector3
-} from '../..';
-import {ObjectGrabMessage} from '../messages/ObjectGrab';
-import {ObjectDeGrabMessage} from '../messages/ObjectDeGrab';
-import {ObjectGrabUpdateMessage} from '../messages/ObjectGrabUpdate';
-import {ObjectSelectMessage} from '../messages/ObjectSelect';
-import {ObjectPropertiesMessage} from '../messages/ObjectProperties';
-import {Utils} from '../Utils';
-import {ObjectDeselectMessage} from '../messages/ObjectDeselect';
 import * as micromatch from 'micromatch';
 import * as LLSD from '@caspertech/llsd';
-import {RequestTaskInventoryMessage} from '../messages/RequestTaskInventory';
-import {ReplyTaskInventoryMessage} from '../messages/ReplyTaskInventory';
-import {InventoryItem} from '../InventoryItem';
-import {AssetTypeLL} from '../../enums/AssetTypeLL';
-import {SaleTypeLL} from '../../enums/SaleTypeLL';
-import {InventoryTypeLL} from '../../enums/InventoryTypeLL';
-import {ObjectAddMessage} from '../messages/ObjectAdd';
-import {Quaternion} from '../Quaternion';
-import Timer = NodeJS.Timer;
-import {RezObjectMessage} from '../messages/RezObject';
-import {PermissionMask} from '../../enums/PermissionMask';
-import {SelectedObjectEvent} from '../../events/SelectedObjectEvent';
 
 export class RegionCommands extends CommandsBase
 {

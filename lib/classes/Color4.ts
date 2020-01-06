@@ -1,5 +1,5 @@
-import {Utils} from './Utils';
-import {XMLNode} from 'xmlbuilder';
+import { Utils } from './Utils';
+import { XMLNode } from 'xmlbuilder';
 
 export class Color4
 {

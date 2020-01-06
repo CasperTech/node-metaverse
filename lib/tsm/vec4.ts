@@ -32,7 +32,7 @@
 
 ///<reference path='./common.ts' />
 
-import {mat4} from './mat4';
+import { mat4 } from './mat4';
 
 export class vec4
 {

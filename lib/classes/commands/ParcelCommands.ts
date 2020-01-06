@@ -1,12 +1,13 @@
-import {CommandsBase} from './CommandsBase';
-import {ParcelInfoRequestMessage} from '../messages/ParcelInfoRequest';
-import {UUID} from '../UUID';
-import {Message} from '../../enums/Message';
-import {ParcelInfoReplyMessage} from '../messages/ParcelInfoReply';
-import {Packet} from '../Packet';
-import {FilterResponse} from '../../enums/FilterResponse';
-import {Utils} from '../Utils';
-import {PacketFlags, ParcelInfoReplyEvent, Vector3} from '../..';
+import { CommandsBase } from './CommandsBase';
+import { ParcelInfoRequestMessage } from '../messages/ParcelInfoRequest';
+import { UUID } from '../UUID';
+import { Message } from '../../enums/Message';
+import { ParcelInfoReplyMessage } from '../messages/ParcelInfoReply';
+import { FilterResponse } from '../../enums/FilterResponse';
+import { Utils } from '../Utils';
+import { ParcelInfoReplyEvent } from '../../events/ParcelInfoReplyEvent';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { Vector3 } from '../Vector3';
 
 // This class was added to provide a new "Category" of commands, since we don't have any parcel specific functionality yet.
 

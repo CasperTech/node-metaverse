@@ -1,30 +1,27 @@
-import {Circuit} from './Circuit';
-import {Agent} from './Agent';
-import {Packet} from './Packet';
-import {Message} from '../enums/Message';
-import {ChatFromSimulatorMessage} from './messages/ChatFromSimulator';
-import {ImprovedInstantMessageMessage} from './messages/ImprovedInstantMessage';
-import {Utils} from './Utils';
-import {InstantMessageDialog} from '../enums/InstantMessageDialog';
-import {AlertMessageMessage} from './messages/AlertMessage';
-import {ClientEvents} from './ClientEvents';
-import {
-    ChatEvent,
-    ChatSourceType,
-    FriendRequestEvent,
-    FriendResponseEvent,
-    GroupChatEvent,
-    GroupNoticeEvent,
-    GroupInviteEvent,
-    InstantMessageEvent,
-    InstantMessageEventFlags,
-    InventoryOfferedEvent,
-    LureEvent,
-    ScriptDialogEvent,
-    UUID
-} from '..';
-import {ScriptDialogMessage} from './messages/ScriptDialog';
-import * as uuid from 'uuid';
+import { Circuit } from './Circuit';
+import { Agent } from './Agent';
+import { Packet } from './Packet';
+import { Message } from '../enums/Message';
+import { ChatFromSimulatorMessage } from './messages/ChatFromSimulator';
+import { ImprovedInstantMessageMessage } from './messages/ImprovedInstantMessage';
+import { Utils } from './Utils';
+import { InstantMessageDialog } from '../enums/InstantMessageDialog';
+import { AlertMessageMessage } from './messages/AlertMessage';
+import { ClientEvents } from './ClientEvents';
+import { ScriptDialogMessage } from './messages/ScriptDialog';
+import { InstantMessageEvent } from '../events/InstantMessageEvent';
+import { ChatSourceType } from '../enums/ChatSourceType';
+import { InstantMessageEventFlags } from '../enums/InstantMessageEventFlags';
+import { GroupInviteEvent } from '../events/GroupInviteEvent';
+import { InventoryOfferedEvent } from '../events/InventoryOfferedEvent';
+import { LureEvent } from '../events/LureEvent';
+import { UUID } from './UUID';
+import { GroupNoticeEvent } from '../events/GroupNoticeEvent';
+import { FriendRequestEvent } from '../events/FriendRequestEvent';
+import { FriendResponseEvent } from '../events/FriendResponseEvent';
+import { GroupChatEvent } from '../events/GroupChatEvent';
+import { ChatEvent } from '../events/ChatEvent';
+import { ScriptDialogEvent } from '../events/ScriptDialogEvent';
 
 export class Comms
 {
@@ -76,12 +73,12 @@ export class Comms
                         case InstantMessageDialog.InventoryOffered:
                         {
                             const fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
-                            const message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            const inventoryMessage = Utils.BufferToStringSimple(im.MessageBlock.Message);
 
                             const ioEvent = new InventoryOfferedEvent();
                             ioEvent.from = im.AgentData.AgentID;
                             ioEvent.fromName = fromName;
-                            ioEvent.message = message;
+                            ioEvent.message = inventoryMessage;
                             ioEvent.requestID = im.MessageBlock.ID;
                             ioEvent.source = ChatSourceType.Agent;
                             this.clientEvents.onInventoryOffered.next(ioEvent);
@@ -94,12 +91,12 @@ export class Comms
                         case InstantMessageDialog.TaskInventoryOffered:
                         {
                             const fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
-                            const message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            const inventoryMessage = Utils.BufferToStringSimple(im.MessageBlock.Message);
 
                             const ioEvent = new InventoryOfferedEvent();
                             ioEvent.from = im.AgentData.AgentID;
                             ioEvent.fromName = fromName;
-                            ioEvent.message = message;
+                            ioEvent.message = inventoryMessage;
                             ioEvent.requestID = im.MessageBlock.ID;
                             ioEvent.source = ChatSourceType.Object;
                             ioEvent.type = im.MessageBlock.BinaryBucket.readUInt8(0);
@@ -137,6 +134,7 @@ export class Comms
                         case InstantMessageDialog.ConsoleAndChatHistory:
                             break;
                         case InstantMessageDialog.RequestTeleport:
+                        {
                             const lureEvent = new LureEvent();
                             const extraData = Utils.BufferToStringSimple(im.MessageBlock.BinaryBucket).split('|');
                             lureEvent.from = im.AgentData.AgentID;
@@ -149,6 +147,7 @@ export class Comms
                             lureEvent.gridY = parseInt(extraData[1], 10);
                             this.clientEvents.onLure.next(lureEvent);
                             break;
+                        }
                         case InstantMessageDialog.AcceptTeleport:
                             break;
                         case InstantMessageDialog.DenyTeleport:
@@ -160,6 +159,7 @@ export class Comms
                         case InstantMessageDialog.FromTaskAsAlert:
                             break;
                         case InstantMessageDialog.GroupNotice:
+                        {
                             const groupNoticeEvent = new GroupNoticeEvent();
                             groupNoticeEvent.from = im.AgentData.AgentID;
                             groupNoticeEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
@@ -172,6 +172,7 @@ export class Comms
                             }
                             this.clientEvents.onGroupNotice.next(groupNoticeEvent);
                             break;
+                        }
                         case InstantMessageDialog.GroupNoticeInventoryAccepted:
                             break;
                         case InstantMessageDialog.GroupNoticeInventoryDeclined:

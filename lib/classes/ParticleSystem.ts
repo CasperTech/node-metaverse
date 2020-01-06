@@ -1,7 +1,10 @@
-import {Vector3} from './Vector3';
-import {UUID} from './UUID';
-import {Color4} from './Color4';
-import {BlendFunc, ParticleDataFlags, SourcePattern, Utils} from '..';
+import { Vector3 } from './Vector3';
+import { UUID } from './UUID';
+import { Color4 } from './Color4';
+import { ParticleDataFlags } from '../enums/ParticleDataFlags';
+import { Utils } from './Utils';
+import { BlendFunc } from '../enums/BlendFunc';
+import { SourcePattern } from '../enums/SourcePattern';
 
 export class ParticleSystem
 {

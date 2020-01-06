@@ -1,5 +1,5 @@
-import {UUID} from '../UUID';
-import {Color4} from '../Color4';
+import { UUID } from '../UUID';
+import { Color4 } from '../Color4';
 
 export class Material
 {

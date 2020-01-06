@@ -1,4 +1,6 @@
-import {ParcelInfoFlags, UUID, Vector3} from '..';
+import { ParcelInfoFlags } from '../enums/ParcelInfoFlags';
+import { UUID } from '../classes/UUID';
+import { Vector3 } from '../classes/Vector3';
 
 export class ParcelInfoReplyEvent
 {

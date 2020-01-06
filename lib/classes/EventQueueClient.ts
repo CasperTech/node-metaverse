@@ -1,19 +1,20 @@
-import {Caps} from './Caps';
 import * as LLSD from '@caspertech/llsd';
 import * as request from 'request';
 import * as Long from 'long';
-import {IPAddress} from './IPAddress';
-import {ClientEvents} from './ClientEvents';
-import {TeleportEventType} from '../enums/TeleportEventType';
-import {UUID} from './UUID';
-import {Agent} from './Agent';
-import {
-    EventQueueStateChangeEvent,
-    GroupChatEvent,
-    GroupChatSessionAgentListEvent,
-    GroupChatSessionJoinEvent, ObjectPhysicsDataEvent, ParcelPropertiesEvent,
-    TeleportEvent, Vector3
-} from '..';
+import { ClientEvents } from './ClientEvents';
+import { Agent } from './Agent';
+import { Caps } from './Caps';
+import { EventQueueStateChangeEvent } from '../events/EventQueueStateChangeEvent';
+import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
+import { Vector3 } from './Vector3';
+import { UUID } from './UUID';
+import { TeleportEvent } from '../events/TeleportEvent';
+import { TeleportEventType } from '../enums/TeleportEventType';
+import { GroupChatSessionJoinEvent } from '../events/GroupChatSessionJoinEvent';
+import { GroupChatEvent } from '../events/GroupChatEvent';
+import { GroupChatSessionAgentListEvent } from '../events/GroupChatSessionAgentListEvent';
+import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
+import { IPAddress } from './IPAddress';
 
 export class EventQueueClient
 {

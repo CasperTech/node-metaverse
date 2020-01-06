@@ -1,6 +1,5 @@
-import {Utils} from './Utils';
-import {BVHJoint} from './BVHJoint';
-import {BVHJointKeyframe} from './BVHJointKeyframe';
+import { Utils } from './Utils';
+import { BVHJoint } from './BVHJoint';
 
 export class BVH
 {
