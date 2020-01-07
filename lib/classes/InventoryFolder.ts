@@ -206,6 +206,11 @@ export class InventoryFolder
                             invItem.itemID = new UUID(item['item_id'].toString());
                             invItem.description = item['desc'];
                             invItem.type = item['type'];
+                            if (item['permissions']['last_owner_id'] === undefined)
+                            {
+                                // TODO: OpenSim Glitch;
+                                item['permissions']['last_owner_id'] = item['permissions']['owner_id'];
+                            }
                             invItem.permissions = {
                                 baseMask: item['permissions']['base_mask'],
                                 groupMask: item['permissions']['group_mask'],

@@ -1,6 +1,7 @@
 import * as xmlrpc from 'xmlrpc';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
+import * as url from 'url';
 import { LoginParameters } from './classes/LoginParameters';
 import { LoginResponse } from './classes/LoginResponse';
 import { ClientEvents } from './classes/ClientEvents';
@@ -38,13 +39,28 @@ export class LoginHandler
     {
         return new Promise<LoginResponse>((resolve, reject) =>
         {
+            const loginURI = url.parse(params.url);
+
+            let secure = false;
+
+            if (loginURI.protocol !== undefined && loginURI.protocol.trim().toLowerCase() === 'https:')
+            {
+                secure = true;
+            }
+
+            let port: string | undefined = loginURI.port;
+            if (port === undefined || port === null)
+            {
+                port = secure ? '443' : '80';
+            }
+
             const secureClientOptions = {
-                host: 'login.agni.lindenlab.com',
-                port: 443,
-                path: '/cgi-bin/login.cgi',
+                host: loginURI.hostname,
+                port: parseInt(port, 10),
+                path: loginURI.path,
                 rejectUnauthorized: false
             };
-            const client = xmlrpc.createSecureClient(secureClientOptions);
+            const client = (secure) ? xmlrpc.createSecureClient(secureClientOptions) : xmlrpc.createClient(secureClientOptions);
             client.methodCall('login_to_simulator',
                 [
                     {

@@ -54,6 +54,10 @@ export class LoginResponse
         const x = parseFloat(num[0]);
         const y = parseFloat(num[1]);
         const z = parseFloat(num[2]);
+        if (isNaN(x) || isNaN(y) || isNaN(z))
+        {
+            throw new Error('Invalid Vector');
+        }
         return new Vector3([x, y, z]);
     }
 
@@ -79,11 +83,25 @@ export class LoginResponse
         }
         if (parsed['position'])
         {
-            result['position'] = this.parseVector3('[' + parsed['position'] + ']');
+            try
+            {
+                result['position'] = this.parseVector3('[' + parsed['position'] + ']');
+            }
+            catch (error)
+            {
+                result['position'] = new Vector3([128.0, 128.0, 0.0]);
+            }
         }
         if (parsed['look_at'])
         {
-            result['lookAt'] = this.parseVector3('[' + parsed['lookAt'] + ']');
+            try
+            {
+                result['lookAt'] = this.parseVector3('[' + parsed['lookAt'] + ']');
+            }
+            catch (error)
+            {
+                result['lookAt'] = new Vector3([128.0, 128.0, 0.0]);
+            }
         }
 
 
@@ -247,7 +265,14 @@ export class LoginResponse
                     });
                     break;
                 case 'look_at':
-                    this.agent.cameraLookAt = LoginResponse.parseVector3(val);
+                    try
+                    {
+                        this.agent.cameraLookAt = LoginResponse.parseVector3(val);
+                    }
+                    catch (error)
+                    {
+                        console.error('Invalid look_at from LoginResponse');
+                    }
                     break;
                 case 'openid_url':
                     this.agent.openID.url = String(val);

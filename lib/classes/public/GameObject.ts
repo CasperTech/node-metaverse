@@ -853,6 +853,28 @@ export class GameObject implements IGameObjectData
         await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
     }
 
+    async linkFrom(objects: GameObject[])
+    {
+        const msg = new ObjectLinkMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                ObjectLocalID: this.ID
+            }
+        ];
+        for (const obj of objects)
+        {
+            msg.ObjectData.push(
+            {
+                ObjectLocalID: obj.ID
+            });
+        }
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
+    }
+
     async setDescription(desc: string)
     {
         this.description = desc;

@@ -107,6 +107,9 @@ export class Region
     terrainHeightRange10: number;
     terrainHeightRange11: number;
 
+    handshakeComplete = false;
+    handshakeCompleteEvent: Subject<void> = new Subject<void>();
+
     circuit: Circuit;
     objects: IObjectStore;
     caps: Caps;
@@ -1170,6 +1173,8 @@ export class Region
                 };
             }
         }
+        this.handshakeComplete = true;
+        this.handshakeCompleteEvent.next();
     }
     shutdown()
     {
