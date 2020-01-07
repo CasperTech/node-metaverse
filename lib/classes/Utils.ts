@@ -3,6 +3,8 @@ import { Quaternion } from './Quaternion';
 import { GlobalPosition } from './public/interfaces/GlobalPosition';
 import { HTTPAssets } from '../enums/HTTPAssets';
 import { Vector3 } from './Vector3';
+import { Subject, Subscription } from 'rxjs';
+import Timeout = NodeJS.Timeout;
 
 export class Utils
 {
@@ -449,5 +451,95 @@ export class Utils
         {
             return str.substr(0, index - 1);
         }
+    }
+
+    static promiseConcurrent<T>(promises: (() => Promise<T>)[], concurrency: number, timeout: number): Promise<{results: T[], errors: Error[]}>
+    {
+        return new Promise<{results: T[], errors: Error[]}>(async (resolve, reject) =>
+        {
+            const originalConcurrency = concurrency;
+            const promiseQueue: (() => Promise<T>)[] = [];
+            for (const promise of promises)
+            {
+                promiseQueue.push(promise);
+            }
+            const slotAvailable: Subject<void> = new Subject<void>();
+            const errors: Error[] = [];
+            const results: T[] = [];
+
+            function waitForAvailable()
+            {
+                return new Promise<void>((resolve1, reject1) =>
+                {
+                    const subs = slotAvailable.subscribe(() =>
+                    {
+                        subs.unsubscribe();
+                        resolve1();
+                    });
+                });
+            }
+
+            function runPromise(promise: () => Promise<T>)
+            {
+                concurrency--;
+                let timedOut = false;
+                let timeo: Timeout | undefined = undefined;
+                promise().then((result: T) =>
+                {
+                    if (timedOut)
+                    {
+                        return;
+                    }
+                    if (timeo !== undefined)
+                    {
+                        clearTimeout(timeo);
+                    }
+                    results.push(result);
+                    concurrency++;
+                    slotAvailable.next();
+                }).catch((err) =>
+                {
+                    if (timedOut)
+                    {
+                        return;
+                    }
+                    if (timeo !== undefined)
+                    {
+                        clearTimeout(timeo);
+                    }
+                    errors.push(err);
+                    concurrency++;
+                    slotAvailable.next();
+                });
+                timeo = setTimeout(() =>
+                {
+                    timedOut = true;
+                    errors.push(new Error('Promise timed out'));
+                    concurrency++;
+                    slotAvailable.next();
+                }, timeout);
+            }
+
+            while (promiseQueue.length > 0)
+            {
+                if (concurrency < 1)
+                {
+                    await waitForAvailable();
+                }
+                else
+                {
+                    const thunk = promiseQueue.shift();
+                    if (thunk !== undefined)
+                    {
+                        runPromise(thunk);
+                    }
+                }
+            }
+            while (concurrency < originalConcurrency)
+            {
+                await waitForAvailable();
+            }
+            resolve({results: results, errors: errors});
+        });
     }
 }

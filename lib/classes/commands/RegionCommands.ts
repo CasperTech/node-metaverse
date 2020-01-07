@@ -35,6 +35,9 @@ import { Parcel } from '../public/Parcel';
 import * as Long from 'long';
 import * as micromatch from 'micromatch';
 import * as LLSD from '@caspertech/llsd';
+import { Subscription } from 'rxjs';
+import Timeout = NodeJS.Timeout;
+import { ObjectUpdatedEvent } from '../..';
 
 export class RegionCommands extends CommandsBase
 {
@@ -58,6 +61,64 @@ export class RegionCommands extends CommandsBase
             }
         });
         return responseMsg.ReplyBlock.RegionHandle;
+    }
+
+    waitForHandshake(timeout: number = 10000): Promise<void>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            if (this.currentRegion.handshakeComplete)
+            {
+                resolve();
+            }
+            else
+            {
+                let handshakeSubscription: Subscription | undefined;
+                let timeoutTimer: number | undefined;
+                handshakeSubscription = this.currentRegion.handshakeCompleteEvent.subscribe(() =>
+                {
+                    if (timeoutTimer !== undefined)
+                    {
+                        clearTimeout(timeoutTimer);
+                        timeoutTimer = undefined;
+                    }
+                    if (handshakeSubscription !== undefined)
+                    {
+                        handshakeSubscription.unsubscribe();
+                        handshakeSubscription = undefined;
+                        resolve();
+                    }
+                });
+                timeoutTimer = setTimeout(() =>
+                {
+                    if (handshakeSubscription !== undefined)
+                    {
+                        handshakeSubscription.unsubscribe();
+                        handshakeSubscription = undefined;
+                    }
+                    if (timeoutTimer !== undefined)
+                    {
+                        clearTimeout(timeoutTimer);
+                        timeoutTimer = undefined;
+                        reject(new Error('Timeout'));
+                    }
+                }, timeout) as any as number;
+                if (this.currentRegion.handshakeComplete)
+                {
+                    if (handshakeSubscription !== undefined)
+                    {
+                        handshakeSubscription.unsubscribe();
+                        handshakeSubscription = undefined;
+                    }
+                    if (timeoutTimer !== undefined)
+                    {
+                        clearTimeout(timeoutTimer);
+                        timeoutTimer = undefined;
+                    }
+                    resolve();
+                }
+            }
+        });
     }
 
     async deselectObjects(objects: GameObject[])
@@ -230,8 +291,6 @@ export class RegionCommands extends CommandsBase
                             obj.resolvedAt = new Date().getTime() / 1000;
                             delete uuidMap[objDataUUID];
                             found = true;
-
-                            // console.log(obj.name + ' (' + resolved + ' of ' + objects.length + ')');
                         }
                     }
                     if (Object.keys(uuidMap).length === 0)
@@ -827,7 +886,24 @@ export class RegionCommands extends CommandsBase
         });
     }
 
-    private async buildPart(obj: GameObject, posOffset: Vector3,  meshCallback: (object: GameObject, meshData: UUID) => UUID | null)
+    private async createPrimWithRetry(retries: number, obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, inventoryID?: UUID)
+    {
+        for (retries--; retries > -1; retries--)
+        {
+            try
+            {
+                const newObject = await this.createPrim(obj, new Vector3(posOffset), new Quaternion(rotOffset), inventoryID);
+                return newObject;
+            }
+            catch (ignore)
+            {
+                process.exit(1);
+            }
+        }
+        throw new Error('Failed to create prim with ' + retries + ' tries');
+    }
+
+    private async buildPart(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, meshCallback: (object: GameObject, meshData: UUID) => UUID | null)
     {
         // Rez a prim
         let newObject: GameObject;
@@ -836,16 +912,16 @@ export class RegionCommands extends CommandsBase
             const inventoryID: UUID | null = await meshCallback(obj, obj.extraParams.meshData.meshData);
             if (inventoryID !== null)
             {
-                newObject = await this.createPrim(obj, posOffset, inventoryID);
+                newObject = await this.createPrimWithRetry(3, obj, posOffset, rotOffset, inventoryID);
             }
             else
             {
-                newObject = await this.createPrim(obj, posOffset);
+                newObject = await this.createPrimWithRetry(3, obj, posOffset, rotOffset);
             }
         }
         else
         {
-            newObject = await this.createPrim(obj, posOffset);
+            newObject = await this.createPrimWithRetry(3, obj, posOffset, rotOffset);
         }
         await newObject.setExtraParams(obj.extraParams);
         if (obj.TextureEntry !== undefined)
@@ -867,71 +943,92 @@ export class RegionCommands extends CommandsBase
     {
         return new Promise<GameObject>(async (resolve, reject) =>
         {
+            const parts: (Promise<GameObject>)[] = [];
+            console.log('Rezzing prims');
+            parts.push(this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), meshCallback));
 
-            const parts = [];
-            console.log('Rezzing root prim');
-            parts.push(this.buildPart(obj, Vector3.getZero(), meshCallback));
-            console.log('Building child prims');
-            if (obj.children && obj.Position)
+            if (obj.children)
             {
+                if (obj.Position === undefined)
+                {
+                    obj.Position = Vector3.getZero();
+                }
+                if (obj.Rotation === undefined)
+                {
+                    obj.Rotation = Quaternion.getIdentity();
+                }
                 for (const child of obj.children)
                 {
-                    parts.push(this.buildPart(child, obj.Position, meshCallback));
+                    if (child.Position !== undefined && child.Rotation !== undefined)
+                    {
+                        const objPos = new Vector3(obj.Position);
+                        const objRot = new Quaternion(obj.Rotation);
+                        parts.push(this.buildPart(child, objPos, objRot, meshCallback));
+                    }
                 }
             }
             Promise.all(parts).then(async (results) =>
             {
                 console.log('Linking prims');
                 const rootObj = results[0];
+                const childPrims: GameObject[] = [];
                 for (const childObject of results)
                 {
                     if (childObject !== rootObj)
                     {
-                        await childObject.linkTo(rootObj);
+                        childPrims.push(childObject);
                     }
                 }
+                await rootObj.linkFrom(childPrims);
                 console.log('All done');
                 resolve(rootObj);
             }).catch((err) =>
             {
                 reject(err);
             });
+            /*
+            Utils.promiseConcurrent<GameObject>(parts, 1000, 10000).then(async (results) =>
+            {
+                console.log('Linking prims');
+                const rootObj = results.results[0];
+                await rootObj.linkFrom(results.results);
+                console.log('All done');
+                resolve(rootObj);
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+             */
         });
     }
 
-    createPrim(obj: GameObject, posOffset: Vector3, inventoryID?: UUID): Promise<GameObject>
+    createPrim(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, inventoryID?: UUID): Promise<GameObject>
     {
-        console.log('Create prim');
         return new Promise(async (resolve, reject) =>
         {
             const timeRequested = (new Date().getTime() / 1000) - this.currentRegion.timeOffset;
 
-            if (obj.Position === undefined)
-            {
-                obj.Position = Vector3.getZero();
-            }
-            if (obj.Rotation === undefined)
-            {
-                obj.Rotation = Quaternion.getIdentity();
-            }
+            const objectPosition = new Vector3(obj.Position);
+            const objectRotation = new Quaternion(obj.Rotation);
+            const objectScale = new Vector3(obj.Scale);
+
             let finalPos = Vector3.getZero();
             let finalRot = Quaternion.getIdentity();
-            if (posOffset.x === 0.0 && posOffset.y === 0.0 && posOffset.z === 0.0)
+            if (posOffset.x === 0.0 && posOffset.y === 0.0 && posOffset.z === 0.0 && objectPosition !== undefined)
             {
-                finalPos = obj.Position;
-                finalRot = obj.Rotation;
+                finalPos = new Vector3(objectPosition);
+                finalRot = new Quaternion(objectRotation);
             }
             else
             {
-                const finalPosOffset: Vector3 = obj.Position;
-                finalPos = new Vector3(new Vector3(finalPosOffset).add(new Vector3(posOffset)));
-                finalRot = obj.Rotation;
+                const adjustedPos = new Vector3(new Vector3(objectPosition).multiplyByQuat(new Quaternion(rotOffset).inverse()));
+                finalPos = new Vector3(new Vector3(adjustedPos).add(new Vector3(posOffset)));
+                finalRot = new Quaternion(new Quaternion(objectRotation).add(new Quaternion(rotOffset)));
             }
             let msg: ObjectAddMessage | RezObjectMessage | null = null;
             let fromInventory = false;
             if (inventoryID === undefined || this.agent.inventory.itemsByID[inventoryID.toString()] === undefined)
             {
-                console.log('Regular prim');
                 // First, rez object in scene
                 msg = new ObjectAddMessage();
                 msg.AgentData = {
@@ -973,7 +1070,6 @@ export class RegionCommands extends CommandsBase
             }
             else
             {
-                console.log('Rezzing ' + this.agent.inventory.itemsByID[inventoryID.toString()].name);
                 fromInventory = true;
                 const invItem = this.agent.inventory.itemsByID[inventoryID.toString()];
                 const queryID = UUID.random();
@@ -1021,28 +1117,38 @@ export class RegionCommands extends CommandsBase
                     CRC: 0,
                 };
             }
-
-            const objSub = this.currentRegion.clientEvents.onSelectedObjectEvent.subscribe(async (evt: SelectedObjectEvent) =>
+            let objSub: Subscription | undefined = undefined;
+            let timeout: Timeout | undefined = setTimeout(() =>
             {
-                if (evt.object.creatorID !== undefined &&
-                    evt.object.creatorID.equals(this.agent.agentID) &&
-                    evt.object.creationDate !== undefined &&
-                    !evt.object.claimedForBuild)
+                if (objSub !== undefined)
                 {
-                    let claim = false;
-                    const creationDate = evt.object.creationDate.toNumber() / 1000000;
-                    if (fromInventory && inventoryID !== undefined && evt.object.itemID.equals(inventoryID))
+                    objSub.unsubscribe();
+                    objSub = undefined;
+                }
+                if (timeout !== undefined)
+                {
+                    clearTimeout(timeout);
+                    timeout = undefined;
+                }
+                reject(new Error('Prim never arrived'));
+            }, 10000);
+            objSub = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (evt: NewObjectEvent) =>
+            {
+                if (evt.createSelected && !evt.object.claimedForBuild)
+                {
+                    if (!fromInventory || (inventoryID !== undefined && evt.object.itemID.equals(inventoryID)))
                     {
-                        claim = true;
-                    }
-                    else if (!fromInventory && evt.object.itemID.equals(UUID.zero()) && creationDate > timeRequested)
-                    {
-                        claim = true;
-                    }
-                    if (claim)
-                    {
+                        if (objSub !== undefined)
+                        {
+                            objSub.unsubscribe();
+                            objSub = undefined;
+                        }
+                        if (timeout !== undefined)
+                        {
+                            clearTimeout(timeout);
+                            timeout = undefined;
+                        }
                         evt.object.claimedForBuild = true;
-                        objSub.unsubscribe();
 
                         if (!fromInventory)
                         {
@@ -1063,18 +1169,15 @@ export class RegionCommands extends CommandsBase
                     }
                 }
             });
-            if (obj.Position !== undefined && obj.Scale !== undefined)
-            {
-                // Move the camera to look directly at prim for faster capture
-                const campos = new Vector3(finalPos);
-                campos.z += 5.0 + obj.Scale.z;
-                console.log('Moving camera to ' + campos.toString());
-                await this.currentRegion.clientCommands.agent.setCamera(campos, finalPos, 4096, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
-            }
+
+            // Move the camera to look directly at prim for faster capture
+            const campos = new Vector3(finalPos);
+            campos.z += 128.0 + objectScale.z;
+            await this.currentRegion.clientCommands.agent.setCamera(campos, finalPos, 4096, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
+
             if (msg !== null)
             {
                 this.circuit.sendMessage(msg, PacketFlags.Reliable);
-                console.log('Requested rez');
             }
         });
     }

@@ -97,6 +97,13 @@ export class Inventory
             invItem.inventoryType = parseInt(receivedItem['inv_type'], 10);
             invItem.type = parseInt(receivedItem['type'], 10);
             invItem.itemID = item;
+
+            if (receivedItem['permissions']['last_owner_id'] === undefined)
+            {
+                // TODO: OpenSim glitch
+                receivedItem['permissions']['last_owner_id'] = receivedItem['permissions']['owner_id'];
+            }
+
             invItem.permissions = {
                 baseMask: parseInt(receivedItem['permissions']['base_mask'], 10),
                 nextOwnerMask: parseInt(receivedItem['permissions']['next_owner_mask'], 10),

@@ -24,47 +24,45 @@ import { HTTPAssets } from '../../enums/HTTPAssets';
 
 export class AssetCommands extends CommandsBase
 {
-    async downloadAsset(type: HTTPAssets, uuid: UUID): Promise<Buffer>
+    async downloadAsset(type: HTTPAssets, uuid: UUID | string): Promise<Buffer>
     {
-        const result = await this.currentRegion.caps.downloadAsset(uuid, type);
-        if (result.toString('UTF-8').trim() === 'Not found!')
+        if (typeof uuid === 'string')
         {
-            throw new Error('Asset not found');
+            uuid = new UUID(uuid);
         }
-        else if (result.toString('UTF-8').trim() === 'Incorrect Syntax')
+        try
         {
-            throw new Error('Invalid Syntax');
+            const result = await this.currentRegion.caps.downloadAsset(uuid, type);
+            if (result.toString('UTF-8').trim() === 'Not found!')
+            {
+                throw new Error('Asset not found');
+            }
+            else if (result.toString('UTF-8').trim() === 'Incorrect Syntax')
+            {
+                throw new Error('Invalid Syntax');
+            }
+            return result;
         }
-        return result;
+        catch (error)
+        {
+            // Fall back to old asset transfer
+            const transferParams = Buffer.allocUnsafe(20);
+            uuid.writeToBuffer(transferParams, 0);
+            transferParams.writeInt32LE(parseInt(type, 10), 16);
+            return this.transfer(TransferChannelType.Asset, TransferSourceType.Asset, false, transferParams);
+        }
     }
 
-    downloadInventoryAsset(itemID: UUID, ownerID: UUID, type: AssetType, priority: boolean,  objectID: UUID = UUID.zero(), assetID: UUID = UUID.zero(), outAssetID?: { assetID: UUID }): Promise<Buffer>
+    transfer(channelType: TransferChannelType, sourceType: TransferSourceType, priority: boolean, transferParams: Buffer, outAssetID?: { assetID: UUID }): Promise<Buffer>
     {
         return new Promise<Buffer>((resolve, reject) =>
         {
-            const transferParams = Buffer.allocUnsafe(100);
-            let pos = 0;
-            this.agent.agentID.writeToBuffer(transferParams, pos);
-            pos = pos + 16;
-            this.circuit.sessionID.writeToBuffer(transferParams, pos);
-            pos = pos + 16;
-            ownerID.writeToBuffer(transferParams, pos);
-            pos = pos + 16;
-            objectID.writeToBuffer(transferParams, pos);
-            pos = pos + 16;
-            itemID.writeToBuffer(transferParams, pos);
-            pos = pos + 16;
-            assetID.writeToBuffer(transferParams, pos);
-            pos = pos + 16;
-            transferParams.writeInt32LE(type, pos);
-
             const transferID = UUID.random();
-
             const msg = new TransferRequestMessage();
             msg.TransferInfo = {
                 TransferID: transferID,
-                ChannelType: TransferChannelType.Asset,
-                SourceType: TransferSourceType.SimInventoryItem,
+                ChannelType: channelType,
+                SourceType: sourceType,
                 Priority: 100.0 + (priority ? 1.0 : 0.0),
                 Params: transferParams
             };
@@ -72,7 +70,7 @@ export class AssetCommands extends CommandsBase
             this.circuit.sendMessage(msg, PacketFlags.Reliable);
             let gotInfo = true;
             let expectedSize = 0;
-            const packets: {[key: number]: Buffer} = {};
+            const packets: { [key: number]: Buffer } = {};
             const subscription = this.circuit.subscribeToMessages([
                 Message.TransferInfo,
                 Message.TransferAbort,
@@ -90,16 +88,24 @@ export class AssetCommands extends CommandsBase
                             switch (messg.TransferData.Status)
                             {
                                 case TransferStatus.Abort:
-                                    throw new Error('Transfer Aborted');
+                                    subscription.unsubscribe();
+                                    reject(new Error('Transfer Aborted'));
+                                    break;
                                 case TransferStatus.Error:
-                                    throw new Error('Error');
+                                    subscription.unsubscribe();
+                                    reject(new Error('Error'));
+                                    break;
                                 case TransferStatus.Skip:
                                     console.error('TransferPacket: Skip! not sure what this means');
                                     break;
                                 case TransferStatus.InsufficientPermissions:
-                                    throw new Error('Insufficient Permissions');
+                                    subscription.unsubscribe();
+                                    reject(new Error('Insufficient Permissions'));
+                                    break;
                                 case TransferStatus.NotFound:
-                                    throw new Error('Not Found');
+                                    subscription.unsubscribe();
+                                    reject(new Error('Not Found'));
+                                    break;
                             }
                             break;
                         }
@@ -122,18 +128,25 @@ export class AssetCommands extends CommandsBase
                                     }
                                     break;
                                 case TransferStatus.Abort:
-                                    throw new Error('Transfer Aborted');
+                                    subscription.unsubscribe();
+                                    reject(new Error('Transfer Aborted'));
+                                    break;
                                 case TransferStatus.Error:
-                                    throw new Error('Error');
+                                    subscription.unsubscribe();
+                                    reject(new Error('Error'));
                                     // See if we get anything else
                                     break;
                                 case TransferStatus.Skip:
                                     console.error('TransferInfo: Skip! not sure what this means');
                                     break;
                                 case TransferStatus.InsufficientPermissions:
-                                    throw new Error('Insufficient Permissions');
+                                    subscription.unsubscribe();
+                                    reject(new Error('Insufficient Permissions'));
+                                    break;
                                 case TransferStatus.NotFound:
-                                    throw new Error('Not Found');
+                                    subscription.unsubscribe();
+                                    reject(new Error('Not Found'));
+                                    break;
                             }
 
                             break;
@@ -145,7 +158,9 @@ export class AssetCommands extends CommandsBase
                             {
                                 return;
                             }
-                            throw new Error('Transfer Aborted');
+                            subscription.unsubscribe();
+                            reject(new Error('Transfer Aborted'));
+                            return;
                         }
                     }
                     if (gotInfo)
@@ -177,7 +192,38 @@ export class AssetCommands extends CommandsBase
                     subscription.unsubscribe();
                     reject(error);
                 }
-            })
+            });
+        });
+    }
+
+    downloadInventoryAsset(itemID: UUID, ownerID: UUID, type: AssetType, priority: boolean,  objectID: UUID = UUID.zero(), assetID: UUID = UUID.zero(), outAssetID?: { assetID: UUID }): Promise<Buffer>
+    {
+        return new Promise<Buffer>((resolve, reject) =>
+        {
+            const transferParams = Buffer.allocUnsafe(100);
+            let pos = 0;
+            this.agent.agentID.writeToBuffer(transferParams, pos);
+            pos = pos + 16;
+            this.circuit.sessionID.writeToBuffer(transferParams, pos);
+            pos = pos + 16;
+            ownerID.writeToBuffer(transferParams, pos);
+            pos = pos + 16;
+            objectID.writeToBuffer(transferParams, pos);
+            pos = pos + 16;
+            itemID.writeToBuffer(transferParams, pos);
+            pos = pos + 16;
+            assetID.writeToBuffer(transferParams, pos);
+            pos = pos + 16;
+            transferParams.writeInt32LE(type, pos);
+
+            this.transfer(TransferChannelType.Asset, TransferSourceType.SimInventoryItem, priority, transferParams, outAssetID).then((result) =>
+            {
+                resolve(result);
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+
         });
     }
 
@@ -366,7 +412,7 @@ export class AssetCommands extends CommandsBase
             'next_owner_mask': PermissionMask.All
         };
         const result = await this.currentRegion.caps.capsPostXML('NewFileAgentInventory', uploadMap);
-        if (result['state'] === 'upload' && result['upload_price'])
+        if (result['state'] === 'upload' && result['upload_price'] !== undefined)
         {
             const cost = result['upload_price'];
             if (await confirmCostCallback(cost))

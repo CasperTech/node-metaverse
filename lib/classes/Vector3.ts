@@ -14,9 +14,9 @@ export class Vector3 extends vec3
         {
             v = Vector3.getZero();
         }
-        //doc.ele('X', v.x);
-        //doc.ele('Y', v.y);
-        //doc.ele('Z', v.z);
+        doc.ele('X', v.x);
+        doc.ele('Y', v.y);
+        doc.ele('Z', v.z);
     }
 
     static fromXMLJS(obj: any, param: string): Vector3 | false

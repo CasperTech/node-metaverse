@@ -31,7 +31,7 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
-    "@caspertech/llsd": "^1.0.2",
+    "@caspertech/llsd": "^1.0.3",
     "@types/long": "^4.0.0",
     "@types/micromatch": "^3.1.0",
     "@types/mocha": "^5.2.5",

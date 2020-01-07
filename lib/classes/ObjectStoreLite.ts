@@ -71,6 +71,7 @@ export class ObjectStoreLite implements IObjectStore
             switch (packet.message.id)
             {
                 case Message.ObjectProperties:
+                {
                     const objProp = packet.message as ObjectPropertiesMessage;
                     for (const obj of objProp.ObjectData)
                     {
@@ -86,14 +87,19 @@ export class ObjectStoreLite implements IObjectStore
                         }
                     }
                     break;
+                }
                 case Message.ObjectUpdate:
+                {
                     const objectUpdate = packet.message as ObjectUpdateMessage;
                     this.objectUpdate(objectUpdate);
                     break;
+                }
                 case Message.ObjectUpdateCached:
+                {
                     const objectUpdateCached = packet.message as ObjectUpdateCachedMessage;
                     this.objectUpdateCached(objectUpdateCached);
                     break;
+                }
                 case Message.ObjectUpdateCompressed:
                 {
                     const objectUpdateCompressed = packet.message as ObjectUpdateCompressedMessage;
@@ -101,13 +107,17 @@ export class ObjectStoreLite implements IObjectStore
                     break;
                 }
                 case Message.ImprovedTerseObjectUpdate:
+                {
                     const objectUpdateTerse = packet.message as ImprovedTerseObjectUpdateMessage;
                     this.objectUpdateTerse(objectUpdateTerse);
                     break;
+                }
                 case Message.KillObject:
+                {
                     const killObj = packet.message as KillObjectMessage;
                     this.killObject(killObj);
                     break;
+                }
             }
         });
 
@@ -408,6 +418,7 @@ export class ObjectStoreLite implements IObjectStore
             newObj.localID = obj.ID;
             newObj.objectID = obj.FullID;
             newObj.object = obj;
+            newObj.createSelected = obj.Flags !== undefined && (obj.Flags & PrimFlags.CreateSelected) !== 0;
             if (obj.Flags !== undefined && obj.Flags & PrimFlags.CreateSelected && !this.pendingObjectProperties[obj.FullID.toString()])
             {
                 this.selectedPrimsWithoutUpdate[obj.ID] = true;
@@ -715,11 +726,6 @@ export class ObjectStoreLite implements IObjectStore
                     namevalue.sendTo = kv[3];
                     namevalue.value = kv[4];
                     nv[kv[0]] = namevalue;
-                }
-                else
-                {
-                    console.log('namevalue unexpected length: ' + kv.length);
-                    console.log(kv);
                 }
             }
         });

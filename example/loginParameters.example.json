@@ -2,5 +2,6 @@
   "firstName": "Username",
   "lastName": "Resident",
   "password": "YourPassword",
-  "start": "last" //first, last, or login uri like uri:<existing region name>&<x>&<y>&<z>
+  "start": "last", //first, last, or login uri like uri:<existing region name>&<x>&<y>&<z>
+  "url": "https://login.agni.lindenlab.com/cgi-bin/login.cgi"
 }

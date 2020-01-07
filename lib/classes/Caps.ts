@@ -172,6 +172,9 @@ export class Caps
                         resolve(body);
                     }
                 });
+            }).catch((err) =>
+            {
+                reject(err);
             });
         });
     }
@@ -261,7 +264,7 @@ export class Caps
                 }
                 else
                 {
-                    reject(new Error('Capability not available'));
+                    reject(new Error('Capability ' + capability + ' not available'));
                 }
             });
         });

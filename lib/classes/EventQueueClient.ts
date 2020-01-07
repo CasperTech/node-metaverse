@@ -118,7 +118,14 @@ export class EventQueueClient
                                         pprop.AABBMin = new Vector3([parseInt(body['ParcelData'][0]['AABBMin'][0], 10), parseInt(body['ParcelData'][0]['AABBMin'][1], 10), parseInt( body['ParcelData'][0]['AABBMin'][2], 10)]);
                                         pprop.AnyAVSounds = body['ParcelData'][0]['AnyAVSounds'];
                                         pprop.Area = body['ParcelData'][0]['Area'];
-                                        pprop.AuctionID = Buffer.from(body['ParcelData'][0]['AuctionID'].toArray()).readUInt32LE(0);
+                                        try
+                                        {
+                                            pprop.AuctionID = Buffer.from(body['ParcelData'][0]['AuctionID'].toArray()).readUInt32LE(0);
+                                        }
+                                        catch (ignore)
+                                        {
+                                            // TODO: Opensim glitch
+                                        }
                                         pprop.AuthBuyerID = new UUID(String(body['ParcelData'][0]['AuthBuyerID']));
 
                                         pprop.Bitmap = Buffer.from(body['ParcelData'][0]['Bitmap'].toArray());
@@ -167,7 +174,11 @@ export class EventQueueClient
                                         pprop.TotalPrims = body['ParcelData'][0]['TotalPrims'];
                                         pprop.UserLocation = new Vector3([parseInt(body['ParcelData'][0]['UserLocation'][0], 10), parseInt(body['ParcelData'][0]['UserLocation'][1], 10), parseInt(body['ParcelData'][0]['UserLocation'][2], 10)]);
                                         pprop.UserLookAt = new Vector3([parseInt(body['ParcelData'][0]['UserLookAt'][0], 10), parseInt(body['ParcelData'][0]['UserLookAt'][1], 10), parseInt(body['ParcelData'][0]['UserLookAt'][2], 10)]);
-                                        pprop.RegionAllowAccessOverride = body['RegionAllowAccessBlock'][0]['RegionAllowAccessOverride'];
+                                        if (body['RegionAllowAccessBlock'] !== undefined && body['RegionAllowAccessBlock'].length > 0)
+                                        {
+                                            // TODO: OpenSim glitch
+                                            pprop.RegionAllowAccessOverride = body['RegionAllowAccessBlock'][0]['RegionAllowAccessOverride'];
+                                        }
                                         this.clientEvents.onParcelPropertiesEvent.next(pprop);
                                         break;
                                     }
