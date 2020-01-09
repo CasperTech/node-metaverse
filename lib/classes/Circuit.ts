@@ -484,7 +484,7 @@ export class Circuit
         {
             clearTimeout(this.receivedPackets[packet.sequenceNumber]);
             this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
-            console.log('Ignoring duplicate packet: ' + packet.message.name + ' sequenceID: ' + packet.sequenceNumber);
+            this.sendAck(packet.sequenceNumber);
             return;
         }
         this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);

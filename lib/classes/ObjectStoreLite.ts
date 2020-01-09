@@ -33,6 +33,7 @@ import { ObjectUpdatedEvent } from '../events/ObjectUpdatedEvent';
 import { CompressedFlags } from '../enums/CompressedFlags';
 import { Vector3 } from './Vector3';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
+import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -207,8 +208,13 @@ export class ObjectStoreLite implements IObjectStore
         o.touchName = Utils.BufferToStringSimple(obj.TouchName);
         o.sitName = Utils.BufferToStringSimple(obj.SitName);
         o.textureID = Utils.BufferToStringSimple(obj.TextureID);
-        o.resolvedAt = new Date().getTime() / 1000;
-
+        if (!o.resolvedAt)
+        {
+            o.resolvedAt = new Date().getTime() / 1000;
+            const evt = new ObjectResolvedEvent();
+            evt.object = o;
+            this.clientEvents.onObjectResolvedEvent.next(evt);
+        }
         if (o.Flags !== undefined)
         {
             if (o.Flags & PrimFlags.CreateSelected)
@@ -419,6 +425,7 @@ export class ObjectStoreLite implements IObjectStore
             newObj.objectID = obj.FullID;
             newObj.object = obj;
             newObj.createSelected = obj.Flags !== undefined && (obj.Flags & PrimFlags.CreateSelected) !== 0;
+            obj.createdSelected = newObj.createSelected;
             if (obj.Flags !== undefined && obj.Flags & PrimFlags.CreateSelected && !this.pendingObjectProperties[obj.FullID.toString()])
             {
                 this.selectedPrimsWithoutUpdate[obj.ID] = true;

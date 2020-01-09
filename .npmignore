@@ -5,6 +5,7 @@ lib/
 .idea/
 tools/
 example/
+exampleMine/
 docs/
 dist/tests/
 testing/

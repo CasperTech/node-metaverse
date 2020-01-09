@@ -164,14 +164,11 @@ export class UUID
 
     public CRC(): number
     {
-        let retval = 0;
         const bytes: Buffer = this.getBuffer();
-
-        retval += ((bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]);
-        retval += ((bytes[7] << 24) + (bytes[6] << 16) + (bytes[5] << 8) + bytes[4]);
-        retval += ((bytes[11] << 24) + (bytes[10] << 16) + (bytes[9] << 8) + bytes[8]);
-        retval += ((bytes[15] << 24) + (bytes[14] << 16) + (bytes[13] << 8) + bytes[12]);
-
-        return retval;
+        const crcOne = ((bytes[3] << 24 >>> 0) + (bytes[2] << 16 >>> 0) + (bytes[1] << 8 >>> 0) + bytes[0]);
+        const crcTwo = ((bytes[7] << 24 >>> 0) + (bytes[6] << 16 >>> 0) + (bytes[5] << 8 >>> 0) + bytes[4]);
+        const crcThree =  ((bytes[11] << 24 >>> 0) + (bytes[10] << 16 >>> 0) + (bytes[9] << 8 >>> 0) + bytes[8]);
+        const crcFour = ((bytes[15] << 24 >>> 0) + (bytes[14] << 16 >>> 0) + (bytes[13] << 8 >>> 0) + bytes[12]);
+        return crcOne + crcTwo + crcThree + crcFour >>> 0;
     }
 }

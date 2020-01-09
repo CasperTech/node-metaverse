@@ -26,6 +26,7 @@ import { AgentFlags } from '../enums/AgentFlags';
 import { ControlFlags } from '../enums/ControlFlags';
 import { PacketFlags } from '../enums/PacketFlags';
 import { FolderType } from '../enums/FolderType';
+import { Subject, Subscription } from 'rxjs';
 
 export class Agent
 {
@@ -84,6 +85,9 @@ export class Agent
     };
     agentUpdateTimer: Timer | null = null;
     estateManager = false;
+    appearanceSet = false;
+    appearanceSetEvent: Subject<void> = new Subject<void>();
+
     private clientEvents: ClientEvents;
 
     constructor(clientEvents: ClientEvents)
@@ -311,6 +315,9 @@ export class Agent
 
                 }
             });
+
+            this.appearanceSet = true;
+            this.appearanceSetEvent.next();
         });
     }
 }

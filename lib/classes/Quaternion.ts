@@ -72,7 +72,7 @@ export class Quaternion extends quat
             this.x = buf.x;
             this.y = buf.y;
             this.z = buf.z;
-            this.w = buf.z;
+            this.w = buf.w;
         }
         else if (buf instanceof Quaternion)
         {

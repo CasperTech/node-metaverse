@@ -25039,23 +25039,6 @@
                         "size": 1
                     }
                 ]
-            },
-            {
-                "name": "Size",
-                "type": "Variable",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "SizeX",
-                        "type": "U16",
-                        "size": 1
-                    },
-                    {
-                        "name": "SizeY",
-                        "type": "U16",
-                        "size": 1
-                    }
-                ]
             }
         ]
     },
