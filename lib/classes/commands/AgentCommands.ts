@@ -9,6 +9,7 @@ import { FilterResponse } from '../../enums/FilterResponse';
 import { AvatarPropertiesReplyMessage } from '../messages/AvatarPropertiesReply';
 import { AvatarPropertiesRequestMessage } from '../messages/AvatarPropertiesRequest';
 import { AvatarPropertiesReplyEvent } from '../../events/AvatarPropertiesReplyEvent';
+import { Subscription } from 'rxjs';
 
 export class AgentCommands extends CommandsBase
 {
@@ -67,6 +68,64 @@ export class AgentCommands extends CommandsBase
     {
         this.agent.cameraFar = viewDistance;
         this.agent.sendAgentUpdate();
+    }
+
+    waitForAppearanceSet(timeout: number = 10000): Promise<void>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            if (this.agent.appearanceSet)
+            {
+                resolve();
+            }
+            else
+            {
+                let appearanceSubscription: Subscription | undefined;
+                let timeoutTimer: number | undefined;
+                appearanceSubscription = this.agent.appearanceSetEvent.subscribe(() =>
+                {
+                    if (timeoutTimer !== undefined)
+                    {
+                        clearTimeout(timeoutTimer);
+                        timeoutTimer = undefined;
+                    }
+                    if (appearanceSubscription !== undefined)
+                    {
+                        appearanceSubscription.unsubscribe();
+                        appearanceSubscription = undefined;
+                        resolve();
+                    }
+                });
+                timeoutTimer = setTimeout(() =>
+                {
+                    if (appearanceSubscription !== undefined)
+                    {
+                        appearanceSubscription.unsubscribe();
+                        appearanceSubscription = undefined;
+                    }
+                    if (timeoutTimer !== undefined)
+                    {
+                        clearTimeout(timeoutTimer);
+                        timeoutTimer = undefined;
+                        reject(new Error('Timeout'));
+                    }
+                }, timeout) as any as number;
+                if (this.agent.appearanceSet)
+                {
+                    if (appearanceSubscription !== undefined)
+                    {
+                        appearanceSubscription.unsubscribe();
+                        appearanceSubscription = undefined;
+                    }
+                    if (timeoutTimer !== undefined)
+                    {
+                        clearTimeout(timeoutTimer);
+                        timeoutTimer = undefined;
+                    }
+                    resolve();
+                }
+            }
+        });
     }
 
     async getAvatarProperties(avatarID: UUID | string): Promise<AvatarPropertiesReplyEvent>

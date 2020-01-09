@@ -15,6 +15,9 @@ export class InventoryItem
     parentID: UUID;
     flags: InventoryItemFlags;
     itemID: UUID;
+    oldItemID?: UUID;
+    parentPartID?: UUID;
+    permsGranter?: UUID;
     description: string;
     type: AssetType;
     permissions: {
@@ -44,26 +47,24 @@ export class InventoryItem
     getCRC(): number
     {
         let crc = 0;
-        crc += this.assetID.CRC();
-        crc += this.parentID.CRC();
-        crc += this.itemID.CRC();
-        crc += this.permissions.creator.CRC();
-        crc += this.permissions.owner.CRC();
-        crc += this.permissions.group.CRC();
-        crc += this.permissions.ownerMask;
-        crc += this.permissions.nextOwnerMask;
-        crc += this.permissions.everyoneMask;
-        crc += this.permissions.groupMask;
-        crc += this.flags;
-        crc += this.inventoryType;
-        crc += this.type;
-        crc += Math.round(this.created.getTime() / 1000);
-        crc += this.salePrice;
-        crc += this.saleType * 0x07073096;
-        while (crc > 4294967295)
-        {
-            crc -= 4294967295;
-        }
+        crc = crc + this.itemID.CRC() >>> 0;
+        crc = crc + this.parentID.CRC() >>> 0;
+        crc = crc + this.permissions.creator.CRC() >>> 0;
+        crc = crc + this.permissions.owner.CRC() >>> 0;
+        crc = crc + this.permissions.group.CRC() >>> 0;
+        crc = crc + this.permissions.baseMask >>> 0;
+        crc = crc + this.permissions.ownerMask >>> 0;
+        crc = crc + this.permissions.everyoneMask >>> 0;
+        crc = crc + this.permissions.groupMask >>> 0;
+
+        crc = crc + this.assetID.CRC() >>> 0;
+        crc = crc + this.type >>> 0;
+        crc = crc + this.inventoryType >>> 0;
+
+        crc = crc + this.flags >>> 0;
+        crc = crc + this.salePrice >>> 0;
+        crc = crc + (this.saleType * 0x07073096 >>> 0) >>> 0;
+        crc = crc + Math.round(this.created.getTime() / 1000) >>> 0;
         return crc;
     }
 }

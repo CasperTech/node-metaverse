@@ -141,7 +141,6 @@ export class InventoryFolder
             delete this.agent.inventory.itemsByID[itemID.toString()];
             this.items = this.items.filter((item) =>
             {
-                console.log(item.itemID + ' vs ' + JSON.stringify(itemID));
                 return !item.itemID.equals(itemID);
             })
         }

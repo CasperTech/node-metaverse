@@ -21,9 +21,15 @@ import { Material } from '../public/Material';
 import { LLMesh } from '../public/LLMesh';
 import { FolderType } from '../../enums/FolderType';
 import { HTTPAssets } from '../../enums/HTTPAssets';
+import { InventoryItem } from '../InventoryItem';
+import { CreateInventoryItemMessage } from '../messages/CreateInventoryItem';
+import { WearableType } from '../../enums/WearableType';
+import { UpdateCreateInventoryItemMessage } from '../messages/UpdateCreateInventoryItem';
+import { FilterResponse } from '../../enums/FilterResponse';
 
 export class AssetCommands extends CommandsBase
 {
+    private callbackID: number = 1;
     async downloadAsset(type: HTTPAssets, uuid: UUID | string): Promise<Buffer>
     {
         if (typeof uuid === 'string')
@@ -400,8 +406,8 @@ export class AssetCommands extends CommandsBase
             'metric': 'MUT_Unspecified'
         };
         const uploadMap = {
-            'name': name,
-            'description': description,
+            'name': String(name),
+            'description': String(description),
             'asset_resources': assetResources,
             'asset_type': 'mesh',
             'inventory_type': 'object',
@@ -411,7 +417,15 @@ export class AssetCommands extends CommandsBase
             'group_mask': PermissionMask.All,
             'next_owner_mask': PermissionMask.All
         };
-        const result = await this.currentRegion.caps.capsPostXML('NewFileAgentInventory', uploadMap);
+        let result;
+        try
+        {
+            result = await this.currentRegion.caps.capsPostXML('NewFileAgentInventory', uploadMap);
+        }
+        catch (error)
+        {
+            console.error(error);
+        }
         if (result['state'] === 'upload' && result['upload_price'] !== undefined)
         {
             const cost = result['upload_price'];
@@ -445,16 +459,204 @@ export class AssetCommands extends CommandsBase
         }
     }
 
-    uploadAsset(type: HTTPAssets, data: Buffer, name: string, description: string): Promise<UUID>
+    uploadInventoryItem(type: HTTPAssets, data: Buffer, name: string, description: string): Promise<UUID>
     {
         return new Promise<UUID>((resolve, reject) =>
         {
+            if (type === HTTPAssets.ASSET_SCRIPT)
+            {
+                type = HTTPAssets.ASSET_LSL_TEXT;
+            }
+            const transactionID = UUID.random();
+            const callbackID = ++this.callbackID;
+            const msg = new CreateInventoryItemMessage();
+            msg.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            msg.InventoryBlock = {
+                CallbackID: callbackID,
+                FolderID: this.agent.inventory.main.root || UUID.zero(),
+                TransactionID: transactionID,
+                NextOwnerMask: (1 << 13) | (1 << 14) | (1 << 15) | (1 << 19),
+                Type: Utils.HTTPAssetTypeToAssetType(type),
+                InvType: Utils.HTTPAssetTypeToInventoryType(type),
+                WearableType: WearableType.Shape,
+                Name: Utils.StringToBuffer(name),
+                Description: Utils.StringToBuffer(description)
+            };
+            this.currentRegion.circuit.waitForMessage<UpdateCreateInventoryItemMessage>(Message.UpdateCreateInventoryItem, 10000, (message: UpdateCreateInventoryItemMessage) =>
+            {
+                if (message.InventoryData[0].CallbackID === callbackID)
+                {
+                    return FilterResponse.Finish;
+                }
+                else
+                {
+                    return FilterResponse.NoMatch;
+                }
+            }).then((createInventoryMsg: UpdateCreateInventoryItemMessage) =>
+            {
+                switch (type)
+                {
+                    case HTTPAssets.ASSET_NOTECARD:
+                    {
+                        this.currentRegion.caps.capsPostXML('UpdateNotecardAgentInventory', {
+                            'item_id': new LLSD.UUID(createInventoryMsg.InventoryData[0].ItemID.toString()),
+                        }).then((result: any) =>
+                        {
+                            if (result['uploader'])
+                            {
+                                const uploader = result['uploader'];
+                                this.currentRegion.caps.capsRequestUpload(uploader, data).then((uploadResult: any) =>
+                                {
+                                    if (uploadResult['state'] && uploadResult['state'] === 'complete')
+                                    {
+                                        const itemID: UUID = createInventoryMsg.InventoryData[0].ItemID;
+                                        resolve(itemID);
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Asset upload failed'))
+                                    }
+                                }).catch((err) =>
+                                {
+                                    reject(err);
+                                });
+                            }
+                            else
+                            {
+                                reject(new Error('Invalid response when attempting to request upload URL for notecard'));
+                            }
+                        }).catch((err) =>
+                        {
+                            reject(err);
+                        });
+                        break;
+                    }
+                    case HTTPAssets.ASSET_GESTURE:
+                    {
+                        this.currentRegion.caps.capsPostXML('UpdateGestureAgentInventory', {
+                            'item_id': new LLSD.UUID(createInventoryMsg.InventoryData[0].ItemID.toString()),
+                        }).then((result: any) =>
+                        {
+                            if (result['uploader'])
+                            {
+                                const uploader = result['uploader'];
+                                this.currentRegion.caps.capsRequestUpload(uploader, data).then((uploadResult: any) =>
+                                {
+                                    if (uploadResult['state'] && uploadResult['state'] === 'complete')
+                                    {
+                                        const itemID: UUID = createInventoryMsg.InventoryData[0].ItemID;
+                                        resolve(itemID);
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Asset upload failed'))
+                                    }
+                                }).catch((err) =>
+                                {
+                                    reject(err);
+                                });
+                            }
+                            else
+                            {
+                                reject(new Error('Invalid response when attempting to request upload URL for notecard'));
+                            }
+                        }).catch((err) =>
+                        {
+                            reject(err);
+                        });
+                        break;
+                    }
+                    case HTTPAssets.ASSET_LSL_TEXT:
+                    {
+                        this.currentRegion.caps.capsPostXML('UpdateScriptAgent', {
+                            'item_id': new LLSD.UUID(createInventoryMsg.InventoryData[0].ItemID.toString()),
+                            'target': 'mono'
+                        }).then((result: any) =>
+                        {
+                            if (result['uploader'])
+                            {
+                                const uploader = result['uploader'];
+                                this.currentRegion.caps.capsRequestUpload(uploader, data).then((uploadResult: any) =>
+                                {
+                                    if (uploadResult['state'] && uploadResult['state'] === 'complete')
+                                    {
+                                        const itemID: UUID = createInventoryMsg.InventoryData[0].ItemID;
+                                        resolve(itemID);
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Asset upload failed'))
+                                    }
+                                }).catch((err) =>
+                                {
+                                    reject(err);
+                                });
+                            }
+                            else
+                            {
+                                reject(new Error('Invalid response when attempting to request upload URL for notecard'));
+                            }
+                        }).catch((err) =>
+                        {
+                            reject(err);
+                        });
+                        break;
+                    }
+                    default:
+                    {
+                        reject(new Error('Currently unsupported CreateInventoryType: '  + type));
+                    }
+                }
+            }).catch(() =>
+            {
+                reject(new Error('Timed out waiting for UpdateCreateInventoryItem'));
+            });
+            this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        });
+    }
+
+    uploadAsset(type: HTTPAssets, data: Buffer, name: string, description: string): Promise<InventoryItem>
+    {
+        return new Promise<InventoryItem>((resolve, reject) =>
+        {
+            switch (type)
+            {
+                case HTTPAssets.ASSET_LANDMARK:
+                case HTTPAssets.ASSET_NOTECARD:
+                case HTTPAssets.ASSET_GESTURE:
+                case HTTPAssets.ASSET_SCRIPT:
+                    // These types of assets use an different process
+                    const inventoryItem = this.uploadInventoryItem(type, data, name, description).then((invItemID: UUID) =>
+                    {
+                        this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>
+                        {
+                            if (item === null)
+                            {
+                                reject(new Error('Unable to get inventory item'));
+                            }
+                            else
+                            {
+                                resolve(item);
+                            }
+                        }).catch((err) =>
+                        {
+                            reject(err);
+                        });
+                    }).catch((err) =>
+                    {
+                        reject(err);
+                    });
+                    return ;
+            }
             if (this.agent && this.agent.inventory && this.agent.inventory.main && this.agent.inventory.main.root)
             {
                 this.currentRegion.caps.capsPostXML('NewFileAgentInventory', {
                     'folder_id': new LLSD.UUID(this.agent.inventory.main.root.toString()),
                     'asset_type': type,
-                    'inventory_type': Utils.HTTPAssetTypeToInventoryType(type),
+                    'inventory_type': Utils.HTTPAssetTypeToCapInventoryType(type),
                     'name': name,
                     'description': description,
                     'everyone_mask': PermissionMask.All,
@@ -468,7 +670,24 @@ export class AssetCommands extends CommandsBase
                         const uploadURL = response['uploader'];
                         this.currentRegion.caps.capsRequestUpload(uploadURL, data).then((responseUpload: any) =>
                         {
-                            resolve(new UUID(responseUpload['new_asset'].toString()));
+                            if (responseUpload['new_inventory_item'] !== undefined)
+                            {
+                                const invItemID = new UUID(responseUpload['new_inventory_item'].toString());
+                                this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>
+                                {
+                                    if (item === null)
+                                    {
+                                        reject(new Error('Unable to get inventory item'));
+                                    }
+                                    else
+                                    {
+                                        resolve(item);
+                                    }
+                                }).catch((err) =>
+                                {
+                                    reject(err);
+                                });
+                            }
                         }).catch((err) =>
                         {
                             reject(err);

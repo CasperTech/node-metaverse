@@ -23,6 +23,7 @@ import { FriendRightsEvent } from '../events/FriendRightsEvent';
 import { FriendRemovedEvent } from '../events/FriendRemovedEvent';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
+import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 
 
 export class ClientEvents
@@ -52,4 +53,5 @@ export class ClientEvents
     onObjectUpdatedEvent: Subject<ObjectUpdatedEvent> = new Subject<ObjectUpdatedEvent>();
     onObjectKilledEvent: Subject<ObjectKilledEvent> = new Subject<ObjectKilledEvent>();
     onSelectedObjectEvent: Subject<SelectedObjectEvent> = new Subject<SelectedObjectEvent>();
+    onObjectResolvedEvent: Subject<ObjectResolvedEvent> = new Subject<ObjectResolvedEvent>();
 }

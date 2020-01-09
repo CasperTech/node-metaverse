@@ -21,8 +21,6 @@ import { ObjectAddMessage } from '../messages/ObjectAdd';
 import { Quaternion } from '../Quaternion';
 import { RezObjectMessage } from '../messages/RezObject';
 import { PermissionMask } from '../../enums/PermissionMask';
-import { SelectedObjectEvent } from '../../events/SelectedObjectEvent';
-import Timer = NodeJS.Timer;
 import { PacketFlags } from '../../enums/PacketFlags';
 import { GameObject } from '../public/GameObject';
 import { PCode } from '../../enums/PCode';
@@ -35,12 +33,19 @@ import { Parcel } from '../public/Parcel';
 import * as Long from 'long';
 import * as micromatch from 'micromatch';
 import * as LLSD from '@caspertech/llsd';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { SculptType } from '../..';
+import { ObjectResolvedEvent } from '../../events/ObjectResolvedEvent';
+import { AssetMap } from '../AssetMap';
+import { InventoryType } from '../../enums/InventoryType';
+import { BuildMap } from '../BuildMap';
+import Timer = NodeJS.Timer;
 import Timeout = NodeJS.Timeout;
-import { ObjectUpdatedEvent } from '../..';
 
 export class RegionCommands extends CommandsBase
 {
+    private resolveQueue: {[key: number]: GameObject} = {};
+
     async getRegionHandle(regionID: UUID): Promise<Long>
     {
         const circuit = this.currentRegion.circuit;
@@ -372,6 +377,102 @@ export class RegionCommands extends CommandsBase
         return this.currentRegion.regionName;
     }
 
+    private waitForObjectResolve(localID: number)
+    {
+        return new Promise((resolve, reject) =>
+        {
+            let timeout: Timeout | undefined = undefined;
+            let subs: Subscription | undefined = undefined;
+            try
+            {
+                const ourObject = this.currentRegion.objects.getObjectByLocalID(localID);
+                if (ourObject.resolvedAt)
+                {
+                    resolve();
+                    return;
+                }
+            }
+            catch (ignore)
+            {
+
+            }
+            subs = this.currentRegion.clientEvents.onObjectResolvedEvent.subscribe((evt: ObjectResolvedEvent) =>
+            {
+                if (evt.object.ID === localID)
+                {
+                    if (timeout !== undefined)
+                    {
+                        clearTimeout(timeout);
+                        timeout = undefined;
+                    }
+                    if (subs !== undefined)
+                    {
+                        subs.unsubscribe();
+                        subs = undefined;
+                    }
+                    resolve();
+                }
+            });
+            timeout = setTimeout(() =>
+            {
+                if (timeout !== undefined)
+                {
+                    clearTimeout(timeout);
+                    timeout = undefined;
+                }
+                if (subs !== undefined)
+                {
+                    subs.unsubscribe();
+                    subs = undefined;
+                }
+                const object = this.currentRegion.objects.getObjectByLocalID(localID);
+                if (object.resolvedAt)
+                {
+                    try
+                    {
+                        const ourObject = this.currentRegion.objects.getObjectByLocalID(localID);
+                        if (ourObject.resolvedAt)
+                        {
+                            console.warn('Resolve timed out but object ' + localID + ' HAS been resolved!');
+                            resolve();
+                            return;
+                        }
+                    }
+                    catch (ignore)
+                    {
+
+                    }
+                }
+                reject(new Error('Timeout'));
+            }, 10000);
+        });
+    }
+
+    private async queueResolveObject(object: GameObject, skipInventory = false)
+    {
+        if (object.resolvedAt)
+        {
+            return;
+        }
+        if (this.resolveQueue[object.ID] === undefined)
+        {
+            this.resolveQueue[object.ID] = object;
+            try
+            {
+                await this.resolveObjects([object], true, true);
+            }
+            catch (error)
+            {
+                console.error('Failed to resolve ' + object.ID);
+            }
+            delete this.resolveQueue[object.ID];
+        }
+        else
+        {
+            return this.waitForObjectResolve(object.ID);
+        }
+    }
+
     private async resolveObjects(objects: GameObject[], onlyUnresolved: boolean = false, skipInventory = false)
     {
         // First, create a map of all object IDs
@@ -468,7 +569,6 @@ export class RegionCommands extends CommandsBase
                     const o = objs[ky];
                     if ((o.resolveAttempts === undefined || o.resolveAttempts < 3) && o.FullID !== undefined && o.name !== undefined && o.Flags !== undefined && !(o.Flags & PrimFlags.InventoryEmpty) && (!o.inventory || o.inventory.length === 0))
                     {
-                        console.log(' ... Downloading task inventory for object ' + o.FullID.toString() + ' (' + o.name + '), done ' + count + ' of ' + objectSet.length);
                         const req = new RequestTaskInventoryMessage();
                         req.AgentData = {
                             AgentID: this.agent.agentID,
@@ -886,237 +986,608 @@ export class RegionCommands extends CommandsBase
         });
     }
 
-    private async createPrimWithRetry(retries: number, obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, inventoryID?: UUID)
+    private async buildPart(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, buildMap: BuildMap)
     {
-        for (retries--; retries > -1; retries--)
-        {
-            try
-            {
-                const newObject = await this.createPrim(obj, new Vector3(posOffset), new Quaternion(rotOffset), inventoryID);
-                return newObject;
-            }
-            catch (ignore)
-            {
-                process.exit(1);
-            }
-        }
-        throw new Error('Failed to create prim with ' + retries + ' tries');
-    }
+        // Calculate geometry
+        const objectPosition = new Vector3(obj.Position);
+        const objectRotation = new Quaternion(obj.Rotation);
+        const objectScale = new Vector3(obj.Scale);
 
-    private async buildPart(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, meshCallback: (object: GameObject, meshData: UUID) => UUID | null)
-    {
-        // Rez a prim
-        let newObject: GameObject;
-        if (obj.extraParams !== undefined && obj.extraParams.meshData !== null)
+        let finalPos = Vector3.getZero();
+        let finalRot = Quaternion.getIdentity();
+        if (posOffset.x === 0.0 && posOffset.y === 0.0 && posOffset.z === 0.0 && objectPosition !== undefined)
         {
-            const inventoryID: UUID | null = await meshCallback(obj, obj.extraParams.meshData.meshData);
-            if (inventoryID !== null)
-            {
-                newObject = await this.createPrimWithRetry(3, obj, posOffset, rotOffset, inventoryID);
-            }
-            else
-            {
-                newObject = await this.createPrimWithRetry(3, obj, posOffset, rotOffset);
-            }
+            finalPos = new Vector3(objectPosition);
+            finalRot = new Quaternion(objectRotation);
         }
         else
         {
-            newObject = await this.createPrimWithRetry(3, obj, posOffset, rotOffset);
+            const adjustedPos = new Vector3(objectPosition).multiplyByQuat(new Quaternion(rotOffset));
+            finalPos = new Vector3(new Vector3(posOffset).add(adjustedPos));
+
+            const baseRot = new Quaternion(rotOffset);
+            finalRot = new Quaternion(baseRot.multiply(new Quaternion(objectRotation)));
         }
-        await newObject.setExtraParams(obj.extraParams);
+
+        // Is this a mesh part?
+        let object: GameObject | null = null;
+        if (obj.extraParams !== undefined && obj.extraParams.meshData !== null)
+        {
+            if (buildMap.assetMap.mesh[obj.extraParams.meshData.meshData.toString()] !== undefined)
+            {
+                const meshEntry = buildMap.assetMap.mesh[obj.extraParams.meshData.meshData.toString()];
+                const rezLocation = new Vector3(buildMap.rezLocation);
+                rezLocation.z += (objectScale.z / 2);
+
+                object = await this.rezFromInventory(obj, rezLocation, new UUID(meshEntry.assetID));
+            }
+        }
+        else if (buildMap.primReservoir.length > 0)
+        {
+            const newPrim = buildMap.primReservoir.shift();
+            if (newPrim !== undefined)
+            {
+                object = newPrim;
+                await object.setShape(
+                    obj.PathCurve,
+                    obj.ProfileCurve,
+                    obj.PathBegin,
+                    obj.PathEnd,
+                    obj.PathScaleX,
+                    obj.PathScaleY,
+                    obj.PathShearX,
+                    obj.PathShearY,
+                    obj.PathTwist,
+                    obj.PathTwistBegin,
+                    obj.PathRadiusOffset,
+                    obj.PathTaperX,
+                    obj.PathTaperY,
+                    obj.PathRevolutions,
+                    obj.PathSkew,
+                    obj.ProfileBegin,
+                    obj.ProfileEnd,
+                    obj.ProfileHollow
+                );
+            }
+        }
+
+        if (object === null)
+        {
+            throw new Error('Failed to acquire prim for build');
+        }
+
+        await object.setGeometry(finalPos, finalRot, objectScale);
+
+        if (obj.extraParams.sculptData !== null)
+        {
+            if (obj.extraParams.sculptData.type !== SculptType.Mesh)
+            {
+                const oldTextureID = obj.extraParams.sculptData.texture.toString();
+                if (buildMap.assetMap.textures[oldTextureID] !== undefined)
+                {
+                    obj.extraParams.sculptData.texture = new UUID(buildMap.assetMap.textures[oldTextureID]);
+                }
+            }
+        }
+        await object.setExtraParams(obj.extraParams);
+
         if (obj.TextureEntry !== undefined)
         {
-            await newObject.setTextureEntry(obj.TextureEntry);
+            if (obj.TextureEntry.defaultTexture !== null)
+            {
+                const oldTextureID = obj.TextureEntry.defaultTexture.textureID.toString();
+                if (buildMap.assetMap.textures[oldTextureID] !== undefined)
+                {
+                    obj.TextureEntry.defaultTexture.textureID = new UUID(buildMap.assetMap.textures[oldTextureID]);
+                }
+            }
+            for (const j of obj.TextureEntry.faces)
+            {
+                const oldTextureID = j.textureID.toString();
+                if (buildMap.assetMap.textures[oldTextureID] !== undefined)
+                {
+                    j.textureID = new UUID(buildMap.assetMap.textures[oldTextureID]);
+                }
+            }
+
+            try
+            {
+                await object.setTextureEntry(obj.TextureEntry);
+            }
+            catch (error)
+            {
+                console.error(error);
+            }
         }
+
         if (obj.name !== undefined)
         {
-            await newObject.setName(obj.name);
+            await object.setName(obj.name);
         }
+
         if (obj.description !== undefined)
         {
-            await newObject.setDescription(obj.description);
+            await object.setDescription(obj.description);
         }
-        return newObject;
-    }
 
-    buildObject(obj: GameObject, meshCallback: (object: GameObject, meshData: UUID) => UUID | null): Promise<GameObject>
-    {
-        return new Promise<GameObject>(async (resolve, reject) =>
+        for (const invItem of obj.inventory)
         {
-            const parts: (Promise<GameObject>)[] = [];
-            console.log('Rezzing prims');
-            parts.push(this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), meshCallback));
-
-            if (obj.children)
+            try
             {
-                if (obj.Position === undefined)
+                switch (invItem.inventoryType)
                 {
-                    obj.Position = Vector3.getZero();
-                }
-                if (obj.Rotation === undefined)
-                {
-                    obj.Rotation = Quaternion.getIdentity();
-                }
-                for (const child of obj.children)
-                {
-                    if (child.Position !== undefined && child.Rotation !== undefined)
+                    case InventoryType.Clothing:
                     {
-                        const objPos = new Vector3(obj.Position);
-                        const objRot = new Quaternion(obj.Rotation);
-                        parts.push(this.buildPart(child, objPos, objRot, meshCallback));
+                        if (buildMap.assetMap.clothing[invItem.assetID.toString()] !== undefined)
+                        {
+                            const invItemID = buildMap.assetMap.clothing[invItem.assetID.toString()];
+                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                        }
+                        break;
+                    }
+                    case InventoryType.Bodypart:
+                    {
+                        if (buildMap.assetMap.bodyparts[invItem.assetID.toString()] !== undefined)
+                        {
+                            const invItemID = buildMap.assetMap.bodyparts[invItem.assetID.toString()];
+                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                        }
+                        break;
+                    }
+                    case InventoryType.Notecard:
+                    {
+                        if (buildMap.assetMap.notecards[invItem.assetID.toString()] !== undefined)
+                        {
+                            const invItemID = buildMap.assetMap.notecards[invItem.assetID.toString()];
+                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                        }
+                        break;
+                    }
+                    case InventoryType.Sound:
+                    {
+                        if (buildMap.assetMap.sounds[invItem.assetID.toString()] !== undefined)
+                        {
+                            const invItemID = buildMap.assetMap.sounds[invItem.assetID.toString()];
+                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                        }
+                        break;
+                    }
+                    case InventoryType.Gesture:
+                    {
+                        if (buildMap.assetMap.gestures[invItem.assetID.toString()] !== undefined)
+                        {
+                            const invItemID = buildMap.assetMap.gestures[invItem.assetID.toString()];
+                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                        }
+                        break;
+                    }
+                    case InventoryType.Landmark:
+                    {
+                        if (buildMap.assetMap.landmarks[invItem.assetID.toString()] !== undefined)
+                        {
+                            const invItemID = buildMap.assetMap.landmarks[invItem.assetID.toString()];
+                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                        }
+                        break;
+                    }
+                    case InventoryType.LSL:
+                    {
+                        if (buildMap.assetMap.scripts[invItem.assetID.toString()] !== undefined)
+                        {
+                            const invItemID = buildMap.assetMap.scripts[invItem.assetID.toString()];
+                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                        }
+                        break;
+                    }
+                    case InventoryType.Animation:
+                    {
+                        if (buildMap.assetMap.animations[invItem.assetID.toString()] !== undefined)
+                        {
+                            const invItemID = buildMap.assetMap.animations[invItem.assetID.toString()];
+                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                        }
+                        break;
                     }
                 }
             }
-            Promise.all(parts).then(async (results) =>
+            catch (error)
             {
-                console.log('Linking prims');
-                const rootObj = results[0];
-                const childPrims: GameObject[] = [];
-                for (const childObject of results)
+                console.error(error);
+            }
+        }
+
+        // Do nested objects last
+        for (const invItem of obj.inventory)
+        {
+            try
+            {
+                switch (invItem.inventoryType)
                 {
-                    if (childObject !== rootObj)
+                    case InventoryType.Object:
                     {
-                        childPrims.push(childObject);
+                        if (buildMap.assetMap.objects[invItem.assetID.toString()] !== undefined)
+                        {
+                            const objectXML = buildMap.assetMap.objects[invItem.assetID.toString()];
+                            if (objectXML !== null)
+                            {
+                                const taskObjectXML = await GameObject.fromXML(objectXML.toString('utf-8'));
+                                const taskObject = await this.buildObjectNew(taskObjectXML, buildMap.callback, buildMap.costOnly);
+                                if (taskObject !== null)
+                                {
+                                    const invItemUUID = await taskObject.takeToInventory();
+                                    await object.dropInventoryIntoContents(invItemUUID);
+                                }
+                            }
+                        }
+                        break;
                     }
                 }
-                await rootObj.linkFrom(childPrims);
-                console.log('All done');
-                resolve(rootObj);
-            }).catch((err) =>
+            }
+            catch (error)
             {
-                reject(err);
-            });
-            /*
-            Utils.promiseConcurrent<GameObject>(parts, 1000, 10000).then(async (results) =>
-            {
-                console.log('Linking prims');
-                const rootObj = results.results[0];
-                await rootObj.linkFrom(results.results);
-                console.log('All done');
-                resolve(rootObj);
-            }).catch((err) =>
-            {
-                reject(err);
-            });
-             */
-        });
+                console.error(error);
+            }
+        }
+        return object;
     }
 
-    createPrim(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, inventoryID?: UUID): Promise<GameObject>
+    private gatherAssets(obj: GameObject, buildMap: BuildMap)
     {
-        return new Promise(async (resolve, reject) =>
+        if (obj.extraParams !== undefined)
         {
-            const timeRequested = (new Date().getTime() / 1000) - this.currentRegion.timeOffset;
-
-            const objectPosition = new Vector3(obj.Position);
-            const objectRotation = new Quaternion(obj.Rotation);
-            const objectScale = new Vector3(obj.Scale);
-
-            let finalPos = Vector3.getZero();
-            let finalRot = Quaternion.getIdentity();
-            if (posOffset.x === 0.0 && posOffset.y === 0.0 && posOffset.z === 0.0 && objectPosition !== undefined)
+            if (obj.extraParams.meshData !== null)
             {
-                finalPos = new Vector3(objectPosition);
-                finalRot = new Quaternion(objectRotation);
+                buildMap.assetMap.mesh[obj.extraParams.meshData.meshData.toString()] = {
+                    objectName: obj.name || 'Object',
+                    objectDescription: obj.description || '(no description)',
+                    assetID: obj.extraParams.meshData.meshData.toString()
+                };
             }
             else
             {
-                const adjustedPos = new Vector3(new Vector3(objectPosition).multiplyByQuat(new Quaternion(rotOffset).inverse()));
-                finalPos = new Vector3(new Vector3(adjustedPos).add(new Vector3(posOffset)));
-                finalRot = new Quaternion(new Quaternion(objectRotation).add(new Quaternion(rotOffset)));
+                buildMap.primsNeeded++;
             }
-            let msg: ObjectAddMessage | RezObjectMessage | null = null;
-            let fromInventory = false;
-            if (inventoryID === undefined || this.agent.inventory.itemsByID[inventoryID.toString()] === undefined)
+            if (obj.extraParams.sculptData !== null)
             {
-                // First, rez object in scene
-                msg = new ObjectAddMessage();
+                if (obj.extraParams.sculptData.type !== SculptType.Mesh)
+                {
+                    buildMap.assetMap.textures[obj.extraParams.sculptData.texture.toString()] = obj.extraParams.sculptData.texture.toString();
+                }
+            }
+            if (obj.TextureEntry !== undefined)
+            {
+                for (const j of obj.TextureEntry.faces)
+                {
+                    const textureID = j.textureID;
+                    buildMap.assetMap.textures[textureID.toString()] = textureID.toString();
+                }
+                if (obj.TextureEntry.defaultTexture !== null)
+                {
+                    const textureID = obj.TextureEntry.defaultTexture.textureID;
+                    buildMap.assetMap.textures[textureID.toString()] = textureID.toString();
+                }
+            }
+            if (obj.inventory !== undefined)
+            {
+                for (const j of obj.inventory)
+                {
+                    switch (j.inventoryType)
+                    {
+                        case InventoryType.Animation:
+                        {
+                            buildMap.assetMap.animations[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.Bodypart:
+                        {
+                            buildMap.assetMap.bodyparts[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.CallingCard:
+                        {
+                            buildMap.assetMap.callingcards[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.Clothing:
+                        {
+                            buildMap.assetMap.clothing[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.Gesture:
+                        {
+                            buildMap.assetMap.gestures[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.Landmark:
+                        {
+                            buildMap.assetMap.landmarks[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.LSL:
+                        {
+                            buildMap.assetMap.scripts[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.Snapshot:
+                        {
+                            buildMap.assetMap.textures[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.Notecard:
+                        {
+                            buildMap.assetMap.notecards[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.Sound:
+                        {
+                            buildMap.assetMap.sounds[j.assetID.toString()] = j.assetID.toString();
+                            break;
+                        }
+                        case InventoryType.Object:
+                        {
+                            buildMap.assetMap.objects[j.assetID.toString()] = null;
+                        }
+                    }
+                }
+            }
+        }
+        if (obj.children)
+        {
+            for (const child of obj.children)
+            {
+                this.gatherAssets(child, buildMap);
+            }
+        }
+    }
+
+    async buildObjectNew(obj: GameObject, callback: (map: AssetMap) => void, costOnly: boolean = false): Promise<GameObject | null>
+    {
+        const map: AssetMap = new AssetMap();
+        const  buildMap = new BuildMap(map, callback, costOnly);
+        this.gatherAssets(obj, buildMap);
+        await callback(map);
+
+        if (costOnly)
+        {
+            return null;
+        }
+
+        let agentPos = new Vector3([128, 128, 2048]);
+        try
+        {
+            const agentLocalID = this.currentRegion.agent.localID;
+            const agentObject = this.currentRegion.objects.getObjectByLocalID(agentLocalID);
+            if (agentObject.Position !== undefined)
+            {
+                agentPos = new Vector3(agentObject.Position);
+            }
+            else
+            {
+                throw new Error('Agent position is undefined');
+            }
+        }
+        catch (error)
+        {
+            console.warn('Unable to find avatar location, rezzing at ' + agentPos.toString());
+        }
+        agentPos.z += 2.0;
+        buildMap.rezLocation = agentPos;
+        // Set camera above target location for fast acquisition
+        const campos = new Vector3(agentPos);
+        campos.z += 2.0;
+        await this.currentRegion.clientCommands.agent.setCamera(campos, agentPos, 10, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
+
+        if (buildMap.primsNeeded > 0)
+        {
+            buildMap.primReservoir = await this.createPrims(buildMap.primsNeeded, agentPos);
+        }
+
+        const parts = [];
+        parts.push(this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap));
+
+        if (obj.children)
+        {
+            if (obj.Position === undefined)
+            {
+                obj.Position = Vector3.getZero();
+            }
+            if (obj.Rotation === undefined)
+            {
+                obj.Rotation = Quaternion.getIdentity();
+            }
+            for (const child of obj.children)
+            {
+                if (child.Position !== undefined && child.Rotation !== undefined)
+                {
+                    const objPos = new Vector3(obj.Position);
+                    const objRot = new Quaternion(obj.Rotation);
+                    parts.push(this.buildPart(child, objPos, objRot, buildMap));
+                }
+            }
+        }
+        const results: GameObject[] = await Promise.all(parts);
+
+        const rootObj = results[0];
+        const childPrims: GameObject[] = [];
+        for (const childObject of results)
+        {
+            if (childObject !== rootObj)
+            {
+                childPrims.push(childObject);
+            }
+        }
+        await rootObj.linkFrom(childPrims);
+        return rootObj;
+    }
+
+    private createPrims(count: number, position: Vector3)
+    {
+        return new Promise<GameObject[]>((resolve, reject) =>
+        {
+            const gatheredPrims: GameObject[] = [];
+            let objSub: Subscription | undefined = undefined;
+            let timeout: Timeout | undefined = setTimeout(() =>
+            {
+                if (objSub !== undefined)
+                {
+                    objSub.unsubscribe();
+                    objSub = undefined;
+                }
+                if (timeout !== undefined)
+                {
+                    clearTimeout(timeout);
+                    timeout = undefined;
+                }
+                reject(new Error('Failed to gather ' + count + ' prims - only gathered ' + gatheredPrims.length));
+            }, 30000);
+            objSub = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (evt: NewObjectEvent) =>
+            {
+                if (!evt.object.resolvedAt)
+                {
+                    // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
+                    await this.queueResolveObject(evt.object, true);
+                }
+                if (evt.createSelected && !evt.object.claimedForBuild)
+                {
+                    if (evt.object.itemID === undefined || evt.object.itemID.equals(UUID.zero()))
+                    {
+                        if (
+                            evt.object.PCode === PCode.Prim &&
+                            evt.object.Material === 3 &&
+                            evt.object.PathCurve === 16 &&
+                            evt.object.ProfileCurve === 1 &&
+                            evt.object.PathBegin === 0 &&
+                            evt.object.PathEnd === 1 &&
+                            evt.object.PathScaleX === 1 &&
+                            evt.object.PathScaleY === 1 &&
+                            evt.object.PathShearX === 0 &&
+                            evt.object.PathShearY === 0 &&
+                            evt.object.PathTwist === 0 &&
+                            evt.object.PathTwistBegin === 0 &&
+                            evt.object.PathRadiusOffset === 0 &&
+                            evt.object.PathTaperX === 0 &&
+                            evt.object.PathTaperY === 0 &&
+                            evt.object.PathRevolutions === 1 &&
+                            evt.object.PathSkew === 0 &&
+                            evt.object.ProfileBegin === 0 &&
+                            evt.object.ProfileHollow === 0
+                        )
+                        {
+                            evt.object.claimedForBuild = true;
+                            gatheredPrims.push(evt.object);
+                            if (gatheredPrims.length === count)
+                            {
+                                if (objSub !== undefined)
+                                {
+                                    objSub.unsubscribe();
+                                    objSub = undefined;
+                                }
+                                if (timeout !== undefined)
+                                {
+                                    clearTimeout(timeout);
+                                    timeout = undefined;
+                                }
+                                resolve(gatheredPrims);
+                            }
+                        }
+                    }
+                }
+            });
+
+            for (let x = 0; x < count; x++)
+            {
+                const msg = new ObjectAddMessage();
                 msg.AgentData = {
                     AgentID: this.agent.agentID,
                     SessionID: this.circuit.sessionID,
                     GroupID: UUID.zero()
                 };
                 msg.ObjectData = {
-                    PCode: Utils.numberOrZero(obj.PCode),
-                    Material: Utils.numberOrZero(obj.Material),
+                    PCode: PCode.Prim,
+                    Material: 3,
                     AddFlags: PrimFlags.CreateSelected,
-                    PathCurve: Utils.numberOrZero(obj.PathCurve),
-                    ProfileCurve: Utils.numberOrZero(obj.ProfileCurve),
-                    PathBegin: Utils.packBeginCut(Utils.numberOrZero(obj.PathBegin)),
-                    PathEnd: Utils.packEndCut(Utils.numberOrZero(obj.PathEnd)),
-                    PathScaleX: Utils.packPathScale(Utils.numberOrZero(obj.PathScaleX)),
-                    PathScaleY: Utils.packPathScale(Utils.numberOrZero(obj.PathScaleY)),
-                    PathShearX: Utils.packPathShear(Utils.numberOrZero(obj.PathShearX)),
-                    PathShearY: Utils.packPathShear(Utils.numberOrZero(obj.PathShearY)),
-                    PathTwist: Utils.packPathTwist(Utils.numberOrZero(obj.PathTwist)),
-                    PathTwistBegin: Utils.packPathTwist(Utils.numberOrZero(obj.PathTwistBegin)),
-                    PathRadiusOffset: Utils.packPathTwist(Utils.numberOrZero(obj.PathRadiusOffset)),
-                    PathTaperX: Utils.packPathTaper(Utils.numberOrZero(obj.PathTaperX)),
-                    PathTaperY: Utils.packPathTaper(Utils.numberOrZero(obj.PathTaperY)),
-                    PathRevolutions: Utils.packPathRevolutions(Utils.numberOrZero(obj.PathRevolutions)),
-                    PathSkew: Utils.packPathTwist(Utils.numberOrZero(obj.PathSkew)),
-                    ProfileBegin: Utils.packBeginCut(Utils.numberOrZero(obj.ProfileBegin)),
-                    ProfileEnd: Utils.packEndCut(Utils.numberOrZero(obj.ProfileEnd)),
-                    ProfileHollow: Utils.packProfileHollow(Utils.numberOrZero(obj.ProfileHollow)),
+                    PathCurve: 16,
+                    ProfileCurve: 1,
+                    PathBegin: 0,
+                    PathEnd: 0,
+                    PathScaleX: 100,
+                    PathScaleY: 100,
+                    PathShearX: 0,
+                    PathShearY: 0,
+                    PathTwist: 0,
+                    PathTwistBegin: 0,
+                    PathRadiusOffset: 0,
+                    PathTaperX: 0,
+                    PathTaperY: 0,
+                    PathRevolutions: 0,
+                    PathSkew: 0,
+                    ProfileBegin: 0,
+                    ProfileEnd: 0,
+                    ProfileHollow: 0,
                     BypassRaycast: 1,
-                    RayStart: finalPos,
-                    RayEnd: finalPos,
+                    RayStart: position,
+                    RayEnd: position,
                     RayTargetID: UUID.zero(),
                     RayEndIsIntersection: 0,
-                    Scale: Utils.vector3OrZero(obj.Scale),
-                    Rotation: finalRot,
-                    State: Utils.numberOrZero(obj.State)
+                    Scale: new Vector3([0.5, 0.5, 0.5]),
+                    Rotation: Quaternion.getIdentity(),
+                    State: 0
                 };
+                this.circuit.sendMessage(msg, PacketFlags.Reliable);
             }
-            else
-            {
-                fromInventory = true;
-                const invItem = this.agent.inventory.itemsByID[inventoryID.toString()];
-                const queryID = UUID.random();
-                msg = new RezObjectMessage();
-                msg.AgentData = {
-                    AgentID: this.agent.agentID,
-                    SessionID: this.circuit.sessionID,
-                    GroupID: UUID.zero()
-                };
-                msg.RezData = {
-                    FromTaskID: UUID.zero(),
-                    BypassRaycast: 1,
-                    RayStart: finalPos,
-                    RayEnd: finalPos,
-                    RayTargetID: UUID.zero(),
-                    RayEndIsIntersection: false,
-                    RezSelected: true,
-                    RemoveItem: false,
-                    ItemFlags: invItem.flags,
-                    GroupMask: PermissionMask.All,
-                    EveryoneMask: PermissionMask.All,
-                    NextOwnerMask: PermissionMask.All,
-                };
-                msg.InventoryData = {
-                    ItemID: invItem.itemID,
-                    FolderID: invItem.parentID,
-                    CreatorID: invItem.permissions.creator,
-                    OwnerID: invItem.permissions.owner,
-                    GroupID: invItem.permissions.group,
-                    BaseMask: invItem.permissions.baseMask,
-                    OwnerMask: invItem.permissions.ownerMask,
-                    GroupMask: invItem.permissions.groupMask,
-                    EveryoneMask: invItem.permissions.everyoneMask,
-                    NextOwnerMask: invItem.permissions.nextOwnerMask,
-                    GroupOwned: false,
-                    TransactionID: queryID,
-                    Type: invItem.type,
-                    InvType: invItem.inventoryType,
-                    Flags: invItem.flags,
-                    SaleType: invItem.saleType,
-                    SalePrice: invItem.salePrice,
-                    Name: Utils.StringToBuffer(invItem.name),
-                    Description: Utils.StringToBuffer(invItem.description),
-                    CreationDate: Math.round(invItem.created.getTime() / 1000),
-                    CRC: 0,
-                };
-            }
+        });
+    }
+
+    rezFromInventory(obj: GameObject, position: Vector3, inventoryID: UUID): Promise<GameObject>
+    {
+        return new Promise(async (resolve, reject) =>
+        {
+            const invItem = this.agent.inventory.itemsByID[inventoryID.toString()];
+            const queryID = UUID.random();
+            const msg = new RezObjectMessage();
+            msg.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID,
+                GroupID: UUID.zero()
+            };
+            msg.RezData = {
+                FromTaskID: UUID.zero(),
+                BypassRaycast: 1,
+                RayStart: position,
+                RayEnd: position,
+                RayTargetID: UUID.zero(),
+                RayEndIsIntersection: false,
+                RezSelected: true,
+                RemoveItem: false,
+                ItemFlags: invItem.flags,
+                GroupMask: PermissionMask.All,
+                EveryoneMask: PermissionMask.All,
+                NextOwnerMask: PermissionMask.All,
+            };
+            msg.InventoryData = {
+                ItemID: invItem.itemID,
+                FolderID: invItem.parentID,
+                CreatorID: invItem.permissions.creator,
+                OwnerID: invItem.permissions.owner,
+                GroupID: invItem.permissions.group,
+                BaseMask: invItem.permissions.baseMask,
+                OwnerMask: invItem.permissions.ownerMask,
+                GroupMask: invItem.permissions.groupMask,
+                EveryoneMask: invItem.permissions.everyoneMask,
+                NextOwnerMask: invItem.permissions.nextOwnerMask,
+                GroupOwned: false,
+                TransactionID: queryID,
+                Type: invItem.type,
+                InvType: invItem.inventoryType,
+                Flags: invItem.flags,
+                SaleType: invItem.saleType,
+                SalePrice: invItem.salePrice,
+                Name: Utils.StringToBuffer(invItem.name),
+                Description: Utils.StringToBuffer(invItem.description),
+                CreationDate: Math.round(invItem.created.getTime() / 1000),
+                CRC: 0,
+            };
+
             let objSub: Subscription | undefined = undefined;
             let timeout: Timeout | undefined = setTimeout(() =>
             {
@@ -1132,11 +1603,17 @@ export class RegionCommands extends CommandsBase
                 }
                 reject(new Error('Prim never arrived'));
             }, 10000);
+            let claimedPrim = false;
             objSub = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (evt: NewObjectEvent) =>
             {
-                if (evt.createSelected && !evt.object.claimedForBuild)
+                if (evt.createSelected && !evt.object.resolvedAt)
                 {
-                    if (!fromInventory || (inventoryID !== undefined && evt.object.itemID.equals(inventoryID)))
+                    // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
+                    await this.queueResolveObject(evt.object, true);
+                }
+                if (evt.createSelected && !evt.object.claimedForBuild && !claimedPrim)
+                {
+                    if (inventoryID !== undefined && evt.object.itemID !== undefined && evt.object.itemID.equals(inventoryID))
                     {
                         if (objSub !== undefined)
                         {
@@ -1149,36 +1626,20 @@ export class RegionCommands extends CommandsBase
                             timeout = undefined;
                         }
                         evt.object.claimedForBuild = true;
-
-                        if (!fromInventory)
-                        {
-                            await evt.object.setShape(obj.PathCurve, obj.ProfileCurve, obj.PathBegin, obj.PathEnd, obj.PathScaleX, obj.PathScaleY, obj.PathShearX, obj.PathShearY, obj.PathTwist, obj.PathTwistBegin, obj.PathRadiusOffset, obj.PathTaperX, obj.PathTaperY, obj.PathRevolutions, obj.PathSkew, obj.ProfileBegin, obj.ProfileEnd, obj.ProfileHollow);
-                        }
-
-
-                        // Set the object's position properly
-                        try
-                        {
-                            await evt.object.setGeometry(finalPos, finalRot, obj.Scale);
-                        }
-                        catch (error)
-                        {
-                            console.log('Failed to set object position :/');
-                        }
+                        claimedPrim = true;
                         resolve(evt.object);
                     }
                 }
             });
 
             // Move the camera to look directly at prim for faster capture
-            const campos = new Vector3(finalPos);
-            campos.z += 128.0 + objectScale.z;
-            await this.currentRegion.clientCommands.agent.setCamera(campos, finalPos, 4096, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
-
-            if (msg !== null)
+            if (obj.Scale !== undefined)
             {
-                this.circuit.sendMessage(msg, PacketFlags.Reliable);
+                const camLocation = new Vector3(position);
+                camLocation.z += (obj.Scale.z / 2) + 1;
+                await this.currentRegion.clientCommands.agent.setCamera(camLocation, position, obj.Scale.z, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
             }
+            this.circuit.sendMessage(msg, PacketFlags.Reliable);
         });
     }
 
@@ -1357,7 +1818,6 @@ export class RegionCommands extends CommandsBase
         {
             await checkObjects(uuids, objects);
         }
-        console.log('Found ' + Object.keys(stillAlive).length + ' objects still present out of ' + checkList.length + ' objects');
         const deadObjects: GameObject[] = [];
         for (const o of checkList)
         {

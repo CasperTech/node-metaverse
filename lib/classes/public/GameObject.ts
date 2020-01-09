@@ -38,6 +38,15 @@ import { HTTPAssets } from '../../enums/HTTPAssets';
 import { PhysicsShapeType } from '../../enums/PhysicsShapeType';
 import { PCode } from '../../enums/PCode';
 import { SoundFlags } from '../../enums/SoundFlags';
+import { DeRezObjectMessage } from '../messages/DeRezObject';
+import { DeRezDestination } from '../../enums/DeRezDestination';
+import { Message } from '../../enums/Message';
+import { UpdateCreateInventoryItemMessage } from '../messages/UpdateCreateInventoryItem';
+import { FilterResponse } from '../../enums/FilterResponse';
+import { UpdateTaskInventoryMessage } from '../messages/UpdateTaskInventory';
+import { ObjectPropertiesMessage } from '../messages/ObjectProperties';
+import { ObjectSelectMessage } from '../messages/ObjectSelect';
+import { ObjectDeselectMessage } from '../messages/ObjectDeselect';
 
 export class GameObject implements IGameObjectData
 {
@@ -149,6 +158,7 @@ export class GameObject implements IGameObjectData
     resolveAttempts = 0;
 
     claimedForBuild = false;
+    createdSelected = false;
 
     private static getFromXMLJS(obj: any, param: string): any
     {
@@ -569,7 +579,98 @@ export class GameObject implements IGameObjectData
                 go.extraParams = ExtraParams.from(buf);
             }
         }
-        // TODO: TaskInventory
+        if ((prop = this.getFromXMLJS(obj, 'TaskInventory')) !== undefined)
+        {
+            if (prop.TaskInventoryItem)
+            {
+                for (const invItemXML of prop.TaskInventoryItem)
+                {
+                    const invItem = new InventoryItem();
+                    let subProp: any;
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'AssetID')) !== undefined)
+                    {
+                        invItem.assetID = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'BasePermissions')) !== undefined)
+                    {
+                        invItem.permissions.baseMask = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'EveryonePermissions')) !== undefined)
+                    {
+                        invItem.permissions.everyoneMask = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'GroupPermissions')) !== undefined)
+                    {
+                        invItem.permissions.groupMask = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'NextPermissions')) !== undefined)
+                    {
+                        invItem.permissions.nextOwnerMask = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'CurrentPermissions')) !== undefined)
+                    {
+                        invItem.permissions.ownerMask = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'CreationDate')) !== undefined)
+                    {
+                        invItem.created = new Date(parseInt(subProp, 10) * 1000);
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'CreatorID')) !== undefined)
+                    {
+                        invItem.permissions.creator = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'Description')) !== undefined)
+                    {
+                        invItem.description = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'Flags')) !== undefined)
+                    {
+                        invItem.flags = subProp;
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'GroupID')) !== undefined)
+                    {
+                        invItem.permissions.group = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'InvType')) !== undefined)
+                    {
+                        invItem.inventoryType = subProp;
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'ItemID')) !== undefined)
+                    {
+                        invItem.itemID = subProp;
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'OldItemID')) !== undefined)
+                    {
+                        invItem.oldItemID = subProp;
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'LastOwnerID')) !== undefined)
+                    {
+                        invItem.permissions.lastOwner = subProp;
+                    }
+                    if ((subProp = this.getFromXMLJS(invItemXML, 'Name')) !== undefined)
+                    {
+                        invItem.name = subProp;
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'OwnerID')) !== undefined)
+                    {
+                        invItem.permissions.owner = subProp;
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'ParentID')) !== undefined)
+                    {
+                        invItem.parentID = subProp;
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'ParentPartID')) !== undefined)
+                    {
+                        invItem.parentPartID = subProp;
+                    }
+                    if ((subProp = UUID.fromXMLJS(invItemXML, 'PermsGranter')) !== undefined)
+                    {
+                        invItem.permsGranter = subProp;
+                    }
+                    go.inventory.push(invItem);
+                }
+            }
+        }
         return go;
     }
 
@@ -590,11 +691,22 @@ export class GameObject implements IGameObjectData
                         throw new Error('SceneObjectGroup not found');
                     }
                     result = result['SceneObjectGroup'];
-                    if (!result['SceneObjectPart'])
+
+                    let rootPartXML;
+                    if (result['SceneObjectPart'])
+                    {
+                        rootPartXML = result['SceneObjectPart'];
+                    }
+                    else if (result['RootPart'] && result['RootPart'][0] && result['RootPart'][0]['SceneObjectPart'])
+                    {
+                        rootPartXML = result['RootPart'][0]['SceneObjectPart'];
+                    }
+                    else
                     {
                         throw new Error('Root part not found');
                     }
-                    const rootPart = GameObject.partFromXMLJS(result['SceneObjectPart'][0], true);
+
+                    const rootPart = GameObject.partFromXMLJS(rootPartXML[0], true);
                     rootPart.children = [];
                     rootPart.totalChildren = 0;
                     if (result['OtherParts'] && Array.isArray(result['OtherParts']) && result['OtherParts'].length > 0)
@@ -747,49 +859,6 @@ export class GameObject implements IGameObjectData
             }
         ];
         await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
-    }
-
-    private compareParam(name: string, param1: number | undefined, param2: number | undefined): boolean
-    {
-        if (param1 === undefined)
-        {
-            param1 = 0;
-        }
-        if (param2 === undefined)
-        {
-            param2 = 0;
-        }
-        if (Math.abs(param1 - param2) < 0.0001)
-        {
-            return true;
-        }
-        else
-        {
-            console.log('Failed ' + name + ' - ' + param1 + ' vs ' + param2);
-            return false;
-        }
-    }
-
-    compareShape(obj: GameObject): boolean
-    {
-        return this.compareParam('PathCurve', this.PathCurve, obj.PathCurve) &&
-        this.compareParam('ProfileCurve', this.ProfileCurve, obj.ProfileCurve) &&
-        this.compareParam('PathBegin', this.PathBegin, obj.PathBegin) &&
-        this.compareParam('PathEnd', this.PathEnd, obj.PathEnd) &&
-        this.compareParam('PathScaleX', this.PathScaleX, obj.PathScaleX) &&
-        this.compareParam('PathScaleY', this.PathScaleY, obj.PathScaleY) &&
-        this.compareParam('PathShearX', this.PathShearX, obj.PathShearX) &&
-        this.compareParam('PathShearY', this.PathShearY, obj.PathShearY) &&
-        this.compareParam('PathTwist', this.PathTwist, obj.PathTwist) &&
-        this.compareParam('PathTwistBegin', this.PathTwistBegin, obj.PathTwistBegin) &&
-        this.compareParam('PathRadiusOffset', this.PathRadiusOffset, obj.PathRadiusOffset) &&
-        this.compareParam('PathTaperX', this.PathTaperX, obj.PathTaperX) &&
-        this.compareParam('PathTaperY', this.PathTaperY, obj.PathTaperY) &&
-        this.compareParam('PathRevolutions', this.PathRevolutions, obj.PathRevolutions) &&
-        this.compareParam('PathSkew', this.PathSkew, obj.PathSkew) &&
-        this.compareParam('ProfileBegin', this.ProfileBegin, obj.ProfileBegin) &&
-        this.compareParam('ProfileEnd', this.ProfileEnd, obj.ProfileEnd) &&
-            this.compareParam('PRofileHollow', this.ProfileHollow, obj.ProfileHollow);
     }
 
     async setGeometry(pos?: Vector3, rot?: Quaternion, scale?: Vector3)
@@ -1454,5 +1523,163 @@ export class GameObject implements IGameObjectData
                 ]);
                 break;
         }
+    }
+
+    private async deRezObject(destination: DeRezDestination, transactionID: UUID, destFolder: UUID): Promise<void>
+    {
+        const msg = new DeRezObjectMessage();
+
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.AgentBlock = {
+            GroupID: UUID.zero(),
+            Destination: destination,
+            DestinationID: destFolder,
+            TransactionID: transactionID,
+            PacketCount: 1,
+            PacketNumber: 1
+        };
+        msg.ObjectData = [{
+            ObjectLocalID: this.ID
+        }];
+        const ack = this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
+        return this.region.circuit.waitForAck(ack, 10000);
+    }
+
+    takeToInventory(): Promise<UUID>
+    {
+        const transactionID = UUID.random();
+        const rootFolder = this.region.agent.inventory.getRootFolderMain();
+        return new Promise<UUID>((resolve, reject) =>
+        {
+
+            this.region.circuit.waitForMessage<UpdateCreateInventoryItemMessage>(Message.UpdateCreateInventoryItem, 10000, (message: UpdateCreateInventoryItemMessage) =>
+            {
+                if (Utils.BufferToStringSimple(message.InventoryData[0].Name, 0) === this.name)
+                {
+                    return FilterResponse.Finish;
+                }
+                else
+                {
+                    return FilterResponse.NoMatch;
+                }
+            }).then((createInventoryMsg: UpdateCreateInventoryItemMessage) =>
+            {
+                resolve(createInventoryMsg.InventoryData[0].ItemID);
+            }).catch(() =>
+            {
+                reject(new Error('Timed out waiting for UpdateCreateInventoryItem'));
+            });
+            this.deRezObject(DeRezDestination.AgentInventoryTake, transactionID, rootFolder.folderID).then(() => {}).catch((err) =>
+            {
+                console.error(err);
+            });
+        });
+    }
+
+    dropInventoryIntoContents(inventoryID: UUID): Promise<void>
+    {
+        return new Promise<void>(async (resolve, reject) =>
+        {
+            const transactionID = UUID.random();
+            const item: InventoryItem | null = await this.region.agent.inventory.fetchInventoryItem(inventoryID);
+            if (item === null)
+            {
+                reject(new Error('Failed to drop inventory into object contents - Inventory item ' + inventoryID.toString() + ' not found'));
+                return;
+            }
+
+            const msg = new UpdateTaskInventoryMessage();
+            msg.AgentData = {
+                AgentID: this.region.agent.agentID,
+                SessionID: this.region.circuit.sessionID
+            };
+            msg.UpdateData = {
+                Key: 0,
+                LocalID: this.ID
+            };
+            msg.InventoryData = {
+                ItemID: item.itemID,
+                FolderID: item.parentID,
+                CreatorID: item.permissions.creator,
+                OwnerID: item.permissions.owner,
+                GroupID: item.permissions.group,
+                BaseMask: item.permissions.baseMask,
+                OwnerMask: item.permissions.ownerMask,
+                GroupMask: item.permissions.groupMask,
+                EveryoneMask: item.permissions.everyoneMask,
+                NextOwnerMask: item.permissions.nextOwnerMask,
+                GroupOwned: item.permissions.groupOwned || false,
+                TransactionID: transactionID,
+                Type: item.type,
+                InvType: item.inventoryType,
+                Flags: item.flags,
+                SaleType: item.saleType,
+                SalePrice: item.salePrice,
+                Name: Utils.StringToBuffer(item.name),
+                Description: Utils.StringToBuffer(item.description),
+                CreationDate: item.created.getTime() / 1000,
+                CRC: item.getCRC()
+            };
+
+            const inventorySerial = this.inventorySerial;
+            this.region.circuit.waitForMessage<ObjectPropertiesMessage>(Message.ObjectProperties, 10000, (message: ObjectPropertiesMessage) =>
+            {
+                const n = 5;
+                for (const obj of message.ObjectData)
+                {
+                    if (obj.ObjectID.equals(this.FullID))
+                    {
+                        if (obj.InventorySerial > inventorySerial)
+                        {
+                            return FilterResponse.Finish;
+                        }
+                    }
+                }
+                return FilterResponse.NoMatch;
+            }).then((message: ObjectPropertiesMessage) =>
+            {
+                this.deselect().then(() => {}).catch(() => {});
+                resolve();
+            }).catch(() =>
+            {
+                reject(new Error('Timed out waiting for task inventory drop'));
+            });
+
+            // We need to select the object or we won't get the objectProperties message
+            await this.select();
+
+            this.region.circuit.sendMessage(msg, PacketFlags.Reliable)
+        });
+    }
+
+    async select()
+    {
+        const selectObject = new ObjectSelectMessage();
+        selectObject.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        selectObject.ObjectData = [{
+            ObjectLocalID: this.ID
+        }];
+        const ack = this.region.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+        await this.region.circuit.waitForAck(ack, 10000);
+    }
+
+    async deselect()
+    {
+        const deselectObject = new ObjectDeselectMessage();
+        deselectObject.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        deselectObject.ObjectData = [{
+            ObjectLocalID: this.ID
+        }];
+        const ack = this.region.circuit.sendMessage(deselectObject, PacketFlags.Reliable);
+        await this.region.circuit.waitForAck(ack, 10000);
     }
 }

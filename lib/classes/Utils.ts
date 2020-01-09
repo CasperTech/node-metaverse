@@ -3,7 +3,9 @@ import { Quaternion } from './Quaternion';
 import { GlobalPosition } from './public/interfaces/GlobalPosition';
 import { HTTPAssets } from '../enums/HTTPAssets';
 import { Vector3 } from './Vector3';
-import { Subject, Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
+import { AssetType } from '../enums/AssetType';
+import { InventoryTypeLL } from '../enums/InventoryTypeLL';
 import Timeout = NodeJS.Timeout;
 
 export class Utils
@@ -132,7 +134,81 @@ export class Utils
         };
     }
 
-    static HTTPAssetTypeToInventoryType(HTTPAssetType: string)
+    static HTTPAssetTypeToAssetType(HTTPAssetType: string): AssetType
+    {
+        switch (HTTPAssetType)
+        {
+            case HTTPAssets.ASSET_TEXTURE:
+                return AssetType.Texture;
+            case HTTPAssets.ASSET_SOUND:
+                return AssetType.Sound;
+            case HTTPAssets.ASSET_ANIMATION:
+                return AssetType.Animation;
+            case HTTPAssets.ASSET_GESTURE:
+                return AssetType.Gesture;
+            case HTTPAssets.ASSET_LANDMARK:
+                return AssetType.Landmark;
+            case HTTPAssets.ASSET_CALLINGCARD:
+                return AssetType.CallingCard;
+            case HTTPAssets.ASSET_SCRIPT:
+                return AssetType.Script;
+            case HTTPAssets.ASSET_CLOTHING:
+                return AssetType.Clothing;
+            case HTTPAssets.ASSET_OBJECT:
+                return AssetType.Object;
+            case HTTPAssets.ASSET_NOTECARD:
+                return AssetType.Notecard;
+            case HTTPAssets.ASSET_LSL_TEXT:
+                return AssetType.LSLText;
+            case HTTPAssets.ASSET_LSL_BYTECODE:
+                return AssetType.LSLBytecode;
+            case HTTPAssets.ASSET_BODYPART:
+                return AssetType.Bodypart;
+            case HTTPAssets.ASSET_MESH:
+                return AssetType.Mesh;
+            default:
+                return 0;
+        }
+    }
+
+    static HTTPAssetTypeToInventoryType(HTTPAssetType: string): InventoryTypeLL
+    {
+        switch (HTTPAssetType)
+        {
+            case HTTPAssets.ASSET_TEXTURE:
+                return InventoryTypeLL.texture;
+            case HTTPAssets.ASSET_SOUND:
+                return InventoryTypeLL.sound;
+            case HTTPAssets.ASSET_ANIMATION:
+                return InventoryTypeLL.animation;
+            case HTTPAssets.ASSET_GESTURE:
+                return InventoryTypeLL.gesture;
+            case HTTPAssets.ASSET_LANDMARK:
+                return InventoryTypeLL.landmark;
+            case HTTPAssets.ASSET_CALLINGCARD:
+                return InventoryTypeLL.callcard;
+            case HTTPAssets.ASSET_SCRIPT:
+                return InventoryTypeLL.script;
+            case HTTPAssets.ASSET_CLOTHING:
+                return InventoryTypeLL.wearable;
+            case HTTPAssets.ASSET_OBJECT:
+                return InventoryTypeLL.object;
+            case HTTPAssets.ASSET_NOTECARD:
+                return InventoryTypeLL.notecard;
+            case HTTPAssets.ASSET_LSL_TEXT:
+                return InventoryTypeLL.script;
+            case HTTPAssets.ASSET_LSL_BYTECODE:
+                return InventoryTypeLL.script;
+            case HTTPAssets.ASSET_BODYPART:
+                return InventoryTypeLL.wearable;
+            case HTTPAssets.ASSET_MESH:
+                return InventoryTypeLL.mesh;
+            default:
+                return 0;
+        }
+    }
+
+    static HTTPAssetTypeToCapInventoryType(HTTPAssetType: string): String
     {
         switch (HTTPAssetType)
         {

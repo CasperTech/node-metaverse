@@ -94,6 +94,7 @@ import { ParticleSystem } from './classes/ParticleSystem';
 import { ExtraParams } from './classes/public/ExtraParams';
 import { LLMesh } from './classes/public/LLMesh';
 import { FolderType } from './enums/FolderType';
+import { InventoryItem } from './classes/InventoryItem';
 
 export {
     Bot,
@@ -193,6 +194,7 @@ export {
     SculptData,
     MeshData,
     LLMesh,
+    InventoryItem,
 
     // Public Interfaces
     GlobalPosition,
