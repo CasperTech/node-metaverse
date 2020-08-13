@@ -178,7 +178,7 @@ export class GridCommands extends CommandsBase
                     }
                 }).then((responseMsg2: MapItemReplyMessage) =>
                 {
-                    responseMsg2.Data.forEach((data) => 
+                    responseMsg2.Data.forEach((data) =>
                     {
                         for (let index = 0; index <= data.Extra; index++) {
                             response.avatars.push(new Vector2([
