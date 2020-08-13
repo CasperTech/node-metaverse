@@ -29,6 +29,7 @@ export class Parcel
     ClaimDate: number;
     ClaimPrice: number;
     Desc: string;
+    Dwell: number;
     GroupAVSounds: boolean;
     GroupID: UUID;
     GroupPrims: number;
