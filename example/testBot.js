@@ -83,12 +83,12 @@ bot.clientEvents.onFriendRequest.subscribe((event) =>
     if (event.from.toString() === master)
     {
         console.log("Accepting friend request from " + event.fromName);
-        bot.clientCommands.comms.acceptFriendRequest(event).then(() => {});
+        bot.clientCommands.friends.acceptFriendRequest(event).then(() => {});
     }
     else
     {
         console.log("Rejecting friend request from " + event.fromName);
-        bot.clientCommands.comms.rejectFriendRequest(event).then(() => {});
+        bot.clientCommands.friends.rejectFriendRequest(event).then(() => {});
     }
 });
 
