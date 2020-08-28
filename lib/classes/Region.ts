@@ -630,6 +630,7 @@ export class Region
         parcel.ClaimDate = parcelProperties.ClaimDate;
         parcel.ClaimPrice = parcelProperties.ClaimPrice;
         parcel.Desc = parcelProperties.Desc;
+        parcel.Dwell = dwellReply.Data.Dwell;
         parcel.GroupAVSounds = parcelProperties.GroupAVSounds;
         parcel.GroupID = parcelProperties.GroupID;
         parcel.GroupPrims = parcelProperties.GroupPrims;
