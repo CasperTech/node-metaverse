@@ -251,7 +251,8 @@ async function connect()
         });
 
         const roles = await bot.clientCommands.group.getGroupRoles(groupID);
-        roles.forEach(async (role) => {
+        roles.forEach(async (role) =>
+        {
             if (role.Name === 'Officers')
             {
                 // IMPORTANT: IN PRODUCTION, IT IS HIGHLY RECOMMENDED TO CACHE THIS LIST.
