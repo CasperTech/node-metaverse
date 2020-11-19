@@ -15,6 +15,10 @@ import { GroupChatEvent } from '../events/GroupChatEvent';
 import { GroupChatSessionAgentListEvent } from '../events/GroupChatSessionAgentListEvent';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { IPAddress } from './IPAddress';
+import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
+import { InventoryFolder } from './InventoryFolder';
+import { InventoryItem } from './InventoryItem';
+import { Utils } from './Utils';
 
 export class EventQueueClient
 {
@@ -102,6 +106,64 @@ export class EventQueueClient
                                         */
 
                                         break;
+                                    case 'BulkUpdateInventory':
+                                    {
+                                        const body = event['body'];
+                                        const buie = new BulkUpdateInventoryEvent();
+                                        if (body['FolderData'])
+                                        {
+                                            for (const f of body['FolderData'])
+                                            {
+                                                const folderID = new UUID(f['FolderID']);
+                                                if (!folderID.isZero())
+                                                {
+                                                    const folder = new InventoryFolder(this.agent.inventory.main, this.agent);
+                                                    folder.folderID = folderID;
+                                                    folder.name = f['Name'];
+                                                    folder.parentID = new UUID(f['ParentID']);
+                                                    folder.typeDefault = parseInt(f['Type'], 10);
+                                                    buie.folderData.push(folder);
+                                                }
+                                            }
+                                        }
+                                        if (body['ItemData'])
+                                        {
+                                            for (const i of body['ItemData'])
+                                            {
+                                                const itemID = new UUID(i['ItemID']);
+                                                if (!itemID.isZero())
+                                                {
+                                                    const folder = this.agent.inventory.findFolder(new UUID(i['FolderID']));
+                                                    const item = new InventoryItem(folder || undefined, this.agent);
+
+                                                    item.assetID = new UUID(i['AssetID']);
+                                                    item.permissions.baseMask = Utils.OctetsToUInt32BE(i['BaseMask'].octets);
+                                                    item.permissions.everyoneMask = Utils.OctetsToUInt32BE(i['EveryoneMask'].octets);
+                                                    item.permissions.groupMask = Utils.OctetsToUInt32BE(i['GroupMask'].octets);
+                                                    item.permissions.nextOwnerMask = Utils.OctetsToUInt32BE(i['NextOwnerMask'].octets);
+                                                    item.permissions.ownerMask = Utils.OctetsToUInt32BE(i['OwnerMask'].octets);
+                                                    item.permissions.groupOwned = i['GroupOwned'];
+                                                    item.permissions.creator = new UUID(i['CreatorID']);
+                                                    item.permissions.group = new UUID(i['GroupID']);
+                                                    item.permissions.owner = new UUID(i['OwnerID']);
+                                                    item.flags = Utils.OctetsToUInt32BE(i['Flags'].octets);
+                                                    item.callbackID = Utils.OctetsToUInt32BE(i['CallbackID'].octets);
+                                                    item.created = new Date(parseInt(i['CreationDate'], 10) * 1000);
+                                                    item.description = i['Description'];
+                                                    item.parentID = new UUID(i['FolderID']);
+                                                    item.inventoryType = parseInt(i['InvType'], 10);
+                                                    item.salePrice = parseInt(i['SalePrice'], 10);
+                                                    item.saleType = parseInt(i['SaleType'], 10);
+                                                    item.type = parseInt(i['Type'], 10);
+                                                    item.itemID = itemID;
+                                                    item.name = i['Name'];
+                                                    buie.itemData.push(item);
+                                                }
+                                            }
+                                        }
+                                        this.clientEvents.onBulkUpdateInventoryEvent.next(buie);
+                                        break;
+                                    }
                                     case 'ParcelProperties':
                                     {
                                         const body = event['body'];
@@ -120,7 +182,7 @@ export class EventQueueClient
                                         pprop.Area = body['ParcelData'][0]['Area'];
                                         try
                                         {
-                                            pprop.AuctionID = Buffer.from(body['ParcelData'][0]['AuctionID'].toArray()).readUInt32LE(0);
+                                            pprop.AuctionID = Buffer.from(body['ParcelData'][0]['AuctionID'].toArray()).readUInt32BE(0);
                                         }
                                         catch (ignore)
                                         {
@@ -150,7 +212,7 @@ export class EventQueueClient
                                         pprop.OtherPrims = body['ParcelData'][0]['OtherPrims'];
                                         pprop.OwnerID = body['ParcelData'][0]['OwnerID'];
                                         pprop.OwnerPrims = body['ParcelData'][0]['OwnerPrims'];
-                                        pprop.ParcelFlags = Buffer.from(body['ParcelData'][0]['ParcelFlags'].toArray()).readUInt32LE(0);
+                                        pprop.ParcelFlags = Buffer.from(body['ParcelData'][0]['ParcelFlags'].toArray()).readUInt32BE(0);
                                         pprop.ParcelPrimBonus = body['ParcelData'][0]['ParcelPrimBonus'];
                                         pprop.PassHours = body['ParcelData'][0]['PassHours'];
                                         pprop.PassPrice = body['ParcelData'][0]['PassPrice'];
@@ -367,7 +429,7 @@ export class EventQueueClient
                                         const info = event['body']['Info'][0];
                                         if (info['LocationID'])
                                         {
-                                            info['LocationID'] = Buffer.from(info['LocationID'].toArray()).readUInt32LE(0);
+                                            info['LocationID'] = Buffer.from(info['LocationID'].toArray()).readUInt32BE(0);
 
                                             const regionHandleBuf = Buffer.from(info['RegionHandle'].toArray());
                                             info['RegionHandle'] = new Long(regionHandleBuf.readUInt32LE(0), regionHandleBuf.readUInt32LE(4), true);
@@ -375,7 +437,7 @@ export class EventQueueClient
 
                                             info['SimIP'] = new IPAddress(Buffer.from(info['SimIP'].toArray()), 0).toString();
 
-                                            info['TeleportFlags'] = Buffer.from(info['TeleportFlags'].toArray()).readUInt32LE(0);
+                                            info['TeleportFlags'] = Buffer.from(info['TeleportFlags'].toArray()).readUInt32BE(0);
 
                                             const tpEvent = new TeleportEvent();
                                             tpEvent.message = '';

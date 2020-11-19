@@ -10,6 +10,7 @@ import { AvatarPropertiesReplyMessage } from '../messages/AvatarPropertiesReply'
 import { AvatarPropertiesRequestMessage } from '../messages/AvatarPropertiesRequest';
 import { AvatarPropertiesReplyEvent } from '../../events/AvatarPropertiesReplyEvent';
 import { Subscription } from 'rxjs';
+import { Avatar } from '../public/Avatar';
 
 export class AgentCommands extends CommandsBase
 {
@@ -70,11 +71,16 @@ export class AgentCommands extends CommandsBase
         this.agent.sendAgentUpdate();
     }
 
-    waitForAppearanceSet(timeout: number = 10000): Promise<void>
+    async getWearables()
+    {
+        return this.agent.getWearables();
+    }
+
+    waitForAppearanceComplete(timeout: number = 30000): Promise<void>
     {
         return new Promise((resolve, reject) =>
         {
-            if (this.agent.appearanceSet)
+            if (this.agent.appearanceComplete)
             {
                 resolve();
             }
@@ -82,7 +88,7 @@ export class AgentCommands extends CommandsBase
             {
                 let appearanceSubscription: Subscription | undefined;
                 let timeoutTimer: number | undefined;
-                appearanceSubscription = this.agent.appearanceSetEvent.subscribe(() =>
+                appearanceSubscription = this.agent.appearanceCompleteEvent.subscribe(() =>
                 {
                     if (timeoutTimer !== undefined)
                     {
@@ -110,7 +116,7 @@ export class AgentCommands extends CommandsBase
                         reject(new Error('Timeout'));
                     }
                 }, timeout) as any as number;
-                if (this.agent.appearanceSet)
+                if (this.agent.appearanceComplete)
                 {
                     if (appearanceSubscription !== undefined)
                     {
@@ -126,6 +132,19 @@ export class AgentCommands extends CommandsBase
                 }
             }
         });
+    }
+
+    getAvatar(avatarID: UUID | string = UUID.zero()): Avatar
+    {
+        if (typeof avatarID === 'string')
+        {
+            avatarID = new UUID(avatarID);
+        }
+        else if (avatarID.isZero())
+        {
+            avatarID = this.agent.agentID;
+        }
+        return this.currentRegion.objects.getAvatar(avatarID);
     }
 
     async getAvatarProperties(avatarID: UUID | string): Promise<AvatarPropertiesReplyEvent>

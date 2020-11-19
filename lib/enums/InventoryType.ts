@@ -23,5 +23,5 @@ export enum InventoryType
     Wearable = 18,
     Animation = 19,
     Gesture = 20,
-    Mesh = 22,
+    Mesh = 22
 }

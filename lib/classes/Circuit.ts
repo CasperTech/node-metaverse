@@ -21,6 +21,8 @@ import Timer = NodeJS.Timer;
 import { PacketFlags } from '../enums/PacketFlags';
 import { AssetType } from '../enums/AssetType';
 import { Utils } from './Utils';
+import * as Long from 'long';
+import { AssetUploadCompleteMessage } from './messages/AssetUploadComplete';
 
 export class Circuit
 {
@@ -85,7 +87,99 @@ export class Circuit
         return packet.sequenceNumber;
     }
 
-    XferFile(fileName: string, deleteOnCompletion: boolean, useBigPackets: boolean, vFileID: UUID, vFileType: AssetType, fromCache: boolean): Promise<Buffer>
+    private sendXferPacket(xferID: Long, packetID: number, data: Buffer, pos: {position: number})
+    {
+        const sendXfer = new SendXferPacketMessage();
+        let final = false;
+        sendXfer.XferID = {
+            ID: xferID,
+            Packet: packetID
+        };
+        const packetLength = Math.min(data.length - pos.position, 1000);
+        if (packetLength < 1000)
+        {
+            sendXfer.XferID.Packet = (sendXfer.XferID.Packet | 0x80000000) >>> 0;
+            final = true;
+        }
+        if (packetID === 0)
+        {
+            const packet = Buffer.allocUnsafe(packetLength + 4);
+            packet.writeUInt32LE(data.length, 0);
+            data.copy(packet, 4, 0, packetLength);
+            sendXfer.DataPacket = {
+                Data: packet
+            };
+            pos.position += packetLength;
+        }
+        else
+        {
+            const packet = data.slice(pos.position, pos.position + packetLength);
+            sendXfer.DataPacket = {
+                Data: packet
+            };
+            pos.position += packetLength;
+        }
+        console.log('Sent packet ' + packetID + ', ' + packetLength + ' bytes');
+        this.sendMessage(sendXfer, PacketFlags.Reliable);
+        if (final)
+        {
+            pos.position = -1;
+        }
+    }
+
+    XferFileUp(xferID: Long, data: Buffer)
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            let packetID = 0;
+            const pos = {
+                position: 0
+            };
+
+            const subs = this.subscribeToMessages([
+                Message.AbortXfer,
+                Message.ConfirmXferPacket
+            ], (packet: Packet) =>
+            {
+                switch (packet.message.id)
+                {
+                    case Message.ConfirmXferPacket:
+                    {
+                        const msg = packet.message as ConfirmXferPacketMessage;
+                        if (msg.XferID.ID.equals(xferID))
+                        {
+                            if (pos.position > -1)
+                            {
+                                console.log('Packet confirmed, sending next. Position: ' + pos.position);
+                                packetID++;
+                                this.sendXferPacket(xferID, packetID, data, pos);
+                            }
+                        }
+                        break;
+                    }
+                    case Message.AbortXfer:
+                    {
+                        const msg = packet.message as AbortXferMessage;
+                        if (msg.XferID.ID.equals(xferID))
+                        {
+                            console.log('Transfer aborted');
+                            subs.unsubscribe();
+                            reject(new Error('Transfer aborted'));
+                        }
+                    }
+                }
+            });
+
+            this.sendXferPacket(xferID, packetID, data, pos);
+            if (pos.position === -1)
+            {
+                subs.unsubscribe();
+                resolve();
+            }
+        });
+    }
+
+    XferFileDown(fileName: string, deleteOnCompletion: boolean, useBigPackets: boolean, vFileID: UUID, vFileType: AssetType, fromCache: boolean): Promise<Buffer>
     {
         return new Promise<Buffer>((resolve, reject) =>
         {
@@ -127,7 +221,8 @@ export class Circuit
             let finished = false;
             let finishID = 0;
             const receivedChunks: { [key: number]: Buffer } = {};
-
+            let firstPacket = true;
+            let dataSize = 0;
             subscription = this.subscribeToMessages([
                 Message.SendXferPacket,
                 Message.AbortXfer
@@ -161,7 +256,16 @@ export class Circuit
                             resetTimeout();
                             const packetNum = message.XferID.Packet & 0x7FFFFFFF;
                             const finishedNow = message.XferID.Packet & 0x80000000;
-                            receivedChunks[packetNum] = message.DataPacket.Data;
+                            if (firstPacket)
+                            {
+                                dataSize = message.DataPacket.Data.readUInt32LE(0);
+                                receivedChunks[packetNum] = message.DataPacket.Data.slice(4);
+                                firstPacket = false;
+                            }
+                            else
+                            {
+                                receivedChunks[packetNum] = message.DataPacket.Data;
+                            }
                             const confirm = new ConfirmXferPacketMessage();
                             confirm.XferID = {
                                 ID: transferID,
@@ -199,7 +303,12 @@ export class Circuit
                                     subscription.unsubscribe();
                                 }
                                 clearInterval(progress);
-                                resolve(Buffer.concat(conc));
+                                const buf = Buffer.concat(conc);
+                                if (buf.length !== dataSize)
+                                {
+                                    console.warn('Warning: Received data size does not match expected');
+                                }
+                                resolve(buf);
                             }
                         }
                         break;

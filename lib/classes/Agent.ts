@@ -10,10 +10,8 @@ import { AgentUpdateMessage } from './messages/AgentUpdate';
 import { Quaternion } from './Quaternion';
 import { AgentState } from '../enums/AgentState';
 import { BuiltInAnimations } from '../enums/BuiltInAnimations';
-import * as LLSD from '@caspertech/llsd';
 import { AgentWearablesRequestMessage } from './messages/AgentWearablesRequest';
 import { AgentWearablesUpdateMessage } from './messages/AgentWearablesUpdate';
-import { InventorySortOrder } from '../enums/InventorySortOrder';
 import { RezSingleAttachmentFromInvMessage } from './messages/RezSingleAttachmentFromInv';
 import { AttachmentPoint } from '../enums/AttachmentPoint';
 import { Utils } from './Utils';
@@ -27,6 +25,11 @@ import { ControlFlags } from '../enums/ControlFlags';
 import { PacketFlags } from '../enums/PacketFlags';
 import { FolderType } from '../enums/FolderType';
 import { Subject, Subscription } from 'rxjs';
+import { InventoryFolder } from './InventoryFolder';
+import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
+import { BulkUpdateInventoryMessage } from './messages/BulkUpdateInventory';
+import { InventoryItem } from './InventoryItem';
+import { AgentDataUpdateMessage } from './messages/AgentDataUpdate';
 
 export class Agent
 {
@@ -34,6 +37,7 @@ export class Agent
     lastName: string;
     localID = 0;
     agentID: UUID;
+    activeGroupID: UUID = UUID.zero();
     accessMax: string;
     regionAccess: string;
     agentAccess: string;
@@ -85,10 +89,12 @@ export class Agent
     };
     agentUpdateTimer: Timer | null = null;
     estateManager = false;
-    appearanceSet = false;
-    appearanceSetEvent: Subject<void> = new Subject<void>();
+
+    appearanceComplete = false;
+    appearanceCompleteEvent: Subject<void> = new Subject<void>();
 
     private clientEvents: ClientEvents;
+    private animSubscription?: Subscription;
 
     constructor(clientEvents: ClientEvents)
     {
@@ -153,10 +159,16 @@ export class Agent
 
     setCurrentRegion(region: Region)
     {
+        if (this.animSubscription !== undefined)
+        {
+            this.animSubscription.unsubscribe();
+        }
         this.currentRegion = region;
-        this.currentRegion.circuit.subscribeToMessages([
-            Message.AvatarAnimation
-        ], this.onAnimState.bind(this));
+        this.animSubscription = this.currentRegion.circuit.subscribeToMessages([
+            Message.AvatarAnimation,
+            Message.AgentDataUpdate,
+            Message.BulkUpdateInventory
+        ], this.onMessage.bind(this));
     }
     circuitActive()
     {
@@ -194,9 +206,57 @@ export class Agent
             this.agentUpdateTimer = null;
         }
     }
-    onAnimState(packet: Packet)
+    onMessage(packet: Packet)
     {
-        if (packet.message.id === Message.AvatarAnimation)
+        if (packet.message.id === Message.AgentDataUpdate)
+        {
+            const msg = packet.message as AgentDataUpdateMessage;
+            this.activeGroupID = msg.AgentData.ActiveGroupID;
+        }
+        else if (packet.message.id === Message.BulkUpdateInventory)
+        {
+            const msg = packet.message as BulkUpdateInventoryMessage;
+            const evt = new BulkUpdateInventoryEvent();
+
+            for (const newItem of msg.ItemData)
+            {
+                const folder = this.inventory.findFolder(newItem.FolderID);
+                const item = new InventoryItem(folder || undefined, this);
+                item.assetID = newItem.AssetID;
+                item.inventoryType = newItem.InvType;
+                item.name = Utils.BufferToStringSimple(newItem.Name);
+                item.salePrice = newItem.SalePrice;
+                item.saleType = newItem.SaleType;
+                item.created = new Date(newItem.CreationDate * 1000);
+                item.parentID = newItem.FolderID;
+                item.flags = newItem.Flags;
+                item.itemID = newItem.ItemID;
+                item.description = Utils.BufferToStringSimple(newItem.Description);
+                item.type = newItem.Type;
+                item.callbackID = newItem.CallbackID;
+                item.permissions.baseMask = newItem.BaseMask;
+                item.permissions.groupMask = newItem.GroupMask;
+                item.permissions.nextOwnerMask = newItem.NextOwnerMask;
+                item.permissions.ownerMask = newItem.OwnerMask;
+                item.permissions.everyoneMask = newItem.EveryoneMask;
+                item.permissions.owner = newItem.OwnerID;
+                item.permissions.creator = newItem.CreatorID;
+                item.permissions.group = newItem.GroupID;
+                item.permissions.groupOwned = newItem.GroupOwned;
+                evt.itemData.push(item);
+            }
+            for (const newFolder of msg.FolderData)
+            {
+                const fld = new InventoryFolder(this.inventory.main, this);
+                fld.typeDefault = newFolder.Type;
+                fld.name = Utils.BufferToStringSimple(newFolder.Name);
+                fld.folderID = newFolder.FolderID;
+                fld.parentID = newFolder.ParentID;
+                evt.folderData.push(fld);
+            }
+            this.clientEvents.onBulkUpdateInventoryEvent.next(evt);
+        }
+        else if (packet.message.id === Message.AvatarAnimation)
         {
             const animMsg = packet.message as AvatarAnimationMessage;
             if (animMsg.Sender.ID.toString() === this.agentID.toString())
@@ -220,7 +280,22 @@ export class Agent
             }
         }
     }
-    setInitialAppearance()
+
+    async getWearables(): Promise<InventoryFolder>
+    {
+        for (const uuid of Object.keys(this.inventory.main.skeleton))
+        {
+            const folder = this.inventory.main.skeleton[uuid];
+            if (folder.typeDefault === FolderType.CurrentOutfit)
+            {
+                await folder.populate(false);
+                return folder;
+            }
+        }
+        throw new Error('Unable to get wearables from inventory')
+    }
+
+    async setInitialAppearance()
     {
         const circuit = this.currentRegion.circuit;
         const wearablesRequest: AgentWearablesRequestMessage = new AgentWearablesRequestMessage();
@@ -229,95 +304,70 @@ export class Agent
             SessionID: circuit.sessionID
         };
         circuit.sendMessage(wearablesRequest, PacketFlags.Reliable);
-        circuit.waitForMessage<AgentWearablesUpdateMessage>(Message.AgentWearablesUpdate, 10000).then((wearables: AgentWearablesUpdateMessage) =>
+
+        const wearables: AgentWearablesUpdateMessage = await circuit.waitForMessage<AgentWearablesUpdateMessage>(Message.AgentWearablesUpdate, 10000);
+
+        if (!this.wearables || wearables.AgentData.SerialNum > this.wearables.serialNumber)
         {
-            if (!this.wearables || wearables.AgentData.SerialNum > this.wearables.serialNumber)
+            this.wearables = {
+                serialNumber: wearables.AgentData.SerialNum,
+                attachments: []
+            };
+            for (const wearable of wearables.WearableData)
             {
-                this.wearables = {
-                    serialNumber: wearables.AgentData.SerialNum,
-                    attachments: []
-                };
-                for (const wearable of wearables.WearableData)
+                if (this.wearables && this.wearables.attachments)
                 {
-                    if (this.wearables && this.wearables.attachments)
+                    this.wearables.attachments.push({
+                        itemID: wearable.ItemID,
+                        assetID: wearable.AssetID,
+                        wearableType: wearable.WearableType
+                    });
+                }
+            }
+        }
+
+
+        const currentOutfitFolder = await this.getWearables();
+        const wornObjects = this.currentRegion.objects.getObjectsByParent(this.localID);
+        for (const item of currentOutfitFolder.items)
+        {
+            if (item.type === 6)
+            {
+                let found = false;
+                for (const obj of wornObjects)
+                {
+                    if (obj.hasNameValueEntry('AttachItemID'))
                     {
-                        this.wearables.attachments.push({
-                            itemID: wearable.ItemID,
-                            assetID: wearable.AssetID,
-                            wearableType: wearable.WearableType
-                        });
+                        if (item.itemID.toString() === obj.getNameValueEntry('AttachItemID'))
+                        {
+                            found = true;
+                        }
                     }
                 }
-            }
 
-            for (const uuid of Object.keys(this.inventory.main.skeleton))
-            {
-                const folder = this.inventory.main.skeleton[uuid];
-                if (folder.typeDefault === FolderType.CurrentOutfit)
+                if (!found)
                 {
-                    const folderID = folder.folderID;
-
-                    const requestFolder = {
-                        folder_id: new LLSD.UUID(folderID),
-                        owner_id: new LLSD.UUID(this.agentID),
-                        fetch_folders: true,
-                        fetch_items: true,
-                        sort_order: InventorySortOrder.ByName
+                    const rsafi = new RezSingleAttachmentFromInvMessage();
+                    rsafi.AgentData = {
+                        AgentID: this.agentID,
+                        SessionID: circuit.sessionID
                     };
-                    const requestedFolders = {
-                        'folders': [
-                            requestFolder
-                        ]
+                    rsafi.ObjectData = {
+                        ItemID: new UUID(item.itemID.toString()),
+                        OwnerID: this.agentID,
+                        AttachmentPt: 0x80 | AttachmentPoint.Default,
+                        ItemFlags: item.flags,
+                        GroupMask: item.permissions.groupMask,
+                        EveryoneMask: item.permissions.everyoneMask,
+                        NextOwnerMask: item.permissions.nextOwnerMask,
+                        Name: Utils.StringToBuffer(item.name),
+                        Description: Utils.StringToBuffer(item.description)
                     };
-                    this.currentRegion.caps.capsPostXML('FetchInventoryDescendents2', requestedFolders).then((folderContents: any) =>
-                    {
-                        const currentOutfitFolderContents = folderContents['folders'][0]['items'];
-                        const wornObjects = this.currentRegion.objects.getObjectsByParent(this.localID);
-                        for (const item of currentOutfitFolderContents)
-                        {
-                            if (item.type === 6)
-                            {
-                                let found = false;
-                                for (const obj of wornObjects)
-                                {
-                                    if (obj.hasNameValueEntry('AttachItemID'))
-                                    {
-                                        if (item['item_id'].toString() === obj.getNameValueEntry('AttachItemID'))
-                                        {
-                                            found = true;
-                                        }
-                                    }
-                                }
-
-                                if (!found)
-                                {
-                                    const rsafi = new RezSingleAttachmentFromInvMessage();
-                                    rsafi.AgentData = {
-                                        AgentID: this.agentID,
-                                        SessionID: circuit.sessionID
-                                    };
-                                    rsafi.ObjectData = {
-                                        ItemID: new UUID(item['item_id'].toString()),
-                                        OwnerID: this.agentID,
-                                        AttachmentPt: 0x80 | AttachmentPoint.Default,
-                                        ItemFlags: item['flags'],
-                                        GroupMask: item['permissions']['group_mask'],
-                                        EveryoneMask: item['permissions']['everyone_mask'],
-                                        NextOwnerMask: item['permissions']['next_owner_mask'],
-                                        Name: Utils.StringToBuffer(item['name']),
-                                        Description: Utils.StringToBuffer(item['desc'])
-                                    };
-                                    circuit.sendMessage(rsafi, PacketFlags.Reliable);
-                                }
-                            }
-                        }
-                    });
-
+                    circuit.sendMessage(rsafi, PacketFlags.Reliable);
                 }
             }
-
-            this.appearanceSet = true;
-            this.appearanceSetEvent.next();
-        });
+        }
+        this.appearanceComplete = true;
+        this.appearanceCompleteEvent.next();
     }
 }

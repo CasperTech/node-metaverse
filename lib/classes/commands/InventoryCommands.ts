@@ -9,6 +9,7 @@ import { UUID } from '../UUID';
 import { Vector3 } from '../Vector3';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { ChatSourceType } from '../../enums/ChatSourceType';
+import { InventoryItem } from '../InventoryItem';
 
 export class InventoryCommands extends CommandsBase
 {
@@ -52,6 +53,23 @@ export class InventoryCommands extends CommandsBase
         };
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
         return await this.circuit.waitForAck(sequenceNo, 10000);
+    }
+
+    async getInventoryItem(item: UUID | string): Promise<InventoryItem>
+    {
+        if (typeof item === 'string')
+        {
+            item = new UUID(item);
+        }
+        const result = await this.currentRegion.agent.inventory.fetchInventoryItem(item);
+        if (result === null)
+        {
+            throw new Error('Unable to get inventory item');
+        }
+        else
+        {
+            return result;
+        }
     }
 
     async acceptInventoryOffer(event: InventoryOfferedEvent): Promise<void>

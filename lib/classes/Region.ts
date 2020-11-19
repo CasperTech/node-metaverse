@@ -46,6 +46,7 @@ import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
 import { PacketFlags } from '../enums/PacketFlags';
 import { Vector3 } from './Vector3';
 import { Vector2 } from './Vector2';
+import { ObjectResolver } from './ObjectResolver';
 
 export class Region
 {
@@ -143,6 +144,8 @@ export class Region
     environment: RegionEnvironment;
 
     timeOffset = 0;
+
+    resolver: ObjectResolver = new ObjectResolver(this);
 
     private parcelOverlayReceived: {[key: number]: Buffer} = {};
 
@@ -604,13 +607,13 @@ export class Region
             }
         });
         const parcelID: string = dwellReply.Data.ParcelID.toString();
-        let parcel = new Parcel();
+        let parcel = new Parcel(this);
         if (this.parcelsByUUID[parcelID])
         {
             parcel = this.parcelsByUUID[parcelID];
         }
         parcel.LocalID = parcelProperties.LocalID;
-        parcel.ParcelID = dwellReply.Data.ParcelID;
+        parcel.ParcelID = new UUID(dwellReply.Data.ParcelID.toString());
         parcel.RegionDenyAgeUnverified = parcelProperties.RegionDenyTransacted;
         parcel.MediaDesc = parcelProperties.MediaDesc;
         parcel.MediaHeight = parcelProperties.MediaHeight;
@@ -624,7 +627,7 @@ export class Region
         parcel.AnyAVSounds = parcelProperties.AnyAVSounds;
         parcel.Area = parcelProperties.Area;
         parcel.AuctionID = parcelProperties.AuctionID;
-        parcel.AuthBuyerID = parcelProperties.AuthBuyerID;
+        parcel.AuthBuyerID = new UUID(parcelProperties.AuthBuyerID.toString());
         parcel.Bitmap = parcelProperties.Bitmap;
         parcel.Category = parcelProperties.Category;
         parcel.ClaimDate = parcelProperties.ClaimDate;
@@ -632,20 +635,20 @@ export class Region
         parcel.Desc = parcelProperties.Desc;
         parcel.Dwell = dwellReply.Data.Dwell;
         parcel.GroupAVSounds = parcelProperties.GroupAVSounds;
-        parcel.GroupID = parcelProperties.GroupID;
+        parcel.GroupID = new UUID(parcelProperties.GroupID.toString());
         parcel.GroupPrims = parcelProperties.GroupPrims;
         parcel.IsGroupOwned = parcelProperties.IsGroupOwned;
         parcel.LandingType = parcelProperties.LandingType;
         parcel.MaxPrims = parcelProperties.MaxPrims;
         parcel.MediaAutoScale = parcelProperties.MediaAutoScale;
-        parcel.MediaID = parcelProperties.MediaID;
+        parcel.MediaID = new UUID(parcelProperties.MediaID.toString());
         parcel.MediaURL = parcelProperties.MediaURL;
         parcel.MusicURL = parcelProperties.MusicURL;
         parcel.Name = parcelProperties.Name;
         parcel.OtherCleanTime = parcelProperties.OtherCleanTime;
         parcel.OtherCount = parcelProperties.OtherCount;
         parcel.OtherPrims = parcelProperties.OtherPrims;
-        parcel.OwnerID = parcelProperties.OwnerID;
+        parcel.OwnerID = new UUID(parcelProperties.OwnerID.toString());
         parcel.OwnerPrims = parcelProperties.OwnerPrims;
         parcel.ParcelFlags = parcelProperties.ParcelFlags;
         parcel.ParcelPrimBonus = parcelProperties.ParcelPrimBonus;
@@ -666,7 +669,7 @@ export class Region
         parcel.SimWideMaxPrims = parcelProperties.SimWideMaxPrims;
         parcel.SimWideTotalPrims = parcelProperties.SimWideTotalPrims;
         parcel.SnapSelection = parcelProperties.SnapSelection;
-        parcel.SnapshotID = parcelProperties.SnapshotID;
+        parcel.SnapshotID = new UUID(parcelProperties.SnapshotID.toString());
         parcel.Status = parcelProperties.Status;
         parcel.TotalPrims = parcelProperties.TotalPrims;
         parcel.UserLocation = parcelProperties.UserLocation;

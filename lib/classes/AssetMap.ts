@@ -1,21 +1,89 @@
+import { InventoryItem } from './InventoryItem';
+import { Material } from './public/Material';
+
 export class AssetMap
 {
     mesh: {
         [key: string]: {
-            objectName: string,
-            objectDescription: string,
-            assetID: string
+            name: string,
+            description: string,
+            item: InventoryItem | null
         }
     } = {};
-    textures: { [key: string]: string } = {};
-    animations: { [key: string]: string } = {};
-    sounds: { [key: string]: string } = {};
-    gestures: { [key: string]: string } = {};
-    landmarks: { [key: string]: string } = {};
-    callingcards: { [key: string]: string } = {};
-    scripts: { [key: string]: string } = {};
-    clothing: { [key: string]: string } = {};
-    notecards: { [key: string]: string } = {};
-    bodyparts: { [key: string]: string } = {};
-    objects: { [key: string]: Buffer | null } = {};
+    textures: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    materials: {
+        [key: string]: Material | null
+    } = {};
+    animations: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    sounds: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    gestures: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    callingcards: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    scripts: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    clothing: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    notecards: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    bodyparts: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
+    objects: {
+        [key: string]: InventoryItem | null
+    } = {};
+    temporaryInventory: {
+        [key: string]: InventoryItem
+    } = {};
+    byUUID: {
+        [key: string]: InventoryItem
+    } = {};
+    pending: {[key: string]: boolean} = {};
 }

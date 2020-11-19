@@ -87,6 +87,11 @@ export class Bot
         }
     }
 
+    getCurrentRegion(): Region
+    {
+        return this.currentRegion;
+    }
+
     async login()
     {
         const loginHandler = new LoginHandler(this.clientEvents, this.options);

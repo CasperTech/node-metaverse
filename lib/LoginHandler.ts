@@ -58,7 +58,8 @@ export class LoginHandler
                 host: loginURI.hostname,
                 port: parseInt(port, 10),
                 path: loginURI.path,
-                rejectUnauthorized: false
+                rejectUnauthorized: false,
+                timeout: 60000
             };
             const client = (secure) ? xmlrpc.createSecureClient(secureClientOptions) : xmlrpc.createClient(secureClientOptions);
             client.methodCall('login_to_simulator',
@@ -75,8 +76,8 @@ export class LoginHandler
                         'platform': 'win',
                         'mac': LoginHandler.GenerateMAC(),
                         'viewer_digest': uuid.v4(),
-                        'user_agent': 'nmv',
-                        'author': 'tom@caspertech.co.uk',
+                        'user_agent': 'node-metaverse',
+                        'author': 'nmv@caspertech.co.uk',
                         'options': [
                             'inventory-root',
                             'inventory-skeleton',

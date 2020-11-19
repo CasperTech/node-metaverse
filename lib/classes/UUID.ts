@@ -91,6 +91,10 @@ export class UUID
                     + hexString.substr(16, 4) + '-'
                     + hexString.substr(20, 12));
             }
+            else if (typeof buf === 'object' && buf.toString !== undefined)
+            {
+                this.setUUID(buf.toString());
+            }
             else
             {
                 console.error('Can\'t accept UUIDs of type ' + typeof buf);
@@ -125,6 +129,11 @@ export class UUID
         binary.copy(buf, pos, 0);
     }
 
+    public isZero(): boolean
+    {
+        return (this.mUUID === '00000000-0000-0000-0000-000000000000');
+    }
+
     public equals(cmp: UUID | string): boolean
     {
         if (typeof cmp === 'string')
@@ -133,6 +142,10 @@ export class UUID
         }
         else
         {
+            if (cmp.equals === undefined)
+            {
+                throw new Error(cmp.constructor.name + ' is not a UUID');
+            }
             return cmp.equals(this.mUUID);
         }
     }

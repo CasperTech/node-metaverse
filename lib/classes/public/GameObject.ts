@@ -11,11 +11,9 @@ import { NameValue } from '../NameValue';
 import * as Long from 'long';
 import { IGameObjectData } from '../interfaces/IGameObjectData';
 import * as builder from 'xmlbuilder';
-import { XMLNode } from 'xmlbuilder';
-import * as xml2js from 'xml2js';
+import { XMLElement, XMLNode } from 'xmlbuilder';
 import { Region } from '../Region';
 import { InventoryItem } from '../InventoryItem';
-import { InventoryType } from '../../enums/InventoryType';
 import { LLWearable } from '../LLWearable';
 import { TextureAnim } from './TextureAnim';
 import { ExtraParams } from './ExtraParams';
@@ -47,6 +45,19 @@ import { UpdateTaskInventoryMessage } from '../messages/UpdateTaskInventory';
 import { ObjectPropertiesMessage } from '../messages/ObjectProperties';
 import { ObjectSelectMessage } from '../messages/ObjectSelect';
 import { ObjectDeselectMessage } from '../messages/ObjectDeselect';
+import { AttachmentPoint } from '../../enums/AttachmentPoint';
+import { RequestTaskInventoryMessage } from '../messages/RequestTaskInventory';
+import { ReplyTaskInventoryMessage } from '../messages/ReplyTaskInventory';
+import { AssetTypeLL } from '../../enums/AssetTypeLL';
+import { InventoryType } from '../../enums/InventoryType';
+import { InventoryFolder } from '../InventoryFolder';
+import { ObjectUpdateMessage } from '../messages/ObjectUpdate';
+import { Subject } from 'rxjs';
+import { RezScriptMessage } from '../messages/RezScript';
+import { PermissionMask } from '../../enums/PermissionMask';
+import { AssetType } from '../../enums/AssetType';
+
+import * as uuid from 'uuid';
 
 export class GameObject implements IGameObjectData
 {
@@ -82,6 +93,7 @@ export class GameObject implements IGameObjectData
     sitName?: string;
     textureID?: string;
     resolvedAt?: number;
+    resolvedInventory = false;
     totalChildren?: number;
 
     landImpact?: number;
@@ -150,6 +162,7 @@ export class GameObject implements IGameObjectData
     gravityMultiplier?: number;
     physicsShapeType?: PhysicsShapeType;
     restitution?: number;
+    attachmentPoint: AttachmentPoint = AttachmentPoint.Default;
 
     region: Region;
 
@@ -159,47 +172,15 @@ export class GameObject implements IGameObjectData
 
     claimedForBuild = false;
     createdSelected = false;
+    isMarkedRoot = false;
+    onTextureUpdate: Subject<void> = new Subject<void>();
 
-    private static getFromXMLJS(obj: any, param: string): any
-    {
-        if (obj[param] === undefined)
-        {
-            return undefined;
-        }
-        let retParam;
-        if (Array.isArray(obj[param]))
-        {
-            retParam = obj[param][0];
-        }
-        else
-        {
-            retParam = obj[param];
-        }
-        if (typeof retParam === 'string')
-        {
-            if (retParam.toLowerCase() === 'false')
-            {
-                return false;
-            }
-            if (retParam.toLowerCase() === 'true')
-            {
-                return true;
-            }
-            const numVar = parseInt(retParam, 10);
-            if (numVar >= Number.MIN_SAFE_INTEGER && numVar <= Number.MAX_SAFE_INTEGER && String(numVar) === retParam)
-            {
-                return numVar
-            }
-        }
-        return retParam;
-    }
-
-    private static partFromXMLJS(obj: any, root: boolean)
+    private static partFromXMLJS(obj: any, isRoot: boolean)
     {
         const go = new GameObject();
         go.Flags = 0;
         let prop: any;
-        if (this.getFromXMLJS(obj, 'AllowedDrop') !== undefined)
+        if (Utils.getFromXMLJS(obj, 'AllowedDrop') !== undefined)
         {
             go.Flags = go.Flags | PrimFlags.AllowInventoryDrop;
         }
@@ -211,7 +192,7 @@ export class GameObject implements IGameObjectData
         {
             go.folderID = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'InventorySerial')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'InventorySerial')) !== undefined)
         {
             go.inventorySerial = prop;
         }
@@ -219,28 +200,28 @@ export class GameObject implements IGameObjectData
         {
             go.FullID = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'LocalId')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'LocalId')) !== undefined)
         {
             go.ID = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'Name')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'Name')) !== undefined)
         {
-            go.name = prop;
+            go.name = String(prop);
         }
-        if ((prop = this.getFromXMLJS(obj, 'Material')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'Material')) !== undefined)
         {
             go.Material = prop;
         }
         if ((prop = Vector3.fromXMLJS(obj, 'GroupPosition')) !== undefined)
         {
-            if (root)
+            if (isRoot)
             {
                 go.Position = prop;
             }
         }
         if ((prop = Vector3.fromXMLJS(obj, 'OffsetPosition')) !== undefined)
         {
-            if (!root)
+            if (!isRoot)
             {
                 go.Position = prop;
             }
@@ -261,27 +242,27 @@ export class GameObject implements IGameObjectData
         {
             go.Acceleration = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'Description')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'Description')) !== undefined)
         {
-            go.description = prop;
+            go.description = String(prop);
         }
-        if ((prop = this.getFromXMLJS(obj, 'Text')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'Text')) !== undefined)
         {
-            go.Text = prop;
+            go.Text = String(prop);
         }
         if ((prop = Color4.fromXMLJS(obj, 'Color')) !== undefined)
         {
             go.TextColor = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'SitName')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'SitName')) !== undefined)
         {
-            go.sitName = prop;
+            go.sitName = String(prop);
         }
-        if ((prop = this.getFromXMLJS(obj, 'TouchName')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'TouchName')) !== undefined)
         {
-            go.touchName = prop;
+            go.touchName = String(prop);
         }
-        if ((prop = this.getFromXMLJS(obj, 'ClickAction')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'ClickAction')) !== undefined)
         {
             go.ClickAction = prop;
         }
@@ -289,23 +270,23 @@ export class GameObject implements IGameObjectData
         {
             go.Scale = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'ParentID')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'ParentID')) !== undefined)
         {
             go.ParentID = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'Category')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'Category')) !== undefined)
         {
             go.category = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'SalePrice')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'SalePrice')) !== undefined)
         {
             go.salePrice = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'ObjectSaleType')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'ObjectSaleType')) !== undefined)
         {
             go.saleType = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'OwnershipCost')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'OwnershipCost')) !== undefined)
         {
             go.ownershipCost = prop;
         }
@@ -321,27 +302,27 @@ export class GameObject implements IGameObjectData
         {
             go.lastOwnerID = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'BaseMask')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'BaseMask')) !== undefined)
         {
             go.baseMask = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'OwnerMask')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'OwnerMask')) !== undefined)
         {
             go.ownerMask = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'GroupMask')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'GroupMask')) !== undefined)
         {
             go.groupMask = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'EveryoneMask')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'EveryoneMask')) !== undefined)
         {
             go.everyoneMask = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'NextOwnerMask')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'NextOwnerMask')) !== undefined)
         {
             go.nextOwnerMask = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'Flags')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'Flags')) !== undefined)
         {
             let flags = 0;
             if (typeof prop === 'string')
@@ -358,17 +339,17 @@ export class GameObject implements IGameObjectData
             }
             go.Flags = flags;
         }
-        if ((prop = this.getFromXMLJS(obj, 'TextureAnimation')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'TextureAnimation')) !== undefined)
         {
             const buf = Buffer.from(prop, 'base64');
             go.textureAnim = TextureAnim.from(buf);
         }
-        if ((prop = this.getFromXMLJS(obj, 'ParticleSystem')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'ParticleSystem')) !== undefined)
         {
             const buf = Buffer.from(prop, 'base64');
             go.Particles = ParticleSystem.from(buf);
         }
-        if ((prop = this.getFromXMLJS(obj, 'PhysicsShapeType')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'PhysicsShapeType')) !== undefined)
         {
             go.physicsShapeType = prop;
         }
@@ -388,95 +369,97 @@ export class GameObject implements IGameObjectData
         {
             go.SoundRadius = prop;
         }
-        if ((prop = this.getFromXMLJS(obj, 'Shape')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'Shape')) !== undefined)
         {
             const shape = prop;
-            if ((prop = this.getFromXMLJS(shape, 'ProfileCurve')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'ProfileCurve')) !== undefined)
             {
                 go.ProfileCurve = prop;
             }
-            if ((prop = this.getFromXMLJS(shape, 'TextureEntry')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'TextureEntry')) !== undefined)
             {
                 const buf = Buffer.from(prop, 'base64');
                 go.TextureEntry = TextureEntry.from(buf);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathBegin')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathBegin')) !== undefined)
             {
                 go.PathBegin = Utils.unpackBeginCut(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathCurve')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathCurve')) !== undefined)
             {
                 go.PathCurve = prop;
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathEnd')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathEnd')) !== undefined)
             {
                 go.PathEnd = Utils.unpackEndCut(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathRadiusOffset')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathRadiusOffset')) !== undefined)
             {
                 go.PathRadiusOffset = Utils.unpackPathTwist(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathRevolutions')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathRevolutions')) !== undefined)
             {
                 go.PathRevolutions = Utils.unpackPathRevolutions(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathScaleX')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathScaleX')) !== undefined)
             {
                 go.PathScaleX = Utils.unpackPathScale(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathScaleY')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathScaleY')) !== undefined)
             {
                 go.PathScaleY = Utils.unpackPathScale(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathShearX')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathShearX')) !== undefined)
             {
                 go.PathShearX = Utils.unpackPathShear(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathShearY')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathShearY')) !== undefined)
             {
                 go.PathShearY = Utils.unpackPathShear(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathSkew')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathSkew')) !== undefined)
             {
                 go.PathSkew = Utils.unpackPathShear(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathTaperX')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathTaperX')) !== undefined)
             {
                 go.PathTaperX = Utils.unpackPathTaper(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathTaperY')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathTaperY')) !== undefined)
             {
                 go.PathTaperY = Utils.unpackPathTaper(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathTwist')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathTwist')) !== undefined)
             {
                 go.PathTwist = Utils.unpackPathTwist(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PathTwistBegin')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PathTwistBegin')) !== undefined)
             {
                 go.PathTwistBegin = Utils.unpackPathTwist(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'PCode')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'PCode')) !== undefined)
             {
                 go.PCode = prop;
             }
-            if ((prop = this.getFromXMLJS(shape, 'ProfileBegin')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'ProfileBegin')) !== undefined)
             {
                 go.ProfileBegin = Utils.unpackBeginCut(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'ProfileEnd')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'ProfileEnd')) !== undefined)
             {
                 go.ProfileEnd = Utils.unpackEndCut(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'ProfileHollow')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'ProfileHollow')) !== undefined)
             {
                 go.ProfileHollow = Utils.unpackProfileHollow(prop);
             }
-            if ((prop = this.getFromXMLJS(shape, 'State')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'State')) !== undefined)
             {
-                go.State = prop;
+                go.attachmentPoint = parseInt(prop, 10);
+                const mask = 0xf << 4 >>> 0;
+                go.State = (((prop & mask) >>> 4) | ((prop & ~mask) << 4)) >>> 0;
             }
-            if ((prop = this.getFromXMLJS(shape, 'ProfileShape')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'ProfileShape')) !== undefined)
             {
                 if (!go.ProfileCurve)
                 {
@@ -484,7 +467,7 @@ export class GameObject implements IGameObjectData
                 }
                 go.ProfileCurve = go.ProfileCurve | parseInt(ProfileShape[prop], 10);
             }
-            if ((prop = this.getFromXMLJS(shape, 'HollowShape')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'HollowShape')) !== undefined)
             {
                 if (!go.ProfileCurve)
                 {
@@ -492,9 +475,9 @@ export class GameObject implements IGameObjectData
                 }
                 go.ProfileCurve = go.ProfileCurve | parseInt(HoleType[prop], 10);
             }
-            if (this.getFromXMLJS(shape, 'SculptEntry') !== undefined)
+            if (Utils.getFromXMLJS(shape, 'SculptEntry') !== undefined)
             {
-                const type = this.getFromXMLJS(shape, 'SculptType');
+                const type = Utils.getFromXMLJS(shape, 'SculptType');
                 if (type !== false && type !== undefined)
                 {
                     const id = UUID.fromXMLJS(shape, 'SculptTexture');
@@ -515,16 +498,16 @@ export class GameObject implements IGameObjectData
                     }
                 }
             }
-            if (this.getFromXMLJS(shape, 'FlexiEntry') !== undefined)
+            if (Utils.getFromXMLJS(shape, 'FlexiEntry') !== undefined)
             {
-                const flexiSoftness = this.getFromXMLJS(shape, 'FlexiSoftness');
-                const flexiTension = this.getFromXMLJS(shape, 'FlexiTension');
-                const flexiDrag = this.getFromXMLJS(shape, 'FlexiDrag');
-                const flexiGravity = this.getFromXMLJS(shape, 'FlexiGravity');
-                const flexiWind = this.getFromXMLJS(shape, 'FlexiWind');
-                const flexiForceX = this.getFromXMLJS(shape, 'FlexiForceX');
-                const flexiForceY = this.getFromXMLJS(shape, 'FlexiForceY');
-                const flexiForceZ = this.getFromXMLJS(shape, 'FlexiForceZ');
+                const flexiSoftness = Utils.getFromXMLJS(shape, 'FlexiSoftness');
+                const flexiTension = Utils.getFromXMLJS(shape, 'FlexiTension');
+                const flexiDrag = Utils.getFromXMLJS(shape, 'FlexiDrag');
+                const flexiGravity = Utils.getFromXMLJS(shape, 'FlexiGravity');
+                const flexiWind = Utils.getFromXMLJS(shape, 'FlexiWind');
+                const flexiForceX = Utils.getFromXMLJS(shape, 'FlexiForceX');
+                const flexiForceY = Utils.getFromXMLJS(shape, 'FlexiForceY');
+                const flexiForceZ = Utils.getFromXMLJS(shape, 'FlexiForceZ');
                 if (flexiSoftness !== false &&
                     flexiTension !== false &&
                     flexiDrag && false &&
@@ -541,16 +524,16 @@ export class GameObject implements IGameObjectData
                     go.extraParams.setFlexiData(flexiSoftness, flexiTension, flexiDrag, flexiGravity, flexiWind, new Vector3([flexiForceX, flexiForceY, flexiForceZ]));
                 }
             }
-            if (this.getFromXMLJS(shape, 'LightEntry') !== undefined)
+            if (Utils.getFromXMLJS(shape, 'LightEntry') !== undefined)
             {
-                const lightColorR = this.getFromXMLJS(shape, 'LightColorR');
-                const lightColorG = this.getFromXMLJS(shape, 'LightColorG');
-                const lightColorB = this.getFromXMLJS(shape, 'LightColorB');
-                const lightColorA = this.getFromXMLJS(shape, 'LightColorA');
-                const lightRadius = this.getFromXMLJS(shape, 'LightRadius');
-                const lightCutoff = this.getFromXMLJS(shape, 'LightCutoff');
-                const lightFalloff = this.getFromXMLJS(shape, 'LightFalloff');
-                const lightIntensity = this.getFromXMLJS(shape, 'LightIntensity');
+                const lightColorR = Utils.getFromXMLJS(shape, 'LightColorR');
+                const lightColorG = Utils.getFromXMLJS(shape, 'LightColorG');
+                const lightColorB = Utils.getFromXMLJS(shape, 'LightColorB');
+                const lightColorA = Utils.getFromXMLJS(shape, 'LightColorA');
+                const lightRadius = Utils.getFromXMLJS(shape, 'LightRadius');
+                const lightCutoff = Utils.getFromXMLJS(shape, 'LightCutoff');
+                const lightFalloff = Utils.getFromXMLJS(shape, 'LightFalloff');
+                const lightIntensity = Utils.getFromXMLJS(shape, 'LightIntensity');
                 if (lightColorR !== false &&
                     lightColorG !== false &&
                     lightColorB !== false &&
@@ -573,45 +556,45 @@ export class GameObject implements IGameObjectData
                     );
                 }
             }
-            if ((prop = this.getFromXMLJS(shape, 'ExtraParams')) !== undefined)
+            if ((prop = Utils.getFromXMLJS(shape, 'ExtraParams')) !== undefined)
             {
                 const buf = Buffer.from(prop, 'base64');
                 go.extraParams = ExtraParams.from(buf);
             }
         }
-        if ((prop = this.getFromXMLJS(obj, 'TaskInventory')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'TaskInventory')) !== undefined)
         {
             if (prop.TaskInventoryItem)
             {
                 for (const invItemXML of prop.TaskInventoryItem)
                 {
-                    const invItem = new InventoryItem();
+                    const invItem = new InventoryItem(go);
                     let subProp: any;
                     if ((subProp = UUID.fromXMLJS(invItemXML, 'AssetID')) !== undefined)
                     {
                         invItem.assetID = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'BasePermissions')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'BasePermissions')) !== undefined)
                     {
                         invItem.permissions.baseMask = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'EveryonePermissions')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'EveryonePermissions')) !== undefined)
                     {
                         invItem.permissions.everyoneMask = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'GroupPermissions')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'GroupPermissions')) !== undefined)
                     {
                         invItem.permissions.groupMask = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'NextPermissions')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'NextPermissions')) !== undefined)
                     {
                         invItem.permissions.nextOwnerMask = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'CurrentPermissions')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'CurrentPermissions')) !== undefined)
                     {
                         invItem.permissions.ownerMask = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'CreationDate')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'CreationDate')) !== undefined)
                     {
                         invItem.created = new Date(parseInt(subProp, 10) * 1000);
                     }
@@ -619,11 +602,11 @@ export class GameObject implements IGameObjectData
                     {
                         invItem.permissions.creator = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'Description')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'Description')) !== undefined)
                     {
-                        invItem.description = subProp;
+                        invItem.description = String(subProp);
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'Flags')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'Flags')) !== undefined)
                     {
                         invItem.flags = subProp;
                     }
@@ -631,7 +614,7 @@ export class GameObject implements IGameObjectData
                     {
                         invItem.permissions.group = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'InvType')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'InvType')) !== undefined)
                     {
                         invItem.inventoryType = subProp;
                     }
@@ -647,9 +630,9 @@ export class GameObject implements IGameObjectData
                     {
                         invItem.permissions.lastOwner = subProp;
                     }
-                    if ((subProp = this.getFromXMLJS(invItemXML, 'Name')) !== undefined)
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'Name')) !== undefined)
                     {
-                        invItem.name = subProp;
+                        invItem.name = String(subProp);
                     }
                     if ((subProp = UUID.fromXMLJS(invItemXML, 'OwnerID')) !== undefined)
                     {
@@ -674,56 +657,169 @@ export class GameObject implements IGameObjectData
         return go;
     }
 
-    static fromXML(xml: string)
+    static async fromXML(xml: string | any)
     {
-        return new Promise<GameObject>((resolve, reject) =>
+        let result;
+        if (typeof xml === 'string')
         {
-            xml2js.parseString(xml, (err, result) =>
+            const parsed = await Utils.parseXML(xml);
+            if (!parsed['SceneObjectGroup'])
             {
-                if (err)
+                throw new Error('SceneObjectGroup not found');
+            }
+            result = parsed['SceneObjectGroup'];
+        }
+        else
+        {
+            result = xml;
+        }
+
+        let rootPartXML;
+        if (result['SceneObjectPart'])
+        {
+            rootPartXML = result['SceneObjectPart'];
+        }
+        else if (result['RootPart'] && result['RootPart'][0] && result['RootPart'][0]['SceneObjectPart'])
+        {
+            rootPartXML = result['RootPart'][0]['SceneObjectPart'];
+        }
+        else
+        {
+            throw new Error('Root part not found');
+        }
+
+        const rootPart = GameObject.partFromXMLJS(rootPartXML[0], true);
+        rootPart.children = [];
+        rootPart.totalChildren = 0;
+        if (result['OtherParts'] && Array.isArray(result['OtherParts']) && result['OtherParts'].length > 0)
+        {
+            const obj = result['OtherParts'][0];
+            if (obj['SceneObjectPart'] || obj['Part'])
+            {
+                if (obj['Part'])
                 {
-                    reject(err);
+                    for (const part of obj['Part'])
+                    {
+                        rootPart.children.push(GameObject.partFromXMLJS(part['SceneObjectPart'][0], false));
+                        rootPart.totalChildren++;
+                    }
                 }
                 else
                 {
-                    if (!result['SceneObjectGroup'])
+                    for (const part of obj['SceneObjectPart'])
                     {
-                        throw new Error('SceneObjectGroup not found');
+                        rootPart.children.push(GameObject.partFromXMLJS(part, false));
+                        rootPart.totalChildren++;
                     }
-                    result = result['SceneObjectGroup'];
-
-                    let rootPartXML;
-                    if (result['SceneObjectPart'])
-                    {
-                        rootPartXML = result['SceneObjectPart'];
-                    }
-                    else if (result['RootPart'] && result['RootPart'][0] && result['RootPart'][0]['SceneObjectPart'])
-                    {
-                        rootPartXML = result['RootPart'][0]['SceneObjectPart'];
-                    }
-                    else
-                    {
-                        throw new Error('Root part not found');
-                    }
-
-                    const rootPart = GameObject.partFromXMLJS(rootPartXML[0], true);
-                    rootPart.children = [];
-                    rootPart.totalChildren = 0;
-                    if (result['OtherParts'] && Array.isArray(result['OtherParts']) && result['OtherParts'].length > 0)
-                    {
-                        const obj = result['OtherParts'][0];
-                        if (obj['SceneObjectPart'])
-                        {
-                            for (const part of obj['SceneObjectPart'])
-                            {
-                                rootPart.children.push(GameObject.partFromXMLJS(part, false));
-                                rootPart.totalChildren++;
-                            }
-                        }
-                    }
-                    resolve(rootPart);
                 }
+            }
+        }
+        return rootPart;
+    }
+
+    static async deRezObjects(region: Region, objects: GameObject[], destination: DeRezDestination, transactionID: UUID, destFolder: UUID): Promise<void>
+    {
+        const msg = new DeRezObjectMessage();
+
+        msg.AgentData = {
+            AgentID: region.agent.agentID,
+            SessionID: region.circuit.sessionID
+        };
+        msg.AgentBlock = {
+            GroupID: UUID.zero(),
+            Destination: destination,
+            DestinationID: destFolder,
+            TransactionID: transactionID,
+            PacketCount: 1,
+            PacketNumber: 1
+        };
+        msg.ObjectData = [];
+        for (const obj of objects)
+        {
+            msg.ObjectData.push({
+                ObjectLocalID: obj.ID
             });
+        }
+        const ack = region.circuit.sendMessage(msg, PacketFlags.Reliable);
+        return region.circuit.waitForAck(ack, 10000);
+    }
+
+    static takeManyToInventory(region: Region, objects: GameObject[], folder?: InventoryFolder): Promise<InventoryItem>
+    {
+        const transactionID = UUID.random();
+        let enforceFolder = true;
+        if (folder === undefined)
+        {
+            enforceFolder = false;
+            folder = region.agent.inventory.getRootFolderMain();
+        }
+        return new Promise<InventoryItem>((resolve, reject) =>
+        {
+
+            region.circuit.waitForMessage<UpdateCreateInventoryItemMessage>(Message.UpdateCreateInventoryItem, 10000, (message: UpdateCreateInventoryItemMessage) =>
+            {
+                for (const inv of message.InventoryData)
+                {
+                    const name = Utils.BufferToStringSimple(inv.Name, 0);
+                    if (name === objects[0].name)
+                    {
+                        return FilterResponse.Finish;
+                    }
+                }
+                return FilterResponse.NoMatch;
+            }).then((createInventoryMsg: UpdateCreateInventoryItemMessage) =>
+            {
+                for (const inv of createInventoryMsg.InventoryData)
+                {
+                    const name = Utils.BufferToStringSimple(inv.Name, 0);
+                    if (name === objects[0].name)
+                    {
+                        const itemID = inv.ItemID;
+                        region.agent.inventory.fetchInventoryItem(itemID).then((item: InventoryItem | null) =>
+                        {
+                            if (item === null)
+                            {
+                                reject(new Error('Inventory item was unable to be retrieved after take to inventory'));
+                            }
+                            else
+                            {
+                                if (enforceFolder && folder !== undefined && !item.parentID.equals(folder.folderID))
+                                {
+                                    item.moveToFolder(folder).then(() =>
+                                    {
+                                        resolve(item);
+                                    }).catch((err: Error) =>
+                                    {
+                                        console.error('Error moving item to correct folder');
+                                        console.error(err);
+                                        resolve(item);
+                                    });
+                                }
+                                else
+                                {
+                                    resolve(item);
+                                }
+                            }
+                        }).catch((err) =>
+                        {
+                            reject(err);
+                        });
+                        return;
+                    }
+                }
+            }).catch(() =>
+            {
+                reject(new Error('Timed out waiting for UpdateCreateInventoryItem'));
+            });
+            if (folder !== undefined)
+            {
+                GameObject.deRezObjects(region, objects, DeRezDestination.AgentInventoryTake, transactionID, folder.folderID).then(() =>
+                {
+                }).catch((err) =>
+                {
+                    console.error(err);
+                });
+            }
         });
     }
 
@@ -736,6 +832,203 @@ export class GameObject implements IGameObjectData
         this.SoundFlags = 0;
         this.SoundRadius = 1.0;
         this.SoundGain = 1.0;
+    }
+
+    async waitForTextureUpdate(timeout?: number)
+    {
+        return Utils.waitOrTimeOut<void>(this.onTextureUpdate, timeout);
+    }
+
+    async rezScript(name: string, description: string, perms: PermissionMask = 532480): Promise<InventoryItem>
+    {
+        const rezScriptMsg = new RezScriptMessage();
+        rezScriptMsg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID,
+            GroupID: this.region.agent.activeGroupID
+        };
+        rezScriptMsg.UpdateBlock = {
+            ObjectLocalID: this.ID,
+            Enabled: true
+        };
+        const tmpName = uuid.v4();
+        const invItem = new InventoryItem(this);
+        invItem.itemID = UUID.zero();
+        invItem.parentID = this.FullID;
+        invItem.permissions.creator = this.region.agent.agentID;
+        invItem.permissions.group = UUID.zero();
+        invItem.permissions.baseMask = PermissionMask.All;
+        invItem.permissions.ownerMask = PermissionMask.All;
+        invItem.permissions.groupMask = 0;
+        invItem.permissions.everyoneMask = 0;
+        invItem.permissions.nextOwnerMask = perms;
+        invItem.permissions.groupOwned = false;
+        invItem.type = AssetType.LSLText;
+        invItem.inventoryType = InventoryType.LSL;
+        invItem.flags = 0;
+        invItem.salePrice = this.salePrice || 10;
+        invItem.saleType = this.saleType || 0;
+        invItem.name = tmpName;
+        invItem.description = description;
+        invItem.created = new Date();
+
+        rezScriptMsg.InventoryBlock = {
+            ItemID: UUID.zero(),
+            FolderID: this.FullID,
+            CreatorID: this.region.agent.agentID,
+            OwnerID: this.region.agent.agentID,
+            GroupID: UUID.zero(),
+            BaseMask: PermissionMask.All,
+            OwnerMask: PermissionMask.All,
+            GroupMask: 0,
+            EveryoneMask: 0,
+            NextOwnerMask: perms,
+            GroupOwned: false,
+            TransactionID: UUID.zero(),
+            Type: AssetType.LSLText,
+            InvType: InventoryType.LSL,
+            Flags: 0,
+            SaleType: this.saleType || 0,
+            SalePrice: this.salePrice || 10,
+            Name: Utils.StringToBuffer(tmpName),
+            Description: Utils.StringToBuffer(description),
+            CreationDate: Math.floor(invItem.created.getTime() / 1000),
+            CRC: invItem.getCRC()
+        };
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(rezScriptMsg, PacketFlags.Reliable), 10000);
+        await this.updateInventory();
+        for (const item of this.inventory)
+        {
+            if (item.name === tmpName)
+            {
+                item.renameInTask(this, name).then(() => {}).catch((err) => {});
+                await this.waitForInventoryUpdate();
+                await this.updateInventory();
+                for (const newItem of this.inventory)
+                {
+                    if (newItem.itemID.equals(item.itemID))
+                    {
+                        return newItem;
+                    }
+                }
+                return item;
+            }
+        }
+        throw new Error('Failed to add script to object');
+    }
+
+    async updateInventory()
+    {
+        const req = new RequestTaskInventoryMessage();
+        req.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        req.InventoryData = {
+            LocalID: this.ID
+        };
+        this.region.circuit.sendMessage(req, PacketFlags.Reliable);
+        await this.waitForTaskInventory();
+    }
+
+    private async waitForTaskInventory()
+    {
+        let serial = 0;
+        const inventory = await this.region.circuit.waitForMessage<ReplyTaskInventoryMessage>(Message.ReplyTaskInventory, 10000, (message: ReplyTaskInventoryMessage): FilterResponse =>
+        {
+            serial = message.InventoryData.Serial;
+            if (message.InventoryData.TaskID.equals(this.FullID))
+            {
+                return FilterResponse.Finish;
+            }
+            else
+            {
+                return FilterResponse.Match;
+            }
+        });
+        const fileName = Utils.BufferToStringSimple(inventory.InventoryData.Filename);
+
+        const file = await this.region.circuit.XferFileDown(fileName, true, false, UUID.zero(), AssetType.Unknown, true);
+        this.inventory = [];
+        if (file.length === 0)
+        {
+            if (this.Flags === undefined)
+            {
+                this.Flags = 0;
+            }
+            this.Flags = this.Flags | PrimFlags.InventoryEmpty;
+        }
+        else
+        {
+            const str = file.toString('utf-8');
+            const lineObj =  {
+                lines: str.replace(/\r\n/g, '\n').split('\n'),
+                lineNum: 0
+            };
+            while (lineObj.lineNum < lineObj.lines.length)
+            {
+                const line = lineObj.lines[lineObj.lineNum++];
+                let result = Utils.parseLine(line);
+                if (result.key !== null)
+                {
+                    switch (result.key)
+                    {
+                        case 'inv_object':
+                            let itemID = UUID.zero();
+                            let parentID = UUID.zero();
+                            let name = '';
+                            let assetType: AssetType = AssetType.Unknown;
+
+                            while (lineObj.lineNum < lineObj.lines.length)
+                            {
+                                result = Utils.parseLine(lineObj.lines[lineObj.lineNum++]);
+                                if (result.key !== null)
+                                {
+                                    if (result.key === '{')
+                                    {
+                                        // do nothing
+                                    }
+                                    else if (result.key === '}')
+                                    {
+                                        break;
+                                    }
+                                    else if (result.key === 'obj_id')
+                                    {
+                                        itemID = new UUID(result.value);
+                                    }
+                                    else if (result.key === 'parent_id')
+                                    {
+                                        parentID = new UUID(result.value);
+                                    }
+                                    else if (result.key === 'type')
+                                    {
+                                        const typeString = result.value as any;
+                                        assetType = parseInt(AssetTypeLL[typeString], 10);
+                                    }
+                                    else if (result.key === 'name')
+                                    {
+                                        name = result.value.substr(0, result.value.indexOf('|'));
+                                    }
+                                }
+                            }
+
+                            if (name !== 'Contents')
+                            {
+                                console.log('TODO: Do something useful with inv_objects')
+                            }
+
+                            break;
+                        case 'inv_item':
+                            this.inventory.push(InventoryItem.fromAsset(lineObj, this, this.region.agent));
+                            break;
+                        default:
+                        {
+                            console.log('Unrecognised task inventory token: [' + result.key + ']');
+                        }
+                    }
+                }
+            }
+        }
     }
 
     hasNameValueEntry(key: string): boolean
@@ -861,15 +1154,16 @@ export class GameObject implements IGameObjectData
         await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
     }
 
-    async setGeometry(pos?: Vector3, rot?: Quaternion, scale?: Vector3)
+    async setGeometry(pos?: Vector3, rot?: Quaternion, scale?: Vector3, wholeLinkset: boolean = false)
     {
         const data = [];
+        const linked = (wholeLinkset) ? UpdateType.Linked : 0;
         if (pos !== undefined)
         {
             this.Position = pos;
             data.push({
                 ObjectLocalID: this.ID,
-                Type: UpdateType.Position,
+                Type: UpdateType.Position | linked,
                 Data: pos.getBuffer()
             });
         }
@@ -878,7 +1172,7 @@ export class GameObject implements IGameObjectData
             this.Rotation = rot;
             data.push({
                 ObjectLocalID: this.ID,
-                Type: UpdateType.Rotation,
+                Type: UpdateType.Rotation | linked,
                 Data: rot.getBuffer()
             })
         }
@@ -887,7 +1181,7 @@ export class GameObject implements IGameObjectData
             this.Scale = scale;
             data.push({
                 ObjectLocalID: this.ID,
-                Type: UpdateType.Scale,
+                Type: UpdateType.Scale | linked,
                 Data: scale.getBuffer()
             })
         }
@@ -904,7 +1198,7 @@ export class GameObject implements IGameObjectData
         await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
     }
 
-    async linkTo(root: GameObject)
+    async linkTo(rootObj: GameObject)
     {
         const msg = new ObjectLinkMessage();
         msg.AgentData = {
@@ -913,7 +1207,7 @@ export class GameObject implements IGameObjectData
         };
         msg.ObjectData = [
             {
-                ObjectLocalID: root.ID
+                ObjectLocalID: rootObj.ID
             },
             {
                 ObjectLocalID: this.ID
@@ -922,26 +1216,66 @@ export class GameObject implements IGameObjectData
         await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
     }
 
-    async linkFrom(objects: GameObject[])
+    async linkFrom(objects: GameObject[]): Promise<void>
     {
-        const msg = new ObjectLinkMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        msg.ObjectData = [
-            {
-                ObjectLocalID: this.ID
-            }
-        ];
-        for (const obj of objects)
+        return new Promise<void>((resolve, reject) =>
         {
-            msg.ObjectData.push(
+            if (objects.length === 0)
             {
-                ObjectLocalID: obj.ID
+                resolve();
+                return;
+            }
+            const primsExpectingUpdate: {[key: number]: GameObject} = {};
+            const msg = new ObjectLinkMessage();
+            msg.AgentData = {
+                AgentID: this.region.agent.agentID,
+                SessionID: this.region.circuit.sessionID
+            };
+            msg.ObjectData = [
+                {
+                    ObjectLocalID: this.ID
+                }
+            ];
+            primsExpectingUpdate[this.ID] = this;
+            for (const obj of objects)
+            {
+                msg.ObjectData.push(
+                    {
+                        ObjectLocalID: obj.ID
+                    });
+                primsExpectingUpdate[obj.ID] = obj;
+            }
+            this.region.circuit.waitForMessage<ObjectUpdateMessage>(Message.ObjectUpdate, 10000, (message: ObjectUpdateMessage) =>
+            {
+                let match = false;
+                for (const obj of message.ObjectData)
+                {
+                    const num = obj.ID;
+                    if (primsExpectingUpdate[num] !== undefined)
+                    {
+                        delete primsExpectingUpdate[num];
+                        match = true;
+                    }
+                }
+                if (match)
+                {
+                    if (Object.keys(primsExpectingUpdate).length === 0)
+                    {
+                        return FilterResponse.Finish;
+                    }
+                    return FilterResponse.Match;
+                }
+                return FilterResponse.NoMatch;
+            }).then((message: ObjectUpdateMessage) =>
+            {
+                resolve();
+            }).catch((err) =>
+            {
+                reject(err);
             });
-        }
-        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
+            this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
+        });
+
     }
 
     async setDescription(desc: string)
@@ -1086,11 +1420,18 @@ export class GameObject implements IGameObjectData
 
     private async getInventoryXML(xml: XMLNode, inv: InventoryItem)
     {
-        if (!inv.assetID.equals(UUID.zero()))
+        if (!inv.assetID.isZero() || !inv.itemID.isZero())
         {
             const item = xml.ele('TaskInventoryItem');
+
+            if (inv.inventoryType === InventoryType.Object && inv.assetID.isZero())
+            {
+                inv.assetID = inv.itemID;
+            }
+
             UUID.getXML(item.ele('AssetID'), inv.assetID);
             UUID.getXML(item.ele('ItemID'), inv.itemID);
+
             if (inv.permissions)
             {
                 item.ele('BasePermissions', inv.permissions.baseMask);
@@ -1110,7 +1451,7 @@ export class GameObject implements IGameObjectData
             item.ele('InvType', inv.inventoryType);
 
             // For wearables, OpenSim expects flags to include the wearable type
-            if (inv.inventoryType === InventoryType.Wearable && !inv.assetID.equals(UUID.zero()))
+            if (inv.inventoryType === InventoryType.Wearable && !inv.assetID.isZero())
             {
                 try
                 {
@@ -1133,9 +1474,24 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number)
+    private async resolve(objectsToResolve: GameObject[])
     {
-        const sceneObjectPart = xml.ele('SceneObjectPart').att('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance').att('xmlns:xsd', 'http://www.w3.org/2001/XMLSchema');
+        this.populateChildren();
+        return this.region.resolver.resolveObjects(objectsToResolve, true, false);
+    }
+
+    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string)
+    {
+        if (this.resolvedAt === undefined || this.resolvedAt === 0 || this.resolvedInventory === false)
+        {
+            await this.region.resolver.resolveObjects([this], true, false, false);
+        }
+        let root = xml;
+        if (rootNode)
+        {
+            root = xml.ele(rootNode);
+        }
+        const sceneObjectPart = root.ele('SceneObjectPart').att('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance').att('xmlns:xsd', 'http://www.w3.org/2001/XMLSchema');
         sceneObjectPart.ele('AllowedDrop', (this.Flags !== undefined && (this.Flags & PrimFlags.AllowInventoryDrop) !== 0) ? 'true' : 'false');
         UUID.getXML(sceneObjectPart.ele('CreatorID'), this.creatorID);
         UUID.getXML(sceneObjectPart.ele('FolderID'), this.folderID);
@@ -1200,7 +1556,17 @@ export class GameObject implements IGameObjectData
             shape.ele('ProfileBegin',  Utils.packBeginCut(Utils.numberOrZero(this.ProfileBegin)));
             shape.ele('ProfileEnd',  Utils.packEndCut(Utils.numberOrZero(this.ProfileEnd)));
             shape.ele('ProfileHollow',  Utils.packProfileHollow(Utils.numberOrZero(this.ProfileHollow)));
-            shape.ele('State', this.State);
+
+            // This is wrong, but opensim expects it
+            const mask = 0xf << 4 >>> 0;
+            if (this.State === undefined)
+            {
+                this.State = 0;
+            }
+            let state = (((this.State & mask) >>> 4) | ((this.State & ~mask) << 4)) >>> 0;
+            state = state | this.attachmentPoint;
+            shape.ele('State', state);
+            shape.ele('LastAttachPoint', 0);
 
             if (this.ProfileCurve)
             {
@@ -1265,6 +1631,10 @@ export class GameObject implements IGameObjectData
         sceneObjectPart.ele('ParentID', this.ParentID);
         sceneObjectPart.ele('CreationDate', Math.round((new Date()).getTime() / 1000));
         sceneObjectPart.ele('Category', this.category);
+        if (this.IsAttachment)
+        {
+            Vector3.getXML(sceneObjectPart.ele('AttachPos'), this.Position);
+        }
         sceneObjectPart.ele('SalePrice', this.salePrice);
         sceneObjectPart.ele('ObjectSaleType', this.saleType);
         sceneObjectPart.ele('OwnershipCost', this.ownershipCost);
@@ -1306,7 +1676,7 @@ export class GameObject implements IGameObjectData
         {
             sceneObjectPart.ele('PhysicsShapeType', this.physicsShapeType);
         }
-        if (this.Sound && !this.Sound.equals(UUID.zero()))
+        if (this.Sound && !this.Sound.isZero())
         {
             UUID.getXML(sceneObjectPart.ele('SoundID'), this.Sound);
             sceneObjectPart.ele('SoundGain', this.SoundGain);
@@ -1324,20 +1694,30 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    async exportXML(): Promise<string>
+    async populateChildren()
+    {
+        this.region.objects.populateChildren(this);
+    }
+
+    async exportXMLElement(rootNode?: string): Promise<XMLElement>
     {
         const document = builder.create('SceneObjectGroup');
         let linkNum = 1;
-        await this.getXML(document, this, linkNum);
+        await this.getXML(document, this, linkNum, rootNode);
         if (this.children && this.children.length > 0)
         {
             const otherParts = document.ele('OtherParts');
             for (const child of this.children)
             {
-                await child.getXML(otherParts, this, ++linkNum);
+                await child.getXML(otherParts, this, ++linkNum, (rootNode !== undefined) ? 'Part' : undefined);
             }
         }
-        return document.end({pretty: true, allowEmpty: true});
+        return document;
+    }
+
+    async exportXML(rootNode?: string): Promise<string>
+    {
+        return (await this.exportXMLElement(rootNode)).end({pretty: true, allowEmpty: true});
     }
 
     public toJSON(): IGameObjectData
@@ -1368,6 +1748,7 @@ export class GameObject implements IGameObjectData
             touchName: this.touchName,
             sitName: this.sitName,
             resolvedAt: this.resolvedAt,
+            resolvedInventory: this.resolvedInventory,
             totalChildren: this.totalChildren,
             landImpact: this.landImpact,
             calculatedLandImpact: this.calculatedLandImpact,
@@ -1525,134 +1906,92 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    private async deRezObject(destination: DeRezDestination, transactionID: UUID, destFolder: UUID): Promise<void>
+    async deRezObject(destination: DeRezDestination, transactionID: UUID, destFolder: UUID): Promise<void>
     {
-        const msg = new DeRezObjectMessage();
+        return GameObject.deRezObjects(this.region, [this], destination, transactionID, destFolder);
+    }
 
+    async takeToInventory(folder?: InventoryFolder): Promise<InventoryItem>
+    {
+        return GameObject.takeManyToInventory(this.region, [this], folder);
+    }
+
+    async dropInventoryIntoContents(inventoryItem: InventoryItem | UUID): Promise<void>
+    {
+        const transactionID = UUID.zero();
+
+        if (inventoryItem instanceof UUID)
+        {
+
+            const item: InventoryItem | null = await this.region.agent.inventory.fetchInventoryItem(inventoryItem);
+            if (item === null)
+            {
+                throw new Error('Failed to drop inventory into object contents - Inventory item ' + inventoryItem.toString() + ' not found');
+                return;
+            }
+            inventoryItem = item;
+        }
+
+        const msg = new UpdateTaskInventoryMessage();
         msg.AgentData = {
             AgentID: this.region.agent.agentID,
             SessionID: this.region.circuit.sessionID
         };
-        msg.AgentBlock = {
-            GroupID: UUID.zero(),
-            Destination: destination,
-            DestinationID: destFolder,
-            TransactionID: transactionID,
-            PacketCount: 1,
-            PacketNumber: 1
+        msg.UpdateData = {
+            Key: 0,
+            LocalID: this.ID
         };
-        msg.ObjectData = [{
-            ObjectLocalID: this.ID
-        }];
-        const ack = this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
-        return this.region.circuit.waitForAck(ack, 10000);
+        msg.InventoryData = {
+            ItemID: inventoryItem.itemID,
+            FolderID: inventoryItem.parentID,
+            CreatorID: inventoryItem.permissions.creator,
+            OwnerID: inventoryItem.permissions.owner,
+            GroupID: inventoryItem.permissions.group,
+            BaseMask: inventoryItem.permissions.baseMask,
+            OwnerMask: inventoryItem.permissions.ownerMask,
+            GroupMask: inventoryItem.permissions.groupMask,
+            EveryoneMask: inventoryItem.permissions.everyoneMask,
+            NextOwnerMask: inventoryItem.permissions.nextOwnerMask,
+            GroupOwned: inventoryItem.permissions.groupOwned || false,
+            TransactionID: transactionID,
+            Type: inventoryItem.type,
+            InvType: inventoryItem.inventoryType,
+            Flags: inventoryItem.flags,
+            SaleType: inventoryItem.saleType,
+            SalePrice: inventoryItem.salePrice,
+            Name: Utils.StringToBuffer(inventoryItem.name),
+            Description: Utils.StringToBuffer(inventoryItem.description),
+            CreationDate: inventoryItem.created.getTime() / 1000,
+            CRC: inventoryItem.getCRC()
+        };
+        const serial = this.inventorySerial;
+        this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
+        return this.waitForInventoryUpdate(serial);
     }
 
-    takeToInventory(): Promise<UUID>
+    async waitForInventoryUpdate(inventorySerial?: number): Promise<void>
     {
-        const transactionID = UUID.random();
-        const rootFolder = this.region.agent.inventory.getRootFolderMain();
-        return new Promise<UUID>((resolve, reject) =>
+        // We need to select the object or we won't get the objectProperties message
+        this.select();
+        await this.region.circuit.waitForMessage<ObjectPropertiesMessage>(Message.ObjectProperties, 10000, (message: ObjectPropertiesMessage) =>
         {
-
-            this.region.circuit.waitForMessage<UpdateCreateInventoryItemMessage>(Message.UpdateCreateInventoryItem, 10000, (message: UpdateCreateInventoryItemMessage) =>
+            for (const obj of message.ObjectData)
             {
-                if (Utils.BufferToStringSimple(message.InventoryData[0].Name, 0) === this.name)
+                if (obj.ObjectID.equals(this.FullID))
                 {
-                    return FilterResponse.Finish;
-                }
-                else
-                {
-                    return FilterResponse.NoMatch;
-                }
-            }).then((createInventoryMsg: UpdateCreateInventoryItemMessage) =>
-            {
-                resolve(createInventoryMsg.InventoryData[0].ItemID);
-            }).catch(() =>
-            {
-                reject(new Error('Timed out waiting for UpdateCreateInventoryItem'));
-            });
-            this.deRezObject(DeRezDestination.AgentInventoryTake, transactionID, rootFolder.folderID).then(() => {}).catch((err) =>
-            {
-                console.error(err);
-            });
-        });
-    }
-
-    dropInventoryIntoContents(inventoryID: UUID): Promise<void>
-    {
-        return new Promise<void>(async (resolve, reject) =>
-        {
-            const transactionID = UUID.random();
-            const item: InventoryItem | null = await this.region.agent.inventory.fetchInventoryItem(inventoryID);
-            if (item === null)
-            {
-                reject(new Error('Failed to drop inventory into object contents - Inventory item ' + inventoryID.toString() + ' not found'));
-                return;
-            }
-
-            const msg = new UpdateTaskInventoryMessage();
-            msg.AgentData = {
-                AgentID: this.region.agent.agentID,
-                SessionID: this.region.circuit.sessionID
-            };
-            msg.UpdateData = {
-                Key: 0,
-                LocalID: this.ID
-            };
-            msg.InventoryData = {
-                ItemID: item.itemID,
-                FolderID: item.parentID,
-                CreatorID: item.permissions.creator,
-                OwnerID: item.permissions.owner,
-                GroupID: item.permissions.group,
-                BaseMask: item.permissions.baseMask,
-                OwnerMask: item.permissions.ownerMask,
-                GroupMask: item.permissions.groupMask,
-                EveryoneMask: item.permissions.everyoneMask,
-                NextOwnerMask: item.permissions.nextOwnerMask,
-                GroupOwned: item.permissions.groupOwned || false,
-                TransactionID: transactionID,
-                Type: item.type,
-                InvType: item.inventoryType,
-                Flags: item.flags,
-                SaleType: item.saleType,
-                SalePrice: item.salePrice,
-                Name: Utils.StringToBuffer(item.name),
-                Description: Utils.StringToBuffer(item.description),
-                CreationDate: item.created.getTime() / 1000,
-                CRC: item.getCRC()
-            };
-
-            const inventorySerial = this.inventorySerial;
-            this.region.circuit.waitForMessage<ObjectPropertiesMessage>(Message.ObjectProperties, 10000, (message: ObjectPropertiesMessage) =>
-            {
-                const n = 5;
-                for (const obj of message.ObjectData)
-                {
-                    if (obj.ObjectID.equals(this.FullID))
+                    if (inventorySerial === undefined)
                     {
-                        if (obj.InventorySerial > inventorySerial)
-                        {
-                            return FilterResponse.Finish;
-                        }
+                        inventorySerial = this.inventorySerial;
+                    }
+                    if (obj.InventorySerial > inventorySerial)
+                    {
+                        return FilterResponse.Finish;
                     }
                 }
-                return FilterResponse.NoMatch;
-            }).then((message: ObjectPropertiesMessage) =>
-            {
-                this.deselect().then(() => {}).catch(() => {});
-                resolve();
-            }).catch(() =>
-            {
-                reject(new Error('Timed out waiting for task inventory drop'));
-            });
-
-            // We need to select the object or we won't get the objectProperties message
-            await this.select();
-
-            this.region.circuit.sendMessage(msg, PacketFlags.Reliable)
+            }
+            return FilterResponse.NoMatch;
         });
+        await this.deselect();
     }
 
     async select()
@@ -1680,6 +2019,6 @@ export class GameObject implements IGameObjectData
             ObjectLocalID: this.ID
         }];
         const ack = this.region.circuit.sendMessage(deselectObject, PacketFlags.Reliable);
-        await this.region.circuit.waitForAck(ack, 10000);
+        return this.region.circuit.waitForAck(ack, 10000);
     }
 }

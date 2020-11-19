@@ -22,7 +22,7 @@ import { MapInfoReplyEvent } from '../../events/MapInfoReplyEvent';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { Vector2 } from '../Vector2';
 import { MapInfoRangeReplyEvent } from '../../events/MapInfoRangeReplyEvent';
-import { Avatar } from '../public/Avatar';
+import { AvatarQueryResult } from '../public/AvatarQueryResult';
 
 export class GridCommands extends CommandsBase
 {
@@ -389,9 +389,9 @@ export class GridCommands extends CommandsBase
         });
     }
 
-    avatarKey2Name(uuid: UUID | UUID[]): Promise<Avatar | Avatar[]>
+    avatarKey2Name(uuid: UUID | UUID[]): Promise<AvatarQueryResult | AvatarQueryResult[]>
     {
-        return new Promise<Avatar | Avatar[]>(async (resolve, reject) =>
+        return new Promise<AvatarQueryResult | AvatarQueryResult[]>(async (resolve, reject) =>
         {
             const req = new UUIDNameRequestMessage();
             req.UUIDNameBlock = [];
@@ -446,16 +446,16 @@ export class GridCommands extends CommandsBase
                 if (!arr)
                 {
                     const result = waitingFor[uuid[0].toString()];
-                    const av = new Avatar(uuid[0], result.firstName, result.lastName);
+                    const av = new AvatarQueryResult(uuid[0], result.firstName, result.lastName);
                     resolve(av);
                 }
                 else
                 {
-                    const response: Avatar[] = [];
+                    const response: AvatarQueryResult[] = [];
                     for (const k of uuid)
                     {
                         const result = waitingFor[k.toString()];
-                        const av = new Avatar(k, result.firstName, result.lastName);
+                        const av = new AvatarQueryResult(k, result.firstName, result.lastName);
                         response.push(av);
                     }
                     resolve(response);

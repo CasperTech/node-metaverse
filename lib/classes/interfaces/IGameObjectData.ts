@@ -44,6 +44,7 @@ export interface IGameObjectData
     sitName?: string;
     textureID?: string;
     resolvedAt?: number;
+    resolvedInventory: boolean;
     totalChildren?: number;
 
     landImpact?: number;
