@@ -221,7 +221,7 @@ export class Bot
             Code: circuit.circuitCode
         };
 
-        await circuit.waitForAck(circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+        await circuit.waitForAck(circuit.sendMessage(msg, PacketFlags.Reliable), 60000);
 
 
         const agentMovement: CompleteAgentMovementMessage = new CompleteAgentMovementMessage();
@@ -235,7 +235,7 @@ export class Bot
         let agentPosition: Vector3 | null = null;
         let regionName: string | null = null;
 
-        circuit.waitForMessage<AgentMovementCompleteMessage>(Message.AgentMovementComplete, 10000).then((agentMovementMsg: AgentMovementCompleteMessage) =>
+        circuit.waitForMessage<AgentMovementCompleteMessage>(Message.AgentMovementComplete, 60000).then((agentMovementMsg: AgentMovementCompleteMessage) =>
         {
             agentPosition = agentMovementMsg.Data.Position;
             if (regionName !== null)
