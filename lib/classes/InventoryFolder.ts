@@ -46,14 +46,14 @@ export class InventoryFolder
     {
         const children: InventoryFolder[] = [];
         const ofi = this.folderID.toString();
-        Object.keys(this.inventoryBase.skeleton).forEach((uuid) =>
+        for (const uuid of Object.keys(this.inventoryBase.skeleton))
         {
             const folder = this.inventoryBase.skeleton[uuid];
             if (folder.parentID.toString() === ofi)
             {
                 children.push(folder);
             }
-        });
+        }
         return children;
     }
 
@@ -101,7 +101,7 @@ export class InventoryFolder
                             if (json['version'] >= this.version)
                             {
                                 this.items = [];
-                                json['items'].forEach((item: any) =>
+                                for (const item of json['items'])
                                 {
                                     item.created = new Date(item.created.mUUID);
                                     item.assetID = new UUID(item.assetID.mUUID);
@@ -111,8 +111,11 @@ export class InventoryFolder
                                     item.permissions.owner = new UUID(item.permissions.owner.mUUID);
                                     item.permissions.creator = new UUID(item.permissions.creator.mUUID);
                                     item.permissions.group = new UUID(item.permissions.group.mUUID);
-                                    this.addItem(item);
-                                });
+                                    this.addItem(item).catch((error) =>
+                                    {
+                                       console.error(error);
+                                    });
+                                }
                                 resolve();
                             }
                             else
@@ -191,7 +194,7 @@ export class InventoryFolder
                     {
                         this.version = folderContents['folders'][0]['version'];
                         this.items = [];
-                        folderContents['folders'][0]['items'].forEach((item: any) =>
+                        for (const item of folderContents['folders'][0]['items'])
                         {
                             const invItem = new InventoryItem();
                             invItem.assetID = new UUID(item['asset_id'].toString());
@@ -222,7 +225,7 @@ export class InventoryFolder
                                 group: new UUID(item['permissions']['group_id'].toString())
                             };
                             this.addItem(invItem);
-                        });
+                        }
                         this.saveCache().then(() =>
                         {
                             resolve();

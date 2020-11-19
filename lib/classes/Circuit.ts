@@ -60,10 +60,10 @@ export class Circuit
     subscribeToMessages(ids: number[], callback: (packet: Packet) => void)
     {
         const lookupObject: { [key: number]: boolean } = {};
-        ids.forEach((id) =>
+        for (const id of ids)
         {
             lookupObject[id] = true;
-        });
+        }
 
         return this.onPacketReceived.pipe(filter((packet: Packet) =>
         {
@@ -293,17 +293,17 @@ export class Circuit
 
     shutdown()
     {
-        Object.keys(this.awaitingAck).forEach((sequenceNumber: string) =>
+        for (const sequenceNumber of Object.keys(this.awaitingAck))
         {
             clearTimeout(this.awaitingAck[parseInt(sequenceNumber, 10)].timeout);
             delete this.awaitingAck[parseInt(sequenceNumber, 10)];
-        });
-        Object.keys(this.receivedPackets).forEach((sequenceNumber: string) =>
+        }
+        for (const sequenceNumber of Object.keys(this.receivedPackets))
         {
             const seq: number = parseInt(sequenceNumber, 10);
             clearTimeout(this.receivedPackets[seq]);
             delete this.receivedPackets[seq];
-        });
+        }
         if (this.client !== null)
         {
             this.client.close();
@@ -445,7 +445,7 @@ export class Circuit
 
         const keys: string[] = Object.keys(this.awaitingAck);
 
-        keys.forEach((seqID: string) =>
+        for (const seqID of keys)
         {
             const nSeq = parseInt(seqID, 10);
             if (oldest === -1 || this.awaitingAck[nSeq].sent < oldest)
@@ -453,7 +453,7 @@ export class Circuit
                 result = nSeq;
                 oldest = this.awaitingAck[nSeq].sent;
             }
-        });
+        }
 
         return result;
     }
@@ -494,10 +494,10 @@ export class Circuit
         if (packet.message.id === Message.PacketAck)
         {
             const msg = packet.message as PacketAckMessage;
-            msg.Packets.forEach((obj) =>
+            for (const obj of msg.Packets)
             {
                 this.ackReceived(obj.ID);
-            });
+            }
         }
         else if (packet.message.id === Message.StartPingCheck)
         {

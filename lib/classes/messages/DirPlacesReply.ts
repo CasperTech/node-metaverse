@@ -33,13 +33,13 @@ export class DirPlacesReplyMessage implements MessageBase
         return ((16) * this.QueryData.length) + this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + ((22) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 19;
     }
 
-    calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
-        block.forEach((bl: any) =>
+        for (const bl of block)
         {
             size += bl[paramName].length + extraPerVar;
-        });
+        }
         return size;
     }
 

@@ -26,7 +26,7 @@ describe('Packets', () =>
 {
     const p = path.resolve(__dirname + '/../../testing/packets');
     const files = fs.readdirSync(p);
-    files.forEach((file) =>
+    for (const file of files)
     {
         if (file.substr(file.length - 7) === '.packet')
         {
@@ -163,5 +163,5 @@ describe('Packets', () =>
                 });
             }
         }
-    });
+    }
 });

@@ -32,13 +32,13 @@ export class LandStatReplyMessage implements MessageBase
         return this.calculateVarVarSize(this.ReportData, 'TaskName', 1) + this.calculateVarVarSize(this.ReportData, 'OwnerName', 1) + ((36) * this.ReportData.length) + 13;
     }
 
-    calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
-        block.forEach((bl: any) =>
+        for (const bl of block)
         {
             size += bl[paramName].length + extraPerVar;
-        });
+        }
         return size;
     }
 

@@ -37,13 +37,13 @@ export class GroupActiveProposalItemReplyMessage implements MessageBase
         return this.calculateVarVarSize(this.ProposalData, 'TerseDateID', 1) + this.calculateVarVarSize(this.ProposalData, 'StartDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'EndDateTime', 1) + this.calculateVarVarSize(this.ProposalData, 'VoteCast', 1) + this.calculateVarVarSize(this.ProposalData, 'ProposalText', 1) + ((41) * this.ProposalData.length) + 53;
     }
 
-    calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
-        block.forEach((bl: any) =>
+        for (const bl of block)
         {
             size += bl[paramName].length + extraPerVar;
-        });
+        }
         return size;
     }
 

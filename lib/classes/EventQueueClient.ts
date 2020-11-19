@@ -75,7 +75,7 @@ export class EventQueueClient
             {
                 if (data['events'])
                 {
-                    data['events'].forEach((event: any) =>
+                    for (const event of data['events'])
                     {
                         try
                         {
@@ -317,7 +317,7 @@ export class EventQueueClient
                                         {
                                             if (event['body']['agent_updates'])
                                             {
-                                                Object.keys(event['body']['agent_updates']).forEach((agentUpdate) =>
+                                                for (const agentUpdate of Object.keys(event['body']['agent_updates']))
                                                 {
                                                     const updObj =  event['body']['agent_updates'][agentUpdate];
                                                     const gcsale = new GroupChatSessionAgentListEvent();
@@ -339,7 +339,7 @@ export class EventQueueClient
                                                         }
                                                     }
                                                     this.clientEvents.onGroupChatAgentListUpdate.next(gcsale);
-                                                });
+                                                }
                                             }
                                         }
                                         break;
@@ -400,7 +400,7 @@ export class EventQueueClient
                             console.error('Error handling cap');
                             console.error(erro);
                         }
-                    });
+                    }
                 }
             }
             catch (error)

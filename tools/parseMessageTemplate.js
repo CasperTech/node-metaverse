@@ -81,21 +81,22 @@ fs.readFile('./msg_template.msg', (err, data) =>
         //Remove all comments
         const lines = msgTemplate.split('\n');
         let newLines = [];
-        lines.forEach((line) => {
-           let pos = line.indexOf('//');
-           if (pos !== -1)
-           {
-               line = line.substr(0, pos-1);
-           }
-           newLines.push(line);
-        });
+        for (const line of lines)
+        {
+            let pos = line.indexOf('//');
+            if (pos !== -1)
+            {
+                line = line.substr(0, pos-1);
+            }
+            newLines.push(line);
+        }
         msgTemplate = newLines.join('\n');
 
 
         let messages = getBlocks(msgTemplate);
         let done = false;
         let msgObjects = [];
-        messages.forEach((message) =>
+        for (const message of messages)
         {
             let newMessage = {};
 
@@ -113,7 +114,7 @@ fs.readFile('./msg_template.msg', (err, data) =>
             }
 
             let blocks = getBlocks(message);
-            blocks.forEach((block) =>
+            for (const block of blocks)
             {
                 let newBlock = {};
                 params = getParams(block);
@@ -128,7 +129,7 @@ fs.readFile('./msg_template.msg', (err, data) =>
                 }
 
                 let paramBlocks = getBlocks(block);
-                paramBlocks.forEach((paramBlock) =>
+                for (const paramBlock of paramBlocks)
                 {
                     let data = getParams(paramBlock);
                     data = data.split(' ');
@@ -143,12 +144,12 @@ fs.readFile('./msg_template.msg', (err, data) =>
                         obj['size'] = data[2];
                     }
                     newBlock.params.push(obj);
-                });
+                }
 
                 newMessage.blocks.push(newBlock);
-            });
+            }
             msgObjects.push(newMessage);
-        });
+        }
 
         fs.writeFile('./msg_template.json', JSON.stringify(msgObjects, null, 4), (err) =>
         {

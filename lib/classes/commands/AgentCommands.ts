@@ -24,13 +24,13 @@ export class AgentCommands extends CommandsBase
         };
         animPacket.PhysicalAvatarEventList = [];
         animPacket.AnimationList = [];
-        anim.forEach((a) =>
+        for (const a of anim)
         {
             animPacket.AnimationList.push({
                 AnimID: a,
                 StartAnim: run
             });
-        });
+        }
 
         return await circuit.waitForAck(circuit.sendMessage(animPacket, PacketFlags.Reliable), 10000);
     }

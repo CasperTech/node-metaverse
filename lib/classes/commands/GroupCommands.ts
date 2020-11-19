@@ -75,7 +75,7 @@ export class GroupCommands extends CommandsBase
             GroupID: groupID
         };
         igr.InviteData = [];
-        sendTo.forEach((to) =>
+        for (const to of sendTo)
         {
             if (typeof to.avatarID === 'string')
             {
@@ -93,7 +93,7 @@ export class GroupCommands extends CommandsBase
                 InviteeID: to.avatarID,
                 RoleID: to.roleID
             });
-        });
+        }
 
         const sequenceNo = this.circuit.sendMessage(igr, PacketFlags.Reliable);
         return await this.circuit.waitForAck(sequenceNo, 10000);
@@ -314,7 +314,7 @@ export class GroupCommands extends CommandsBase
                 if (gmr.GroupData.RequestID.toString() === requestID.toString())
                 {
                     totalRoleCount = gmr.GroupData.RoleCount;
-                    gmr.RoleData.forEach((role) =>
+                    for (const role of gmr.RoleData)
                     {
                         const gr = new GroupRole();
                         gr.RoleID = role.RoleID;
@@ -324,7 +324,7 @@ export class GroupCommands extends CommandsBase
                         gr.Powers = role.Powers;
                         gr.Members = role.Members;
                         result.push(gr);
-                    });
+                    }
                     if (totalRoleCount > result.length)
                     {
                         return FilterResponse.Match;

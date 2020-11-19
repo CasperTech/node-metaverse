@@ -28,13 +28,13 @@ export class AgentAnimationMessage implements MessageBase
         return ((17) * this.AnimationList.length) + this.calculateVarVarSize(this.PhysicalAvatarEventList, 'TypeData', 1) + 34;
     }
 
-    calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
-        block.forEach((bl: any) =>
+        for (const bl of block)
         {
             size += bl[paramName].length + extraPerVar;
-        });
+        }
         return size;
     }
 

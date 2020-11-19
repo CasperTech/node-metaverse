@@ -43,13 +43,13 @@ export class FetchInventoryReplyMessage implements MessageBase
         return this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + ((136) * this.InventoryData.length) + 17;
     }
 
-    calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
-        block.forEach((bl: any) =>
+        for (const bl of block)
         {
             size += bl[paramName].length + extraPerVar;
-        });
+        }
         return size;
     }
 

@@ -31,13 +31,13 @@ export class DirLandReplyMessage implements MessageBase
         return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + ((26) * this.QueryReplies.length) + 33;
     }
 
-    calculateVarVarSize(block: object[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
-        block.forEach((bl: any) =>
+        for (const bl of block)
         {
             size += bl[paramName].length + extraPerVar;
-        });
+        }
         return size;
     }
 

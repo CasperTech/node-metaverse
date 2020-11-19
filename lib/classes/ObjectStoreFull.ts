@@ -136,13 +136,13 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
 
                 if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
                 {
-                    Object.keys(this.objectsByParent).forEach((objParentID: string) =>
+                    for (const objParentID of Object.keys(this.objectsByParent))
                     {
                         const parent = parseInt(objParentID, 10);
                         if (parent !== this.agent.localID)
                         {
                             let foundAvatars = false;
-                            this.objectsByParent[parent].forEach((objID) =>
+                            for(const objID of this.objectsByParent[parent])
                             {
                                 if (this.objects[objID])
                                 {
@@ -152,7 +152,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                                         foundAvatars = true;
                                     }
                                 }
-                            });
+                            }
                             if (this.objects[parent])
                             {
                                 const o = this.objects[parent];
@@ -166,7 +166,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                                 this.deleteObject(parent);
                             }
                         }
-                    });
+                    }
                 }
             }
             this.objects[localID].extraParams = ExtraParams.from(objData.ExtraParams);

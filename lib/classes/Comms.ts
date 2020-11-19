@@ -283,12 +283,11 @@ export class Comms
 
                     const alertMessage = Utils.BufferToStringSimple(alertm.AlertData.Message);
 
-                    console.log('Alert message: ' + alertMessage);
-                    alertm.AlertInfo.forEach((info) =>
+                    for (const info of alertm.AlertInfo)
                     {
                         const alertInfoMessage = Utils.BufferToStringSimple(info.Message);
                         console.log('Alert info message: ' + alertInfoMessage);
-                    });
+                    }
                     break;
                 }
                 case Message.ScriptDialog:

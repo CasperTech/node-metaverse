@@ -244,14 +244,15 @@ async function connect()
         bot.clientCommands.friends.sendFriendRequest(master, 'Be friends with me?').then(() => {});
 
         const folders = bot.clientCommands.inventory.getInventoryRoot().getChildFolders();
-        folders.forEach((folder) =>
+        for (const folder of folders)
         {
             console.log('Top level folder: ' + folder.name);
             folder.populate().then(() => {});
-        });
+        }
 
         const roles = await bot.clientCommands.group.getGroupRoles(groupID);
-        roles.forEach(async (role) =>
+
+        for(const role of roles)
         {
             if (role.Name === 'Officers')
             {
@@ -261,13 +262,13 @@ async function connect()
                 {
                     const members = await bot.clientCommands.group.getMemberList(groupID);
                     let found = true;
-                    members.forEach((member) =>
+                    for (const member of members)
                     {
                         if (member.AgentID.toString() === userToInvite.toString())
                         {
                             found = true;
                         }
-                    });
+                    }
                     if (found)
                     {
                         console.log("User already in group, skipping invite");
@@ -282,7 +283,7 @@ async function connect()
                     console.error('Error retrieving member list for group invite');
                 }
             }
-        });
+        }
 
         await bot.waitForEventQueue();
         try
