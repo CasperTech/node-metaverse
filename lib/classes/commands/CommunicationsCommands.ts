@@ -12,6 +12,7 @@ import { PacketFlags } from '../../enums/PacketFlags';
 import { GroupChatSessionJoinEvent } from '../../events/GroupChatSessionJoinEvent';
 import { ScriptDialogEvent } from '../../events/ScriptDialogEvent';
 import Timer = NodeJS.Timer;
+import { StartLureMessage } from '../messages/StartLure';
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -97,6 +98,32 @@ export class CommunicationsCommands extends CommandsBase
             Channel: 0
         };
         const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags.Reliable);
+        return await this.circuit.waitForAck(sequenceNo, 10000);
+    }
+
+    async sendTeleport(target: UUID | string, message?: string)
+    {
+        if (typeof target === 'string')
+        {
+            target = new UUID(target);
+        }
+        if (message === undefined)
+        {
+            message = 'Join me in ' + this.currentRegion.regionName;
+        }
+        const p = new StartLureMessage();
+        p.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        p.Info = {
+            LureType: 0,
+            Message: Utils.StringToBuffer(message)
+        }
+        p.TargetData = [{
+          TargetID: target
+        }];
+        const sequenceNo = this.circuit.sendMessage(p, PacketFlags.Reliable);
         return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
