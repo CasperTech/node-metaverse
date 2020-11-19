@@ -13,6 +13,7 @@ import { TeleportFlags } from '../../enums/TeleportFlags';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { RegionInfoReplyEvent } from '../../events/RegionInfoReplyEvent';
 import { Bot } from '../../Bot';
+import { Utils } from '../Utils';
 
 export class TeleportCommands extends CommandsBase
 {
@@ -149,6 +150,12 @@ export class TeleportCommands extends CommandsBase
                 reject(err);
             });
         });
+    }
+
+    teleportToRegionCoordinates(x: number, y: number, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
+    {
+        const globalPos = Utils.RegionCoordinatesToHandle(x, y);
+        return this.teleportToHandle(globalPos.regionHandle, position, lookAt);
     }
 
     teleportToHandle(handle: Long, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
