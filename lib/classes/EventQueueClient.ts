@@ -266,10 +266,10 @@ export class EventQueueClient
                                         if (event['body'])
                                         {
                                             const gcsje = new GroupChatSessionJoinEvent();
-                                            gcsje.sessionID = new UUID(event['body']['session_id'].toString());
                                             gcsje.success = event['body']['success'];
                                             if (gcsje.success)
                                             {
+                                                gcsje.sessionID = new UUID(event['body']['session_id'].toString());
                                                 this.agent.addChatSession(gcsje.sessionID);
                                             }
                                             this.clientEvents.onGroupChatSessionJoin.next(gcsje);
@@ -302,6 +302,7 @@ export class EventQueueClient
                                                 gcsje.sessionID = groupChatEvent.groupID;
                                                 gcsje.success = true;
                                                 this.clientEvents.onGroupChatSessionJoin.next(gcsje);
+                                                console.log('OnGroupChat2');
                                                 this.clientEvents.onGroupChat.next(groupChatEvent);
                                             }).catch((err) =>
                                             {
