@@ -360,6 +360,9 @@ async function connect()
 
             // Send a group message
             await bot.clientCommands.comms.sendGroupMessage(groupKey, 'Test');
+
+            // "Open" group chat but don't send a message
+            await bot.clientCommands.comms.startGroupChatSession("f0466f71-abf4-1559-db93-50352d13ae74", "");
         }
         catch (error)
         {
@@ -379,6 +382,8 @@ async function connect()
             console.log(p.Name);
         }
         console.log('========================');
+
+        await bot.clientCommands.comms.sendTeleport('d1cd5b71-6209-4595-9bf0-771bf689ce00');
     }
     catch (error)
     {
