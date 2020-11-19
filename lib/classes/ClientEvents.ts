@@ -24,7 +24,9 @@ import { FriendRemovedEvent } from '../events/FriendRemovedEvent';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
-
+import { GameObject } from './public/GameObject';
+import { Avatar } from './public/Avatar';
+import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
 
 export class ClientEvents
 {
@@ -51,7 +53,12 @@ export class ClientEvents
     onParcelPropertiesEvent: Subject<ParcelPropertiesEvent> = new Subject<ParcelPropertiesEvent>();
     onNewObjectEvent: Subject<NewObjectEvent> = new Subject<NewObjectEvent>();
     onObjectUpdatedEvent: Subject<ObjectUpdatedEvent> = new Subject<ObjectUpdatedEvent>();
+    onObjectUpdatedTerseEvent: Subject<ObjectUpdatedEvent> = new Subject<ObjectUpdatedEvent>();
     onObjectKilledEvent: Subject<ObjectKilledEvent> = new Subject<ObjectKilledEvent>();
     onSelectedObjectEvent: Subject<SelectedObjectEvent> = new Subject<SelectedObjectEvent>();
     onObjectResolvedEvent: Subject<ObjectResolvedEvent> = new Subject<ObjectResolvedEvent>();
+    onAvatarEnteredRegion: Subject<Avatar> = new Subject<Avatar>();
+    onAvatarLeftRegion: Subject<Avatar> = new Subject<Avatar>();
+    onRegionTimeDilation: Subject<number> = new Subject<number>();
+    onBulkUpdateInventoryEvent: Subject<BulkUpdateInventoryEvent> = new Subject<BulkUpdateInventoryEvent>();
 }

@@ -1,4 +1,3 @@
-import * as zlib from 'zlib';
 import * as LLSD from '@caspertech/llsd';
 import { UUID } from '../UUID';
 import { LLSubMesh } from './interfaces/LLSubMesh';
@@ -7,6 +6,7 @@ import { Vector2 } from '../Vector2';
 import { LLSkin } from './interfaces/LLSkin';
 import { mat4 } from '../../tsm/mat4';
 import { LLPhysicsConvex } from './interfaces/LLPhysicsConvex';
+import { Utils } from '../Utils';
 
 export class LLMesh
 {
@@ -55,7 +55,8 @@ export class LLMesh
                 const bufFrom = startPos + parseInt(o['offset'], 10);
                 const bufTo = startPos + parseInt(o['offset'], 10) + parseInt(o['size'], 10);
                 const partBuf = buf.slice(bufFrom, bufTo);
-                const deflated = await this.inflate(partBuf);
+
+                const deflated = await Utils.inflate(partBuf);
 
                 const mesh = LLSD.LLSD.parseBinary(new LLSD.Binary(Array.from(deflated), 'BASE64'));
                 if (mesh['result'] === undefined)
@@ -274,7 +275,7 @@ export class LLMesh
                 {
                     throw new Error('TriangleList is required');
                 }
-                const indexBuf = new Buffer(submesh['TriangleList'].toArray());
+                const indexBuf = Buffer.from(submesh['TriangleList'].toArray());
                 decoded.triangleList = [];
                 for (let pos = 0; pos < indexBuf.length; pos = pos + 2)
                 {
@@ -287,7 +288,7 @@ export class LLMesh
                 }
                 if (submesh['Weights'])
                 {
-                    const skinBuf = new Buffer(submesh['Weights'].toArray());
+                    const skinBuf = Buffer.from(submesh['Weights'].toArray());
                     decoded.weights = [];
                     let pos = 0;
                     while (pos < skinBuf.length)
@@ -318,7 +319,7 @@ export class LLMesh
     static decodeByteDomain3(posArray: number[], minDomain: Vector3, maxDomain: Vector3): Vector3[]
     {
         const result: Vector3[] = [];
-        const buf = new Buffer(posArray);
+        const buf = Buffer.from(posArray);
         for (let idx = 0; idx < posArray.length; idx = idx + 6)
         {
             const posX = this.normalizeDomain(buf.readUInt16LE(idx), minDomain.x, maxDomain.x);
@@ -331,7 +332,7 @@ export class LLMesh
     static decodeByteDomain2(posArray: number[], minDomain: Vector2, maxDomain: Vector2): Vector2[]
     {
         const result: Vector2[] = [];
-        const buf = new Buffer(posArray);
+        const buf = Buffer.from(posArray);
         for (let idx = 0; idx < posArray.length; idx = idx + 4)
         {
             const posX = this.normalizeDomain(buf.readUInt16LE(idx), minDomain.x, maxDomain.x);
@@ -343,40 +344,6 @@ export class LLMesh
     static normalizeDomain(value: number, min: number, max: number)
     {
         return ((value / 65535) * (max - min)) + min;
-    }
-    static inflate(buf: Buffer): Promise<Buffer>
-    {
-        return new Promise<Buffer>((resolve, reject) =>
-        {
-            zlib.inflate(buf, (error: (Error| null), result: Buffer) =>
-            {
-                if (error)
-                {
-                    reject(error)
-                }
-                else
-                {
-                    resolve(result);
-                }
-            })
-        });
-    }
-    static deflate(buf: Buffer): Promise<Buffer>
-    {
-        return new Promise<Buffer>((resolve, reject) =>
-        {
-            zlib.deflate(buf, { level: 9}, (error: (Error| null), result: Buffer) =>
-            {
-                if (error)
-                {
-                    reject(error)
-                }
-                else
-                {
-                    resolve(result);
-                }
-            })
-        });
     }
     private encodeSubMesh(mesh: LLSubMesh)
     {
@@ -507,7 +474,7 @@ export class LLMesh
             smList.push(this.encodeSubMesh(sub))
         }
         const mesh = LLSD.LLSD.formatBinary(smList);
-        return await LLMesh.deflate(Buffer.from(mesh.toArray()));
+        return await Utils.deflate(Buffer.from(mesh.toArray()));
     }
     private async encodePhysicsConvex(conv: LLPhysicsConvex): Promise<Buffer>
     {
@@ -556,7 +523,7 @@ export class LLMesh
             llsd.BoundingVerts = new LLSD.Binary(Array.from(buf));
         }
         const mesh = LLSD.LLSD.formatBinary(llsd);
-        return await LLMesh.deflate(Buffer.from(mesh.toArray()));
+        return await Utils.deflate(Buffer.from(mesh.toArray()));
     }
     private async encodeSkin(skin: LLSkin): Promise<Buffer>
     {
@@ -581,7 +548,7 @@ export class LLMesh
             llsd['pelvis_offset'] = skin.pelvisOffset.toArray();
         }
         const mesh = LLSD.LLSD.formatBinary(llsd);
-        return await LLMesh.deflate(Buffer.from(mesh.toArray()));
+        return await Utils.deflate(Buffer.from(mesh.toArray()));
     }
     async toAsset(): Promise<Buffer>
     {

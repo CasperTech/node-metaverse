@@ -11,21 +11,12 @@ import { ObjectSelectMessage } from '../messages/ObjectSelect';
 import { ObjectPropertiesMessage } from '../messages/ObjectProperties';
 import { Utils } from '../Utils';
 import { ObjectDeselectMessage } from '../messages/ObjectDeselect';
-import { RequestTaskInventoryMessage } from '../messages/RequestTaskInventory';
-import { ReplyTaskInventoryMessage } from '../messages/ReplyTaskInventory';
-import { InventoryItem } from '../InventoryItem';
-import { AssetTypeLL } from '../../enums/AssetTypeLL';
-import { SaleTypeLL } from '../../enums/SaleTypeLL';
-import { InventoryTypeLL } from '../../enums/InventoryTypeLL';
 import { ObjectAddMessage } from '../messages/ObjectAdd';
 import { Quaternion } from '../Quaternion';
-import { RezObjectMessage } from '../messages/RezObject';
-import { PermissionMask } from '../../enums/PermissionMask';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { GameObject } from '../public/GameObject';
 import { PCode } from '../../enums/PCode';
 import { PrimFlags } from '../../enums/PrimFlags';
-import { AssetType } from '../../enums/AssetType';
 import { NewObjectEvent } from '../../events/NewObjectEvent';
 import { Vector3 } from '../Vector3';
 import { Parcel } from '../public/Parcel';
@@ -33,19 +24,18 @@ import { Parcel } from '../public/Parcel';
 import * as Long from 'long';
 import * as micromatch from 'micromatch';
 import * as LLSD from '@caspertech/llsd';
-import { Subject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { SculptType } from '../..';
-import { ObjectResolvedEvent } from '../../events/ObjectResolvedEvent';
 import { AssetMap } from '../AssetMap';
 import { InventoryType } from '../../enums/InventoryType';
 import { BuildMap } from '../BuildMap';
+import { ObjectResolver } from '../ObjectResolver';
+import { Logger } from '../Logger';
 import Timer = NodeJS.Timer;
 import Timeout = NodeJS.Timeout;
 
 export class RegionCommands extends CommandsBase
 {
-    private resolveQueue: {[key: number]: GameObject} = {};
-
     async getRegionHandle(regionID: UUID): Promise<Long>
     {
         const circuit = this.currentRegion.circuit;
@@ -330,610 +320,19 @@ export class RegionCommands extends CommandsBase
         }
     }
 
-    private parseLine(line: string): {
-        'key': string | null,
-        'value': string
-    }
-    {
-        line = line.trim().replace(/[\t]/gu, ' ').trim();
-        while (line.indexOf('\u0020\u0020') > 0)
-        {
-            line = line.replace(/\u0020\u0020/gu, '\u0020');
-        }
-        let key: string | null = null;
-        let value = '';
-        if (line.length > 2)
-        {
-            const sep = line.indexOf(' ');
-            if (sep > 0)
-            {
-                key = line.substr(0, sep);
-                value = line.substr(sep + 1);
-            }
-        }
-        else if (line.length === 1)
-        {
-            key = line;
-        }
-        else if (line.length > 0)
-        {
-            return {
-                'key': line,
-                'value': ''
-            }
-        }
-        if (key !== null)
-        {
-            key = key.trim();
-        }
-        return {
-            'key': key,
-            'value': value
-        }
-    }
-
     getName(): string
     {
         return this.currentRegion.regionName;
     }
 
-    private waitForObjectResolve(localID: number)
+    async resolveObject(object: GameObject, forceResolve = false, skipInventory = false)
     {
-        return new Promise((resolve, reject) =>
-        {
-            let timeout: Timeout | undefined = undefined;
-            let subs: Subscription | undefined = undefined;
-            try
-            {
-                const ourObject = this.currentRegion.objects.getObjectByLocalID(localID);
-                if (ourObject.resolvedAt)
-                {
-                    resolve();
-                    return;
-                }
-            }
-            catch (ignore)
-            {
-
-            }
-            subs = this.currentRegion.clientEvents.onObjectResolvedEvent.subscribe((evt: ObjectResolvedEvent) =>
-            {
-                if (evt.object.ID === localID)
-                {
-                    if (timeout !== undefined)
-                    {
-                        clearTimeout(timeout);
-                        timeout = undefined;
-                    }
-                    if (subs !== undefined)
-                    {
-                        subs.unsubscribe();
-                        subs = undefined;
-                    }
-                    resolve();
-                }
-            });
-            timeout = setTimeout(() =>
-            {
-                if (timeout !== undefined)
-                {
-                    clearTimeout(timeout);
-                    timeout = undefined;
-                }
-                if (subs !== undefined)
-                {
-                    subs.unsubscribe();
-                    subs = undefined;
-                }
-                const object = this.currentRegion.objects.getObjectByLocalID(localID);
-                if (object.resolvedAt)
-                {
-                    try
-                    {
-                        const ourObject = this.currentRegion.objects.getObjectByLocalID(localID);
-                        if (ourObject.resolvedAt)
-                        {
-                            console.warn('Resolve timed out but object ' + localID + ' HAS been resolved!');
-                            resolve();
-                            return;
-                        }
-                    }
-                    catch (ignore)
-                    {
-
-                    }
-                }
-                reject(new Error('Timeout'));
-            }, 10000);
-        });
+        return this.currentRegion.resolver.resolveObjects([object], forceResolve, skipInventory);
     }
 
-    private async queueResolveObject(object: GameObject, skipInventory = false)
+    async resolveObjects(objects: GameObject[], forceResolve = false, skipInventory = false, log = false)
     {
-        if (object.resolvedAt)
-        {
-            return;
-        }
-        if (this.resolveQueue[object.ID] === undefined)
-        {
-            this.resolveQueue[object.ID] = object;
-            try
-            {
-                await this.resolveObjects([object], true, true);
-            }
-            catch (error)
-            {
-                console.error('Failed to resolve ' + object.ID);
-            }
-            delete this.resolveQueue[object.ID];
-        }
-        else
-        {
-            return this.waitForObjectResolve(object.ID);
-        }
-    }
-
-    private async resolveObjects(objects: GameObject[], onlyUnresolved: boolean = false, skipInventory = false)
-    {
-        // First, create a map of all object IDs
-        const objs: {[key: number]: GameObject} = {};
-        const scanObject = function(obj: GameObject)
-        {
-            const localID = obj.ID;
-            if (!objs[localID])
-            {
-                objs[localID] = obj;
-                if (obj.children)
-                {
-                    for (const child of obj.children)
-                    {
-                        scanObject(child);
-                    }
-                }
-            }
-        };
-        for (const obj of objects)
-        {
-            scanObject(obj);
-        }
-
-        const resolveTime = new Date().getTime() / 1000;
-        let objectList = [];
-        let totalRemaining = 0;
-        try
-        {
-            for (const k of Object.keys(objs))
-            {
-                const ky = parseInt(k, 10);
-                if (objs[ky] !== undefined)
-                {
-                    const o = objs[ky];
-                    if (o.resolvedAt === undefined)
-                    {
-                        o.resolvedAt = 0;
-                    }
-                    if (o.resolvedAt !== undefined && o.resolvedAt < resolveTime && o.PCode !== PCode.Avatar && o.resolveAttempts < 3 && (o.Flags === undefined || !(o.Flags & PrimFlags.TemporaryOnRez)))
-                    {
-                        totalRemaining++;
-                        if (!onlyUnresolved || objs[ky].name === undefined)
-                        {
-                            objs[ky].name = undefined;
-                            objectList.push(objs[ky]);
-                        }
-                        if (objectList.length > 254)
-                        {
-                            try
-                            {
-                                await this.selectObjects(objectList);
-                                await this.deselectObjects(objectList);
-                                for (const chk of objectList)
-                                {
-                                    if (chk.resolvedAt !== undefined && chk.resolvedAt >= resolveTime)
-                                    {
-                                        totalRemaining--;
-                                    }
-                                }
-                            }
-                            catch (ignore)
-                            {
-
-                            }
-                            finally
-                            {
-                                objectList = [];
-                            }
-                        }
-                    }
-                }
-            }
-            if (objectList.length > 0)
-            {
-                await this.selectObjects(objectList);
-                await this.deselectObjects(objectList);
-                for (const chk of objectList)
-                {
-                    if (chk.resolvedAt !== undefined && chk.resolvedAt >= resolveTime)
-                    {
-                        totalRemaining --;
-                    }
-                }
-            }
-            const objectSet = Object.keys(objs);
-            let count = 0;
-            for (const k of objectSet)
-            {
-                count++;
-                const ky = parseInt(k, 10);
-                if (objs[ky] !== undefined && !skipInventory)
-                {
-                    const o = objs[ky];
-                    if ((o.resolveAttempts === undefined || o.resolveAttempts < 3) && o.FullID !== undefined && o.name !== undefined && o.Flags !== undefined && !(o.Flags & PrimFlags.InventoryEmpty) && (!o.inventory || o.inventory.length === 0))
-                    {
-                        const req = new RequestTaskInventoryMessage();
-                        req.AgentData = {
-                            AgentID: this.agent.agentID,
-                            SessionID: this.circuit.sessionID
-                        };
-                        req.InventoryData = {
-                            LocalID: o.ID
-                        };
-                        this.circuit.sendMessage(req, PacketFlags.Reliable);
-                        try
-                        {
-                            const inventory = await this.circuit.waitForMessage<ReplyTaskInventoryMessage>(Message.ReplyTaskInventory, 10000, (message: ReplyTaskInventoryMessage): FilterResponse =>
-                            {
-                                if (message.InventoryData.TaskID.equals(o.FullID))
-                                {
-                                    return FilterResponse.Finish;
-                                }
-                                else
-                                {
-                                    return FilterResponse.Match;
-                                }
-                            });
-                            const fileName = Utils.BufferToStringSimple(inventory.InventoryData.Filename);
-
-                            const file = await this.circuit.XferFile(fileName, true, false, UUID.zero(), AssetType.Unknown, true);
-                            if (file.length === 0)
-                            {
-                                o.Flags = o.Flags | PrimFlags.InventoryEmpty;
-                            }
-                            else
-                            {
-                                let str = file.toString('utf-8');
-                                let nl = str.indexOf('\0');
-                                while (nl !== -1)
-                                {
-                                    str = str.substr(nl + 1);
-                                    nl = str.indexOf('\0')
-                                }
-                                const lines: string[] = str.replace(/\r\n/g, '\n').split('\n');
-                                let lineNum = 0;
-                                while (lineNum < lines.length)
-                                {
-                                    let line = lines[lineNum++];
-                                    let result = this.parseLine(line);
-                                    if (result.key !== null)
-                                    {
-                                        switch (result.key)
-                                        {
-                                            case 'inv_object':
-                                                let itemID = UUID.zero();
-                                                let parentID = UUID.zero();
-                                                let name = '';
-                                                let assetType: AssetType = AssetType.Unknown;
-
-                                                while (lineNum < lines.length)
-                                                {
-                                                    result = this.parseLine(lines[lineNum++]);
-                                                    if (result.key !== null)
-                                                    {
-                                                        if (result.key === '{')
-                                                        {
-                                                            // do nothing
-                                                        }
-                                                        else if (result.key === '}')
-                                                        {
-                                                            break;
-                                                        }
-                                                        else if (result.key === 'obj_id')
-                                                        {
-                                                            itemID = new UUID(result.value);
-                                                        }
-                                                        else if (result.key === 'parent_id')
-                                                        {
-                                                            parentID = new UUID(result.value);
-                                                        }
-                                                        else if (result.key === 'type')
-                                                        {
-                                                            const typeString = result.value as any;
-                                                            assetType = parseInt(AssetTypeLL[typeString], 10);
-                                                        }
-                                                        else if (result.key === 'name')
-                                                        {
-                                                            name = result.value.substr(0, result.value.indexOf('|'));
-                                                        }
-                                                    }
-                                                }
-
-                                                if (name !== 'Contents')
-                                                {
-                                                    console.log('TODO: Do something useful with inv_objects')
-                                                }
-
-                                                break;
-                                            case 'inv_item':
-                                                const item: InventoryItem = new InventoryItem();
-                                                while (lineNum < lines.length)
-                                                {
-                                                    line = lines[lineNum++];
-                                                    result = this.parseLine(line);
-                                                    if (result.key !== null)
-                                                    {
-                                                        if (result.key === '{')
-                                                        {
-                                                            // do nothing
-                                                        }
-                                                        else if (result.key === '}')
-                                                        {
-                                                            break;
-                                                        }
-                                                        else if (result.key === 'item_id')
-                                                        {
-                                                            item.itemID = new UUID(result.value);
-                                                        }
-                                                        else if (result.key === 'parent_id')
-                                                        {
-                                                            item.parentID = new UUID(result.value);
-                                                        }
-                                                        else if (result.key === 'permissions')
-                                                        {
-                                                            while (lineNum < lines.length)
-                                                            {
-                                                                result = this.parseLine(lines[lineNum++]);
-                                                                if (result.key !== null)
-                                                                {
-                                                                    if (result.key === '{')
-                                                                    {
-                                                                        // do nothing
-                                                                    }
-                                                                    else if (result.key === '}')
-                                                                    {
-                                                                        break;
-                                                                    }
-                                                                    else if (result.key === 'creator_mask')
-                                                                    {
-                                                                        item.permissions.baseMask = parseInt(result.value, 16);
-                                                                    }
-                                                                    else if (result.key === 'base_mask')
-                                                                    {
-                                                                        item.permissions.baseMask = parseInt(result.value, 16);
-                                                                    }
-                                                                    else if (result.key === 'owner_mask')
-                                                                    {
-                                                                        item.permissions.ownerMask = parseInt(result.value, 16);
-                                                                    }
-                                                                    else if (result.key === 'group_mask')
-                                                                    {
-                                                                        item.permissions.groupMask = parseInt(result.value, 16);
-                                                                    }
-                                                                    else if (result.key === 'everyone_mask')
-                                                                    {
-                                                                        item.permissions.everyoneMask = parseInt(result.value, 16);
-                                                                    }
-                                                                    else if (result.key === 'next_owner_mask')
-                                                                    {
-                                                                        item.permissions.nextOwnerMask = parseInt(result.value, 16);
-                                                                    }
-                                                                    else if (result.key === 'creator_id')
-                                                                    {
-                                                                        item.permissions.creator = new UUID(result.value);
-                                                                    }
-                                                                    else if (result.key === 'owner_id')
-                                                                    {
-                                                                        item.permissions.owner = new UUID(result.value);
-                                                                    }
-                                                                    else if (result.key === 'last_owner_id')
-                                                                    {
-                                                                        item.permissions.lastOwner = new UUID(result.value);
-                                                                    }
-                                                                    else if (result.key === 'group_id')
-                                                                    {
-                                                                        item.permissions.group = new UUID(result.value);
-                                                                    }
-                                                                    else if (result.key === 'group_owned')
-                                                                    {
-                                                                        const val = parseInt(result.value, 10);
-                                                                        item.permissions.groupOwned = (val !== 0);
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        console.log('Unrecognised key (4): ' + result.key);
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        else if (result.key === 'sale_info')
-                                                        {
-                                                            while (lineNum < lines.length)
-                                                            {
-                                                                result = this.parseLine(lines[lineNum++]);
-                                                                if (result.key !== null)
-                                                                {
-                                                                    if (result.key === '{')
-                                                                    {
-                                                                        // do nothing
-                                                                    }
-                                                                    else if (result.key === '}')
-                                                                    {
-                                                                        break;
-                                                                    }
-                                                                    else if (result.key === 'sale_type')
-                                                                    {
-                                                                        const typeString = result.value as any;
-                                                                        item.saleType = parseInt(SaleTypeLL[typeString], 10);
-                                                                    }
-                                                                    else if (result.key === 'sale_price')
-                                                                    {
-                                                                        item.salePrice = parseInt(result.value, 10);
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        console.log('Unrecognised key (3): ' + result.key);
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        else if (result.key === 'shadow_id')
-                                                        {
-                                                            item.assetID = new UUID(result.value).bitwiseOr(new UUID('3c115e51-04f4-523c-9fa6-98aff1034730'));
-                                                        }
-                                                        else if (result.key === 'asset_id')
-                                                        {
-                                                            item.assetID = new UUID(result.value);
-                                                        }
-                                                        else if (result.key === 'type')
-                                                        {
-                                                            const typeString = result.value as any;
-                                                            item.type = parseInt(AssetTypeLL[typeString], 10);
-                                                        }
-                                                        else if (result.key === 'inv_type')
-                                                        {
-                                                            const typeString = result.value as any;
-                                                            item.inventoryType = parseInt(InventoryTypeLL[typeString], 10);
-                                                        }
-                                                        else if (result.key === 'flags')
-                                                        {
-                                                            item.flags = parseInt(result.value, 10);
-                                                        }
-                                                        else if (result.key === 'name')
-                                                        {
-                                                            item.name = result.value.substr(0, result.value.indexOf('|'));
-                                                        }
-                                                        else if (result.key === 'desc')
-                                                        {
-                                                            item.description = result.value.substr(0, result.value.indexOf('|'));
-                                                        }
-                                                        else if (result.key === 'creation_date')
-                                                        {
-                                                            item.created = new Date(parseInt(result.value, 10) * 1000);
-                                                        }
-                                                        else
-                                                        {
-                                                            console.log('Unrecognised key (2): ' + result.key);
-                                                        }
-                                                    }
-                                                }
-                                                o.inventory.push(item);
-                                                break;
-                                            default:
-                                            {
-                                                console.log('Unrecognised task inventory token: [' + result.key + ']');
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        catch (error)
-                        {
-                            if (o.resolveAttempts === undefined)
-                            {
-                                o.resolveAttempts = 0;
-                            }
-                            o.resolveAttempts++;
-                            if (o.FullID !== undefined)
-                            {
-                                console.error('Error downloading task inventory of ' + o.FullID.toString() + ':');
-                                console.error(error);
-                            }
-                            else
-                            {
-                                console.error('Error downloading task inventory of ' + o.ID + ':');
-                                console.error(error);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (ignore)
-        {
-            console.error(ignore);
-        }
-        finally
-        {
-            if (totalRemaining < 1)
-            {
-                totalRemaining = 0;
-                for (const obj of objectList)
-                {
-                    if (obj.resolvedAt === undefined || obj.resolvedAt < resolveTime)
-                    {
-                        totalRemaining++;
-                    }
-                }
-                if (totalRemaining > 0)
-                {
-                    console.error(totalRemaining + ' objects could not be resolved');
-                }
-            }
-            const that  = this;
-            const getCosts = async function(objIDs: UUID[])
-            {
-                const result = await that.currentRegion.caps.capsPostXML('GetObjectCost', {
-                    'object_ids': objIDs
-                });
-                const uuids = Object.keys(result);
-                for (const key of uuids)
-                {
-                    const costs = result[key];
-                    try
-                    {
-                        const obj: GameObject = that.currentRegion.objects.getObjectByUUID(new UUID(key));
-                        obj.linkPhysicsImpact = parseFloat(costs['linked_set_physics_cost']);
-                        obj.linkResourceImpact = parseFloat(costs['linked_set_resource_cost']);
-                        obj.physicaImpact = parseFloat(costs['physics_cost']);
-                        obj.resourceImpact = parseFloat(costs['resource_cost']);
-                        obj.limitingType = costs['resource_limiting_type'];
-
-
-                        obj.landImpact = Math.round(obj.linkPhysicsImpact);
-                        if (obj.linkResourceImpact > obj.linkPhysicsImpact)
-                        {
-                            obj.landImpact = Math.round(obj.linkResourceImpact);
-                        }
-                        obj.calculatedLandImpact = obj.landImpact;
-                        if (obj.Flags !== undefined && obj.Flags & PrimFlags.TemporaryOnRez && obj.limitingType === 'legacy')
-                        {
-                            obj.calculatedLandImpact = 0;
-                        }
-                    }
-                    catch (error)
-                    {}
-                }
-            };
-
-            let ids: UUID[] = [];
-            const promises: Promise<void>[] = [];
-            for (const obj of objects)
-            {
-                if (!onlyUnresolved || obj.landImpact === undefined)
-                {
-                    ids.push(new LLSD.UUID(obj.FullID));
-                }
-                if (ids.length > 255)
-                {
-                    promises.push(getCosts(ids));
-                    ids = [];
-                }
-            }
-            if (ids.length > 0)
-            {
-                promises.push(getCosts(ids));
-            }
-            await Promise.all(promises);
-        }
+        return this.currentRegion.resolver.resolveObjects(objects, forceResolve, skipInventory, log);
     }
 
     private waitForObjectByLocalID(localID: number, timeout: number): Promise<GameObject>
@@ -986,9 +385,10 @@ export class RegionCommands extends CommandsBase
         });
     }
 
-    private async buildPart(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, buildMap: BuildMap)
+    private async buildPart(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, buildMap: BuildMap, markRoot = false)
     {
         // Calculate geometry
+        Logger.Info('Calculating geometry');
         const objectPosition = new Vector3(obj.Position);
         const objectRotation = new Quaternion(obj.Rotation);
         const objectScale = new Vector3(obj.Scale);
@@ -1011,6 +411,7 @@ export class RegionCommands extends CommandsBase
 
         // Is this a mesh part?
         let object: GameObject | null = null;
+        let rezzedMesh = false;
         if (obj.extraParams !== undefined && obj.extraParams.meshData !== null)
         {
             if (buildMap.assetMap.mesh[obj.extraParams.meshData.meshData.toString()] !== undefined)
@@ -1019,7 +420,24 @@ export class RegionCommands extends CommandsBase
                 const rezLocation = new Vector3(buildMap.rezLocation);
                 rezLocation.z += (objectScale.z / 2);
 
-                object = await this.rezFromInventory(obj, rezLocation, new UUID(meshEntry.assetID));
+                if (meshEntry.item !== null)
+                {
+                    Logger.Info('Rezzing mesh part');
+                    try
+                    {
+                        object = await meshEntry.item.rezInWorld(rezLocation);
+                    }
+                    catch (err)
+                    {
+                        console.error('Failed to rez object ' + obj.name + ' in-world');
+                        console.error(err);
+                    }
+                    rezzedMesh = true;
+                }
+                else
+                {
+                    console.error('Unable to rez mesh item from inventory - item is null');
+                }
             }
         }
         else if (buildMap.primReservoir.length > 0)
@@ -1028,100 +446,255 @@ export class RegionCommands extends CommandsBase
             if (newPrim !== undefined)
             {
                 object = newPrim;
-                await object.setShape(
-                    obj.PathCurve,
-                    obj.ProfileCurve,
-                    obj.PathBegin,
-                    obj.PathEnd,
-                    obj.PathScaleX,
-                    obj.PathScaleY,
-                    obj.PathShearX,
-                    obj.PathShearY,
-                    obj.PathTwist,
-                    obj.PathTwistBegin,
-                    obj.PathRadiusOffset,
-                    obj.PathTaperX,
-                    obj.PathTaperY,
-                    obj.PathRevolutions,
-                    obj.PathSkew,
-                    obj.ProfileBegin,
-                    obj.ProfileEnd,
-                    obj.ProfileHollow
-                );
+                Logger.Info('Setting shape');
+                try
+                {
+                    await object.setShape(
+                        obj.PathCurve,
+                        obj.ProfileCurve,
+                        obj.PathBegin,
+                        obj.PathEnd,
+                        obj.PathScaleX,
+                        obj.PathScaleY,
+                        obj.PathShearX,
+                        obj.PathShearY,
+                        obj.PathTwist,
+                        obj.PathTwistBegin,
+                        obj.PathRadiusOffset,
+                        obj.PathTaperX,
+                        obj.PathTaperY,
+                        obj.PathRevolutions,
+                        obj.PathSkew,
+                        obj.ProfileBegin,
+                        obj.ProfileEnd,
+                        obj.ProfileHollow
+                    );
+                }
+                catch (err)
+                {
+                    console.error('Error setting shape on ' + obj.name);
+                    console.error(err);
+                }
             }
+        }
+        else
+        {
+            console.error('Exhausted prim reservoir!!');
         }
 
         if (object === null)
         {
+            console.error('Failed to acquire prim for build');
             throw new Error('Failed to acquire prim for build');
         }
 
-        await object.setGeometry(finalPos, finalRot, objectScale);
+        if (markRoot)
+        {
+            object.isMarkedRoot = true;
+        }
 
+        Logger.Info('Setting geometry');
+        try
+        {
+            await object.setGeometry(finalPos, finalRot, objectScale);
+        }
+        catch (err)
+        {
+            console.error('Error setting geometry on ' + obj.name);
+            console.error(err);
+        }
+
+        Logger.Info('Setting ExtraParams');
         if (obj.extraParams.sculptData !== null)
         {
             if (obj.extraParams.sculptData.type !== SculptType.Mesh)
             {
                 const oldTextureID = obj.extraParams.sculptData.texture.toString();
-                if (buildMap.assetMap.textures[oldTextureID] !== undefined)
+                const item = buildMap.assetMap.textures[oldTextureID];
+                if (item !== null && item !== undefined && item.item !== null)
                 {
-                    obj.extraParams.sculptData.texture = new UUID(buildMap.assetMap.textures[oldTextureID]);
+                    obj.extraParams.sculptData.texture = item.item.assetID;
                 }
             }
         }
-        await object.setExtraParams(obj.extraParams);
+
+        if (rezzedMesh)
+        {
+            obj.extraParams.meshData = object.extraParams.meshData;
+            obj.extraParams.sculptData = object.extraParams.sculptData;
+        }
+
+        try
+        {
+            await object.setExtraParams(obj.extraParams);
+        }
+        catch (err)
+        {
+            console.error('Error setting ExtraParams on ' + obj.name);
+            console.error(err);
+            throw new Error(err);
+        }
 
         if (obj.TextureEntry !== undefined)
         {
+            // Handle materials
+            const materialUpload: {
+                'FullMaterialsPerFace': any[]
+            } = {
+                'FullMaterialsPerFace': []
+            };
+
+            let gotSomeActualMaterials = false;
+            for (let face = 0; face < obj.TextureEntry.faces.length; face++)
+            {
+                const materialID = obj.TextureEntry.faces[face].materialID;
+                if (!materialID.isZero())
+                {
+                    const storedMat = buildMap.assetMap.materials[materialID.toString()];
+                    if (storedMat !== null && storedMat !== undefined)
+                    {
+                        materialUpload.FullMaterialsPerFace.push({
+                            Face: face,
+                            ID: object.ID,
+                            Material: storedMat.toLLSDObject()
+                        });
+                        gotSomeActualMaterials = true;
+                    }
+                }
+            }
+
+            if (gotSomeActualMaterials)
+            {
+                Logger.Info('Setting materials');
+                const zipped = await Utils.deflate(Buffer.from(LLSD.LLSD.formatBinary(materialUpload).octets));
+                const newMat = {
+                    'Zipped': new LLSD.Binary(Array.from(zipped), 'BASE64')
+                };
+                this.currentRegion.caps.capsPutXML('RenderMaterials', newMat).then(() => {}).catch((err) =>
+                {
+                    console.error(err);
+                });
+                try
+                {
+                    await object.waitForTextureUpdate(1000);
+                }
+                catch (error)
+                {
+                    console.error('Timed out while waiting for RenderMaterials update');
+                }
+                if (object.TextureEntry !== undefined)
+                {
+                    for (let face = 0; face < object.TextureEntry.faces.length; face++)
+                    {
+                        const oldFace = obj.TextureEntry.faces[face];
+                        if (!oldFace.materialID.isZero())
+                        {
+                            const newFace = object.TextureEntry.faces[face];
+                            if (newFace.materialID.isZero())
+                            {
+                                const h = 5;
+                            }
+                            obj.TextureEntry.faces[face].materialID = object.TextureEntry.faces[face].materialID;
+                            if (obj.TextureEntry.defaultTexture !== null)
+                            {
+                                if (oldFace.materialID.equals(obj.TextureEntry.defaultTexture.materialID))
+                                {
+                                    obj.TextureEntry.defaultTexture.materialID = obj.TextureEntry.faces[face].materialID;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // We're zero-ing out the materialID here because we'll apply materials immediately after
             if (obj.TextureEntry.defaultTexture !== null)
             {
                 const oldTextureID = obj.TextureEntry.defaultTexture.textureID.toString();
-                if (buildMap.assetMap.textures[oldTextureID] !== undefined)
+
+                const item = buildMap.assetMap.textures[oldTextureID];
+                if (item !== null && item !== undefined && item.item !== null)
                 {
-                    obj.TextureEntry.defaultTexture.textureID = new UUID(buildMap.assetMap.textures[oldTextureID]);
+                    obj.TextureEntry.defaultTexture.textureID = item.item.assetID;
                 }
             }
             for (const j of obj.TextureEntry.faces)
             {
                 const oldTextureID = j.textureID.toString();
-                if (buildMap.assetMap.textures[oldTextureID] !== undefined)
+
+                const item = buildMap.assetMap.textures[oldTextureID];
+                if (item !== null && item !== undefined && item.item !== null)
                 {
-                    j.textureID = new UUID(buildMap.assetMap.textures[oldTextureID]);
+                    j.textureID = item.item.assetID;
                 }
             }
 
             try
             {
-                await object.setTextureEntry(obj.TextureEntry);
+                Logger.Info('Setting texture entry');
+                await object.setTextureEntry(obj.TextureEntry).then(() => {}).catch((err) => {
+                    console.error(err);
+                });
             }
             catch (error)
             {
+                console.error('Error setting TextureEntry on ' + obj.name);
                 console.error(error);
             }
+
+
         }
 
         if (obj.name !== undefined)
         {
-            await object.setName(obj.name);
+            Logger.Info('Setting name');
+            try
+            {
+                await object.setName(obj.name);
+            }
+            catch (error)
+            {
+                console.error('Error setting name on ' + obj.name);
+                console.error(error);
+                throw new Error(error);
+            }
         }
 
         if (obj.description !== undefined)
         {
-            await object.setDescription(obj.description);
+            Logger.Info('Setting description');
+            try
+            {
+                await object.setDescription(obj.description);
+            }
+            catch (error)
+            {
+                console.error('Error setting name on ' + obj.name);
+                console.error(error);
+                throw new Error(error);
+            }
         }
 
         for (const invItem of obj.inventory)
         {
             try
             {
+                Logger.Info('Processing inventory item ' + invItem.name);
+                if (invItem.inventoryType === InventoryType.Object && invItem.assetID.isZero())
+                {
+                    invItem.assetID = invItem.itemID;
+                }
                 switch (invItem.inventoryType)
                 {
                     case InventoryType.Clothing:
                     {
                         if (buildMap.assetMap.clothing[invItem.assetID.toString()] !== undefined)
                         {
-                            const invItemID = buildMap.assetMap.clothing[invItem.assetID.toString()];
-                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                            const item = buildMap.assetMap.clothing[invItem.assetID.toString()].item;
+                            if (item !== null)
+                            {
+                                await object.dropInventoryIntoContents(item);
+                            }
                         }
                         break;
                     }
@@ -1129,8 +702,11 @@ export class RegionCommands extends CommandsBase
                     {
                         if (buildMap.assetMap.bodyparts[invItem.assetID.toString()] !== undefined)
                         {
-                            const invItemID = buildMap.assetMap.bodyparts[invItem.assetID.toString()];
-                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                            const item = buildMap.assetMap.bodyparts[invItem.assetID.toString()].item;
+                            if (item !== null)
+                            {
+                                await object.dropInventoryIntoContents(item);
+                            }
                         }
                         break;
                     }
@@ -1138,8 +714,11 @@ export class RegionCommands extends CommandsBase
                     {
                         if (buildMap.assetMap.notecards[invItem.assetID.toString()] !== undefined)
                         {
-                            const invItemID = buildMap.assetMap.notecards[invItem.assetID.toString()];
-                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                            const item = buildMap.assetMap.notecards[invItem.assetID.toString()].item;
+                            if (item !== null)
+                            {
+                                await object.dropInventoryIntoContents(item);
+                            }
                         }
                         break;
                     }
@@ -1147,8 +726,11 @@ export class RegionCommands extends CommandsBase
                     {
                         if (buildMap.assetMap.sounds[invItem.assetID.toString()] !== undefined)
                         {
-                            const invItemID = buildMap.assetMap.sounds[invItem.assetID.toString()];
-                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                            const item = buildMap.assetMap.sounds[invItem.assetID.toString()].item;
+                            if (item !== null)
+                            {
+                                await object.dropInventoryIntoContents(item);
+                            }
                         }
                         break;
                     }
@@ -1156,26 +738,24 @@ export class RegionCommands extends CommandsBase
                     {
                         if (buildMap.assetMap.gestures[invItem.assetID.toString()] !== undefined)
                         {
-                            const invItemID = buildMap.assetMap.gestures[invItem.assetID.toString()];
-                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                            const item = buildMap.assetMap.gestures[invItem.assetID.toString()].item;
+                            if (item !== null)
+                            {
+                                await object.dropInventoryIntoContents(item);
+                            }
                         }
                         break;
                     }
-                    case InventoryType.Landmark:
-                    {
-                        if (buildMap.assetMap.landmarks[invItem.assetID.toString()] !== undefined)
-                        {
-                            const invItemID = buildMap.assetMap.landmarks[invItem.assetID.toString()];
-                            await object.dropInventoryIntoContents(new UUID(invItemID));
-                        }
-                        break;
-                    }
+                    case InventoryType.Script:
                     case InventoryType.LSL:
                     {
                         if (buildMap.assetMap.scripts[invItem.assetID.toString()] !== undefined)
                         {
-                            const invItemID = buildMap.assetMap.scripts[invItem.assetID.toString()];
-                            await object.dropInventoryIntoContents(new UUID(invItemID));
+                            const item = buildMap.assetMap.scripts[invItem.assetID.toString()].item;
+                            if (item !== null)
+                            {
+                                await object.dropInventoryIntoContents(item);
+                            }
                         }
                         break;
                     }
@@ -1183,44 +763,52 @@ export class RegionCommands extends CommandsBase
                     {
                         if (buildMap.assetMap.animations[invItem.assetID.toString()] !== undefined)
                         {
-                            const invItemID = buildMap.assetMap.animations[invItem.assetID.toString()];
-                            await object.dropInventoryIntoContents(new UUID(invItemID));
-                        }
-                        break;
-                    }
-                }
-            }
-            catch (error)
-            {
-                console.error(error);
-            }
-        }
-
-        // Do nested objects last
-        for (const invItem of obj.inventory)
-        {
-            try
-            {
-                switch (invItem.inventoryType)
-                {
-                    case InventoryType.Object:
-                    {
-                        if (buildMap.assetMap.objects[invItem.assetID.toString()] !== undefined)
-                        {
-                            const objectXML = buildMap.assetMap.objects[invItem.assetID.toString()];
-                            if (objectXML !== null)
+                            const item = buildMap.assetMap.animations[invItem.assetID.toString()].item;
+                            if (item !== null)
                             {
-                                const taskObjectXML = await GameObject.fromXML(objectXML.toString('utf-8'));
-                                const taskObject = await this.buildObjectNew(taskObjectXML, buildMap.callback, buildMap.costOnly);
-                                if (taskObject !== null)
-                                {
-                                    const invItemUUID = await taskObject.takeToInventory();
-                                    await object.dropInventoryIntoContents(invItemUUID);
-                                }
+                                await object.dropInventoryIntoContents(item);
                             }
                         }
                         break;
                     }
+                    case InventoryType.Object:
+                    {
+                        if (buildMap.assetMap.objects[invItem.itemID.toString()] !== undefined)
+                        {
+                            const inventoryItem = buildMap.assetMap.objects[invItem.itemID.toString()];
+                            if (inventoryItem !== null)
+                            {
+                                Logger.Info('Dropping inventory into contents..');
+                                await object.dropInventoryIntoContents(inventoryItem);
+                                Logger.Info('.. Done');
+                            }
+                            else
+                            {
+                                console.error('Unable to drop object: item is null');
+                            }
+                        }
+                        break;
+                    }
+                    case InventoryType.Texture:
+                    case InventoryType.Snapshot:
+                    {
+                        if (buildMap.assetMap.textures[invItem.assetID.toString()] !== undefined)
+                        {
+                            const texItem = buildMap.assetMap.textures[invItem.assetID.toString()];
+                            if (texItem.item !== null)
+                            {
+                                await object.dropInventoryIntoContents(texItem.item);
+                            }
+                            else
+                            {
+                                console.error('Unable to drop object: item is null');
+                            }
+                        }
+                        break;
+                    }
+                    default: // TODO: 3 - landmark
+                        console.error('Unsupported inventory type: ' + invItem.inventoryType);
+                        break;
                 }
             }
             catch (error)
@@ -1228,6 +816,7 @@ export class RegionCommands extends CommandsBase
                 console.error(error);
             }
         }
+        Logger.Info('Part build done');
         return object;
     }
 
@@ -1237,11 +826,14 @@ export class RegionCommands extends CommandsBase
         {
             if (obj.extraParams.meshData !== null)
             {
-                buildMap.assetMap.mesh[obj.extraParams.meshData.meshData.toString()] = {
-                    objectName: obj.name || 'Object',
-                    objectDescription: obj.description || '(no description)',
-                    assetID: obj.extraParams.meshData.meshData.toString()
-                };
+                if (buildMap.assetMap.mesh[obj.extraParams.meshData.meshData.toString()] === undefined)
+                {
+                    buildMap.assetMap.mesh[obj.extraParams.meshData.meshData.toString()] = {
+                        name: obj.name || 'Object',
+                        description: obj.description || '(no description)',
+                        item: null
+                    };
+                }
             }
             else
             {
@@ -1251,7 +843,12 @@ export class RegionCommands extends CommandsBase
             {
                 if (obj.extraParams.sculptData.type !== SculptType.Mesh)
                 {
-                    buildMap.assetMap.textures[obj.extraParams.sculptData.texture.toString()] = obj.extraParams.sculptData.texture.toString();
+                    if (buildMap.assetMap.textures[obj.extraParams.sculptData.texture.toString()] === undefined)
+                    {
+                        buildMap.assetMap.textures[obj.extraParams.sculptData.texture.toString()] = {
+                            item: null
+                        };
+                    }
                 }
             }
             if (obj.TextureEntry !== undefined)
@@ -1259,73 +856,161 @@ export class RegionCommands extends CommandsBase
                 for (const j of obj.TextureEntry.faces)
                 {
                     const textureID = j.textureID;
-                    buildMap.assetMap.textures[textureID.toString()] = textureID.toString();
+                    if (buildMap.assetMap.textures[textureID.toString()] === undefined)
+                    {
+                        buildMap.assetMap.textures[textureID.toString()] = {
+                            item: null
+                        }
+                    }
+                    const materialID = j.materialID;
+                    if (!materialID.isZero())
+                    {
+                        if (buildMap.assetMap.materials[materialID.toString()] === undefined)
+                        {
+                            buildMap.assetMap.materials[materialID.toString()] = null
+                        }
+                    }
                 }
                 if (obj.TextureEntry.defaultTexture !== null)
                 {
                     const textureID = obj.TextureEntry.defaultTexture.textureID;
-                    buildMap.assetMap.textures[textureID.toString()] = textureID.toString();
+                    if (buildMap.assetMap.textures[textureID.toString()] === undefined)
+                    {
+                        buildMap.assetMap.textures[textureID.toString()] = {
+                            item: null
+                        }
+                    }
+                    const materialID = obj.TextureEntry.defaultTexture.materialID;
+                    if (!materialID.isZero())
+                    {
+                        if (buildMap.assetMap.materials[materialID.toString()] === undefined)
+                        {
+                            buildMap.assetMap.materials[materialID.toString()] = null
+                        }
+                    }
                 }
             }
             if (obj.inventory !== undefined)
             {
                 for (const j of obj.inventory)
                 {
+                    const assetID = j.assetID;
                     switch (j.inventoryType)
                     {
                         case InventoryType.Animation:
                         {
-                            buildMap.assetMap.animations[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.animations[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.animations[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.Bodypart:
                         {
-                            buildMap.assetMap.bodyparts[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.bodyparts[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.bodyparts[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.CallingCard:
                         {
-                            buildMap.assetMap.callingcards[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.callingcards[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.callingcards[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.Clothing:
                         {
-                            buildMap.assetMap.clothing[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.clothing[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.clothing[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.Gesture:
                         {
-                            buildMap.assetMap.gestures[j.assetID.toString()] = j.assetID.toString();
-                            break;
-                        }
-                        case InventoryType.Landmark:
-                        {
-                            buildMap.assetMap.landmarks[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.clothing[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.gestures[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.LSL:
                         {
-                            buildMap.assetMap.scripts[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.scripts[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.scripts[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.Snapshot:
                         {
-                            buildMap.assetMap.textures[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.textures[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.textures[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.Notecard:
                         {
-                            buildMap.assetMap.notecards[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.notecards[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.notecards[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.Sound:
                         {
-                            buildMap.assetMap.sounds[j.assetID.toString()] = j.assetID.toString();
+                            if (buildMap.assetMap.sounds[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.sounds[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
                             break;
                         }
                         case InventoryType.Object:
                         {
-                            buildMap.assetMap.objects[j.assetID.toString()] = null;
+                            if (buildMap.assetMap.objects[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.objects[assetID.toString()] = null;
+                            }
                         }
                     }
                 }
@@ -1340,15 +1025,40 @@ export class RegionCommands extends CommandsBase
         }
     }
 
-    async buildObjectNew(obj: GameObject, callback: (map: AssetMap) => void, costOnly: boolean = false): Promise<GameObject | null>
+    async buildObjectNew(obj: GameObject, map: AssetMap, callback: (map: AssetMap) => void, costOnly: boolean = false, skipMove = false): Promise<GameObject | null>
     {
-        const map: AssetMap = new AssetMap();
         const  buildMap = new BuildMap(map, callback, costOnly);
+        Logger.Info('Building object: ' + obj.name);
+        Logger.Info('Gathering immediate assets');
         this.gatherAssets(obj, buildMap);
+        Logger.Info('Excluding BOM assets');
+        const bomTextures = [
+            '5a9f4a74-30f2-821c-b88d-70499d3e7183',
+            'ae2de45c-d252-50b8-5c6e-19f39ce79317',
+            '24daea5f-0539-cfcf-047f-fbc40b2786ba',
+            '52cc6bb6-2ee5-e632-d3ad-50197b1dcb8a',
+            '43529ce8-7faa-ad92-165a-bc4078371687',
+            '09aac1fb-6bce-0bee-7d44-caac6dbb6c63',
+            'ff62763f-d60a-9855-890b-0c96f8f8cd98',
+            '8e915e25-31d1-cc95-ae08-d58a47488251',
+            '9742065b-19b5-297c-858a-29711d539043',
+            '03642e83-2bd1-4eb9-34b4-4c47ed586d2d',
+            'edd51b77-fc10-ce7a-4b3d-011dfc349e4f'
+        ];
+        for (const bomTexture of bomTextures)
+        {
+            if (buildMap.assetMap.textures[bomTexture] !== undefined)
+            {
+                Logger.Info('Not replacing BOM texture ' + bomTexture);
+                delete buildMap.assetMap.textures[bomTexture];
+            }
+        }
+        Logger.Info('Mapping assets');
         await callback(map);
 
         if (costOnly)
         {
+            Logger.Info('Cost only, not proceeding with build');
             return null;
         }
 
@@ -1379,11 +1089,13 @@ export class RegionCommands extends CommandsBase
 
         if (buildMap.primsNeeded > 0)
         {
+            Logger.Info('Pre-rezzing ' + buildMap.primsNeeded + ' prims');
             buildMap.primReservoir = await this.createPrims(buildMap.primsNeeded, agentPos);
         }
 
+        /*
         const parts = [];
-        parts.push(this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap));
+        parts.push(this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap, skipMove));
 
         if (obj.children)
         {
@@ -1395,28 +1107,138 @@ export class RegionCommands extends CommandsBase
             {
                 obj.Rotation = Quaternion.getIdentity();
             }
+            let childNumber = 0;
             for (const child of obj.children)
             {
                 if (child.Position !== undefined && child.Rotation !== undefined)
                 {
                     const objPos = new Vector3(obj.Position);
                     const objRot = new Quaternion(obj.Rotation);
-                    parts.push(this.buildPart(child, objPos, objRot, buildMap));
+                    parts.push(this.buildPart(child, objPos, objRot, buildMap, skipMove));
+                    console.log(' ... Building child ' + String(++childNumber));
                 }
             }
         }
         const results: GameObject[] = await Promise.all(parts);
+         */
+        let storedPosition: Vector3 | undefined = undefined;
+        if (skipMove)
+        {
+            storedPosition = obj.Position;
+            obj.Position = new Vector3(buildMap.rezLocation);
+        }
 
-        const rootObj = results[0];
+        const parts = [];
+        parts.push(async () =>
+        {
+            Logger.Info('Building root prim');
+            Logger.increasePrefixLevel();
+            try
+            {
+                return await this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap, true);
+            }
+            finally
+            {
+                Logger.decreasePrefixLevel();
+            }
+        });
+
+        if (obj.children)
+        {
+            if (obj.Position === undefined)
+            {
+                obj.Position = Vector3.getZero();
+            }
+            if (obj.Rotation === undefined)
+            {
+                obj.Rotation = Quaternion.getIdentity();
+            }
+            let childNumber = 0;
+            for (const child of obj.children)
+            {
+                if (child.Position !== undefined && child.Rotation !== undefined)
+                {
+                    parts.push(async () =>
+                    {
+                        Logger.Info('Building child ' + String(++childNumber));
+                        try
+                        {
+                            Logger.increasePrefixLevel();
+                            return await this.buildPart(child, new Vector3(obj.Position), new Quaternion(obj.Rotation), buildMap, false);
+                        }
+                        finally
+                        {
+                            Logger.decreasePrefixLevel();
+                        }
+                    });
+
+                }
+            }
+        }
+        Logger.Info('Running build');
+        let results: {
+            results: GameObject[],
+            errors: Error[]
+        } = {
+            results: [],
+            errors: []
+        };
+
+        try
+        {
+            Logger.increasePrefixLevel();
+            results = await Utils.promiseConcurrent<GameObject>(parts, 5, 0);
+        }
+        finally
+        {
+            Logger.decreasePrefixLevel();
+        }
+        Logger.Info('Done');
+        if (results.errors.length > 0)
+        {
+            for (const err of results.errors)
+            {
+                console.error(err);
+            }
+        }
+
+        let rootObj: GameObject | null = null;
+        Logger.Info('Linking ' + results.results.length + ' prims together');
+        for (const childObject of results.results)
+        {
+            if (childObject.isMarkedRoot)
+            {
+                rootObj = childObject;
+                break;
+            }
+        }
+        if (rootObj === null)
+        {
+            throw new Error('Failed to find root prim..');
+        }
+
         const childPrims: GameObject[] = [];
-        for (const childObject of results)
+        for (const childObject of results.results)
         {
             if (childObject !== rootObj)
             {
                 childPrims.push(childObject);
             }
         }
-        await rootObj.linkFrom(childPrims);
+        try
+        {
+            await rootObj.linkFrom(childPrims);
+        }
+        catch (err)
+        {
+            console.error('Link failed:');
+            console.error(err);
+        }
+        if (storedPosition !== undefined)
+        {
+            obj.Position = storedPosition;
+        }
+        Logger.Info('Build done');
         return rootObj;
     }
 
@@ -1445,11 +1267,11 @@ export class RegionCommands extends CommandsBase
                 if (!evt.object.resolvedAt)
                 {
                     // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
-                    await this.queueResolveObject(evt.object, true);
+                    await this.resolveObject(evt.object, false, true);
                 }
                 if (evt.createSelected && !evt.object.claimedForBuild)
                 {
-                    if (evt.object.itemID === undefined || evt.object.itemID.equals(UUID.zero()))
+                    if (evt.object.itemID === undefined || evt.object.itemID.isZero())
                     {
                         if (
                             evt.object.PCode === PCode.Prim &&
@@ -1538,111 +1360,6 @@ export class RegionCommands extends CommandsBase
         });
     }
 
-    rezFromInventory(obj: GameObject, position: Vector3, inventoryID: UUID): Promise<GameObject>
-    {
-        return new Promise(async (resolve, reject) =>
-        {
-            const invItem = this.agent.inventory.itemsByID[inventoryID.toString()];
-            const queryID = UUID.random();
-            const msg = new RezObjectMessage();
-            msg.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: this.circuit.sessionID,
-                GroupID: UUID.zero()
-            };
-            msg.RezData = {
-                FromTaskID: UUID.zero(),
-                BypassRaycast: 1,
-                RayStart: position,
-                RayEnd: position,
-                RayTargetID: UUID.zero(),
-                RayEndIsIntersection: false,
-                RezSelected: true,
-                RemoveItem: false,
-                ItemFlags: invItem.flags,
-                GroupMask: PermissionMask.All,
-                EveryoneMask: PermissionMask.All,
-                NextOwnerMask: PermissionMask.All,
-            };
-            msg.InventoryData = {
-                ItemID: invItem.itemID,
-                FolderID: invItem.parentID,
-                CreatorID: invItem.permissions.creator,
-                OwnerID: invItem.permissions.owner,
-                GroupID: invItem.permissions.group,
-                BaseMask: invItem.permissions.baseMask,
-                OwnerMask: invItem.permissions.ownerMask,
-                GroupMask: invItem.permissions.groupMask,
-                EveryoneMask: invItem.permissions.everyoneMask,
-                NextOwnerMask: invItem.permissions.nextOwnerMask,
-                GroupOwned: false,
-                TransactionID: queryID,
-                Type: invItem.type,
-                InvType: invItem.inventoryType,
-                Flags: invItem.flags,
-                SaleType: invItem.saleType,
-                SalePrice: invItem.salePrice,
-                Name: Utils.StringToBuffer(invItem.name),
-                Description: Utils.StringToBuffer(invItem.description),
-                CreationDate: Math.round(invItem.created.getTime() / 1000),
-                CRC: 0,
-            };
-
-            let objSub: Subscription | undefined = undefined;
-            let timeout: Timeout | undefined = setTimeout(() =>
-            {
-                if (objSub !== undefined)
-                {
-                    objSub.unsubscribe();
-                    objSub = undefined;
-                }
-                if (timeout !== undefined)
-                {
-                    clearTimeout(timeout);
-                    timeout = undefined;
-                }
-                reject(new Error('Prim never arrived'));
-            }, 10000);
-            let claimedPrim = false;
-            objSub = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (evt: NewObjectEvent) =>
-            {
-                if (evt.createSelected && !evt.object.resolvedAt)
-                {
-                    // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
-                    await this.queueResolveObject(evt.object, true);
-                }
-                if (evt.createSelected && !evt.object.claimedForBuild && !claimedPrim)
-                {
-                    if (inventoryID !== undefined && evt.object.itemID !== undefined && evt.object.itemID.equals(inventoryID))
-                    {
-                        if (objSub !== undefined)
-                        {
-                            objSub.unsubscribe();
-                            objSub = undefined;
-                        }
-                        if (timeout !== undefined)
-                        {
-                            clearTimeout(timeout);
-                            timeout = undefined;
-                        }
-                        evt.object.claimedForBuild = true;
-                        claimedPrim = true;
-                        resolve(evt.object);
-                    }
-                }
-            });
-
-            // Move the camera to look directly at prim for faster capture
-            if (obj.Scale !== undefined)
-            {
-                const camLocation = new Vector3(position);
-                camLocation.z += (obj.Scale.z / 2) + 1;
-                await this.currentRegion.clientCommands.agent.setCamera(camLocation, position, obj.Scale.z, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
-            }
-            this.circuit.sendMessage(msg, PacketFlags.Reliable);
-        });
-    }
-
     async getObjectByLocalID(id: number, resolve: boolean, waitFor: number = 0)
     {
         let obj = null;
@@ -1663,7 +1380,7 @@ export class RegionCommands extends CommandsBase
         }
         if (resolve)
         {
-            await this.resolveObjects([obj]);
+            await this.currentRegion.resolver.resolveObjects([obj]);
         }
         return obj;
     }
@@ -1688,7 +1405,7 @@ export class RegionCommands extends CommandsBase
         }
         if (resolve)
         {
-            await this.resolveObjects([obj]);
+            await this.currentRegion.resolver.resolveObjects([obj]);
         }
         return obj;
     }
@@ -1763,7 +1480,8 @@ export class RegionCommands extends CommandsBase
         const objs = await this.currentRegion.objects.getAllObjects();
         if (resolve)
         {
-            await this.resolveObjects(objs, onlyUnresolved);
+            const resolver = new ObjectResolver(this.currentRegion);
+            await resolver.resolveObjects(objs, onlyUnresolved);
         }
         return objs;
     }
@@ -1773,7 +1491,7 @@ export class RegionCommands extends CommandsBase
         const objs = await this.currentRegion.objects.getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ);
         if (resolve)
         {
-            await this.resolveObjects(objs);
+            await this.currentRegion.resolver.resolveObjects(objs);
         }
         return objs;
     }

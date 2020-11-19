@@ -1,6 +1,8 @@
 import { UUID } from './UUID';
 import { WearableType } from '../enums/WearableType';
 import { SaleType } from '../enums/SaleType';
+import { SaleTypeLL } from '../enums/SaleTypeLL';
+import { Utils } from './Utils';
 
 export class LLWearable
 {
@@ -31,148 +33,165 @@ export class LLWearable
     };
     saleType: SaleType;
     salePrice: number;
-    constructor(data: string)
+    constructor(data?: string)
     {
-        const lines: string[] = data.replace(/\r\n/g, '\n').split('\n');
-        for (let index = 0; index < lines.length; index++)
+        if (data !== undefined)
         {
-            if (index === 0)
+            const lines: string[] = data.replace(/\r\n/g, '\n').split('\n');
+            for (let index = 0; index < lines.length; index++)
             {
-                const header = lines[index].split(' ');
-                if (header[0] !== 'LLWearable')
+                if (index === 0)
                 {
-                    return;
-                }
-            }
-            else if (index === 1)
-            {
-                this.name = lines[index];
-            }
-            else
-            {
-                const parsedLine = this.parseLine(lines[index]);
-                if (parsedLine.key !== null)
-                {
-                    switch (parsedLine.key)
+                    const header = lines[index].split(' ');
+                    if (header[0] !== 'LLWearable')
                     {
-                        case 'base_mask':
-                            this.permission.baseMask = parseInt(parsedLine.value, 16);
-                            break;
-                        case 'owner_mask':
-                            this.permission.ownerMask = parseInt(parsedLine.value, 16);
-                            break;
-                        case 'group_mask':
-                            this.permission.groupMask = parseInt(parsedLine.value, 16);
-                            break;
-                        case 'everyone_mask':
-                            this.permission.everyoneMask = parseInt(parsedLine.value, 16);
-                            break;
-                        case 'next_owner_mask':
-                            this.permission.nextOwnerMask = parseInt(parsedLine.value, 16);
-                            break;
-                        case 'creator_id':
-                            this.permission.creatorID = new UUID(parsedLine.value);
-                            break;
-                        case 'owner_id':
-                            this.permission.ownerID = new UUID(parsedLine.value);
-                            break;
-                        case 'last_owner_id':
-                            this.permission.lastOwnerID = new UUID(parsedLine.value);
-                            break;
-                        case 'group_id':
-                            this.permission.groupID = new UUID(parsedLine.value);
-                            break;
-                        case 'sale_type':
-                            this.saleType = parseInt(parsedLine.value, 10);
-                            break;
-                        case 'sale_price':
-                            this.salePrice = parseInt(parsedLine.value, 10);
-                            break;
-                        case 'type':
-                            this.type = parseInt(parsedLine.value, 10);
-                            break;
-                        case 'parameters':
+                        return;
+                    }
+                }
+                else if (index === 1)
+                {
+                    this.name = lines[index];
+                }
+                else
+                {
+                    const parsedLine = Utils.parseLine(lines[index]);
+                    if (parsedLine.key !== null)
+                    {
+                        switch (parsedLine.key)
                         {
-                            const num = parseInt(parsedLine.value, 10);
-                            const max = index + num;
-                            for (index; index < max; index++)
-                            {
-                                const paramLine = this.parseLine(lines[index++]);
-                                if (paramLine.key !== null)
+                            case 'base_mask':
+                                this.permission.baseMask = parseInt(parsedLine.value, 16);
+                                break;
+                            case 'owner_mask':
+                                this.permission.ownerMask = parseInt(parsedLine.value, 16);
+                                break;
+                            case 'group_mask':
+                                this.permission.groupMask = parseInt(parsedLine.value, 16);
+                                break;
+                            case 'everyone_mask':
+                                this.permission.everyoneMask = parseInt(parsedLine.value, 16);
+                                break;
+                            case 'next_owner_mask':
+                                this.permission.nextOwnerMask = parseInt(parsedLine.value, 16);
+                                break;
+                            case 'creator_id':
+                                this.permission.creatorID = new UUID(parsedLine.value);
+                                break;
+                            case 'owner_id':
+                                this.permission.ownerID = new UUID(parsedLine.value);
+                                break;
+                            case 'last_owner_id':
+                                this.permission.lastOwnerID = new UUID(parsedLine.value);
+                                break;
+                            case 'group_id':
+                                this.permission.groupID = new UUID(parsedLine.value);
+                                break;
+                            case 'sale_type':
+                                switch (parsedLine.value.trim().toLowerCase())
                                 {
-                                    this.parameters[parseInt(paramLine.key, 10)] = parseInt(paramLine.value, 10);
+                                    case 'not':
+                                        this.saleType = 0;
+                                        break;
+                                    case 'orig':
+                                        this.saleType = 1;
+                                        break;
+                                    case 'copy':
+                                        this.saleType = 2;
+                                        break;
+                                    case 'cntn':
+                                        this.saleType = 3;
+                                        break;
+                                    default:
+                                        console.log('Unrecognised saleType: ' + parsedLine.value.trim().toLowerCase());
                                 }
-                            }
-                            break;
-                        }
-                        case 'textures':
-                        {
-                            const num = parseInt(parsedLine.value, 10);
-                            const max = index + num ;
-                            for (index; index < max; index++)
+                                break;
+                            case 'sale_price':
+                                this.salePrice = parseInt(parsedLine.value, 10);
+                                break;
+                            case 'type':
+                                this.type = parseInt(parsedLine.value, 10);
+                                break;
+                            case 'parameters':
                             {
-                                const texLine = this.parseLine(lines[index + 1]);
-                                if (texLine.key !== null)
+                                const num = parseInt(parsedLine.value, 10);
+                                const max = index + num;
+                                for (index; index < max; index++)
                                 {
-                                    this.textures[parseInt(texLine.key, 10)] = new UUID(texLine.value);
+                                    const paramLine = Utils.parseLine(lines[index + 1]);
+                                    if (paramLine.key !== null)
+                                    {
+                                        this.parameters[parseInt(paramLine.key, 10)] = parseFloat(paramLine.value.replace('-.', '-0.'));
+                                    }
                                 }
+                                break;
                             }
-                            break;
+                            case 'textures':
+                            {
+                                const num = parseInt(parsedLine.value, 10);
+                                const max = index + num;
+                                for (index; index < max; index++)
+                                {
+                                    const texLine = Utils.parseLine(lines[index + 1]);
+                                    if (texLine.key !== null)
+                                    {
+                                        this.textures[parseInt(texLine.key, 10)] = new UUID(texLine.value);
+                                    }
+                                }
+                                break;
+                            }
+                            case 'permissions':
+                            case 'sale_info':
+                            case '{':
+                            case '}':
+                                // ignore
+                                break;
+                            default:
+                                console.log('skipping: ' + lines[index]);
+                                break;
                         }
-                        case 'permissions':
-                        case 'sale_info':
-                        case '{':
-                        case '}':
-                            // ignore
-                            break;
-                        default:
-                            console.log('skipping: ' + lines[index]);
-                            break;
                     }
                 }
             }
         }
     }
 
-    private parseLine(line: string): {
-        'key': string | null,
-        'value': string
-    }
+    toAsset(): string
     {
-        line = line.trim().replace(/[\t]/gu, ' ').trim();
-        while (line.indexOf('\u0020\u0020') > 0)
+        const lines: string[] = [
+            'LLWearable version 22'
+        ];
+        lines.push(this.name);
+        lines.push('');
+        lines.push('\tpermissions 0');
+        lines.push('\t{');
+        lines.push('\t\tbase_mask\t' + Utils.numberToFixedHex(this.permission.baseMask));
+        lines.push('\t\towner_mask\t' + Utils.numberToFixedHex(this.permission.ownerMask));
+        lines.push('\t\tgroup_mask\t' + Utils.numberToFixedHex(this.permission.groupMask));
+        lines.push('\t\teveryone_mask\t' + Utils.numberToFixedHex(this.permission.everyoneMask));
+        lines.push('\t\tnext_owner_mask\t' + Utils.numberToFixedHex(this.permission.nextOwnerMask));
+        lines.push('\t\tcreator_id\t' + this.permission.creatorID.toString());
+        lines.push('\t\towner_id\t' + this.permission.ownerID.toString());
+        lines.push('\t\tlast_owner_id\t' + this.permission.lastOwnerID.toString());
+        lines.push('\t\tgroup_id\t' + this.permission.groupID.toString());
+        lines.push('\t}');
+        lines.push('\tsale_info\t0');
+        lines.push('\t{');
+        lines.push('\t\tsale_type\t' + SaleTypeLL[this.saleType]);
+        lines.push('\t\tsale_price\t' + this.salePrice);
+        lines.push('\t}');
+        lines.push('type ' + this.type);
+        lines.push('parameters ' + Object.keys(this.parameters).length);
+        for (const num of Object.keys(this.parameters))
         {
-            line = line.replace(/\u0020\u0020/gu, '\u0020');
+            const val = this.parameters[parseInt(num, 10)];
+            lines.push(num + (' ' + String(val).replace('-0.', '-.')).replace(' 0.', ' .'));
         }
-        let key: string | null = null;
-        let value = '';
-        if (line.length > 2)
+        lines.push('textures ' + Object.keys(this.textures).length);
+        for (const num of Object.keys(this.textures))
         {
-            const sep = line.indexOf(' ');
-            if (sep > 0)
-            {
-                key = line.substr(0, sep);
-                value = line.substr(sep + 1);
-            }
+            const val = this.textures[parseInt(num, 10)];
+            lines.push(num + ' ' + val);
         }
-        else if (line.length === 1)
-        {
-            key = line;
-        }
-        else if (line.length > 0)
-        {
-            return {
-                'key': line,
-                'value': ''
-            }
-        }
-        if (key !== null)
-        {
-            key = key.trim();
-        }
-        return {
-            'key': key,
-            'value': value
-        }
+        return lines.join('\n') + '\n';
     }
 }

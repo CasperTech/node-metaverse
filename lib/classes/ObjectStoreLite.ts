@@ -34,6 +34,8 @@ import { CompressedFlags } from '../enums/CompressedFlags';
 import { Vector3 } from './Vector3';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
+import { Avatar } from './public/Avatar';
+import { AttachmentPoint } from '../enums/AttachmentPoint';
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -42,6 +44,7 @@ export class ObjectStoreLite implements IObjectStore
     protected objects: { [key: number]: GameObject } = {};
     protected objectsByUUID: { [key: string]: number } = {};
     protected objectsByParent: { [key: number]: number[] } = {};
+    protected avatars: {[key: number]: Avatar} = {};
     protected clientEvents: ClientEvents;
     protected options: BotOptionFlags;
     protected requestedObjects: {[key: number]: boolean} = {};
@@ -183,6 +186,11 @@ export class ObjectStoreLite implements IObjectStore
         {
             delete this.selectedPrimsWithoutUpdate[o.ID];
         }
+        const n = Utils.BufferToStringSimple(obj.Name);
+        if (n === 'FullPerm')
+        {
+            const h  = 5;
+        }
         o.creatorID = obj.CreatorID;
         o.creationDate = obj.CreationDate;
         o.baseMask = obj.BaseMask;
@@ -211,6 +219,8 @@ export class ObjectStoreLite implements IObjectStore
         if (!o.resolvedAt)
         {
             o.resolvedAt = new Date().getTime() / 1000;
+        }
+        {
             const evt = new ObjectResolvedEvent();
             evt.object = o;
             this.clientEvents.onObjectResolvedEvent.next(evt);
@@ -343,6 +353,10 @@ export class ObjectStoreLite implements IObjectStore
             this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
             this.objects[localID].IsAttachment = this.objects[localID].NameValue['AttachItemID'] !== undefined;
+            if (obj.IsAttachment && obj.State !== undefined)
+            {
+                this.objects[localID].attachmentPoint = this.decodeAttachPoint(obj.State);
+            }
 
             if (objData.PCode === PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString())
             {
@@ -404,10 +418,7 @@ export class ObjectStoreLite implements IObjectStore
                 }
             }
 
-            if (obj.ParentID === 0)
-            {
-                this.notifyObjectUpdate(newObject, obj);
-            }
+            this.notifyObjectUpdate(newObject, obj);
 
             if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects[objData.ParentID])
             {
@@ -416,34 +427,118 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected notifyObjectUpdate(newObject: boolean, obj: GameObject)
+    protected notifyTerseUpdate(obj: GameObject)
     {
-        if (newObject)
+        if (this.objects[obj.ID])
         {
-            const newObj = new NewObjectEvent();
-            newObj.localID = obj.ID;
-            newObj.objectID = obj.FullID;
-            newObj.object = obj;
-            newObj.createSelected = obj.Flags !== undefined && (obj.Flags & PrimFlags.CreateSelected) !== 0;
-            obj.createdSelected = newObj.createSelected;
-            if (obj.Flags !== undefined && obj.Flags & PrimFlags.CreateSelected && !this.pendingObjectProperties[obj.FullID.toString()])
+            if (obj.PCode === PCode.Avatar)
             {
-                this.selectedPrimsWithoutUpdate[obj.ID] = true;
+                if (this.avatars[obj.ID] !== undefined)
+                {
+                    this.avatars[obj.ID].processObjectUpdate(obj);
+                }
+                else
+                {
+                    console.warn('Received update for unknown avatar, but not a new object?!');
+                }
             }
-            this.clientEvents.onNewObjectEvent.next(newObj);
-        }
-        else
-        {
             const updObj = new ObjectUpdatedEvent();
             updObj.localID = obj.ID;
             updObj.objectID = obj.FullID;
             updObj.object = obj;
-            this.clientEvents.onObjectUpdatedEvent.next(updObj);
+            this.clientEvents.onObjectUpdatedTerseEvent.next(updObj);
         }
-        if (this.pendingObjectProperties[obj.FullID.toString()])
+    }
+
+    protected notifyObjectUpdate(newObject: boolean, obj: GameObject)
+    {
+        if (obj.ParentID === 0 || (obj.ParentID !== undefined && this.avatars[obj.ParentID] !== undefined))
         {
-            this.applyObjectProperties(obj, this.pendingObjectProperties[obj.FullID.toString()]);
-            delete this.pendingObjectProperties[obj.FullID.toString()];
+            if (newObject)
+            {
+                if (obj.PCode === PCode.Avatar)
+                {
+                    if (this.avatars[obj.ID] === undefined)
+                    {
+                        this.avatars[obj.ID] = Avatar.fromGameObject(obj);
+                        this.clientEvents.onAvatarEnteredRegion.next(this.avatars[obj.ID])
+                    }
+                }
+                if (obj.IsAttachment && obj.ParentID !== undefined)
+                {
+                    if (this.avatars[obj.ParentID] !== undefined)
+                    {
+                        const avatar = this.avatars[obj.ParentID];
+
+                        let invItemID = UUID.zero();
+                        if (obj.NameValue['AttachItemID'])
+                        {
+                            invItemID = new UUID(obj.NameValue['AttachItemID'].value);
+                        }
+
+                        this.agent.currentRegion.clientCommands.region.resolveObject(obj, true, false).then(() =>
+                        {
+                            try
+                            {
+                                if (obj.itemID === undefined)
+                                {
+                                    obj.itemID = UUID.zero();
+                                }
+                                obj.itemID = invItemID;
+                                if (avatar !== undefined)
+                                {
+                                    avatar.addAttachment(obj);
+                                }
+                            }
+                            catch (err)
+                            {
+                                console.error(err);
+                            }
+                        }).catch((err) =>
+                        {
+                            console.error('Failed to resolve new avatar attachment');
+                        });
+
+                    }
+                }
+
+                const newObj = new NewObjectEvent();
+                newObj.localID = obj.ID;
+                newObj.objectID = obj.FullID;
+                newObj.object = obj;
+                newObj.createSelected = obj.Flags !== undefined && (obj.Flags & PrimFlags.CreateSelected) !== 0;
+                obj.createdSelected = newObj.createSelected;
+                if (obj.Flags !== undefined && obj.Flags & PrimFlags.CreateSelected && !this.pendingObjectProperties[obj.FullID.toString()])
+                {
+                    this.selectedPrimsWithoutUpdate[obj.ID] = true;
+                }
+                this.clientEvents.onNewObjectEvent.next(newObj);
+            }
+            else
+            {
+                if (obj.PCode === PCode.Avatar)
+                {
+                    if (this.avatars[obj.ID] !== undefined)
+                    {
+                        this.avatars[obj.ID].processObjectUpdate(obj);
+                    }
+                    else
+                    {
+                        console.warn('Received update for unknown avatar, but not a new object?!');
+                    }
+                }
+
+                const updObj = new ObjectUpdatedEvent();
+                updObj.localID = obj.ID;
+                updObj.objectID = obj.FullID;
+                updObj.object = obj;
+                this.clientEvents.onObjectUpdatedEvent.next(updObj);
+            }
+            if (this.pendingObjectProperties[obj.FullID.toString()])
+            {
+                this.applyObjectProperties(obj, this.pendingObjectProperties[obj.FullID.toString()]);
+                delete this.pendingObjectProperties[obj.FullID.toString()];
+            }
         }
     }
 
@@ -605,12 +700,19 @@ export class ObjectStoreLite implements IObjectStore
             }
 
             o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
-
-            if (o.ParentID === 0)
+            if (o.IsAttachment && o.State !== undefined)
             {
-                this.notifyObjectUpdate(newObj, o);
+                o.attachmentPoint = this.decodeAttachPoint(o.State);
             }
+
+            this.notifyObjectUpdate(newObj, o);
         }
+    }
+
+    protected decodeAttachPoint(state: number)
+    {
+        const mask = 0xf << 4 >>> 0;
+        return (((state & mask) >>> 4) | ((state & ~mask) << 4)) >>> 0;
     }
 
     protected objectUpdateTerse(objectUpdateTerse: ImprovedTerseObjectUpdateMessage)
@@ -641,11 +743,32 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
+    getAvatar(avatarID: UUID)
+    {
+        const obj = this.objectsByUUID[avatarID.toString()];
+        if (obj !== undefined)
+        {
+            if (this.avatars[obj] !== undefined)
+            {
+                return this.avatars[obj];
+            }
+            else
+            {
+                throw new Error('Found the UUID in the region, but it doesn\'t appear to be an avatar');
+            }
+        }
+        else
+        {
+            throw new Error('Avatar does not exist in the region at the moment');
+        }
+    }
+
     deleteObject(objectID: number)
     {
         if (this.objects[objectID])
         {
-            this.objects[objectID].deleted = true;
+            const obj = this.objects[objectID];
+            obj.deleted = true;
 
             if (this.persist)
             {
@@ -653,7 +776,22 @@ export class ObjectStoreLite implements IObjectStore
                 return;
             }
 
-            // First, kill all children
+            if (obj.IsAttachment && obj.ParentID !== undefined)
+            {
+                if (this.avatars[obj.ParentID] !== undefined)
+                {
+                    this.avatars[obj.ParentID].removeAttachment(obj);
+                }
+            }
+
+            if (this.avatars[objectID] !== undefined)
+            {
+                this.clientEvents.onAvatarLeftRegion.next(this.avatars[objectID]);
+                this.avatars[objectID].leftRegion();
+                delete this.avatars[objectID];
+            }
+
+            // First, kill all children (not the people kind)
             if (this.objectsByParent[objectID])
             {
                 for (const childObjID of this.objectsByParent[objectID])
@@ -664,16 +802,15 @@ export class ObjectStoreLite implements IObjectStore
             delete this.objectsByParent[objectID];
 
             // Now delete this object
-            const objct = this.objects[objectID];
-            const uuid = objct.FullID.toString();
+            const uuid = obj.FullID.toString();
 
             if (this.objectsByUUID[uuid])
             {
                 delete this.objectsByUUID[uuid];
             }
-            if (objct.ParentID !== undefined)
+            if (obj.ParentID !== undefined)
             {
-                const parentID = objct.ParentID;
+                const parentID = obj.ParentID;
                 if (this.objectsByParent[parentID])
                 {
                     const ind = this.objectsByParent[parentID].indexOf(objectID);
@@ -683,9 +820,9 @@ export class ObjectStoreLite implements IObjectStore
                     }
                 }
             }
-            if (this.rtree && this.objects[objectID].rtreeEntry !== undefined)
+            if (this.rtree && obj.rtreeEntry !== undefined)
             {
-                this.rtree.remove(this.objects[objectID].rtreeEntry);
+                this.rtree.remove(obj.rtreeEntry);
             }
             delete this.objects[objectID];
         }
@@ -767,7 +904,7 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    private populateChildren(obj: GameObject)
+    populateChildren(obj: GameObject, resolve = false)
     {
         if (obj !== undefined)
         {
@@ -801,7 +938,7 @@ export class ObjectStoreLite implements IObjectStore
                 try
                 {
                     const parent = this.findParent(go);
-                    if (parent.PCode !== PCode.Avatar && (parent.IsAttachment === undefined || parent.IsAttachment === false) && parent.ParentID === 0)
+                    if (parent.ParentID === 0)
                     {
                         const uuid = parent.FullID.toString();
 

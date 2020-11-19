@@ -3,10 +3,15 @@ import { Quaternion } from './Quaternion';
 import { GlobalPosition } from './public/interfaces/GlobalPosition';
 import { HTTPAssets } from '../enums/HTTPAssets';
 import { Vector3 } from './Vector3';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { AssetType } from '../enums/AssetType';
-import { InventoryTypeLL } from '../enums/InventoryTypeLL';
+import { InventoryType } from '../enums/InventoryType';
+import * as zlib from 'zlib';
+import { FilterResponse } from '../enums/FilterResponse';
 import Timeout = NodeJS.Timeout;
+import * as xml2js from 'xml2js';
+import { XMLElement } from 'xmlbuilder';
+import { Logger } from './Logger';
 
 export class Utils
 {
@@ -134,6 +139,46 @@ export class Utils
         };
     }
 
+    static InventoryTypeToLLInventoryType(type: InventoryType): string
+    {
+        switch (type)
+        {
+            case InventoryType.Texture:
+                return 'texture';
+            case InventoryType.Sound:
+                return 'sound';
+            case InventoryType.CallingCard:
+                return 'callcard';
+            case InventoryType.Landmark:
+                return 'landmark';
+            case InventoryType.Object:
+                return 'object';
+            case InventoryType.Notecard:
+                return 'notecard';
+            case InventoryType.Category:
+                return 'category';
+            case InventoryType.RootCategory:
+                return 'root';
+            case InventoryType.Script:
+                return 'script';
+            case InventoryType.Snapshot:
+                return 'snapshot';
+            case InventoryType.Attachment:
+                return 'attach';
+            case InventoryType.Wearable:
+                return 'wearable';
+            case InventoryType.Animation:
+                return 'animation';
+            case InventoryType.Gesture:
+                return 'gesture';
+            case InventoryType.Mesh:
+                return 'mesh';
+            default:
+                console.error('Unknown inventory type: ' + InventoryType[type]);
+                return 'texture';
+        }
+    }
+
     static HTTPAssetTypeToAssetType(HTTPAssetType: string): AssetType
     {
         switch (HTTPAssetType)
@@ -171,38 +216,76 @@ export class Utils
         }
     }
 
-    static HTTPAssetTypeToInventoryType(HTTPAssetType: string): InventoryTypeLL
+    static AssetTypeToHTTPAssetType(assetType: AssetType): HTTPAssets
+    {
+        switch (assetType)
+        {
+            case AssetType.Texture:
+                return HTTPAssets.ASSET_TEXTURE;
+            case AssetType.Sound:
+                return HTTPAssets.ASSET_SOUND;
+            case AssetType.Animation:
+                return HTTPAssets.ASSET_ANIMATION;
+            case AssetType.Gesture:
+                return HTTPAssets.ASSET_GESTURE;
+            case AssetType.Landmark:
+                return HTTPAssets.ASSET_LANDMARK;
+            case AssetType.CallingCard:
+                return HTTPAssets.ASSET_CALLINGCARD;
+            case AssetType.Script:
+                return HTTPAssets.ASSET_SCRIPT;
+            case AssetType.Clothing:
+                return HTTPAssets.ASSET_CLOTHING;
+            case AssetType.Object:
+                return HTTPAssets.ASSET_OBJECT;
+            case AssetType.Notecard:
+                return HTTPAssets.ASSET_NOTECARD;
+            case AssetType.LSLText:
+                return HTTPAssets.ASSET_LSL_TEXT;
+            case AssetType.LSLBytecode:
+                return HTTPAssets.ASSET_LSL_BYTECODE;
+            case AssetType.Bodypart:
+                return HTTPAssets.ASSET_BODYPART;
+            case AssetType.Mesh:
+                return HTTPAssets.ASSET_MESH;
+            default:
+                return HTTPAssets.ASSET_TEXTURE;
+        }
+
+    }
+
+    static HTTPAssetTypeToInventoryType(HTTPAssetType: string): InventoryType
     {
         switch (HTTPAssetType)
         {
             case HTTPAssets.ASSET_TEXTURE:
-                return InventoryTypeLL.texture;
+                return InventoryType.Texture;
             case HTTPAssets.ASSET_SOUND:
-                return InventoryTypeLL.sound;
+                return InventoryType.Sound;
             case HTTPAssets.ASSET_ANIMATION:
-                return InventoryTypeLL.animation;
+                return InventoryType.Animation;
             case HTTPAssets.ASSET_GESTURE:
-                return InventoryTypeLL.gesture;
+                return InventoryType.Gesture;
             case HTTPAssets.ASSET_LANDMARK:
-                return InventoryTypeLL.landmark;
+                return InventoryType.Landmark;
             case HTTPAssets.ASSET_CALLINGCARD:
-                return InventoryTypeLL.callcard;
+                return InventoryType.CallingCard;
             case HTTPAssets.ASSET_SCRIPT:
-                return InventoryTypeLL.script;
+                return InventoryType.Script;
             case HTTPAssets.ASSET_CLOTHING:
-                return InventoryTypeLL.wearable;
+                return InventoryType.Wearable;
             case HTTPAssets.ASSET_OBJECT:
-                return InventoryTypeLL.object;
+                return InventoryType.Object;
             case HTTPAssets.ASSET_NOTECARD:
-                return InventoryTypeLL.notecard;
+                return InventoryType.Notecard;
             case HTTPAssets.ASSET_LSL_TEXT:
-                return InventoryTypeLL.script;
+                return InventoryType.Script;
             case HTTPAssets.ASSET_LSL_BYTECODE:
-                return InventoryTypeLL.script;
+                return InventoryType.Script;
             case HTTPAssets.ASSET_BODYPART:
-                return InventoryTypeLL.wearable;
+                return InventoryType.Wearable;
             case HTTPAssets.ASSET_MESH:
-                return InventoryTypeLL.mesh;
+                return InventoryType.Mesh;
             default:
                 return 0;
         }
@@ -290,13 +373,13 @@ export class Utils
 
     static Base64EncodeString(str: string): string
     {
-        const buff = new Buffer(str, 'utf8');
+        const buff = Buffer.from(str, 'utf8');
         return buff.toString('base64');
     }
 
     static Base64DecodeString(str: string): string
     {
-        const buff = new Buffer(str, 'base64');
+        const buff = Buffer.from(str, 'base64');
         return buff.toString('utf8');
     }
 
@@ -381,6 +464,52 @@ export class Utils
     static TERotationShort(rotation: number)
     {
         return Math.floor(((Utils.IEEERemainder(rotation, Utils.TWO_PI) / Utils.TWO_PI) * 32768.0) + 0.5);
+    }
+
+    static OctetsToUInt32BE(octets: number[])
+    {
+        const buf = Buffer.allocUnsafe(4);
+        let pos = 0;
+        for (let x = octets.length - 4; x < octets.length; x++)
+        {
+            if (x >= 0)
+            {
+                buf.writeUInt8(octets[x], pos++);
+            }
+            else
+            {
+                pos++;
+            }
+        }
+        return buf.readUInt32BE(0);
+    }
+
+    static OctetsToUInt32LE(octets: number[])
+    {
+        const buf = Buffer.allocUnsafe(4);
+        let pos = 0;
+        for (let x = octets.length - 4; x < octets.length; x++)
+        {
+            if (x >= 0)
+            {
+                buf.writeUInt8(octets[x], pos++);
+            }
+            else
+            {
+                pos++;
+            }
+        }
+        return buf.readUInt32LE(0);
+    }
+
+    static numberToFixedHex(num: number)
+    {
+        let str = num.toString(16);
+        while (str.length < 8)
+        {
+            str = '0' + str;
+        }
+        return str;
     }
 
     static TEGlowByte(glow: number)
@@ -535,6 +664,7 @@ export class Utils
         {
             const originalConcurrency = concurrency;
             const promiseQueue: (() => Promise<T>)[] = [];
+            Logger.Info('PromiseConcurrent: ' + promiseQueue.length + ' in queue. Concurrency: ' + concurrency);
             for (const promise of promises)
             {
                 promiseQueue.push(promise);
@@ -587,13 +717,16 @@ export class Utils
                     concurrency++;
                     slotAvailable.next();
                 });
-                timeo = setTimeout(() =>
+                if (timeout > 0)
                 {
-                    timedOut = true;
-                    errors.push(new Error('Promise timed out'));
-                    concurrency++;
-                    slotAvailable.next();
-                }, timeout);
+                    timeo = setTimeout(() =>
+                    {
+                        timedOut = true;
+                        errors.push(new Error('Promise timed out'));
+                        concurrency++;
+                        slotAvailable.next();
+                    }, timeout);
+                }
             }
 
             while (promiseQueue.length > 0)
@@ -616,6 +749,197 @@ export class Utils
                 await waitForAvailable();
             }
             resolve({results: results, errors: errors});
+        });
+    }
+
+    static waitFor(timeout: number): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            setTimeout(() =>
+            {
+                resolve();
+            }, timeout);
+        })
+    }
+
+    static getFromXMLJS(obj: any, param: string): any
+    {
+        if (obj[param] === undefined)
+        {
+            return undefined;
+        }
+        let retParam;
+        if (Array.isArray(obj[param]))
+        {
+            retParam = obj[param][0];
+        }
+        else
+        {
+            retParam = obj[param];
+        }
+        if (typeof retParam === 'string')
+        {
+            if (retParam.toLowerCase() === 'false')
+            {
+                return false;
+            }
+            if (retParam.toLowerCase() === 'true')
+            {
+                return true;
+            }
+            const numVar = parseInt(retParam, 10);
+            if (numVar >= Number.MIN_SAFE_INTEGER && numVar <= Number.MAX_SAFE_INTEGER && String(numVar) === retParam)
+            {
+                return numVar
+            }
+        }
+        return retParam;
+    }
+    static inflate(buf: Buffer): Promise<Buffer>
+    {
+        return new Promise<Buffer>((resolve, reject) =>
+        {
+            zlib.inflate(buf, (error: (Error| null), result: Buffer) =>
+            {
+                if (error)
+                {
+                    reject(error)
+                }
+                else
+                {
+                    resolve(result);
+                }
+            })
+        });
+    }
+    static deflate(buf: Buffer): Promise<Buffer>
+    {
+        return new Promise<Buffer>((resolve, reject) =>
+        {
+            zlib.deflate(buf, { level: 9}, (error: (Error| null), result: Buffer) =>
+            {
+                if (error)
+                {
+                    reject(error)
+                }
+                else
+                {
+                    resolve(result);
+                }
+            })
+        });
+    }
+    static waitOrTimeOut<T>(subject: Subject<T>, timeout?: number, callback?: (msg: T) => FilterResponse): Promise<T>
+    {
+        return new Promise<T>((resolve, reject) =>
+        {
+            let timer: Timeout | undefined = undefined;
+            let subs: Subscription | undefined = undefined;
+            subs = subject.subscribe((result: T) =>
+            {
+                if (callback !== undefined)
+                {
+                    const accepted = callback(result);
+                    if (accepted !== FilterResponse.Finish)
+                    {
+                        return;
+                    }
+                }
+                if (timer !== undefined)
+                {
+                    clearTimeout(timer);
+                    timer = undefined;
+                }
+                if (subs !== undefined)
+                {
+                    subs.unsubscribe();
+                    subs = undefined;
+                }
+                resolve(result);
+            });
+            if (timeout !== undefined)
+            {
+                timer = setTimeout(() =>
+                {
+                    if (timer !== undefined)
+                    {
+                        clearTimeout(timer);
+                        timer = undefined;
+                    }
+                    if (subs !== undefined)
+                    {
+                        subs.unsubscribe();
+                        subs = undefined;
+                    }
+                    reject(new Error('Timeout'));
+                }, timeout);
+            }
+        })
+    }
+
+    static parseLine(line: string): {
+        'key': string | null,
+        'value': string
+    }
+    {
+        line = line.trim().replace(/[\t]/gu, ' ').trim();
+        while (line.indexOf('\u0020\u0020') > 0)
+        {
+            line = line.replace(/\u0020\u0020/gu, '\u0020');
+        }
+        let key: string | null = null;
+        let value = '';
+        if (line.length > 2)
+        {
+            const sep = line.indexOf(' ');
+            if (sep > 0)
+            {
+                key = line.substr(0, sep);
+                value = line.substr(sep + 1);
+            }
+        }
+        else if (line.length === 1)
+        {
+            key = line;
+        }
+        else if (line.length > 0)
+        {
+            return {
+                'key': line,
+                'value': ''
+            }
+        }
+        if (key !== null)
+        {
+            key = key.trim();
+        }
+        return {
+            'key': key,
+            'value': value
+        }
+    }
+
+    static sanitizePath(input: string)
+    {
+        return input.replace(/[^a-z0-9]/gi, '').replace(/ /gi, '_');
+    }
+
+    static parseXML(input: string): Promise<any>
+    {
+        return new Promise<any>((resolve, reject) =>
+        {
+            xml2js.parseString(input, (err: Error, result: any) =>
+            {
+                if (err)
+                {
+                    reject(err);
+                }
+                else
+                {
+                    resolve(result);
+                }
+            });
         });
     }
 }

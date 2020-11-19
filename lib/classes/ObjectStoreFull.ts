@@ -173,6 +173,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
             this.objects[localID].IsAttachment = this.objects[localID].NameValue['AttachItemID'] !== undefined;
+            if (obj.IsAttachment && obj.State !== undefined)
+            {
+                this.objects[localID].attachmentPoint = this.decodeAttachPoint(obj.State);
+            }
 
             this.objectsByUUID[objData.FullID.toString()] = localID;
             if (!this.objectsByParent[parentID])
@@ -194,12 +198,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 this.insertIntoRtree(obj);
                 if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects[objData.ParentID])
                 {
-                    this.requestMissingObject(objData.ParentID);
+                    this.requestMissingObject(objData.ParentID).then(() => {}).catch(() => {});
                 }
-                if (obj.ParentID === 0)
-                {
-                    this.notifyObjectUpdate(newObject, obj);
-                }
+                this.notifyObjectUpdate(newObject, obj);
+                obj.onTextureUpdate.next();
             }
         }
     }
@@ -415,13 +417,15 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 }
 
                 o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
+                if (o.IsAttachment && o.State !== undefined)
+                {
+                    this.objects[localID].attachmentPoint = this.decodeAttachPoint(o.State);
+                }
 
                 this.insertIntoRtree(o);
 
-                if (o.ParentID === 0)
-                {
-                    this.notifyObjectUpdate(newObj, o);
-                }
+                this.notifyObjectUpdate(newObj, o);
+                o.onTextureUpdate.next();
             }
         }
     }
@@ -429,6 +433,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
     protected objectUpdateTerse(objectUpdateTerse: ImprovedTerseObjectUpdateMessage)
     {
         const dilation = objectUpdateTerse.RegionData.TimeDilation / 65535.0;
+        this.clientEvents.onRegionTimeDilation.next(dilation);
 
         for (let i = 0; i < objectUpdateTerse.ObjectData.length; i++)
         {
@@ -479,8 +484,11 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     {
                         // No idea why the first four bytes are skipped here.
                         this.objects[localID].TextureEntry = TextureEntry.from(objectData.TextureEntry.slice(4));
+                        this.objects[localID].onTextureUpdate.next();
                     }
                     this.insertIntoRtree(this.objects[localID]);
+                    this.notifyTerseUpdate(this.objects[localID]);
+
                 }
                 else
                 {

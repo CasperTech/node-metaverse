@@ -2,6 +2,7 @@ import { Vector3 } from '../Vector3';
 import { UUID } from '../UUID';
 import * as builder from 'xmlbuilder';
 import { ParcelFlags } from '../../enums/ParcelFlags';
+import { Region } from '../Region';
 
 export class Parcel
 {
@@ -72,6 +73,28 @@ export class Parcel
     UserLookAt: Vector3;
 
     RegionAllowAccessOverride: boolean;
+
+    constructor(private region: Region)
+    {
+
+    }
+
+    canIRez(): boolean
+    {
+        if (this.ParcelFlags & ParcelFlags.CreateObjects)
+        {
+            return true;
+        }
+        if (this.region.agent.activeGroupID.equals(this.OwnerID) && this.ParcelFlags & ParcelFlags.CreateGroupObjects)
+        {
+            return true;
+        }
+        if (this.OwnerID.equals(this.region.agent.agentID))
+        {
+            return true;
+        }
+        return false;
+    }
 
     exportXML(): string
     {

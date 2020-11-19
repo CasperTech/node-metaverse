@@ -95,12 +95,20 @@ import { ExtraParams } from './classes/public/ExtraParams';
 import { LLMesh } from './classes/public/LLMesh';
 import { FolderType } from './enums/FolderType';
 import { InventoryItem } from './classes/InventoryItem';
+import { InventoryType } from './enums/InventoryType';
+import { TarWriter } from './classes/TarWriter';
+import { TarReader } from './classes/TarReader';
+import { LLGesture } from './classes/LLGesture';
+import { LLGestureAnimationStep } from './classes/LLGestureAnimationStep';
+import { LLGestureSoundStep } from './classes/LLGestureSoundStep';
+import { LLGestureWaitStep } from './classes/LLGestureWaitStep';
+import { LLGestureChatStep } from './classes/LLGestureChatStep';
+import { LLGestureStepType } from './enums/LLGestureStepType';
+import { LLLindenText } from './classes/LLLindenText';
 
 export {
     Bot,
     LoginParameters,
-    AssetType,
-    HTTPAssets,
     ClientEvents,
     BVH,
     ChatSourceType,
@@ -110,9 +118,14 @@ export {
     Utils,
     TextureEntry,
     LLWearable,
+    LLLindenText,
+    LLGesture,
+    LLGestureAnimationStep,
+    LLGestureSoundStep,
+    LLGestureChatStep,
+    LLGestureWaitStep,
     ParticleSystem,
     ExtraParams,
-    FolderType,
 
     // Flags
     AgentFlags,
@@ -133,22 +146,30 @@ export {
     RightsFlags,
     ParticleDataFlags,
     TextureFlags,
+    PrimFlags,
+    ParcelFlags,
+    SimAccessFlags,
+    TextureAnimFlags,
+
+    // Enums
+    InventoryType,
+    AssetType,
+    HTTPAssets,
+    FolderType,
+    TransferStatus,
     SourcePattern,
     BlendFunc,
     PCode,
-    PrimFlags,
     Bumpiness,
     HoleType,
     LayerType,
     MappingType,
-    ParcelFlags,
     PhysicsShapeType,
     ProfileShape,
     SculptType,
     Shininess,
-    SimAccessFlags,
-    TextureAnimFlags,
-    TransferStatus,
+    LLGestureStepType,
+
 
     // Events
     ChatEvent,
@@ -195,6 +216,8 @@ export {
     MeshData,
     LLMesh,
     InventoryItem,
+    TarReader,
+    TarWriter,
 
     // Public Interfaces
     GlobalPosition,

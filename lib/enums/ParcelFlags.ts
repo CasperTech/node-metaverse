@@ -32,5 +32,5 @@ export enum ParcelFlags
     AllowGroupObjectEntry = 1 << 28,
     AllowVoiceChat = 1 << 29,
     UseEstateVoiceChan = 1 << 30,
-    DenyAgeUnverified = 1 << 31
-}
+    DenyAgeUnverified = 2147483648
+};

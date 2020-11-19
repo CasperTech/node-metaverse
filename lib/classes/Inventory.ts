@@ -77,6 +77,27 @@ export class Inventory
         }
         return this.getRootFolderMain().folderID;
     }
+
+    findFolder(folderID: UUID): InventoryFolder | null
+    {
+        for (const id of Object.keys(this.main.skeleton))
+        {
+            if (folderID.equals(id))
+            {
+                return this.main.skeleton[id];
+            }
+            else
+            {
+                const result = this.main.skeleton[id].findFolder(folderID);
+                if (result !== null)
+                {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
     async fetchInventoryItem(item: UUID): Promise<InventoryItem | null>
     {
         const params = {
@@ -92,7 +113,12 @@ export class Inventory
         if (response['items'].length > 0)
         {
             const receivedItem = response['items'][0];
-            const invItem = new InventoryItem();
+            let folder = await this.findFolder(new UUID(receivedItem['parent_id'].toString()));
+            if (folder === null)
+            {
+                folder = this.getRootFolderMain();
+            }
+            const invItem = new InventoryItem(folder, this.agent);
             invItem.assetID = new UUID(receivedItem['asset_id'].toString());
             invItem.inventoryType = parseInt(receivedItem['inv_type'], 10);
             invItem.type = parseInt(receivedItem['type'], 10);
@@ -125,10 +151,6 @@ export class Inventory
             if (this.main.skeleton[invItem.parentID.toString()])
             {
                 await this.main.skeleton[invItem.parentID.toString()].addItem(invItem);
-            }
-            else
-            {
-                throw new Error('FolderID of ' + invItem.parentID.toString() + ' not found!');
             }
             return invItem;
         }

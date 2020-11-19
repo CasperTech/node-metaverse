@@ -153,6 +153,10 @@ export class Caps
     {
         return new Promise<Buffer>((resolve, reject) =>
         {
+            if (type === HTTPAssets.ASSET_LSL_TEXT || type === HTTPAssets.ASSET_NOTECARD)
+            {
+                throw new Error('Invalid Syntax');
+            }
             this.getCapability('ViewerAsset').then((capURL) =>
             {
                 const assetURL = capURL + '/?' + type + '_id=' + uuid.toString();
@@ -206,6 +210,33 @@ export class Caps
         });
     }
 
+    requestPut(capURL: string, data: string | Buffer, contentType: string): Promise<ICapResponse>
+    {
+        return new Promise<ICapResponse>((resolve, reject) =>
+        {
+            request({
+                'headers': {
+                    'Content-Length': data.length,
+                    'Content-Type': contentType
+                },
+                'uri': capURL,
+                'body': data,
+                'rejectUnauthorized': false,
+                'method': 'PUT'
+            }, (err, res, body) =>
+            {
+                if (err)
+                {
+                    reject(err);
+                }
+                else
+                {
+                    resolve({status: res.statusCode, body: body});
+                }
+            });
+        });
+    }
+
     requestGet(requestURL: string): Promise<ICapResponse>
     {
         return new Promise<ICapResponse>((resolve, reject) =>
@@ -245,6 +276,12 @@ export class Caps
                 });
             }
         });
+    }
+
+    async isCapAvailable(capability: string): Promise<boolean>
+    {
+        await this.waitForSeedCapability();
+        return (this.capabilities[capability] !== undefined);
     }
 
     getCapability(capability: string): Promise<string>
@@ -342,7 +379,47 @@ export class Caps
         return new Promise<any>(async (resolve, reject) =>
         {
             const xml = LLSD.LLSD.formatXML(data);
-            this.request(capURL, xml, 'application/llsd+xml').then((resp: ICapResponse) =>
+            this.request(capURL, xml, 'application/llsd+xml').then(async (resp: ICapResponse) =>
+            {
+                let result: any = null;
+                try
+                {
+                    result = LLSD.LLSD.parseXML(resp.body);
+                    resolve(result);
+                }
+                catch (err)
+                {
+                    if (resp.status === 201)
+                    {
+                        resolve({});
+                    }
+                    else if (resp.status === 403)
+                    {
+                        reject(new Error('Access Denied'));
+                    }
+                    else if (resp.status === 404)
+                    {
+                        reject(new Error('Not found'));
+                    }
+                    else
+                    {
+                        reject(resp.body);
+                    }
+                }
+            }).catch((err) =>
+            {
+                console.error(err);
+                reject(err);
+            });
+        });
+    }
+
+    capsPerformXMLPut(capURL: string, data: any): Promise<any>
+    {
+        return new Promise<any>(async (resolve, reject) =>
+        {
+            const xml = LLSD.LLSD.formatXML(data);
+            this.requestPut(capURL, xml, 'application/llsd+xml').then((resp: ICapResponse) =>
             {
                 let result: any = null;
                 try
@@ -475,6 +552,44 @@ export class Caps
         try
         {
             return await this.capsPerformXMLPost(capURL, data);
+        }
+        catch (error)
+        {
+            console.log('Error with cap ' + capName);
+            console.log(error);
+            throw error;
+        }
+    }
+
+    async capsPutXML(capability: string | [string, {[key: string]: string}], data: any): Promise<any>
+    {
+        let capName = '';
+        let queryParams: {[key: string]: string} = {};
+        if (typeof capability === 'string')
+        {
+            capName = capability;
+        }
+        else
+        {
+            capName = capability[0];
+            queryParams = capability[1];
+        }
+
+        await this.waitForCapTimeout(capName);
+
+        let capURL = await this.getCapability(capName);
+        if (Object.keys(queryParams).length > 0)
+        {
+            const parsedURL = url.parse(capURL, true);
+            for (const key of Object.keys(queryParams))
+            {
+                parsedURL.query[key] = queryParams[key];
+            }
+            capURL = url.format(parsedURL);
+        }
+        try
+        {
+            return await this.capsPerformXMLPut(capURL, data);
         }
         catch (error)
         {
