@@ -201,7 +201,7 @@ export class Agent
             const animMsg = packet.message as AvatarAnimationMessage;
             if (animMsg.Sender.ID.toString() === this.agentID.toString())
             {
-                animMsg.AnimationList.forEach((anim) =>
+                for (const anim of animMsg.AnimationList)
                 {
                     const a = anim.AnimID.toString();
                     if (a === BuiltInAnimations.STANDUP ||
@@ -216,7 +216,7 @@ export class Agent
                         this.sendAgentUpdate();
                         this.controlFlags = 0;
                     }
-                });
+                }
             }
         }
     }
@@ -237,7 +237,7 @@ export class Agent
                     serialNumber: wearables.AgentData.SerialNum,
                     attachments: []
                 };
-                wearables.WearableData.forEach((wearable) =>
+                for (const wearable of wearables.WearableData)
                 {
                     if (this.wearables && this.wearables.attachments)
                     {
@@ -247,10 +247,10 @@ export class Agent
                             wearableType: wearable.WearableType
                         });
                     }
-                });
+                }
             }
 
-            Object.keys(this.inventory.main.skeleton).forEach((uuid) =>
+            for (const uuid of Object.keys(this.inventory.main.skeleton))
             {
                 const folder = this.inventory.main.skeleton[uuid];
                 if (folder.typeDefault === FolderType.CurrentOutfit)
@@ -273,12 +273,12 @@ export class Agent
                     {
                         const currentOutfitFolderContents = folderContents['folders'][0]['items'];
                         const wornObjects = this.currentRegion.objects.getObjectsByParent(this.localID);
-                        currentOutfitFolderContents.forEach((item: any) =>
+                        for (const item of currentOutfitFolderContents)
                         {
                             if (item.type === 6)
                             {
                                 let found = false;
-                                wornObjects.forEach((obj: GameObject) =>
+                                for (const obj of wornObjects)
                                 {
                                     if (obj.hasNameValueEntry('AttachItemID'))
                                     {
@@ -287,7 +287,7 @@ export class Agent
                                             found = true;
                                         }
                                     }
-                                });
+                                }
 
                                 if (!found)
                                 {
@@ -310,11 +310,11 @@ export class Agent
                                     circuit.sendMessage(rsafi, PacketFlags.Reliable);
                                 }
                             }
-                        });
+                        }
                     });
 
                 }
-            });
+            }
 
             this.appearanceSet = true;
             this.appearanceSetEvent.next();

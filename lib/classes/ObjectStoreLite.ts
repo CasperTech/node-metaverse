@@ -303,7 +303,7 @@ export class ObjectStoreLite implements IObjectStore
 
     protected objectUpdate(objectUpdate: ObjectUpdateMessage)
     {
-        objectUpdate.ObjectData.forEach((objData) =>
+        for (const objData of objectUpdate.ObjectData)
         {
             const localID = objData.ID;
             const parentID = objData.ParentID;
@@ -350,13 +350,13 @@ export class ObjectStoreLite implements IObjectStore
 
                 if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
                 {
-                    Object.keys(this.objectsByParent).forEach((objParentID: string) =>
+                    for (const objParentID of Object.keys(this.objectsByParent))
                     {
                         const parent = parseInt(objParentID, 10);
                         if (parent !== this.agent.localID)
                         {
                             let foundAvatars = false;
-                            this.objectsByParent[parent].forEach((objID) =>
+                            for (const objID of this.objectsByParent[parent])
                             {
                                 if (this.objects[objID])
                                 {
@@ -366,7 +366,7 @@ export class ObjectStoreLite implements IObjectStore
                                         foundAvatars = true;
                                     }
                                 }
-                            });
+                            }
                             if (this.objects[parent])
                             {
                                 const o = this.objects[parent];
@@ -380,7 +380,7 @@ export class ObjectStoreLite implements IObjectStore
                                 this.deleteObject(parent);
                             }
                         }
-                    });
+                    }
                 }
             }
 
@@ -413,7 +413,7 @@ export class ObjectStoreLite implements IObjectStore
             {
                 this.requestMissingObject(objData.ParentID);
             }
-        });
+        }
     }
 
     protected notifyObjectUpdate(newObject: boolean, obj: GameObject)
@@ -455,13 +455,13 @@ export class ObjectStoreLite implements IObjectStore
             SessionID: this.circuit.sessionID
         };
         rmo.ObjectData = [];
-        objectUpdateCached.ObjectData.forEach((obj) =>
+        for (const obj of objectUpdateCached.ObjectData)
         {
             rmo.ObjectData.push({
                 CacheMissType: 0,
                 ID: obj.ID
             });
-        });
+        }
         this.circuit.sendMessage(rmo, 0);
     }
 
@@ -618,14 +618,14 @@ export class ObjectStoreLite implements IObjectStore
 
     protected killObject(killObj: KillObjectMessage)
     {
-        killObj.ObjectData.forEach((obj) =>
+        for (const obj of killObj.ObjectData)
         {
             const objectID = obj.ID;
             if (this.objects[objectID])
             {
                 this.deleteObject(objectID);
             }
-        });
+        }
     }
 
     setPersist(persist: boolean): void
@@ -698,13 +698,13 @@ export class ObjectStoreLite implements IObjectStore
             return [];
         }
         const result: GameObject[] = [];
-        list.forEach((localID) =>
+        for (const localID of list)
         {
             if (this.objects[localID])
             {
                 result.push(this.objects[localID]);
             }
-        });
+        }
         return result;
     }
 
@@ -712,7 +712,7 @@ export class ObjectStoreLite implements IObjectStore
     {
         const nv: { [key: string]: NameValue } = {};
         const lines = str.split('\n');
-        lines.forEach((line) =>
+        for (const line of lines)
         {
             if (line.length > 0)
             {
@@ -735,7 +735,7 @@ export class ObjectStoreLite implements IObjectStore
                     nv[kv[0]] = namevalue;
                 }
             }
-        });
+        }
         return nv;
     }
 

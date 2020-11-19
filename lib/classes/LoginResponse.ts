@@ -5,8 +5,8 @@ import { Vector3 } from './Vector3';
 import * as Long from 'long';
 import { ClientEvents } from './ClientEvents';
 import { InventoryFolder } from './InventoryFolder';
-import { LoginFlags } from '../enums/LoginFlags';
-import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { LoginFlags } from '..';
+import { BotOptionFlags } from '..';
 
 export class LoginResponse
 {
@@ -119,13 +119,13 @@ export class LoginResponse
             this.agent.agentID = new UUID(json['agent_id']);
         }
 
-        Object.keys(json).forEach((key: string) =>
+        for (const key of Object.keys(json))
         {
             const val: any = json[key];
             switch (key)
             {
                 case 'inventory-skeleton':
-                    val.forEach((item: any) =>
+                    for (const item of val)
                     {
                         const folder = new InventoryFolder(this.agent.inventory.main, this.agent);
                         folder.typeDefault = parseInt(item['type_default'], 10);
@@ -134,10 +134,10 @@ export class LoginResponse
                         folder.folderID = new UUID(item['folder_id']);
                         folder.parentID = new UUID(item['parent_id']);
                         this.agent.inventory.main.skeleton[folder.folderID.toString()] = folder;
-                    });
+                    }
                     break;
                 case 'inventory-skel-lib':
-                    val.forEach((item: any) =>
+                    for (const item of val)
                     {
                         const folder = new InventoryFolder(this.agent.inventory.library, this.agent);
                         folder.typeDefault = parseInt(item['type_default'], 10);
@@ -146,7 +146,7 @@ export class LoginResponse
                         folder.folderID = new UUID(item['folder_id']);
                         folder.parentID = new UUID(item['parent_id']);
                         this.agent.inventory.library.skeleton[folder.folderID.toString()] = folder;
-                    });
+                    }
                     break;
                 case 'inventory-root':
                 {
@@ -194,7 +194,7 @@ export class LoginResponse
                     this.agent.AOTransition = (val !== 0);
                     break;
                 case 'global-textures':
-                    val.forEach((obj: any) =>
+                    for (const obj of val)
                     {
                         if (obj['cloud_texture_id'])
                         {
@@ -208,14 +208,14 @@ export class LoginResponse
                         {
                             this.textures.moonTextureID = obj['moon_texture_id'];
                         }
-                    });
+                    }
                     break;
                 case 'search_token':
                     this.searchToken = String(val);
                     break;
                 case 'login-flags':
                     let flags: LoginFlags = 0;
-                    val.forEach((obj: any) =>
+                    for (const obj of val)
                     {
                         if (obj['ever_logged_in'] === 'Y')
                         {
@@ -233,18 +233,18 @@ export class LoginResponse
                         {
                             flags = flags | LoginFlags.gendered;
                         }
-                    });
+                    }
                     this.loginFlags = flags;
                     break;
                 case 'buddy-list':
-                    val.forEach((obj: any) =>
+                    for (const obj of val)
                     {
                         this.agent.buddyList.push({
                             buddyRightsGiven: obj['buddy_rights_given'] !== 0,
                             buddyID: new UUID(obj['buddy_id']),
                             buddyRightsHas: obj['buddy_rights_has'] !== 0,
                         });
-                    });
+                    }
                     break;
                 case 'sim_port':
                     this.region.circuit.port = parseInt(val, 10);
@@ -256,13 +256,13 @@ export class LoginResponse
                     this.agent.agentAppearanceService = val;
                     break;
                 case 'ui-config':
-                    val.forEach((item: any) =>
+                    for (const item of val)
                     {
                         if (item['allow_first_life'] === 'Y')
                         {
                             this.agent.uiFlags.allowFirstLife = true;
                         }
-                    });
+                    }
                     break;
                 case 'look_at':
                     try
@@ -287,13 +287,13 @@ export class LoginResponse
                     this.agent.agentFlags = parseInt(val, 10);
                     break;
                 case 'event_categories':
-                    val.forEach((item: any) =>
+                    for (const item of val)
                     {
                         this.events.categories.push({
                             'categoryID': parseInt(item['category_id'], 10),
                             'categoryName': String(item['category_name'])
                         });
-                    });
+                    }
                     break;
                 case 'start_location':
                     this.agent.startLocation = String(val);
@@ -311,13 +311,13 @@ export class LoginResponse
                     this.agent.home = LoginResponse.parseHome(val);
                     break;
                 case 'classified_categories':
-                    val.forEach((item: any) =>
+                    for (const item of val)
                     {
                         this.classifieds.categories.push({
                             'categoryID': parseInt(item['category_id'], 10),
                             'categoryName': String(item['category_name'])
                         });
-                    });
+                    }
                     break;
                 case 'snapshot_config_url':
                     this.agent.snapshotConfigURL = String(val);
@@ -335,13 +335,13 @@ export class LoginResponse
                     this.loginMessage = String(val);
                     break;
                 case 'gestures':
-                    val.forEach((item: any) =>
+                    for (const item of val)
                     {
                         this.agent.gestures.push({
                             'assetID': new UUID(item['asset_id']),
                             'itemID': new UUID(item['item_id'])
                         });
-                    });
+                    }
                     break;
                 case 'udp_blacklist':
                     const list = String(val).split(',');
@@ -356,9 +356,8 @@ export class LoginResponse
                 case 'first_name':
                     this.agent.firstName = String(val).replace(/"/g, '');
                     break;
-
             }
-        });
+        }
         this.agent.setCurrentRegion(this.region);
     }
 }

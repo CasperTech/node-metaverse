@@ -46,14 +46,14 @@ export class GridCommands extends CommandsBase
             circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 10000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
             {
                 let found = false;
-                filterMsg.Data.forEach((region) =>
+                for (const region of filterMsg.Data)
                 {
                     const name = Utils.BufferToStringSimple(region.Name);
                     if (name.trim().toLowerCase() === regionName.trim().toLowerCase())
                     {
                         found = true;
                     }
-                });
+                }
                 if (found)
                 {
                     return FilterResponse.Finish;
@@ -61,7 +61,7 @@ export class GridCommands extends CommandsBase
                 return FilterResponse.NoMatch;
             }).then((responseMsg: MapBlockReplyMessage) =>
             {
-                responseMsg.Data.forEach((region) =>
+                for (const region of responseMsg.Data)
                 {
                     const name = Utils.BufferToStringSimple(region.Name);
                     if (name.trim().toLowerCase() === regionName.trim().toLowerCase() && !(region.X === 0 && region.Y === 0))
@@ -80,7 +80,7 @@ export class GridCommands extends CommandsBase
                         };
                         resolve(reply);
                     }
-                });
+                }
             }).catch((err) =>
             {
                 reject(err);
@@ -111,13 +111,13 @@ export class GridCommands extends CommandsBase
             circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 10000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
             {
                 let found = false;
-                filterMsg.Data.forEach((data) =>
+                for (const data of filterMsg.Data)
                 {
                     if (data.X === gridX && data.Y === gridY)
                     {
                         found = true;
                     }
-                });
+                }
                 if (found)
                 {
                     return FilterResponse.Finish;
@@ -125,7 +125,7 @@ export class GridCommands extends CommandsBase
                 return FilterResponse.NoMatch;
             }).then((responseMsg: MapBlockReplyMessage) =>
             {
-                responseMsg.Data.forEach((data) =>
+                for (const data of responseMsg.Data)
                 {
                     if (data.X === gridX && data.Y === gridY)
                     {
@@ -134,7 +134,7 @@ export class GridCommands extends CommandsBase
                         response.block.accessFlags = data.Access;
                         response.block.mapImage = data.MapImageID;
                     }
-                });
+                }
 
                 //  Now get the region handle
                 const regionHandle: Long = Utils.RegionCoordinatesToHandle(gridX * 256, gridY * 256).regionHandle;
@@ -160,14 +160,14 @@ export class GridCommands extends CommandsBase
                 circuit.waitForMessage<MapItemReplyMessage>(Message.MapItemReply, 10000, (filterMsg: MapItemReplyMessage): FilterResponse =>
                 {
                     let found = false;
-                    filterMsg.Data.forEach((data) =>
+                    for (const data of filterMsg.Data)
                     {
                         // Check if avatar is within our bounds
                         if (data.X >= minX && data.X <= maxX && data.Y >= minY && data.Y <= maxY)
                         {
                             found = true;
                         }
-                    });
+                    }
                     if (found)
                     {
                         return FilterResponse.Finish;
@@ -178,7 +178,7 @@ export class GridCommands extends CommandsBase
                     }
                 }).then((responseMsg2: MapItemReplyMessage) =>
                 {
-                    responseMsg2.Data.forEach((data) =>
+                    for (const data of responseMsg2.Data)
                     {
                         for (let index = 0; index <= data.Extra; index++) {
                             response.avatars.push(new Vector2([
@@ -186,7 +186,7 @@ export class GridCommands extends CommandsBase
                                 data.Y
                             ]));
                         }
-                    });
+                    }
                     resolve(response);
                 }).catch((err) =>
                 {
@@ -224,7 +224,7 @@ export class GridCommands extends CommandsBase
             circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 30000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
             {
                 let found = false;
-                filterMsg.Data.forEach((data) =>
+                for (const data of filterMsg.Data)
                 {
                     if (data.X >= minX && data.X <= maxX && data.Y >= minY && data.Y <= maxY)
                     {
@@ -239,7 +239,7 @@ export class GridCommands extends CommandsBase
                         mapBlock.regionFlags = data.RegionFlags;
                         response.regions.push(mapBlock);
                     }
-                });
+                }
                 if (found)
                 {
                     return FilterResponse.Match;
@@ -299,7 +299,7 @@ export class GridCommands extends CommandsBase
             {
                 let foundKey: UUID | undefined;
                 let foundName: string | undefined;
-                apr.Data.forEach((dataBlock) =>
+                for (const dataBlock of apr.Data)
                 {
                     const resultName = (Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' +
                         Utils.BufferToStringSimple(dataBlock.LastName));
@@ -308,7 +308,7 @@ export class GridCommands extends CommandsBase
                         foundKey = dataBlock.AvatarID;
                         foundName = resultName;
                     }
-                });
+                }
 
                 if (foundKey !== undefined && foundName !== undefined)
                 {
@@ -364,7 +364,7 @@ export class GridCommands extends CommandsBase
             }).then((apr: AvatarPickerReplyMessage) =>
             {
                 let found: UUID | null = null;
-                apr.Data.forEach((dataBlock) =>
+                for (const dataBlock of apr.Data)
                 {
                     const resultName = (Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' +
                         Utils.BufferToStringSimple(dataBlock.LastName)).toLowerCase();
@@ -372,7 +372,7 @@ export class GridCommands extends CommandsBase
                     {
                         found = dataBlock.AvatarID;
                     }
-                });
+                }
 
                 if (found !== null)
                 {
