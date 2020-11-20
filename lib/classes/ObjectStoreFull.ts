@@ -142,7 +142,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                         if (parent !== this.agent.localID)
                         {
                             let foundAvatars = false;
-                            for(const objID of this.objectsByParent[parent])
+                            for (const objID of this.objectsByParent[parent])
                             {
                                 if (this.objects[objID])
                                 {
@@ -198,7 +198,11 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 this.insertIntoRtree(obj);
                 if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects[objData.ParentID])
                 {
-                    this.requestMissingObject(objData.ParentID).then(() => {}).catch(() => {});
+                    this.requestMissingObject(objData.ParentID).then(() =>
+                    {
+                    }).catch(() =>
+                    {
+                    });
                 }
                 this.notifyObjectUpdate(newObject, obj);
                 obj.onTextureUpdate.next();

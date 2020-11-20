@@ -632,7 +632,8 @@ export class RegionCommands extends CommandsBase
             try
             {
                 Logger.Info('Setting texture entry');
-                await object.setTextureEntry(obj.TextureEntry).then(() => {}).catch((err) => {
+                await object.setTextureEntry(obj.TextureEntry).then(() => {}).catch((err) =>
+                {
                     console.error(err);
                 });
             }
