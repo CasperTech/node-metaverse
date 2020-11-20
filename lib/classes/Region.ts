@@ -1006,6 +1006,10 @@ export class Region
 
     activateCaps(seedURL: string)
     {
+        if (this.caps !== undefined)
+        {
+            this.caps.shutdown();
+        }
         this.caps = new Caps(this.agent, this, seedURL, this.clientEvents);
     }
     async handshake(handshake: RegionHandshakeMessage)
