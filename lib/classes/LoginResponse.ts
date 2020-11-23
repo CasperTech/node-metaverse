@@ -5,8 +5,8 @@ import { Vector3 } from './Vector3';
 import * as Long from 'long';
 import { ClientEvents } from './ClientEvents';
 import { InventoryFolder } from './InventoryFolder';
-import { LoginFlags } from '..';
-import { BotOptionFlags } from '..';
+import { BotOptionFlags, LoginFlags } from '..';
+import { InventoryLibrary } from '../enums/InventoryLibrary';
 
 export class LoginResponse
 {
@@ -127,7 +127,7 @@ export class LoginResponse
                 case 'inventory-skeleton':
                     for (const item of val)
                     {
-                        const folder = new InventoryFolder(this.agent.inventory.main, this.agent);
+                        const folder = new InventoryFolder(InventoryLibrary.Main, this.agent.inventory.main, this.agent);
                         folder.typeDefault = parseInt(item['type_default'], 10);
                         folder.version = parseInt(item['version'], 10);
                         folder.name = String(item['name']);
@@ -139,7 +139,7 @@ export class LoginResponse
                 case 'inventory-skel-lib':
                     for (const item of val)
                     {
-                        const folder = new InventoryFolder(this.agent.inventory.library, this.agent);
+                        const folder = new InventoryFolder(InventoryLibrary.Library, this.agent.inventory.library, this.agent);
                         folder.typeDefault = parseInt(item['type_default'], 10);
                         folder.version = parseInt(item['version'], 10);
                         folder.name = String(item['name']);
@@ -151,7 +151,7 @@ export class LoginResponse
                 case 'inventory-root':
                 {
                     this.agent.inventory.main.root = new UUID(val[0]['folder_id']);
-                    const folder = new InventoryFolder(this.agent.inventory.main, this.agent);
+                    const folder = new InventoryFolder(InventoryLibrary.Main, this.agent.inventory.main, this.agent);
                     folder.typeDefault = 0;
                     folder.version = 0;
                     folder.name = 'root';
@@ -166,7 +166,7 @@ export class LoginResponse
                 case 'inventory-lib-root':
                 {
                     this.agent.inventory.library.root = new UUID(val[0]['folder_id']);
-                    const folder = new InventoryFolder(this.agent.inventory.library, this.agent);
+                    const folder = new InventoryFolder(InventoryLibrary.Library, this.agent.inventory.library, this.agent);
                     folder.typeDefault = 0;
                     folder.version = 0;
                     folder.name = 'root';

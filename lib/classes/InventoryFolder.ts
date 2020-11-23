@@ -22,6 +22,7 @@ import { InventoryType } from '../enums/InventoryType';
 import { AssetUploadRequestMessage } from './messages/AssetUploadRequest';
 import { RequestXferMessage } from './messages/RequestXfer';
 import { Logger } from './Logger';
+import { InventoryLibrary } from '../enums/InventoryLibrary';
 
 export class InventoryFolder
 {
@@ -34,6 +35,7 @@ export class InventoryFolder
     folders: InventoryFolder[] = [];
     cacheDir: string;
     agent: Agent;
+    library: InventoryLibrary;
 
     private callbackID = 1;
 
@@ -42,12 +44,14 @@ export class InventoryFolder
         root?: UUID
     };
 
-    constructor(invBase: {
+    constructor(lib: InventoryLibrary,
+                invBase: {
         skeleton:  {[key: string]: InventoryFolder},
         root?: UUID
     }, agent: Agent)
     {
         this.agent = agent;
+        this.library = lib;
         this.inventoryBase = invBase;
         const cacheLocation = path.resolve(__dirname + '/cache');
         if (!fs.existsSync(cacheLocation))
@@ -105,19 +109,25 @@ export class InventoryFolder
             ]
         };
 
-        const folderContents: any = await this.agent.currentRegion.caps.capsPostXML('FetchInventoryDescendents2', requestedFolders);
+        let cmd = 'FetchInventoryDescendents2';
+        if (this.library === InventoryLibrary.Library)
+        {
+            cmd = 'FetchLibDescendents2';
+        }
+
+        const folderContents: any = await this.agent.currentRegion.caps.capsPostXML(cmd, requestedFolders);
         if (folderContents['folders'] && folderContents['folders'][0] && folderContents['folders'][0]['categories'] && folderContents['folders'][0]['categories'].length > 0)
         {
             for (const folder of folderContents['folders'][0]['categories'])
             {
-                const foundFolderID = new UUID(folder['folder_id'].toString());
+                const foundFolderID = new UUID(folder['category_id'].toString());
                 if (foundFolderID.equals(msg.FolderData.FolderID))
                 {
-                    const newFolder = new InventoryFolder(this.agent.inventory.main, this.agent);
+                    const newFolder = new InventoryFolder(this.library, this.agent.inventory.main, this.agent);
                     newFolder.typeDefault = parseInt(folder['type_default'], 10);
                     newFolder.version = parseInt(folder['version'], 10);
                     newFolder.name = String(folder['name']);
-                    newFolder.folderID = new UUID(folder['folder_id']);
+                    newFolder.folderID = new UUID(folder['category_id']);
                     newFolder.parentID = new UUID(folder['parent_id']);
                     this.folders.push(newFolder);
                     return newFolder;
@@ -250,8 +260,40 @@ export class InventoryFolder
                     requestFolder
                 ]
             };
-            this.agent.currentRegion.caps.capsPostXML('FetchInventoryDescendents2', requestedFolders).then((folderContents: any) =>
+
+            let cmd = 'FetchInventoryDescendents2';
+            if (this.library === InventoryLibrary.Library)
             {
+                cmd = 'FetchLibDescendents2';
+            }
+
+            this.agent.currentRegion.caps.capsPostXML(cmd, requestedFolders).then((folderContents: any) =>
+            {
+                for (const folder of folderContents['folders'][0]['categories'])
+                {
+                    const folderID = new UUID(folder['category_id']);
+                    let found = false;
+                    for (const fld of this.folders)
+                    {
+                        if (fld.folderID.equals(folderID))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found)
+                    {
+                        continue;
+                    }
+
+                    const newFolder = new InventoryFolder(this.library, this.agent.inventory.main, this.agent);
+                    newFolder.typeDefault = parseInt(folder['type_default'], 10);
+                    newFolder.version = parseInt(folder['version'], 10);
+                    newFolder.name = String(folder['name']);
+                    newFolder.folderID = folderID;
+                    newFolder.parentID = new UUID(folder['parent_id']);
+                    this.folders.push(newFolder);
+                }
                 if (folderContents['folders'] && folderContents['folders'][0] && folderContents['folders'][0]['items'])
                 {
                     this.version = folderContents['folders'][0]['version'];

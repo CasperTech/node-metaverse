@@ -5,6 +5,7 @@ import { Agent } from './Agent';
 import * as LLSD from '@caspertech/llsd';
 import { InventoryItem } from './InventoryItem';
 import { FolderType } from '../enums/FolderType';
+import { InventoryLibrary } from '../enums/InventoryLibrary';
 
 export class Inventory
 {
@@ -36,7 +37,7 @@ export class Inventory
     {
         if (this.library.root === undefined)
         {
-            return new InventoryFolder(this.library, this.agent);
+            return new InventoryFolder(InventoryLibrary.Library, this.library, this.agent);
         }
         const uuidStr = this.library.root.toString();
         if (this.library.skeleton[uuidStr])
@@ -45,14 +46,14 @@ export class Inventory
         }
         else
         {
-            return new InventoryFolder(this.library, this.agent);
+            return new InventoryFolder(InventoryLibrary.Library, this.library, this.agent);
         }
     }
     getRootFolderMain(): InventoryFolder
     {
         if (this.main.root === undefined)
         {
-            return new InventoryFolder(this.main, this.agent);
+            return new InventoryFolder(InventoryLibrary.Main, this.main, this.agent);
         }
         const uuidStr = this.main.root.toString();
         if (this.main.skeleton[uuidStr])
@@ -61,7 +62,7 @@ export class Inventory
         }
         else
         {
-            return new InventoryFolder(this.main, this.agent);
+            return new InventoryFolder(InventoryLibrary.Main, this.main, this.agent);
         }
     }
     findFolderForType(type: FolderType): UUID

@@ -19,6 +19,7 @@ import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
 import { InventoryFolder } from './InventoryFolder';
 import { InventoryItem } from './InventoryItem';
 import { Utils } from './Utils';
+import { InventoryLibrary } from '../enums/InventoryLibrary';
 
 export class EventQueueClient
 {
@@ -117,7 +118,7 @@ export class EventQueueClient
                                                 const folderID = new UUID(f['FolderID']);
                                                 if (!folderID.isZero())
                                                 {
-                                                    const folder = new InventoryFolder(this.agent.inventory.main, this.agent);
+                                                    const folder = new InventoryFolder(InventoryLibrary.Main, this.agent.inventory.main, this.agent);
                                                     folder.folderID = folderID;
                                                     folder.name = f['Name'];
                                                     folder.parentID = new UUID(f['ParentID']);
@@ -364,7 +365,6 @@ export class EventQueueClient
                                                 gcsje.sessionID = groupChatEvent.groupID;
                                                 gcsje.success = true;
                                                 this.clientEvents.onGroupChatSessionJoin.next(gcsje);
-                                                console.log('OnGroupChat2');
                                                 this.clientEvents.onGroupChat.next(groupChatEvent);
                                             }).catch((err) =>
                                             {
