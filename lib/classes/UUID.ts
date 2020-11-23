@@ -163,7 +163,7 @@ export class UUID
         return new Long(buf.readUInt32LE(7), buf.readUInt32LE(12));
     }
 
-    public bitwiseOr(w: UUID): UUID
+    public bitwiseXor(w: UUID): UUID
     {
         const buf1 = this.getBuffer();
         const buf2 = w.getBuffer();
