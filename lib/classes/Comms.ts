@@ -22,6 +22,7 @@ import { FriendResponseEvent } from '../events/FriendResponseEvent';
 import { GroupChatEvent } from '../events/GroupChatEvent';
 import { ChatEvent } from '../events/ChatEvent';
 import { ScriptDialogEvent } from '../events/ScriptDialogEvent';
+import { InventoryResponseEvent } from '../events/InventoryResponseEvent';
 
 export class Comms
 {
@@ -85,9 +86,27 @@ export class Comms
                             break;
                         }
                         case InstantMessageDialog.InventoryAccepted:
+                        {
+                            const irEvent = new InventoryResponseEvent();
+                            irEvent.from = im.AgentData.AgentID;
+                            irEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            irEvent.message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            irEvent.requestID = im.MessageBlock.ID;
+                            irEvent.accepted = true;
+                            this.clientEvents.onInventoryResponse.next(irEvent);
                             break;
+                        }
                         case InstantMessageDialog.InventoryDeclined:
+                        {
+                            const irEvent = new InventoryResponseEvent();
+                            irEvent.from = im.AgentData.AgentID;
+                            irEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
+                            irEvent.message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            irEvent.requestID = im.MessageBlock.ID;
+                            irEvent.accepted = false;
+                            this.clientEvents.onInventoryResponse.next(irEvent);
                             break;
+                        }
                         case InstantMessageDialog.TaskInventoryOffered:
                         {
                             const fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);

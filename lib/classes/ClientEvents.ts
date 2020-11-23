@@ -27,6 +27,7 @@ import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 import { GameObject } from './public/GameObject';
 import { Avatar } from './public/Avatar';
 import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
+import { InventoryResponseEvent } from '../events/InventoryResponseEvent';
 
 export class ClientEvents
 {
@@ -44,6 +45,7 @@ export class ClientEvents
     onGroupChatSessionJoin: Subject<GroupChatSessionJoinEvent> = new Subject<GroupChatSessionJoinEvent>();
     onGroupChatAgentListUpdate: Subject<GroupChatSessionAgentListEvent> = new Subject<GroupChatSessionAgentListEvent>();
     onFriendResponse: Subject<FriendResponseEvent> = new Subject<FriendResponseEvent>();
+    onInventoryResponse: Subject<InventoryResponseEvent> = new Subject<InventoryResponseEvent>();
     onScriptDialog: Subject<ScriptDialogEvent> = new Subject<ScriptDialogEvent>();
     onEventQueueStateChange: Subject<EventQueueStateChangeEvent> = new Subject<EventQueueStateChangeEvent>();
     onFriendOnline: Subject<FriendOnlineEvent> = new Subject<FriendOnlineEvent>();
