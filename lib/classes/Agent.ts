@@ -16,9 +16,7 @@ import { RezSingleAttachmentFromInvMessage } from './messages/RezSingleAttachmen
 import { AttachmentPoint } from '../enums/AttachmentPoint';
 import { Utils } from './Utils';
 import { ClientEvents } from './ClientEvents';
-import { GameObject } from './public/GameObject';
 import * as Long from 'long';
-import Timer = NodeJS.Timer;
 import { GroupChatSessionAgentListEvent } from '../events/GroupChatSessionAgentListEvent';
 import { AgentFlags } from '../enums/AgentFlags';
 import { ControlFlags } from '../enums/ControlFlags';
@@ -30,6 +28,8 @@ import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
 import { BulkUpdateInventoryMessage } from './messages/BulkUpdateInventory';
 import { InventoryItem } from './InventoryItem';
 import { AgentDataUpdateMessage } from './messages/AgentDataUpdate';
+import { InventoryLibrary } from '../enums/InventoryLibrary';
+import Timer = NodeJS.Timer;
 
 export class Agent
 {
@@ -247,7 +247,7 @@ export class Agent
             }
             for (const newFolder of msg.FolderData)
             {
-                const fld = new InventoryFolder(this.inventory.main, this);
+                const fld = new InventoryFolder(InventoryLibrary.Main, this.inventory.main, this);
                 fld.typeDefault = newFolder.Type;
                 fld.name = Utils.BufferToStringSimple(newFolder.Name);
                 fld.folderID = newFolder.FolderID;
