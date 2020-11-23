@@ -35,7 +35,6 @@ import { Vector3 } from './Vector3';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 import { Avatar } from './public/Avatar';
-import { AttachmentPoint } from '../enums/AttachmentPoint';
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -452,18 +451,32 @@ export class ObjectStoreLite implements IObjectStore
 
     protected notifyObjectUpdate(newObject: boolean, obj: GameObject)
     {
+        if (obj.PCode === PCode.Avatar)
+        {
+            if (newObject)
+            {
+                if (this.avatars[obj.ID] === undefined)
+                {
+                    this.avatars[obj.ID] = Avatar.fromGameObject(obj);
+                    this.clientEvents.onAvatarEnteredRegion.next(this.avatars[obj.ID])
+                }
+            }
+            else
+            {
+                if (this.avatars[obj.ID] !== undefined)
+                {
+                    this.avatars[obj.ID].processObjectUpdate(obj);
+                }
+                else
+                {
+                    console.warn('Received update for unknown avatar, but not a new object?!');
+                }
+            }
+        }
         if (obj.ParentID === 0 || (obj.ParentID !== undefined && this.avatars[obj.ParentID] !== undefined))
         {
             if (newObject)
             {
-                if (obj.PCode === PCode.Avatar)
-                {
-                    if (this.avatars[obj.ID] === undefined)
-                    {
-                        this.avatars[obj.ID] = Avatar.fromGameObject(obj);
-                        this.clientEvents.onAvatarEnteredRegion.next(this.avatars[obj.ID])
-                    }
-                }
                 if (obj.IsAttachment && obj.ParentID !== undefined)
                 {
                     if (this.avatars[obj.ParentID] !== undefined)
@@ -516,18 +529,6 @@ export class ObjectStoreLite implements IObjectStore
             }
             else
             {
-                if (obj.PCode === PCode.Avatar)
-                {
-                    if (this.avatars[obj.ID] !== undefined)
-                    {
-                        this.avatars[obj.ID].processObjectUpdate(obj);
-                    }
-                    else
-                    {
-                        console.warn('Received update for unknown avatar, but not a new object?!');
-                    }
-                }
-
                 const updObj = new ObjectUpdatedEvent();
                 updObj.localID = obj.ID;
                 updObj.objectID = obj.FullID;
