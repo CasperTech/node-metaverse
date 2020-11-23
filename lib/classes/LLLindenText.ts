@@ -2,7 +2,7 @@ import { InventoryItem } from './InventoryItem';
 
 export class LLLindenText
 {
-    version: number = 2;
+    version = 2;
 
     private lineObj: {
         lines: string[],
@@ -91,28 +91,25 @@ export class LLLindenText
         lines.push('Linden text version ' + this.version);
         lines.push('{');
         const count = Object.keys(this.embeddedItems).length;
-        if (count > 0)
+        lines.push('LLEmbeddedItems version 1');
+        lines.push('{');
+        lines.push('count ' + String(count));
+        for (const key of Object.keys(this.embeddedItems))
         {
-            lines.push('LLEmbeddedItems version 1');
             lines.push('{');
-            lines.push('count ' + String(count));
-            for (const key of Object.keys(this.embeddedItems))
-            {
-                lines.push('{');
-                lines.push('ext char index ' + key);
-                lines.push('\tinv_item\t0');
-                lines.push(this.embeddedItems[parseInt(key, 10)].toAsset('\t'));
-                lines.push('}');
-            }
+            lines.push('ext char index ' + key);
+            lines.push('\tinv_item\t0');
+            lines.push(this.embeddedItems[parseInt(key, 10)].toAsset('\t'));
             lines.push('}');
         }
-        lines.push('Text length ' + String(Buffer.byteLength(this.body)));
-        lines.push(this.body + '}\n\0');
+        lines.push('}');
+        lines.push('Text length ' + String(Buffer.byteLength(this.body, (this.version === 1) ? 'ascii' : 'utf-8')));
+        lines.push(this.body + '}');
         if (this.version === 1)
         {
-            return Buffer.from(lines.join('\n'), 'ascii');
+            return Buffer.from(lines.join('\n') + '\n', 'ascii');
         }
-        return Buffer.from(lines.join('\n'), 'utf-8');
+        return Buffer.from(lines.join('\n') + '\n', 'utf-8');
     }
 
     private parseEmbeddedItems()
