@@ -10,7 +10,8 @@
     "types": ["node"]
   },
   "include": [
-    "lib/**/*.ts"
+    "lib/**/*.ts",
+    "examples/**/*.ts"
   ],
   "exclude": [
     "node_modules"

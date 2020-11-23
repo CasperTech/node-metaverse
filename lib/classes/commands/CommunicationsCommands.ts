@@ -387,15 +387,15 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    startGroupChatSession(sessionID: UUID | string, message: string): Promise<void>
+    startGroupChatSession(groupID: UUID | string, message: string): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
-            if (typeof sessionID === 'string')
+            if (typeof groupID === 'string')
             {
-                sessionID = new UUID(sessionID);
+                groupID = new UUID(groupID);
             }
-            if (this.agent.hasChatSession(sessionID))
+            if (this.agent.hasChatSession(groupID))
             {
                 resolve();
             }
@@ -410,13 +410,13 @@ export class CommunicationsCommands extends CommandsBase
                 };
                 im.MessageBlock = {
                     FromGroup: false,
-                    ToAgentID: sessionID,
+                    ToAgentID: groupID,
                     ParentEstateID: 0,
                     RegionID: UUID.zero(),
                     Position: Vector3.getZero(),
                     Offline: 0,
                     Dialog: InstantMessageDialog.SessionGroupStart,
-                    ID: sessionID,
+                    ID: groupID,
                     Timestamp: Math.floor(new Date().getTime() / 1000),
                     FromAgentName: Utils.StringToBuffer(agentName),
                     Message: Utils.StringToBuffer(message),
@@ -427,7 +427,7 @@ export class CommunicationsCommands extends CommandsBase
                 };
                 const waitForJoin = this.currentRegion.clientEvents.onGroupChatSessionJoin.subscribe((event: GroupChatSessionJoinEvent) =>
                 {
-                    if (event.sessionID.toString() === sessionID.toString())
+                    if (event.sessionID.toString() === groupID.toString())
                     {
                         if (event.success)
                         {

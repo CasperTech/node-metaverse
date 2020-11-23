@@ -1,7 +1,7 @@
 /.idea
 /node_modules
-/example/loginParameters.json
-/example/npm-debug.log
+/examples/loginParameters.json
+/examples/npm-debug.log
 /caspertech-node-metaverse-*.tgz
 /npm-debug.log
 /dist
