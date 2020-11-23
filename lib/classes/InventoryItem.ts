@@ -28,6 +28,7 @@ import { MoveTaskInventoryMessage } from './messages/MoveTaskInventory';
 import { UpdateCreateInventoryItemMessage } from './messages/UpdateCreateInventoryItem';
 import { Message } from '../enums/Message';
 import { FilterResponse } from '../enums/FilterResponse';
+import { UpdateInventoryItemMessage } from './messages/UpdateInventoryItem';
 
 export class InventoryItem
 {
@@ -195,7 +196,7 @@ export class InventoryItem
                 }
                 else if (result.key === 'shadow_id')
                 {
-                    item.assetID = new UUID(result.value).bitwiseOr(new UUID('3c115e51-04f4-523c-9fa6-98aff1034730'));
+                    item.assetID = new UUID(result.value).bitwiseXor(new UUID('3c115e51-04f4-523c-9fa6-98aff1034730'));
                 }
                 else if (result.key === 'asset_id')
                 {
@@ -500,6 +501,46 @@ export class InventoryItem
         crc = crc + (this.saleType * 0x07073096 >>> 0) >>> 0;
         crc = crc + Math.round(this.created.getTime() / 1000) >>> 0;
         return crc;
+    }
+
+    async update(): Promise<void>
+    {
+        if (this.agent === undefined)
+        {
+            throw new Error('This inventoryItem is local only and cannot be updated')
+        }
+        const msg = new UpdateInventoryItemMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.agent.currentRegion.circuit.sessionID,
+            TransactionID: UUID.random()
+        };
+        msg.InventoryData = [{
+            ItemID: this.itemID,
+            FolderID: this.parentID,
+            CreatorID: this.permissions.creator,
+            OwnerID: this.permissions.owner,
+            GroupID: this.permissions.group,
+            BaseMask: this.permissions.baseMask,
+            OwnerMask: this.permissions.ownerMask,
+            GroupMask: this.permissions.groupMask,
+            EveryoneMask: this.permissions.everyoneMask,
+            NextOwnerMask: this.permissions.nextOwnerMask,
+            GroupOwned: this.permissions.groupOwned || false,
+            TransactionID: UUID.zero(),
+            CallbackID: 0,
+            Type: this.type,
+            InvType: this.inventoryType,
+            Flags: this.flags,
+            SaleType: this.saleType,
+            SalePrice: this.salePrice,
+            Name: Utils.StringToBuffer(this.name),
+            Description: Utils.StringToBuffer(this.description),
+            CreationDate: this.created.getTime() / 1000,
+            CRC: this.getCRC()
+        }];
+        const ack = this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
+        return this.agent.currentRegion.circuit.waitForAck(ack, 10000);
     }
 
     async moveToFolder(targetFolder: InventoryFolder): Promise<InventoryItem>
