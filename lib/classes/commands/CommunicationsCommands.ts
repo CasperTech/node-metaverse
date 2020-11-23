@@ -13,9 +13,67 @@ import { GroupChatSessionJoinEvent } from '../../events/GroupChatSessionJoinEven
 import { ScriptDialogEvent } from '../../events/ScriptDialogEvent';
 import Timer = NodeJS.Timer;
 import { StartLureMessage } from '../messages/StartLure';
+import { InventoryItem } from '../InventoryItem';
+import { InventoryFolder } from '../InventoryFolder';
+import { InstantMessageOnline } from '../../enums/InstantMessageOnline';
+import { AssetType } from '../../enums/AssetType';
 
 export class CommunicationsCommands extends CommandsBase
 {
+    async giveInventory(to: UUID | string, itemOrFolder: InventoryItem | InventoryFolder): Promise<void>
+    {
+        const circuit = this.circuit;
+        if (typeof to === 'string')
+        {
+            to = new UUID(to);
+        }
+        let bucket: Buffer | undefined = undefined;
+        if (itemOrFolder instanceof InventoryItem)
+        {
+            bucket = Buffer.allocUnsafe(17);
+            bucket.writeUInt8(itemOrFolder.type, 0);
+            itemOrFolder.itemID.writeToBuffer(bucket, 1);
+        }
+        else
+        {
+            await itemOrFolder.populate(false);
+            bucket = Buffer.allocUnsafe(17 * (itemOrFolder.items.length + 1));
+            let offset = 0;
+            bucket.writeUInt8(AssetType.Folder, offset++);
+            itemOrFolder.folderID.writeToBuffer(bucket, offset); offset += 16;
+            for (const item of itemOrFolder.items)
+            {
+                bucket.writeUInt8(item.type, offset++);
+                item.itemID.writeToBuffer(bucket, offset); offset += 16;
+            }
+        }
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: to,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: InstantMessageOnline.Online,
+            Dialog: InstantMessageDialog.InventoryOffered,
+            ID: UUID.random(),
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils.StringToBuffer(agentName),
+            Message: Utils.StringToBuffer(itemOrFolder.name),
+            BinaryBucket: bucket
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
+        return await circuit.waitForAck(sequenceNo, 10000);
+    }
+
     async sendInstantMessage(to: UUID | string, message: string): Promise<void>
     {
         const circuit = this.circuit;
