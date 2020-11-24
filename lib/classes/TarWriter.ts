@@ -117,7 +117,7 @@ export class TarWriter extends Transform
         this.fileActive = false;
     }
 
-    public _transform(chunk: any, encoding: string, callback: (error?: Error, data?: any) => void): void
+    public _transform(chunk: any, encoding: 'ascii' | 'utf-8' | 'utf16le' | 'ucs-2' | 'base64' | 'latin1' | 'binary' | 'hex', callback: (error?: Error, data?: any) => void): void
     {
         this.push(chunk, encoding);
         callback();

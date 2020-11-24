@@ -8,6 +8,11 @@ import { Utils } from '../Utils';
 import { ParcelInfoReplyEvent } from '../../events/ParcelInfoReplyEvent';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { Vector3 } from '../Vector3';
+import { LandStatRequestMessage } from '../messages/LandStatRequest';
+import { LandStatReportType } from '../../enums/LandStatReportType';
+import { LandStatReplyMessage } from '../messages/LandStatReply';
+import { LandStatFlags } from '../../enums/LandStatFlags';
+import { LandStatsEvent } from '../../events/LandStatsEvent';
 
 // This class was added to provide a new "Category" of commands, since we don't have any parcel specific functionality yet.
 
@@ -39,7 +44,7 @@ export class ParcelCommands extends CommandsBase
         this.circuit.sendMessage(msg, PacketFlags.Reliable);
 
         // And wait for a reply. It's okay to do this after we send since we haven't yielded until this subscription is set up.
-        const parcelInfoReply = (await this.circuit.waitForMessage<ParcelInfoReplyMessage>(Message.ParcelInfoReply, 10000, (replyMessage: ParcelInfoReplyMessage): FilterResponse =>
+        const parcelInfoReply = (await this.circuit.waitForMessage<ParcelInfoReplyMessage>(Message.ParcelInfoRequest, 10000, (replyMessage: ParcelInfoReplyMessage): FilterResponse =>
         {
             // This function is here as a filter to ensure we get the correct message.
             // It compares every incoming ParcelInfoReplyMessage, checks the ParcelID and compares to the one we requested.
@@ -75,5 +80,52 @@ export class ParcelCommands extends CommandsBase
             SalePrice = parcelInfoReply.Data.SalePrice;
             AuctionID = parcelInfoReply.Data.AuctionID;
         };
+    }
+
+    async getLandStats(parcelID: string | UUID | number, reportType: LandStatReportType, flags: LandStatFlags, filter?: string): Promise<LandStatsEvent>
+    {
+        if (parcelID instanceof UUID)
+        {
+            parcelID = parcelID.toString();
+        }
+
+        if (typeof parcelID === 'string')
+        {
+            // Find the parcel localID
+            const parcels = await this.bot.clientCommands.region.getParcels();
+            for (const parcel of parcels)
+            {
+                if (parcel.ParcelID.toString() === parcelID)
+                {
+                    parcelID = parcel.LocalID;
+                    break;
+                }
+            }
+        }
+
+        if (typeof parcelID !== 'number')
+        {
+            throw new Error('Unable to locate parcel');
+        }
+
+        if (filter === undefined)
+        {
+            filter = '';
+        }
+
+        const msg = new LandStatRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        msg.RequestData = {
+            ParcelLocalID: parcelID,
+            ReportType: reportType,
+            Filter: Utils.StringToBuffer(filter),
+            RequestFlags: flags
+        }
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        return Utils.waitOrTimeOut<LandStatsEvent>(this.currentRegion.clientEvents.onLandStatReplyEvent, 10000);
     }
 }

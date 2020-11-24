@@ -2,8 +2,6 @@ import { CommandsBase } from './CommandsBase';
 import { UUID } from '../UUID';
 import * as LLSD from '@caspertech/llsd';
 import { Utils } from '../Utils';
-import * as zlib from 'zlib';
-import { ZlibOptions } from 'zlib';
 import { TransferRequestMessage } from '../messages/TransferRequest';
 import { TransferChannelType } from '../../enums/TransferChannelType';
 import { TransferSourceType } from '../../enums/TransferSourceTypes';
@@ -22,7 +20,6 @@ import { InventoryItem } from '../InventoryItem';
 import { BulkUpdateInventoryEvent } from '../../events/BulkUpdateInventoryEvent';
 import { FilterResponse } from '../../enums/FilterResponse';
 import { LLLindenText } from '../LLLindenText';
-import { Logger } from '../Logger';
 import { Subscription } from 'rxjs';
 
 export class AssetCommands extends CommandsBase
@@ -38,11 +35,11 @@ export class AssetCommands extends CommandsBase
         try
         {
             const result = await this.currentRegion.caps.downloadAsset(uuid, type);
-            if (result.toString('UTF-8').trim() === 'Not found!')
+            if (result.toString('utf-8').trim() === 'Not found!')
             {
                 throw new Error('Asset not found');
             }
-            else if (result.toString('UTF-8').trim() === 'Incorrect Syntax')
+            else if (result.toString('utf-8').trim() === 'Incorrect Syntax')
             {
                 throw new Error('Invalid Syntax');
             }

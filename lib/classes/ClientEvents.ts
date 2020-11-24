@@ -28,6 +28,8 @@ import { GameObject } from './public/GameObject';
 import { Avatar } from './public/Avatar';
 import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
 import { InventoryResponseEvent } from '../events/InventoryResponseEvent';
+import { LandStatsEvent } from '../events/LandStatsEvent';
+import { SimStatsEvent } from '../events/SimStatsEvent';
 
 export class ClientEvents
 {
@@ -63,4 +65,6 @@ export class ClientEvents
     onAvatarLeftRegion: Subject<Avatar> = new Subject<Avatar>();
     onRegionTimeDilation: Subject<number> = new Subject<number>();
     onBulkUpdateInventoryEvent: Subject<BulkUpdateInventoryEvent> = new Subject<BulkUpdateInventoryEvent>();
+    onLandStatReplyEvent: Subject<LandStatsEvent> = new Subject<LandStatsEvent>();
+    onSimStats: Subject<SimStatsEvent> = new Subject<SimStatsEvent>();
 }
