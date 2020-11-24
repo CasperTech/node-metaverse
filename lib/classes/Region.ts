@@ -47,6 +47,9 @@ import { PacketFlags } from '../enums/PacketFlags';
 import { Vector3 } from './Vector3';
 import { Vector2 } from './Vector2';
 import { ObjectResolver } from './ObjectResolver';
+import { SimStatsMessage } from './messages/SimStats';
+import { SimStatsEvent } from '../events/SimStatsEvent';
+import { StatID } from '../enums/StatID';
 
 export class Region
 {
@@ -339,11 +342,152 @@ export class Region
         this.messageSubscription = this.circuit.subscribeToMessages([
             Message.ParcelOverlay,
             Message.LayerData,
-            Message.SimulatorViewerTimeMessage
+            Message.SimulatorViewerTimeMessage,
+            Message.SimStats,
         ], (packet: Packet) =>
         {
             switch (packet.message.id)
             {
+                case Message.SimStats:
+                {
+                    const stats: SimStatsMessage = packet.message as SimStatsMessage;
+                    if (stats.Stat.length > 0)
+                    {
+                        const evt = new SimStatsEvent();
+                        for (const pair of stats.Stat)
+                        {
+                            const value = pair.StatValue;
+                            switch (pair.StatID)
+                            {
+                                case StatID.TimeDilation:
+                                    evt.timeDilation = value;
+                                    break;
+                                case StatID.FPS:
+                                    evt.fps = value;
+                                    break;
+                                case StatID.PhysFPS:
+                                    evt.physFPS = value;
+                                    break;
+                                case StatID.AgentUPS:
+                                    evt.agentUPS = value;
+                                    break;
+                                case StatID.FrameMS:
+                                    evt.frameMS = value;
+                                    break;
+                                case StatID.NetMS:
+                                    evt.netMS = value;
+                                    break;
+                                case StatID.SimOtherMS:
+                                    evt.simOtherMS = value;
+                                    break;
+                                case StatID.SimPhysicsMS:
+                                    evt.simPhysicsMS = value;
+                                    break;
+                                case StatID.AgentMS:
+                                    evt.agentMS = value;
+                                    break;
+                                case StatID.ImagesMS:
+                                    evt.imagesMS = value;
+                                    break;
+                                case StatID.ScriptMS:
+                                    evt.scriptMS = value;
+                                    break;
+                                case StatID.NumTasks:
+                                    evt.numTasks = value;
+                                    break;
+                                case StatID.NumTasksActive:
+                                    evt.numTasksActive = value;
+                                    break;
+                                case StatID.NumAgentMain:
+                                    evt.numAgentMain = value;
+                                    break;
+                                case StatID.NumAgentChild:
+                                    evt.numAgentChild = value;
+                                    break;
+                                case StatID.NumScriptsActive:
+                                    evt.numScriptsActive = value;
+                                    break;
+                                case StatID.LSLIPS:
+                                    evt.lslIPS = value;
+                                    break;
+                                case StatID.InPPS:
+                                    evt.inPPS = value;
+                                    break;
+                                case StatID.OutPPS:
+                                    evt.outPPS = value;
+                                    break;
+                                case StatID.PendingDownloads:
+                                    evt.pendingDownloads = value;
+                                    break;
+                                case StatID.PendingUploads:
+                                    evt.pendingUploads = value;
+                                    break;
+                                case StatID.VirtualSizeKB:
+                                    evt.virtualSizeKB = value;
+                                    break;
+                                case StatID.ResidentSizeKB:
+                                    evt.residentSizeKB = value;
+                                    break;
+                                case StatID.PendingLocalUploads:
+                                    evt.pendingLocalUploads = value;
+                                    break;
+                                case StatID.TotalUnackedBytes:
+                                    evt.totalUnackedBytes = value;
+                                    break;
+                                case StatID.PhysicsPinnedTasks:
+                                    evt.physicsPinnedTasks = value;
+                                    break;
+                                case StatID.PhysicsLODTasks:
+                                    evt.physicsLODTasks = value;
+                                    break;
+                                case StatID.SimPhysicsStepMS:
+                                    evt.simPhysicsStepMS = value;
+                                    break;
+                                case StatID.SimPhysicsShapeMS:
+                                    evt.simPhysicsShapeMS = value;
+                                    break;
+                                case StatID.SimPhysicsOtherMS:
+                                    evt.simPhysicsOtherMS = value;
+                                    break;
+                                case StatID.SimPhysicsMemory:
+                                    evt.simPhysicsMemory = value;
+                                    break;
+                                case StatID.ScriptEPS:
+                                    evt.scriptEPS = value;
+                                    break;
+                                case StatID.SimSpareTime:
+                                    evt.simSpareTime = value;
+                                    break;
+                                case StatID.SimSleepTime:
+                                    evt.simSleepTime = value;
+                                    break;
+                                case StatID.IOPumpTime:
+                                    evt.ioPumpTime = value;
+                                    break;
+                                case StatID.PCTScriptsRun:
+                                    evt.pctScriptsRun = value;
+                                    break;
+                                case StatID.RegionIdle:
+                                    evt.regionIdle = value;
+                                    break;
+                                case StatID.RegionIdlePossible:
+                                    evt.regionIdlePossible = value;
+                                    break;
+                                case StatID.SimAIStepTimeMS:
+                                    evt.simAIStepTimeMS = value;
+                                    break;
+                                case StatID.SkippedAISilStepsPS:
+                                    evt.skippedAISilStepsPS = value;
+                                    break;
+                                case StatID.PCTSteppedCharacters:
+                                    evt.pctSteppedCharacters = value;
+                                    break;
+                            }
+                            this.clientEvents.onSimStats.next(evt);
+                        }
+                    }
+                    break;
+                }
                 case Message.ParcelOverlay:
                 {
                     const parcelData: ParcelOverlayMessage = packet.message as ParcelOverlayMessage;

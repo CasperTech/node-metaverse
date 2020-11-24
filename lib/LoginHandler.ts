@@ -43,21 +43,21 @@ export class LoginHandler
 
             let secure = false;
 
-            if (loginURI.protocol !== undefined && loginURI.protocol.trim().toLowerCase() === 'https:')
+            if (loginURI.protocol !== null && loginURI.protocol.trim().toLowerCase() === 'https:')
             {
                 secure = true;
             }
 
-            let port: string | undefined = loginURI.port;
-            if (port === undefined || port === null)
+            let port: string | null = loginURI.port;
+            if (port === null)
             {
                 port = secure ? '443' : '80';
             }
 
             const secureClientOptions = {
-                host: loginURI.hostname,
+                host: loginURI.hostname || undefined,
                 port: parseInt(port, 10),
-                path: loginURI.path,
+                path: loginURI.path || undefined,
                 rejectUnauthorized: false,
                 timeout: 60000
             };
@@ -94,7 +94,7 @@ export class LoginHandler
                             'global-textures'
                         ]
                     }
-                ], (error, value) =>
+                ], (error: Object, value: any) =>
                 {
                     if (error)
                     {

@@ -20,6 +20,7 @@ import { InventoryFolder } from './InventoryFolder';
 import { InventoryItem } from './InventoryItem';
 import { Utils } from './Utils';
 import { InventoryLibrary } from '../enums/InventoryLibrary';
+import { LandStatsEvent } from '../events/LandStatsEvent';
 
 export class EventQueueClient
 {
@@ -449,6 +450,52 @@ export class EventQueueClient
                                             this.clientEvents.onTeleportEvent.next(tpEvent);
                                         }
 
+                                        break;
+                                    }
+                                    case 'LandStatReply':
+                                    {
+                                        let requestData = event.body.RequestData;
+                                        if (requestData.length < 1)
+                                        {
+                                            console.error('LandStatReply invalid RequestData length');
+                                            return;
+                                        }
+                                        requestData = requestData[0];
+
+                                        const evt = new LandStatsEvent();
+                                        evt.totalObjects = Utils.OctetsToUInt32BE(requestData.TotalObjectCount.octets);
+                                        evt.reportType = Utils.OctetsToUInt32BE(requestData.ReportType.octets);
+                                        evt.requestFlags = Utils.OctetsToUInt32BE(requestData.RequestFlags.octets);
+
+                                        if (event.body.ReportData.length !== evt.totalObjects || event.body.DataExtended.length !== evt.totalObjects)
+                                        {
+                                            console.error('LandStatReply: Invalid Reportdata or DataExtended block length');
+                                            return;
+                                        }
+
+                                        for (let x = 0; x < evt.totalObjects; x++)
+                                        {
+                                            const report = event.body.ReportData[x];
+                                            const extended = event.body.DataExtended[x];
+
+                                            evt.objects.push({
+                                                position: new Vector3([report.LocationX, report.LocationY, report.LocationZ]),
+                                                ownerName: report.OwnerName,
+                                                score: report.score,
+                                                objectID: new UUID(report.TaskID.toString()),
+                                                localID: Utils.OctetsToUInt32BE(report.TaskLocalID.octets),
+                                                objectName: report.TaskName,
+                                                monoScore: extended.MonoScore,
+                                                ownerID: new UUID(extended.OwnerID.toString()),
+                                                parcelName: extended.ParcelName,
+                                                publicURLs: extended.PublicURLs,
+                                                size: extended.Size,
+                                                timestamp: Utils.OctetsToUInt32BE(extended.TimeStamp.octets)
+                                            });
+
+                                        }
+
+                                        this.clientEvents.onLandStatReplyEvent.next(evt);
                                         break;
                                     }
                                     default:

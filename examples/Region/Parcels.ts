@@ -1,4 +1,6 @@
 import { ExampleBot } from '../ExampleBot';
+import { LandStatReportType } from '../../lib/enums/LandStatReportType';
+import { LandStatFlags } from '../../lib/enums/LandStatFlags';
 
 class Parcels extends ExampleBot
 {
@@ -15,6 +17,8 @@ class Parcels extends ExampleBot
             console.log(p.Name);
         }
         console.log('========================');
+        const stats = await this.bot.clientCommands.parcel.getLandStats(parcels[0].ParcelID, LandStatReportType.Scripts, LandStatFlags.FilterByOwner);
+        console.log(JSON.stringify(stats, null, 4));
     }
 }
 
