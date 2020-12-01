@@ -8,17 +8,22 @@ import Timer = NodeJS.Timer;
 
 export class Avatar extends AvatarQueryResult
 {
-    private position: Vector3 = Vector3.getZero();
     private rotation: Quaternion = Quaternion.getIdentity();
     private title = '';
 
-    public onAvatarMoved: Subject<Avatar> = new Subject<Avatar>();
+    public onMoved: Subject<Avatar> = new Subject<Avatar>();
     public onTitleChanged: Subject<Avatar> = new Subject<Avatar>();
     public onLeftRegion: Subject<Avatar> = new Subject<Avatar>();
     public onAttachmentAdded: Subject<GameObject> = new Subject<GameObject>();
     public onAttachmentRemoved: Subject<GameObject> = new Subject<GameObject>();
+    public onVisibleChanged: Subject<Avatar> = new Subject<Avatar>();
+    private _isVisible = false;
+    private _gameObject?: GameObject;
+    private _position: Vector3 = Vector3.getZero();
+    private _coarsePosition: Vector3 = Vector3.getZero();
 
     private attachments: {[key: string]: GameObject} = {};
+
 
     static fromGameObject(obj: GameObject): Avatar
     {
@@ -43,19 +48,46 @@ export class Avatar extends AvatarQueryResult
         return av;
     }
 
-    constructor(private gameObject: GameObject, firstName: string, lastName: string)
+    constructor(gameObjectOrID: GameObject | UUID, firstName: string, lastName: string)
     {
-        super(gameObject.FullID, firstName, lastName);
-        const objs: GameObject[] = this.gameObject.region.objects.getObjectsByParent(gameObject.ID);
-        for (const attachment of objs)
+        super((gameObjectOrID instanceof UUID) ? gameObjectOrID : gameObjectOrID.FullID, firstName, lastName);
+
+        if (gameObjectOrID instanceof GameObject)
         {
-            this.gameObject.region.clientCommands.region.resolveObject(attachment, true, false).then(() =>
+            this.gameObject = gameObjectOrID;
+        }
+    }
+
+    set gameObject(obj: GameObject)
+    {
+        if (this._gameObject !== obj)
+        {
+            this._gameObject = obj;
+            const objs: GameObject[] = this._gameObject.region.objects.getObjectsByParent(this._gameObject.ID);
+            for (const attachment of objs)
             {
-                this.addAttachment(attachment);
-            }).catch((err) =>
-            {
-                console.error('Failed to resolve attachment for avatar');
-            });
+                this._gameObject.region.clientCommands.region.resolveObject(attachment, true, false).then(() =>
+                {
+                    this.addAttachment(attachment);
+                }).catch((err) =>
+                {
+                    console.error('Failed to resolve attachment for avatar');
+                });
+            }
+        }
+    }
+
+    get isVisible(): boolean
+    {
+        return this._isVisible;
+    }
+
+    set isVisible(value: boolean)
+    {
+        if (this._isVisible !== value)
+        {
+            this._isVisible = value;
+            this.onVisibleChanged.next(this);
         }
     }
 
@@ -73,9 +105,34 @@ export class Avatar extends AvatarQueryResult
         return this.title;
     }
 
-    getPosition(): Vector3
+    get position(): Vector3
     {
-        return new Vector3(this.position);
+        if (this._isVisible)
+        {
+            return new Vector3(this._position);
+        }
+        else
+        {
+            const pos: Vector3 = new Vector3(this._coarsePosition);
+            if (pos.z === 1020 && this._position.z > 1020)
+            {
+                pos.z = this._position.z;
+            }
+            return pos;
+        }
+    }
+
+    set coarsePosition(pos: Vector3)
+    {
+        const oldPos = this._coarsePosition;
+        this._coarsePosition = pos;
+        if (!this._isVisible)
+        {
+            if (Vector3.distance(pos, oldPos) > 0.0001)
+            {
+                this.onMoved.next(this);
+            }
+        }
     }
 
     getRotation(): Quaternion
@@ -85,34 +142,35 @@ export class Avatar extends AvatarQueryResult
 
     processObjectUpdate(obj: GameObject)
     {
+        if (obj !== this._gameObject)
+        {
+            this.gameObject = obj;
+        }
         if (obj.Position !== undefined && obj.Rotation !== undefined)
         {
             this.setGeometry(obj.Position, obj.Rotation);
         }
         if (obj.NameValue['Title'] !== undefined)
         {
-            this.setTitle(obj.NameValue['Title'].value);
+           this.setTitle(obj.NameValue['Title'].value);
         }
+        this.isVisible = true;
     }
 
     setGeometry(position: Vector3, rotation: Quaternion)
     {
-        const oldPosition = this.position;
+        const oldPosition = this._position;
         const oldRotation = this.rotation;
 
-        this.position = new Vector3(position);
+        this._position = new Vector3(position);
+        this._coarsePosition = new Vector3(position);
         this.rotation = new Quaternion(rotation);
 
         const rotDist = new Quaternion(this.rotation).angleBetween(oldRotation);
         if (Vector3.distance(position, oldPosition) > 0.0001 || rotDist > 0.0001)
         {
-            this.onAvatarMoved.next(this);
+            this.onMoved.next(this);
         }
-    }
-
-    leftRegion()
-    {
-        this.onLeftRegion.next(this);
     }
 
     getAttachment(itemID: UUID)
@@ -196,5 +254,10 @@ export class Avatar extends AvatarQueryResult
                 delete this.attachments[itemID.toString()];
             }
         }
+    }
+
+    coarseLeftRegion()
+    {
+        this.onLeftRegion.next(this);
     }
 }

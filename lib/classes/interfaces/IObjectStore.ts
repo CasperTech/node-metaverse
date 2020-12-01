@@ -15,5 +15,4 @@ export interface IObjectStore
     getNumberOfObjects(): number;
     getAllObjects(): Promise<GameObject[]>;
     setPersist(persist: boolean): void;
-    getAvatar(avatarID: UUID): Avatar;
 }

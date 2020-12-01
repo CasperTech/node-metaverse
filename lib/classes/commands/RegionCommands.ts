@@ -30,9 +30,9 @@ import { AssetMap } from '../AssetMap';
 import { InventoryType } from '../../enums/InventoryType';
 import { BuildMap } from '../BuildMap';
 import { ObjectResolver } from '../ObjectResolver';
-import { Logger } from '../Logger';
 import Timer = NodeJS.Timer;
 import Timeout = NodeJS.Timeout;
+import { Avatar } from '../public/Avatar';
 
 export class RegionCommands extends CommandsBase
 {
@@ -114,6 +114,11 @@ export class RegionCommands extends CommandsBase
                 }
             }
         });
+    }
+
+    getAvatarsInRegion(): Avatar[]
+    {
+        return Object.values(this.currentRegion.agents);
     }
 
     async deselectObjects(objects: GameObject[])
@@ -388,7 +393,6 @@ export class RegionCommands extends CommandsBase
     private async buildPart(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, buildMap: BuildMap, markRoot = false)
     {
         // Calculate geometry
-        Logger.Info('Calculating geometry');
         const objectPosition = new Vector3(obj.Position);
         const objectRotation = new Quaternion(obj.Rotation);
         const objectScale = new Vector3(obj.Scale);
@@ -422,7 +426,6 @@ export class RegionCommands extends CommandsBase
 
                 if (meshEntry.item !== null)
                 {
-                    Logger.Info('Rezzing mesh part');
                     try
                     {
                         object = await meshEntry.item.rezInWorld(rezLocation);
@@ -446,7 +449,6 @@ export class RegionCommands extends CommandsBase
             if (newPrim !== undefined)
             {
                 object = newPrim;
-                Logger.Info('Setting shape');
                 try
                 {
                     await object.setShape(
@@ -493,7 +495,6 @@ export class RegionCommands extends CommandsBase
             object.isMarkedRoot = true;
         }
 
-        Logger.Info('Setting geometry');
         try
         {
             await object.setGeometry(finalPos, finalRot, objectScale);
@@ -504,7 +505,6 @@ export class RegionCommands extends CommandsBase
             console.error(err);
         }
 
-        Logger.Info('Setting ExtraParams');
         if (obj.extraParams.sculptData !== null)
         {
             if (obj.extraParams.sculptData.type !== SculptType.Mesh)
@@ -565,7 +565,6 @@ export class RegionCommands extends CommandsBase
 
             if (gotSomeActualMaterials)
             {
-                Logger.Info('Setting materials');
                 const zipped = await Utils.deflate(Buffer.from(LLSD.LLSD.formatBinary(materialUpload).octets));
                 const newMat = {
                     'Zipped': new LLSD.Binary(Array.from(zipped), 'BASE64')
@@ -631,7 +630,6 @@ export class RegionCommands extends CommandsBase
 
             try
             {
-                Logger.Info('Setting texture entry');
                 await object.setTextureEntry(obj.TextureEntry).then(() => {}).catch((err) =>
                 {
                     console.error(err);
@@ -648,7 +646,6 @@ export class RegionCommands extends CommandsBase
 
         if (obj.name !== undefined)
         {
-            Logger.Info('Setting name');
             try
             {
                 await object.setName(obj.name);
@@ -663,7 +660,6 @@ export class RegionCommands extends CommandsBase
 
         if (obj.description !== undefined)
         {
-            Logger.Info('Setting description');
             try
             {
                 await object.setDescription(obj.description);
@@ -680,7 +676,6 @@ export class RegionCommands extends CommandsBase
         {
             try
             {
-                Logger.Info('Processing inventory item ' + invItem.name);
                 if (invItem.inventoryType === InventoryType.Object && invItem.assetID.isZero())
                 {
                     invItem.assetID = invItem.itemID;
@@ -779,9 +774,7 @@ export class RegionCommands extends CommandsBase
                             const inventoryItem = buildMap.assetMap.objects[invItem.itemID.toString()];
                             if (inventoryItem !== null)
                             {
-                                Logger.Info('Dropping inventory into contents..');
                                 await object.dropInventoryIntoContents(inventoryItem);
-                                Logger.Info('.. Done');
                             }
                             else
                             {
@@ -817,7 +810,6 @@ export class RegionCommands extends CommandsBase
                 console.error(error);
             }
         }
-        Logger.Info('Part build done');
         return object;
     }
 
@@ -1029,10 +1021,7 @@ export class RegionCommands extends CommandsBase
     async buildObjectNew(obj: GameObject, map: AssetMap, callback: (map: AssetMap) => void, costOnly: boolean = false, skipMove = false): Promise<GameObject | null>
     {
         const  buildMap = new BuildMap(map, callback, costOnly);
-        Logger.Info('Building object: ' + obj.name);
-        Logger.Info('Gathering immediate assets');
         this.gatherAssets(obj, buildMap);
-        Logger.Info('Excluding BOM assets');
         const bomTextures = [
             '5a9f4a74-30f2-821c-b88d-70499d3e7183',
             'ae2de45c-d252-50b8-5c6e-19f39ce79317',
@@ -1050,16 +1039,13 @@ export class RegionCommands extends CommandsBase
         {
             if (buildMap.assetMap.textures[bomTexture] !== undefined)
             {
-                Logger.Info('Not replacing BOM texture ' + bomTexture);
                 delete buildMap.assetMap.textures[bomTexture];
             }
         }
-        Logger.Info('Mapping assets');
         await callback(map);
 
         if (costOnly)
         {
-            Logger.Info('Cost only, not proceeding with build');
             return null;
         }
 
@@ -1090,7 +1076,6 @@ export class RegionCommands extends CommandsBase
 
         if (buildMap.primsNeeded > 0)
         {
-            Logger.Info('Pre-rezzing ' + buildMap.primsNeeded + ' prims');
             buildMap.primReservoir = await this.createPrims(buildMap.primsNeeded, agentPos);
         }
 
@@ -1132,16 +1117,7 @@ export class RegionCommands extends CommandsBase
         const parts = [];
         parts.push(async () =>
         {
-            Logger.Info('Building root prim');
-            Logger.increasePrefixLevel();
-            try
-            {
-                return await this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap, true);
-            }
-            finally
-            {
-                Logger.decreasePrefixLevel();
-            }
+            return await this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap, true);
         });
 
         if (obj.children)
@@ -1154,29 +1130,18 @@ export class RegionCommands extends CommandsBase
             {
                 obj.Rotation = Quaternion.getIdentity();
             }
-            let childNumber = 0;
             for (const child of obj.children)
             {
                 if (child.Position !== undefined && child.Rotation !== undefined)
                 {
                     parts.push(async () =>
                     {
-                        Logger.Info('Building child ' + String(++childNumber));
-                        try
-                        {
-                            Logger.increasePrefixLevel();
-                            return await this.buildPart(child, new Vector3(obj.Position), new Quaternion(obj.Rotation), buildMap, false);
-                        }
-                        finally
-                        {
-                            Logger.decreasePrefixLevel();
-                        }
+                        return await this.buildPart(child, new Vector3(obj.Position), new Quaternion(obj.Rotation), buildMap, false);
                     });
 
                 }
             }
         }
-        Logger.Info('Running build');
         let results: {
             results: GameObject[],
             errors: Error[]
@@ -1184,17 +1149,7 @@ export class RegionCommands extends CommandsBase
             results: [],
             errors: []
         };
-
-        try
-        {
-            Logger.increasePrefixLevel();
-            results = await Utils.promiseConcurrent<GameObject>(parts, 5, 0);
-        }
-        finally
-        {
-            Logger.decreasePrefixLevel();
-        }
-        Logger.Info('Done');
+        results = await Utils.promiseConcurrent<GameObject>(parts, 5, 0);
         if (results.errors.length > 0)
         {
             for (const err of results.errors)
@@ -1204,7 +1159,6 @@ export class RegionCommands extends CommandsBase
         }
 
         let rootObj: GameObject | null = null;
-        Logger.Info('Linking ' + results.results.length + ' prims together');
         for (const childObject of results.results)
         {
             if (childObject.isMarkedRoot)
@@ -1239,7 +1193,6 @@ export class RegionCommands extends CommandsBase
         {
             obj.Position = storedPosition;
         }
-        Logger.Info('Build done');
         return rootObj;
     }
 

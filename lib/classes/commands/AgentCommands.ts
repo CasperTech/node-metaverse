@@ -134,7 +134,7 @@ export class AgentCommands extends CommandsBase
         });
     }
 
-    getAvatar(avatarID: UUID | string = UUID.zero()): Avatar
+    getAvatar(avatarID: UUID | string = UUID.zero()): Avatar | undefined
     {
         if (typeof avatarID === 'string')
         {
@@ -144,7 +144,7 @@ export class AgentCommands extends CommandsBase
         {
             avatarID = this.agent.agentID;
         }
-        return this.currentRegion.objects.getAvatar(avatarID);
+        return this.currentRegion.agents[avatarID.toString()];
     }
 
     async getAvatarProperties(avatarID: UUID | string): Promise<AvatarPropertiesReplyEvent>

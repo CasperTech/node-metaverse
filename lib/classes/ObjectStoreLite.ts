@@ -43,7 +43,6 @@ export class ObjectStoreLite implements IObjectStore
     protected objects: { [key: number]: GameObject } = {};
     protected objectsByUUID: { [key: string]: number } = {};
     protected objectsByParent: { [key: number]: number[] } = {};
-    protected avatars: {[key: number]: Avatar} = {};
     protected clientEvents: ClientEvents;
     protected options: BotOptionFlags;
     protected requestedObjects: {[key: number]: boolean} = {};
@@ -432,9 +431,9 @@ export class ObjectStoreLite implements IObjectStore
         {
             if (obj.PCode === PCode.Avatar)
             {
-                if (this.avatars[obj.ID] !== undefined)
+                if (this.agent.currentRegion.agents[obj.FullID.toString()] !== undefined)
                 {
-                    this.avatars[obj.ID].processObjectUpdate(obj);
+                    this.agent.currentRegion.agents[obj.FullID.toString()].processObjectUpdate(obj);
                 }
                 else
                 {
@@ -453,19 +452,25 @@ export class ObjectStoreLite implements IObjectStore
     {
         if (obj.PCode === PCode.Avatar)
         {
+            const avatarID = obj.FullID.toString();
             if (newObject)
             {
-                if (this.avatars[obj.ID] === undefined)
+                if (this.agent.currentRegion.agents[avatarID] === undefined)
                 {
-                    this.avatars[obj.ID] = Avatar.fromGameObject(obj);
-                    this.clientEvents.onAvatarEnteredRegion.next(this.avatars[obj.ID])
+                    const av = Avatar.fromGameObject(obj);
+                    this.agent.currentRegion.agents[avatarID] = av;
+                    this.clientEvents.onAvatarEnteredRegion.next(av)
+                }
+                else
+                {
+                    this.agent.currentRegion.agents[avatarID].processObjectUpdate(obj);
                 }
             }
             else
             {
-                if (this.avatars[obj.ID] !== undefined)
+                if (this.agent.currentRegion.agents[avatarID] !== undefined)
                 {
-                    this.avatars[obj.ID].processObjectUpdate(obj);
+                    this.agent.currentRegion.agents[avatarID].processObjectUpdate(obj);
                 }
                 else
                 {
@@ -473,15 +478,15 @@ export class ObjectStoreLite implements IObjectStore
                 }
             }
         }
-        if (obj.ParentID === 0 || (obj.ParentID !== undefined && this.avatars[obj.ParentID] !== undefined))
+        if (obj.ParentID === 0 || (obj.ParentID !== undefined && this.objects[obj.ParentID] !== undefined && this.objects[obj.ParentID].PCode === PCode.Avatar))
         {
             if (newObject)
             {
                 if (obj.IsAttachment && obj.ParentID !== undefined)
                 {
-                    if (this.avatars[obj.ParentID] !== undefined)
+                    if (this.objects[obj.ParentID] !== undefined && this.objects[obj.ParentID].PCode === PCode.Avatar)
                     {
-                        const avatar = this.avatars[obj.ParentID];
+                        const avatar = this.agent.currentRegion.agents[this.objects[obj.ParentID].FullID.toString()];
 
                         let invItemID = UUID.zero();
                         if (obj.NameValue['AttachItemID'])
@@ -744,30 +749,11 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    getAvatar(avatarID: UUID)
-    {
-        const obj = this.objectsByUUID[avatarID.toString()];
-        if (obj !== undefined)
-        {
-            if (this.avatars[obj] !== undefined)
-            {
-                return this.avatars[obj];
-            }
-            else
-            {
-                throw new Error('Found the UUID in the region, but it doesn\'t appear to be an avatar');
-            }
-        }
-        else
-        {
-            throw new Error('Avatar does not exist in the region at the moment');
-        }
-    }
-
     deleteObject(objectID: number)
     {
         if (this.objects[objectID])
         {
+            const objectUUID = this.objects[objectID].FullID;
             const obj = this.objects[objectID];
             obj.deleted = true;
 
@@ -779,17 +765,15 @@ export class ObjectStoreLite implements IObjectStore
 
             if (obj.IsAttachment && obj.ParentID !== undefined)
             {
-                if (this.avatars[obj.ParentID] !== undefined)
+                if (this.objects[obj.ParentID] !== undefined && this.objects[obj.ParentID].PCode === PCode.Avatar)
                 {
-                    this.avatars[obj.ParentID].removeAttachment(obj);
+                    this.agent.currentRegion.agents[this.objects[obj.ParentID].FullID.toString()].removeAttachment(obj);
                 }
             }
 
-            if (this.avatars[objectID] !== undefined)
+            if (this.agent.currentRegion.agents[objectUUID.toString()] !== undefined)
             {
-                this.clientEvents.onAvatarLeftRegion.next(this.avatars[objectID]);
-                this.avatars[objectID].leftRegion();
-                delete this.avatars[objectID];
+                this.agent.currentRegion.agents[objectUUID.toString()].isVisible = false;
             }
 
             // First, kill all children (not the people kind)
