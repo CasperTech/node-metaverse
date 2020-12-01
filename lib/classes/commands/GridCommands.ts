@@ -23,6 +23,12 @@ import { PacketFlags } from '../../enums/PacketFlags';
 import { Vector2 } from '../Vector2';
 import { MapInfoRangeReplyEvent } from '../../events/MapInfoRangeReplyEvent';
 import { AvatarQueryResult } from '../public/AvatarQueryResult';
+import { MoneyTransferRequestMessage } from '../messages/MoneyTransferRequest';
+import { MoneyTransactionType } from '../../enums/MoneyTransactionType';
+import { TransactionFlags } from '../../enums/TransactionFlags';
+import { MoneyBalanceReplyMessage } from '../messages/MoneyBalanceReply';
+import { MoneyBalanceRequestMessage } from '../messages/MoneyBalanceRequest';
+import { GameObject } from '../public/GameObject';
 
 export class GridCommands extends CommandsBase
 {
@@ -387,6 +393,86 @@ export class GridCommands extends CommandsBase
                 reject(err);
             });
         });
+    }
+
+    async getBalance(): Promise<number>
+    {
+        const msg = new MoneyBalanceRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        msg.MoneyData = {
+            TransactionID: UUID.zero()
+        }
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        const result = await this.circuit.waitForMessage<MoneyBalanceReplyMessage>(Message.MoneyBalanceReply, 10000);
+        return result.MoneyData.MoneyBalance;
+    }
+
+    async payObject(target: GameObject, amount: number): Promise<void>
+    {
+        const description = target.name || 'Object';
+        const targetUUID = target.FullID;
+
+        return this.pay(targetUUID, amount, description, MoneyTransactionType.PayObject);
+    }
+
+    async payGroup(target: UUID | string, amount: number, description: string): Promise<void>
+    {
+        if (typeof target === 'string')
+        {
+            target = new UUID(target);
+        }
+
+        return this.pay(target, amount, description, MoneyTransactionType.Gift, TransactionFlags.DestGroup);
+    }
+
+    async payAvatar(target: UUID | string, amount: number, description: string): Promise<void>
+    {
+        if (typeof target === 'string')
+        {
+            target = new UUID(target);
+        }
+
+        return this.pay(target, amount, description, MoneyTransactionType.Gift, TransactionFlags.None);
+    }
+
+    private async pay(target: UUID, amount: number, description: string, type: MoneyTransactionType, flags: TransactionFlags = TransactionFlags.None)
+    {
+        if (amount % 1 !== 0)
+        {
+            throw new Error('Amount to pay must be a whole number');
+        }
+
+        const msg = new MoneyTransferRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        msg.MoneyData = {
+            Description: Utils.StringToBuffer(description),
+            DestID: target,
+            SourceID: this.agent.agentID,
+            TransactionType: type,
+            AggregatePermInventory: 0,
+            AggregatePermNextOwner: 0,
+            Flags: flags,
+            Amount: amount
+        }
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        const result = await this.circuit.waitForMessage<MoneyBalanceReplyMessage>(Message.MoneyBalanceReply, 10000, (mes: MoneyBalanceReplyMessage): FilterResponse =>
+        {
+            if (mes.TransactionInfo.DestID.equals(target) && mes.TransactionInfo.Amount === amount)
+            {
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.NoMatch;
+        });
+        if (!result.MoneyData.TransactionSuccess)
+        {
+            throw new Error('Payment failed');
+        }
     }
 
     avatarKey2Name(uuid: UUID | UUID[]): Promise<AvatarQueryResult | AvatarQueryResult[]>

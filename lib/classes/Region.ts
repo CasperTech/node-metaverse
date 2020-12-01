@@ -52,6 +52,8 @@ import { SimStatsEvent } from '../events/SimStatsEvent';
 import { StatID } from '../enums/StatID';
 import { CoarseLocationUpdateMessage } from './messages/CoarseLocationUpdate';
 import { Avatar } from './public/Avatar';
+import { MoneyBalanceReplyMessage } from './messages/MoneyBalanceReply';
+import { BalanceUpdatedEvent } from '../events/BalanceUpdatedEvent';
 
 export class Region
 {
@@ -349,10 +351,34 @@ export class Region
             Message.SimulatorViewerTimeMessage,
             Message.SimStats,
             Message.CoarseLocationUpdate,
+            Message.MoneyBalanceReply
         ], async (packet: Packet) =>
         {
             switch (packet.message.id)
             {
+                case Message.MoneyBalanceReply:
+                {
+                    const msg = packet.message as MoneyBalanceReplyMessage;
+                    const evt = new BalanceUpdatedEvent();
+                    if (msg.TransactionInfo.Amount === -1)
+                    {
+                        // This is a requested balance update, so don't sent an event
+                        return;
+                    }
+                    evt.balance = msg.MoneyData.MoneyBalance;
+                    evt.transaction = {
+                        type: msg.TransactionInfo.TransactionType,
+                        amount: msg.TransactionInfo.Amount,
+                        from: msg.TransactionInfo.SourceID,
+                        to: msg.TransactionInfo.DestID,
+                        success: msg.MoneyData.TransactionSuccess,
+                        fromGroup: msg.TransactionInfo.IsSourceGroup,
+                        toGroup: msg.TransactionInfo.IsDestGroup,
+                        description: Utils.BufferToStringSimple(msg.TransactionInfo.ItemDescription)
+                    }
+                    this.clientEvents.onBalanceUpdated.next(evt);
+                    break;
+                }
                 case Message.CoarseLocationUpdate:
                 {
                     const locations: CoarseLocationUpdateMessage = packet.message as CoarseLocationUpdateMessage;
