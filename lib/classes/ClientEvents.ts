@@ -30,6 +30,7 @@ import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
 import { InventoryResponseEvent } from '../events/InventoryResponseEvent';
 import { LandStatsEvent } from '../events/LandStatsEvent';
 import { SimStatsEvent } from '../events/SimStatsEvent';
+import { BalanceUpdatedEvent } from '../events/BalanceUpdatedEvent';
 
 export class ClientEvents
 {
@@ -66,4 +67,5 @@ export class ClientEvents
     onBulkUpdateInventoryEvent: Subject<BulkUpdateInventoryEvent> = new Subject<BulkUpdateInventoryEvent>();
     onLandStatReplyEvent: Subject<LandStatsEvent> = new Subject<LandStatsEvent>();
     onSimStats: Subject<SimStatsEvent> = new Subject<SimStatsEvent>();
+    onBalanceUpdated: Subject<BalanceUpdatedEvent> = new Subject<BalanceUpdatedEvent>();
 }
