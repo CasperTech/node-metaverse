@@ -33,6 +33,7 @@ import { ObjectResolver } from '../ObjectResolver';
 import Timer = NodeJS.Timer;
 import Timeout = NodeJS.Timeout;
 import { Avatar } from '../public/Avatar';
+import { EstateOwnerMessageMessage } from '../messages/EstateOwnerMessage';
 
 export class RegionCommands extends CommandsBase
 {
@@ -114,6 +115,50 @@ export class RegionCommands extends CommandsBase
                 }
             }
         });
+    }
+
+    async estateMessage(method: string, params: string[])
+    {
+        const msg = new EstateOwnerMessageMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID,
+            TransactionID: UUID.zero()
+        };
+        msg.MethodData = {
+            Invoice: UUID.random(),
+            Method: Utils.StringToBuffer(method),
+        }
+        msg.ParamList = [];
+        for (const param of params)
+        {
+            msg.ParamList.push({
+                Parameter: Utils.StringToBuffer(param)
+            })
+        }
+        const sequenceID = this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceID, 10000);
+    }
+
+    restartRegion(secs: number): Promise<void>
+    {
+        return this.estateMessage('restart', [String(secs)]);
+    }
+
+    async simulatorMessage(message: string)
+    {
+        return this.estateMessage('simulatormessage', [
+            '-1',
+            '-1',
+            this.agent.agentID.toString(),
+            this.agent.firstName + ' ' + this.agent.lastName,
+            message
+        ]);
+    }
+
+    cancelRestart(): Promise<void>
+    {
+        return this.restartRegion(-1);
     }
 
     getAvatarsInRegion(): Avatar[]
