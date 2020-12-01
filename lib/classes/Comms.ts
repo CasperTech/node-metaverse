@@ -299,9 +299,8 @@ export class Comms
                 {
                     // TODO: this isn't finished
                     const alertm = packet.message as AlertMessageMessage;
-
                     const alertMessage = Utils.BufferToStringSimple(alertm.AlertData.Message);
-
+                    console.log('AlertMessage: ' + alertMessage);
                     for (const info of alertm.AlertInfo)
                     {
                         const alertInfoMessage = Utils.BufferToStringSimple(info.Message);
