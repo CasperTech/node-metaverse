@@ -34,26 +34,51 @@ import { AgentMovementCompleteMessage } from './classes/messages/AgentMovementCo
 import { Subscription } from 'rxjs/internal/Subscription';
 import Timer = NodeJS.Timer;
 
-
 export class Bot
 {
     private loginParams: LoginParameters;
-    private currentRegion: Region;
-    private agent: Agent;
     private ping: Timer | null = null;
     private pingNumber = 0;
     private lastSuccessfulPing = 0;
     private circuitSubscription: Subscription | null = null;
     private options: BotOptionFlags;
     private eventQueueRunning = false;
-    public clientEvents: ClientEvents;
-    public clientCommands: ClientCommands;
     private eventQueueWaits: any = {};
     private stay = false;
+    public clientEvents: ClientEvents;
     private stayRegion = '';
     private stayPosition = new Vector3();
 
+    private _agent?: Agent;
+    private _currentRegion?: Region;
+    private _clientCommands?: ClientCommands;
 
+    get currentRegion(): Region
+    {
+        if (this._currentRegion === undefined)
+        {
+            throw new Error('Internal error - currentRegion is undefined');
+        }
+        return this._currentRegion;
+    }
+
+    get agent(): Agent
+    {
+        if (this._agent === undefined)
+        {
+            throw new Error('Internal error - agent is undefined');
+        }
+        return this._agent;
+    }
+
+    get clientCommands(): ClientCommands
+    {
+        if (this._clientCommands === undefined)
+        {
+            throw new Error('Internal error - clientCommands is undefined');
+        }
+        return this._clientCommands;
+    }
 
     constructor(login: LoginParameters, options: BotOptionFlags)
     {
@@ -96,19 +121,19 @@ export class Bot
     {
         const loginHandler = new LoginHandler(this.clientEvents, this.options);
         const response: LoginResponse = await loginHandler.Login(this.loginParams);
-        this.currentRegion = response.region;
-        this.agent = response.agent;
-        this.clientCommands = new ClientCommands(response.region, response.agent, this);
-        this.currentRegion.clientCommands = this.clientCommands;
+        this._currentRegion = response.region;
+        this._agent = response.agent;
+        this._clientCommands = new ClientCommands(response.region, response.agent, this);
+        this.currentRegion.clientCommands = this._clientCommands;
         return response;
     }
 
     async changeRegion(region: Region, requested: boolean)
     {
         this.closeCircuit();
-        this.currentRegion = region;
-        this.clientCommands = new ClientCommands(this.currentRegion, this.agent, this);
-        this.currentRegion.clientCommands = this.clientCommands;
+        this._currentRegion = region;
+        this._clientCommands = new ClientCommands(this.currentRegion, this.agent, this);
+        this._currentRegion.clientCommands = this._clientCommands;
         if (this.ping !== null)
         {
             clearInterval(this.ping);
@@ -155,10 +180,10 @@ export class Bot
             this.circuitSubscription.unsubscribe();
             this.circuitSubscription = null;
         }
-        delete this.currentRegion;
+        delete this._currentRegion;
 
         this.clientCommands.shutdown();
-        delete this.clientCommands;
+        delete this._clientCommands;
         if (this.ping !== null)
         {
             clearInterval(this.ping);
@@ -171,7 +196,7 @@ export class Bot
     {
         this.closeCircuit();
         this.agent.shutdown();
-        delete this.agent;
+        delete this._agent;
         this.disconnected(false, message);
     }
 
@@ -200,7 +225,7 @@ export class Bot
         this.stayPosition = new Vector3();
         this.closeCircuit();
         this.agent.shutdown();
-        delete this.agent;
+        delete this._agent;
         this.disconnected(true, 'Logout completed');
     }
 
@@ -279,9 +304,9 @@ export class Bot
             console.error(error);
         });
 
-        if (this.clientCommands !== null)
+        if (this._clientCommands)
         {
-            this.clientCommands.network.setBandwidth(1536000);
+            this._clientCommands.network.setBandwidth(1536000);
         }
 
         const agentRequest = new AgentDataUpdateRequestMessage();

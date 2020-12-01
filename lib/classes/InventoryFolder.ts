@@ -347,13 +347,13 @@ export class InventoryFolder
         });
     }
 
-    populate(useCached = true)
+    populate(useCached = true): Promise<void>
     {
         if (!useCached)
         {
             return this.populateInternal();
         }
-        return new Promise((resolve, reject) =>
+        return new Promise<void>((resolve, reject) =>
         {
             this.loadCache().then(() =>
             {
@@ -414,31 +414,6 @@ export class InventoryFolder
                 Description: Utils.StringToBuffer(description)
             };
 
-
-            if (data.length + 100 < 1200)
-            {
-                msg.AssetBlock.AssetData = data;
-                this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
-                this.agent.currentRegion.circuit.sendMessage(createMsg, PacketFlags.Reliable);
-            }
-            else
-            {
-                this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
-                this.agent.currentRegion.circuit.sendMessage(createMsg, PacketFlags.Reliable);
-                this.agent.currentRegion.circuit.waitForMessage<RequestXferMessage>(Message.RequestXfer, 10000).then((result: RequestXferMessage) =>
-                {
-                    this.agent.currentRegion.circuit.XferFileUp(result.XferID.ID, data).then(() =>
-                    {
-                        console.log('Xfer finished');
-                        resolve();
-                    }).catch((err: Error) =>
-                    {
-                        console.error('Error with transfer');
-                        console.error(err);
-                        reject(err);
-                    });
-                });
-            }
             this.agent.currentRegion.circuit.waitForMessage<UpdateCreateInventoryItemMessage>(Message.UpdateCreateInventoryItem, 10000, (message: UpdateCreateInventoryItemMessage) =>
             {
                 if (message.InventoryData[0].CallbackID === callbackID)
@@ -457,6 +432,21 @@ export class InventoryFolder
                 }
                 resolve(result.InventoryData[0].ItemID);
             });
+
+
+            if (data.length + 100 < 1200)
+            {
+                msg.AssetBlock.AssetData = data;
+                this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
+                this.agent.currentRegion.circuit.sendMessage(createMsg, PacketFlags.Reliable);
+            }
+            else
+            {
+                this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
+                this.agent.currentRegion.circuit.sendMessage(createMsg, PacketFlags.Reliable);
+                const result: RequestXferMessage = await this.agent.currentRegion.circuit.waitForMessage<RequestXferMessage>(Message.RequestXfer, 10000);
+                await this.agent.currentRegion.circuit.XferFileUp(result.XferID.ID, data);
+            }
         });
     }
 
