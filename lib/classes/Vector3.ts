@@ -58,14 +58,14 @@ export class Vector3 extends vec3
 
     constructor(buf?: Buffer | number[] | Vector3 | vec3, pos?: number, double?: boolean)
     {
-        if (buf instanceof vec3)
+        if (buf instanceof Vector3)
         {
             super();
             this.x = buf.x;
             this.y = buf.y;
             this.z = buf.z;
         }
-        else if (buf instanceof Vector3)
+        else if (buf instanceof vec3)
         {
             super();
             this.x = buf.x;

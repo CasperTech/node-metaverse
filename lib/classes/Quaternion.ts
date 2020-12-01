@@ -66,7 +66,7 @@ export class Quaternion extends quat
 
     constructor(buf?: Buffer | number[] | Quaternion | quat, pos?: number)
     {
-        if (buf instanceof quat)
+        if (buf instanceof Quaternion)
         {
             super();
             this.x = buf.x;
@@ -74,7 +74,7 @@ export class Quaternion extends quat
             this.z = buf.z;
             this.w = buf.w;
         }
-        else if (buf instanceof Quaternion)
+        else if (buf instanceof quat)
         {
             super();
             this.x = buf.x;
