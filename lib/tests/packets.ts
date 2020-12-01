@@ -24,7 +24,7 @@ function compareArrays(arr1: any[], arr2: any[])
 
 describe('Packets', () =>
 {
-    const p = path.resolve(__dirname + '/../../testing/packets');
+    const p = path.resolve(__dirname + '/../../../testing/packets');
     const files = fs.readdirSync(p);
     for (const file of files)
     {
