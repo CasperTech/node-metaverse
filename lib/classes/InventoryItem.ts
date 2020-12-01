@@ -4,7 +4,6 @@ import { PermissionMask } from '../enums/PermissionMask';
 import { InventoryItemFlags } from '../enums/InventoryItemFlags';
 import { AssetType } from '../enums/AssetType';
 import * as builder from 'xmlbuilder';
-import * as xml2js from 'xml2js';
 import { Utils } from './Utils';
 import { AttachmentPoint } from '../enums/AttachmentPoint';
 import { RezSingleAttachmentFromInvMessage } from './messages/RezSingleAttachmentFromInv';
@@ -709,6 +708,10 @@ export class InventoryItem
                 Description: Utils.StringToBuffer(this.description)
             };
             const avatar = this.agent.currentRegion.clientCommands.agent.getAvatar();
+            if (avatar === undefined)
+            {
+                throw new Error('Avatar could not be found');
+            }
             let subs: Subscription | undefined = undefined;
             let tmout: Timeout | undefined = undefined;
             subs = avatar.onAttachmentAdded.subscribe((obj: GameObject) =>

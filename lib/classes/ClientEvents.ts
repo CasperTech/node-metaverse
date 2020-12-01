@@ -62,7 +62,6 @@ export class ClientEvents
     onSelectedObjectEvent: Subject<SelectedObjectEvent> = new Subject<SelectedObjectEvent>();
     onObjectResolvedEvent: Subject<ObjectResolvedEvent> = new Subject<ObjectResolvedEvent>();
     onAvatarEnteredRegion: Subject<Avatar> = new Subject<Avatar>();
-    onAvatarLeftRegion: Subject<Avatar> = new Subject<Avatar>();
     onRegionTimeDilation: Subject<number> = new Subject<number>();
     onBulkUpdateInventoryEvent: Subject<BulkUpdateInventoryEvent> = new Subject<BulkUpdateInventoryEvent>();
     onLandStatReplyEvent: Subject<LandStatsEvent> = new Subject<LandStatsEvent>();

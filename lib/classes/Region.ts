@@ -50,6 +50,8 @@ import { ObjectResolver } from './ObjectResolver';
 import { SimStatsMessage } from './messages/SimStats';
 import { SimStatsEvent } from '../events/SimStatsEvent';
 import { StatID } from '../enums/StatID';
+import { CoarseLocationUpdateMessage } from './messages/CoarseLocationUpdate';
+import { Avatar } from './public/Avatar';
 
 export class Region
 {
@@ -149,6 +151,8 @@ export class Region
     timeOffset = 0;
 
     resolver: ObjectResolver = new ObjectResolver(this);
+
+    agents: {[key: string]: Avatar} = {};
 
     private parcelOverlayReceived: {[key: number]: Buffer} = {};
 
@@ -344,10 +348,55 @@ export class Region
             Message.LayerData,
             Message.SimulatorViewerTimeMessage,
             Message.SimStats,
-        ], (packet: Packet) =>
+            Message.CoarseLocationUpdate,
+        ], async (packet: Packet) =>
         {
             switch (packet.message.id)
             {
+                case Message.CoarseLocationUpdate:
+                {
+                    const locations: CoarseLocationUpdateMessage = packet.message as CoarseLocationUpdateMessage;
+                    const foundAgents: {[key: string]: Vector3} = {};
+                    for (let x = 0; x < locations.AgentData.length; x++)
+                    {
+                        const agentData = locations.AgentData[x];
+                        const location = locations.Location[x];
+                        const newPosition = new Vector3([location.X, location.Y, location.Z * 4]);
+                        foundAgents[agentData.AgentID.toString()] = newPosition;
+
+                        if (this.agents[agentData.AgentID.toString()] === undefined)
+                        {
+                            let resolved = await this.clientCommands.grid.avatarKey2Name(agentData.AgentID);
+                            if (Array.isArray(resolved))
+                            {
+                                resolved = resolved[0];
+                            }
+                            if (this.agents[agentData.AgentID.toString()] === undefined)
+                            {
+                                this.agents[agentData.AgentID.toString()] = new Avatar(agentData.AgentID, resolved.getFirstName(), resolved.getLastName());
+                                this.clientEvents.onAvatarEnteredRegion.next(this.agents[agentData.AgentID.toString()]);
+                            }
+                            else
+                            {
+                                this.agents[agentData.AgentID.toString()].coarsePosition = newPosition;
+                            }
+                        }
+                        else
+                        {
+                            this.agents[agentData.AgentID.toString()].coarsePosition = newPosition;
+                        }
+                    }
+                    const keys = Object.keys(this.agents)
+                    for (const agentID of keys)
+                    {
+                        if (foundAgents[agentID] === undefined)
+                        {
+                            this.agents[agentID].coarseLeftRegion();
+                            delete this.agents[agentID];
+                        }
+                    }
+                    break;
+                }
                 case Message.SimStats:
                 {
                     const stats: SimStatsMessage = packet.message as SimStatsMessage;
