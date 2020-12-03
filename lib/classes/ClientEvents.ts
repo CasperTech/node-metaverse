@@ -24,7 +24,6 @@ import { FriendRemovedEvent } from '../events/FriendRemovedEvent';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
-import { GameObject } from './public/GameObject';
 import { Avatar } from './public/Avatar';
 import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
 import { InventoryResponseEvent } from '../events/InventoryResponseEvent';

@@ -24,6 +24,7 @@ export class ChangeUserRightsMessage implements MessageBase
         return ((20) * this.Rights.length) + 17;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -41,10 +42,10 @@ export class ChangeUserRightsMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID
         } = {

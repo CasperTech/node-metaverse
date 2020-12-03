@@ -26,6 +26,7 @@ export class ChatFromViewerMessage implements MessageBase
         return (this.ChatData['Message'].length + 2) + 37;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -43,6 +44,7 @@ export class ChatFromViewerMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

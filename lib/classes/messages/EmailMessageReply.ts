@@ -26,6 +26,7 @@ export class EmailMessageReplyMessage implements MessageBase
         return (this.DataBlock['FromAddress'].length + 1 + this.DataBlock['Subject'].length + 1 + this.DataBlock['Data'].length + 2 + this.DataBlock['MailFilter'].length + 1) + 24;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -51,6 +52,7 @@ export class EmailMessageReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

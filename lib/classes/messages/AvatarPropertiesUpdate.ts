@@ -30,6 +30,7 @@ export class AvatarPropertiesUpdateMessage implements MessageBase
         return (this.PropertiesData['AboutText'].length + 2 + this.PropertiesData['FLAboutText'].length + 1 + this.PropertiesData['ProfileURL'].length + 1) + 66;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -56,6 +57,7 @@ export class AvatarPropertiesUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

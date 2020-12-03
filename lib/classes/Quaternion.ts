@@ -1,7 +1,7 @@
-import { quat } from '../tsm/quat';
+import { TSMQuat } from '../tsm/quat';
 import { XMLNode } from 'xmlbuilder';
 
-export class Quaternion extends quat
+export class Quaternion extends TSMQuat
 {
     static getIdentity(): Quaternion
     {
@@ -10,7 +10,7 @@ export class Quaternion extends quat
         return q;
     }
 
-    static getXML(doc: XMLNode, v?: Quaternion)
+    static getXML(doc: XMLNode, v?: Quaternion): void
     {
         if (v === undefined)
         {
@@ -64,7 +64,7 @@ export class Quaternion extends quat
         return false;
     }
 
-    constructor(buf?: Buffer | number[] | Quaternion | quat, pos?: number)
+    constructor(buf?: Buffer | number[] | Quaternion | TSMQuat, pos?: number)
     {
         if (buf instanceof Quaternion)
         {
@@ -74,7 +74,7 @@ export class Quaternion extends quat
             this.z = buf.z;
             this.w = buf.w;
         }
-        else if (buf instanceof quat)
+        else if (buf instanceof TSMQuat)
         {
             super();
             this.x = buf.x;
@@ -103,27 +103,32 @@ export class Quaternion extends quat
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number)
+
+    writeToBuffer(buf: Buffer, pos: number): void
     {
-        const q: quat = this.normalize();
+        const q: TSMQuat = this.normalize();
         buf.writeFloatLE(q.x, pos);
         buf.writeFloatLE(q.y, pos + 4);
         buf.writeFloatLE(q.z, pos + 8);
     }
+
     toString(): string
     {
         return '<' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + '>';
     }
+
     getBuffer(): Buffer
     {
         const j = Buffer.allocUnsafe(12);
         this.writeToBuffer(j, 0);
         return j;
     }
+
     compareApprox(rot: Quaternion): boolean
     {
         return this.angleBetween(rot) < 0.0001 || rot.equals(this, 0.0001);
     }
+
     angleBetween(b: Quaternion): number
     {
         const a = this;

@@ -32,19 +32,20 @@
 
 ///<reference path='./common.ts' />
 
-import { mat4 } from './mat4';
 
-export class vec4
+import { TSMMat4 } from './mat4';
+
+export class TSMVec4
 {
-    static zero = new vec4([0, 0, 0, 1]);
+    static zero = new TSMVec4([0, 0, 0, 1]);
 
     private values = new Float32Array(4);
 
-    static mix(vector: vec4, vector2: vec4, time: number, dest: vec4 | null = null): vec4
+    static mix(vector: TSMVec4, vector2: TSMVec4, time: number, dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
-            dest = new vec4();
+            dest = new TSMVec4();
         }
 
         dest.x = vector.x + time * (vector2.x - vector.x);
@@ -55,11 +56,11 @@ export class vec4
         return dest;
     }
 
-    static sum(vector: vec4, vector2: vec4, dest: vec4 | null = null): vec4
+    static sum(vector: TSMVec4, vector2: TSMVec4, dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
-            dest = new vec4();
+            dest = new TSMVec4();
         }
 
         dest.x = vector.x + vector2.x,
@@ -70,11 +71,11 @@ export class vec4
         return dest;
     }
 
-    static difference(vector: vec4, vector2: vec4, dest: vec4 | null = null): vec4
+    static difference(vector: TSMVec4, vector2: TSMVec4, dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
-            dest = new vec4();
+            dest = new TSMVec4();
         }
 
         dest.x = vector.x - vector2.x,
@@ -85,11 +86,11 @@ export class vec4
         return dest;
     }
 
-    static product(vector: vec4, vector2: vec4, dest: vec4 | null = null): vec4
+    static product(vector: TSMVec4, vector2: TSMVec4, dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
-            dest = new vec4();
+            dest = new TSMVec4();
         }
 
         dest.x = vector.x * vector2.x,
@@ -100,11 +101,11 @@ export class vec4
         return dest;
     }
 
-    static quotient(vector: vec4, vector2: vec4, dest: vec4 | null = null): vec4
+    static quotient(vector: TSMVec4, vector2: TSMVec4, dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
-            dest = new vec4();
+            dest = new TSMVec4();
         }
 
         dest.x = vector.x / vector2.x,
@@ -312,11 +313,11 @@ export class vec4
         this.w = 0;
     }
 
-    copy(dest: vec4 | null = null): vec4
+    copy(dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
-            dest = new vec4();
+            dest = new TSMVec4();
         }
 
         dest.x = this.x;
@@ -327,7 +328,7 @@ export class vec4
         return dest;
     }
 
-    negate(dest: vec4 | null = null): vec4
+    negate(dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
@@ -342,7 +343,7 @@ export class vec4
         return dest;
     }
 
-    equals(vector: vec4, threshold = EPSILON): boolean
+    equals(vector: TSMVec4, threshold = EPSILON): boolean
     {
         if (Math.abs(this.x - vector.x) > threshold)
         {
@@ -382,7 +383,7 @@ export class vec4
         return (x * x + y * y + z * z + w * w);
     }
 
-    add(vector: vec4): vec4
+    add(vector: TSMVec4): TSMVec4
     {
         this.x += vector.x;
         this.y += vector.y;
@@ -392,7 +393,7 @@ export class vec4
         return this;
     }
 
-    subtract(vector: vec4): vec4
+    subtract(vector: TSMVec4): TSMVec4
     {
         this.x -= vector.x;
         this.y -= vector.y;
@@ -402,7 +403,7 @@ export class vec4
         return this;
     }
 
-    multiply(vector: vec4): vec4
+    multiply(vector: TSMVec4): TSMVec4
     {
         this.x *= vector.x;
         this.y *= vector.y;
@@ -412,7 +413,7 @@ export class vec4
         return this;
     }
 
-    divide(vector: vec4): vec4
+    divide(vector: TSMVec4): TSMVec4
     {
         this.x /= vector.x;
         this.y /= vector.y;
@@ -422,7 +423,7 @@ export class vec4
         return this;
     }
 
-    scale(value: number, dest: vec4 | null = null): vec4
+    scale(value: number, dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
@@ -437,7 +438,7 @@ export class vec4
         return dest;
     }
 
-    normalize(dest: vec4 | null = null): vec4
+    normalize(dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
@@ -471,14 +472,14 @@ export class vec4
         return dest;
     }
 
-    multiplyMat4(matrix: mat4, dest: vec4 | null = null): vec4
+    multiplyTSMMat4(matrix: TSMMat4, dest: TSMVec4 | null = null): TSMVec4
     {
         if (!dest)
         {
             dest = this;
         }
 
-        return matrix.multiplyVec4(this, dest);
+        return matrix.multiplyTSMVec4(this, dest);
     }
 }
 

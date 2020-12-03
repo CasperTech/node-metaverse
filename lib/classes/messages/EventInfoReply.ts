@@ -36,6 +36,7 @@ export class EventInfoReplyMessage implements MessageBase
         return (this.EventData['Creator'].length + 1 + this.EventData['Name'].length + 1 + this.EventData['Category'].length + 1 + this.EventData['Desc'].length + 2 + this.EventData['Date'].length + 1 + this.EventData['SimName'].length + 1) + 64;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -77,6 +78,7 @@ export class EventInfoReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

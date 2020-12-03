@@ -43,6 +43,7 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         return (this.MoneyData['StartDate'].length + 1 + this.MoneyData['LastTaxDate'].length + 1 + this.MoneyData['TaxDate'].length + 1) + 112;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -96,6 +97,7 @@ export class GroupAccountSummaryReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

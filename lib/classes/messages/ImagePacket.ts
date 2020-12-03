@@ -24,6 +24,7 @@ export class ImagePacketMessage implements MessageBase
         return (this.ImageData['Data'].length + 2) + 18;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -38,6 +39,7 @@ export class ImagePacketMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

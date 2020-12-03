@@ -28,6 +28,7 @@ export class ChatFromSimulatorMessage implements MessageBase
         return (this.ChatData['FromName'].length + 1 + this.ChatData['Message'].length + 2) + 47;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -50,6 +51,7 @@ export class ChatFromSimulatorMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

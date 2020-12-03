@@ -25,6 +25,7 @@ export class ChangeInventoryItemFlagsMessage implements MessageBase
         return ((20) * this.InventoryData.length) + 33;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -44,10 +45,10 @@ export class ChangeInventoryItemFlagsMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID

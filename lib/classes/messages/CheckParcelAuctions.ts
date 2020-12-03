@@ -20,6 +20,7 @@ export class CheckParcelAuctionsMessage implements MessageBase
         return ((8) * this.RegionData.length) + 1;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -35,10 +36,10 @@ export class CheckParcelAuctionsMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         if (pos >= buf.length)
         {
             return pos - startPos;

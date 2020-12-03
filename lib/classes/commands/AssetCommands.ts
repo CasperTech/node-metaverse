@@ -24,8 +24,6 @@ import { Subscription } from 'rxjs';
 
 export class AssetCommands extends CommandsBase
 {
-    private callbackID = 0;
-
     async downloadAsset(type: HTTPAssets, uuid: UUID | string): Promise<Buffer>
     {
         if (typeof uuid === 'string')
@@ -117,7 +115,7 @@ export class AssetCommands extends CommandsBase
             let subscription: Subscription | undefined = undefined;
             let timeout: number | undefined;
 
-            function cleanup()
+            function cleanup(): void
             {
                 if (subscription !== undefined)
                 {
@@ -131,7 +129,7 @@ export class AssetCommands extends CommandsBase
                 }
             }
 
-            function placeTimeout()
+            function placeTimeout(): void
             {
                 timeout = setTimeout(() =>
                 {
@@ -140,7 +138,7 @@ export class AssetCommands extends CommandsBase
                 }, 10000) as any as number;
             }
 
-            function resetTimeout()
+            function resetTimeout(): void
             {
                 if (timeout !== undefined)
                 {
@@ -283,7 +281,16 @@ export class AssetCommands extends CommandsBase
         });
     }
 
-    downloadInventoryAsset(itemID: UUID, ownerID: UUID, type: AssetType, priority: boolean,  objectID: UUID = UUID.zero(), assetID: UUID = UUID.zero(), outAssetID?: { assetID: UUID }, sourceType: TransferSourceType = TransferSourceType.SimInventoryItem, channelType: TransferChannelType = TransferChannelType.Asset): Promise<Buffer>
+    downloadInventoryAsset(
+        itemID: UUID,
+        ownerID: UUID,
+        type: AssetType,
+        priority: boolean,
+        objectID: UUID = UUID.zero(),
+        assetID: UUID = UUID.zero(),
+        outAssetID?: { assetID: UUID },
+        sourceType: TransferSourceType = TransferSourceType.SimInventoryItem,
+        channelType: TransferChannelType = TransferChannelType.Asset): Promise<Buffer>
     {
         return new Promise<Buffer>((resolve, reject) =>
         {
@@ -321,7 +328,7 @@ export class AssetCommands extends CommandsBase
         });
     }
 
-    private async getMaterialsLimited(uuidArray: any[], uuids: {[key: string]: Material | null})
+    private async getMaterialsLimited(uuidArray: any[], uuids: {[key: string]: Material | null}): Promise<void>
     {
         const binary = LLSD.LLSD.formatBinary(uuidArray);
         const res: Buffer = await Utils.deflate(Buffer.from(binary.toArray()));
@@ -373,16 +380,12 @@ export class AssetCommands extends CommandsBase
                 try
                 {
                     await this.getMaterialsLimited(uuidArray, submittedUUIDS);
-                    let resolvedCount = 0;
-                    let totalCount = 0;
                     for (const uu of Object.keys(submittedUUIDS))
                     {
                         if (submittedUUIDS[uu] !== null)
                         {
-                            resolvedCount++;
                             uuids[uu] = submittedUUIDS[uu];
                         }
-                        totalCount++;
                     }
                 }
                 catch (error)
@@ -401,16 +404,12 @@ export class AssetCommands extends CommandsBase
         try
         {
             await this.getMaterialsLimited(uuidArray, submittedUUIDS);
-            let resolvedCount = 0;
-            let totalCount = 0;
             for (const uu of Object.keys(submittedUUIDS))
             {
                 if (submittedUUIDS[uu] !== null)
                 {
-                    resolvedCount++;
                     uuids[uu] = submittedUUIDS[uu];
                 }
-                totalCount++;
             }
         }
         catch (error)

@@ -20,6 +20,7 @@ export class ClearFollowCamPropertiesMessage implements MessageBase
         return 16;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -28,10 +29,10 @@ export class ClearFollowCamPropertiesMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjObjectData: {
             ObjectID: UUID
         } = {

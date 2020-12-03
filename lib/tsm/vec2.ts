@@ -26,22 +26,22 @@
 
 ///<reference path='./common.ts' />
 
-import { mat3 } from './mat3';
-import { mat2 } from './mat2';
-import { vec3 } from './vec3';
+import { TSMVec3 } from './vec3';
+import { TSMMat2 } from './mat2';
+import { TSMMat3 } from './mat3';
 
-export class vec2
+export class TSMVec2
 {
 
-    static zero = new vec2([0, 0]);
+    static zero = new TSMVec2([0, 0]);
 
     private values = new Float32Array(2);
 
-    static cross(vector: vec2, vector2: vec2, dest: vec3 | null = null): vec3
+    static cross(vector: TSMVec2, vector2: TSMVec2, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         const x = vector.x,
@@ -59,17 +59,17 @@ export class vec2
         return dest;
     }
 
-    static dot(vector: vec2, vector2: vec2): number
+    static dot(vector: TSMVec2, vector2: TSMVec2): number
     {
         return (vector.x * vector2.x + vector.y * vector2.y);
     }
 
-    static distance(vector: vec2, vector2: vec2): number
+    static distance(vector: TSMVec2, vector2: TSMVec2): number
     {
         return Math.sqrt(this.squaredDistance(vector, vector2));
     }
 
-    static squaredDistance(vector: vec2, vector2: vec2): number
+    static squaredDistance(vector: TSMVec2, vector2: TSMVec2): number
     {
         const x = vector2.x - vector.x,
             y = vector2.y - vector.y;
@@ -77,11 +77,11 @@ export class vec2
         return (x * x + y * y);
     }
 
-    static direction(vector: vec2, vector2: vec2, dest: vec2 | null = null): vec2
+    static direction(vector: TSMVec2, vector2: TSMVec2, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
-            dest = new vec2();
+            dest = new TSMVec2();
         }
 
         const x = vector.x - vector2.x,
@@ -105,11 +105,11 @@ export class vec2
         return dest;
     }
 
-    static mix(vector: vec2, vector2: vec2, time: number, dest: vec2 | null = null): vec2
+    static mix(vector: TSMVec2, vector2: TSMVec2, time: number, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
-            dest = new vec2();
+            dest = new TSMVec2();
         }
 
         const x = vector.x,
@@ -124,11 +124,11 @@ export class vec2
         return dest;
     }
 
-    static sum(vector: vec2, vector2: vec2, dest: vec2 | null = null): vec2
+    static sum(vector: TSMVec2, vector2: TSMVec2, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
-            dest = new vec2();
+            dest = new TSMVec2();
         }
 
         dest.x = vector.x + vector2.x;
@@ -137,11 +137,11 @@ export class vec2
         return dest;
     }
 
-    static difference(vector: vec2, vector2: vec2, dest: vec2 | null = null): vec2
+    static difference(vector: TSMVec2, vector2: TSMVec2, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
-            dest = new vec2();
+            dest = new TSMVec2();
         }
 
         dest.x = vector.x - vector2.x;
@@ -150,11 +150,11 @@ export class vec2
         return dest;
     }
 
-    static product(vector: vec2, vector2: vec2, dest: vec2 | null = null): vec2
+    static product(vector: TSMVec2, vector2: TSMVec2, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
-            dest = new vec2();
+            dest = new TSMVec2();
         }
 
         dest.x = vector.x * vector2.x;
@@ -163,11 +163,11 @@ export class vec2
         return dest;
     }
 
-    static quotient(vector: vec2, vector2: vec2, dest: vec2 | null = null): vec2
+    static quotient(vector: TSMVec2, vector2: TSMVec2, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
-            dest = new vec2();
+            dest = new TSMVec2();
         }
 
         dest.x = vector.x / vector2.x;
@@ -229,11 +229,11 @@ export class vec2
         this.y = 0;
     }
 
-    copy(dest: vec2 | null = null): vec2
+    copy(dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
-            dest = new vec2();
+            dest = new TSMVec2();
         }
 
         dest.x = this.x;
@@ -242,7 +242,7 @@ export class vec2
         return dest;
     }
 
-    negate(dest: vec2 | null = null): vec2
+    negate(dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
@@ -255,7 +255,7 @@ export class vec2
         return dest;
     }
 
-    equals(vector: vec2, threshold = EPSILON): boolean
+    equals(vector: TSMVec2, threshold = EPSILON): boolean
     {
         if (Math.abs(this.x - vector.x) > threshold)
         {
@@ -283,7 +283,7 @@ export class vec2
         return (x * x + y * y);
     }
 
-    add(vector: vec2): vec2
+    add(vector: TSMVec2): TSMVec2
     {
         this.x += vector.x;
         this.y += vector.y;
@@ -291,7 +291,7 @@ export class vec2
         return this;
     }
 
-    subtract(vector: vec2): vec2
+    subtract(vector: TSMVec2): TSMVec2
     {
         this.x -= vector.x;
         this.y -= vector.y;
@@ -299,7 +299,7 @@ export class vec2
         return this;
     }
 
-    multiply(vector: vec2): vec2
+    multiply(vector: TSMVec2): TSMVec2
     {
         this.x *= vector.x;
         this.y *= vector.y;
@@ -307,7 +307,7 @@ export class vec2
         return this;
     }
 
-    divide(vector: vec2): vec2
+    divide(vector: TSMVec2): TSMVec2
     {
         this.x /= vector.x;
         this.y /= vector.y;
@@ -315,7 +315,7 @@ export class vec2
         return this;
     }
 
-    scale(value: number, dest: vec2 | null = null): vec2
+    scale(value: number, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
@@ -328,7 +328,7 @@ export class vec2
         return dest;
     }
 
-    normalize(dest: vec2 | null = null): vec2
+    normalize(dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
@@ -358,24 +358,24 @@ export class vec2
         return dest;
     }
 
-    multiplyMat2(matrix: mat2, dest: vec2 | null = null): vec2
+    multiplyTSMMat2(matrix: TSMMat2, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
             dest = this;
         }
 
-        return matrix.multiplyVec2(this, dest);
+        return matrix.multiplyTSMVec2(this, dest);
     }
 
-    multiplyMat3(matrix: mat3, dest: vec2 | null = null): vec2
+    multiplyTSMMat3(matrix: TSMMat3, dest: TSMVec2 | null = null): TSMVec2
     {
         if (!dest)
         {
             dest = this;
         }
 
-        return matrix.multiplyVec2(this, dest);
+        return matrix.multiplyTSMVec2(this, dest);
     }
 }
 

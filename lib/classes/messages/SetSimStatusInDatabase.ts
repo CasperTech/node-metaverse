@@ -27,6 +27,7 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
         return (this.Data['HostName'].length + 1 + this.Data['Status'].length + 1) + 36;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -51,6 +52,7 @@ export class SetSimStatusInDatabaseMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

@@ -20,20 +20,21 @@ import { PrimFlags } from '../../enums/PrimFlags';
 import { NewObjectEvent } from '../../events/NewObjectEvent';
 import { Vector3 } from '../Vector3';
 import { Parcel } from '../public/Parcel';
-
-import * as Long from 'long';
-import * as micromatch from 'micromatch';
-import * as LLSD from '@caspertech/llsd';
 import { Subscription } from 'rxjs';
 import { SculptType } from '../..';
 import { AssetMap } from '../AssetMap';
 import { InventoryType } from '../../enums/InventoryType';
 import { BuildMap } from '../BuildMap';
 import { ObjectResolver } from '../ObjectResolver';
-import Timer = NodeJS.Timer;
-import Timeout = NodeJS.Timeout;
 import { Avatar } from '../public/Avatar';
 import { EstateOwnerMessageMessage } from '../messages/EstateOwnerMessage';
+
+import * as Long from 'long';
+import * as micromatch from 'micromatch';
+import * as LLSD from '@caspertech/llsd';
+
+import Timer = NodeJS.Timer;
+import Timeout = NodeJS.Timeout;
 
 export class RegionCommands extends CommandsBase
 {
@@ -117,7 +118,7 @@ export class RegionCommands extends CommandsBase
         });
     }
 
-    async estateMessage(method: string, params: string[])
+    estateMessage(method: string, params: string[]): Promise<void>
     {
         const msg = new EstateOwnerMessageMessage();
         msg.AgentData = {
@@ -145,7 +146,7 @@ export class RegionCommands extends CommandsBase
         return this.estateMessage('restart', [String(secs)]);
     }
 
-    async simulatorMessage(message: string)
+    simulatorMessage(message: string): Promise<void>
     {
         return this.estateMessage('simulatormessage', [
             '-1',
@@ -166,7 +167,7 @@ export class RegionCommands extends CommandsBase
         return Object.values(this.currentRegion.agents);
     }
 
-    async deselectObjects(objects: GameObject[])
+    async deselectObjects(objects: GameObject[]): Promise<void>
     {
         // Limit to 255 objects at once
         const selectLimit = 255;
@@ -210,7 +211,7 @@ export class RegionCommands extends CommandsBase
             // Create a map of our expected UUIDs
 
             const sequenceID = this.circuit.sendMessage(deselectObject, PacketFlags.Reliable);
-            return await this.circuit.waitForAck(sequenceID, 10000);
+            return this.circuit.waitForAck(sequenceID, 10000);
         }
     }
 
@@ -234,7 +235,7 @@ export class RegionCommands extends CommandsBase
         return this.currentRegion.exportXML();
     }
 
-    async getTerrain()
+    async getTerrain(): Promise<Buffer>
     {
         await this.currentRegion.waitForTerrain();
         const buf = Buffer.allocUnsafe(262144);
@@ -250,7 +251,7 @@ export class RegionCommands extends CommandsBase
         return buf;
     }
 
-    async selectObjects(objects: GameObject[])
+    async selectObjects(objects: GameObject[]): Promise<void>
     {
         // Limit to 255 objects at once
         const selectLimit = 255;
@@ -292,13 +293,10 @@ export class RegionCommands extends CommandsBase
             }
 
             // Create a map of our expected UUIDs
-            let resolved =  0;
-
             this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
-            const unresolved = [];
             try
             {
-                const results = await this.circuit.waitForMessage<ObjectPropertiesMessage>(Message.ObjectProperties, 10000, (propertiesMessage: ObjectPropertiesMessage): FilterResponse =>
+                await this.circuit.waitForMessage<ObjectPropertiesMessage>(Message.ObjectProperties, 10000, (propertiesMessage: ObjectPropertiesMessage): FilterResponse =>
                 {
                     let found = false;
                     for (const objData of propertiesMessage.ObjectData)
@@ -306,7 +304,6 @@ export class RegionCommands extends CommandsBase
                         const objDataUUID = objData.ObjectID.toString();
                         if (uuidMap[objDataUUID] !== undefined)
                         {
-                            resolved++;
                             const obj = uuidMap[objDataUUID];
                             obj.creatorID = objData.CreatorID;
                             obj.creationDate = objData.CreationDate;
@@ -375,12 +372,12 @@ export class RegionCommands extends CommandsBase
         return this.currentRegion.regionName;
     }
 
-    async resolveObject(object: GameObject, forceResolve = false, skipInventory = false)
+    async resolveObject(object: GameObject, forceResolve = false, skipInventory = false): Promise<GameObject[]>
     {
         return this.currentRegion.resolver.resolveObjects([object], forceResolve, skipInventory);
     }
 
-    async resolveObjects(objects: GameObject[], forceResolve = false, skipInventory = false, log = false)
+    async resolveObjects(objects: GameObject[], forceResolve = false, skipInventory = false, log = false): Promise<GameObject[]>
     {
         return this.currentRegion.resolver.resolveObjects(objects, forceResolve, skipInventory, log);
     }
@@ -435,7 +432,7 @@ export class RegionCommands extends CommandsBase
         });
     }
 
-    private async buildPart(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, buildMap: BuildMap, markRoot = false)
+    private async buildPart(obj: GameObject, posOffset: Vector3, rotOffset: Quaternion, buildMap: BuildMap, markRoot = false): Promise<GameObject>
     {
         // Calculate geometry
         const objectPosition = new Vector3(obj.Position);
@@ -451,7 +448,7 @@ export class RegionCommands extends CommandsBase
         }
         else
         {
-            const adjustedPos = new Vector3(objectPosition).multiplyByQuat(new Quaternion(rotOffset));
+            const adjustedPos = new Vector3(objectPosition).multiplyByTSMQuat(new Quaternion(rotOffset));
             finalPos = new Vector3(new Vector3(posOffset).add(adjustedPos));
 
             const baseRot = new Quaternion(rotOffset);
@@ -633,11 +630,6 @@ export class RegionCommands extends CommandsBase
                         const oldFace = obj.TextureEntry.faces[face];
                         if (!oldFace.materialID.isZero())
                         {
-                            const newFace = object.TextureEntry.faces[face];
-                            if (newFace.materialID.isZero())
-                            {
-                                const h = 5;
-                            }
                             obj.TextureEntry.faces[face].materialID = object.TextureEntry.faces[face].materialID;
                             if (obj.TextureEntry.defaultTexture !== null)
                             {
@@ -858,7 +850,7 @@ export class RegionCommands extends CommandsBase
         return object;
     }
 
-    private gatherAssets(obj: GameObject, buildMap: BuildMap)
+    private gatherAssets(obj: GameObject, buildMap: BuildMap): void
     {
         if (obj.extraParams !== undefined)
         {
@@ -1241,7 +1233,7 @@ export class RegionCommands extends CommandsBase
         return rootObj;
     }
 
-    private createPrims(count: number, position: Vector3)
+    private createPrims(count: number, position: Vector3): Promise<GameObject[]>
     {
         return new Promise<GameObject[]>((resolve, reject) =>
         {
@@ -1359,7 +1351,7 @@ export class RegionCommands extends CommandsBase
         });
     }
 
-    async getObjectByLocalID(id: number, resolve: boolean, waitFor: number = 0)
+    async getObjectByLocalID(id: number, resolve: boolean, waitFor: number = 0): Promise<GameObject>
     {
         let obj = null;
         try
@@ -1384,7 +1376,7 @@ export class RegionCommands extends CommandsBase
         return obj;
     }
 
-    async getObjectByUUID(id: UUID, resolve: boolean, waitFor: number = 0)
+    async getObjectByUUID(id: UUID, resolve: boolean, waitFor: number = 0): Promise<GameObject>
     {
         let obj = null;
         try
@@ -1422,7 +1414,7 @@ export class RegionCommands extends CommandsBase
         }
         const idCheck: {[key: string]: boolean} = {};
         const matches: GameObject[] = [];
-        const it = function(go: GameObject)
+        const it = function(go: GameObject): void
         {
             if (go.name !== undefined)
             {
@@ -1555,7 +1547,7 @@ export class RegionCommands extends CommandsBase
         return deadObjects;
     }
 
-    setPersist(persist: boolean)
+    setPersist(persist: boolean): void
     {
         this.currentRegion.objects.setPersist(persist);
     }
@@ -1567,7 +1559,7 @@ export class RegionCommands extends CommandsBase
                faceIndex: number = 0,
                position: Vector3 = Vector3.getZero(),
                normal: Vector3 = Vector3.getZero(),
-               binormal: Vector3 = Vector3.getZero())
+               binormal: Vector3 = Vector3.getZero()): Promise<void>
     {
         if (localID instanceof UUID)
         {
@@ -1594,17 +1586,17 @@ export class RegionCommands extends CommandsBase
             }
         ];
         const seqID = this.circuit.sendMessage(msg, PacketFlags.Reliable);
-        await this.circuit.waitForAck(seqID, 10000);
+        return this.circuit.waitForAck(seqID, 10000);
     }
 
     async deGrabObject(localID: number | UUID,
-                     grabOffset: Vector3 = Vector3.getZero(),
+                     _grabOffset: Vector3 = Vector3.getZero(),
                      uvCoordinate: Vector3 = Vector3.getZero(),
                      stCoordinate: Vector3 = Vector3.getZero(),
                      faceIndex: number = 0,
                      position: Vector3 = Vector3.getZero(),
                      normal: Vector3 = Vector3.getZero(),
-                     binormal: Vector3 = Vector3.getZero())
+                     binormal: Vector3 = Vector3.getZero()): Promise<void>
     {
         if (localID instanceof UUID)
         {
@@ -1630,7 +1622,7 @@ export class RegionCommands extends CommandsBase
             }
         ];
         const seqID = this.circuit.sendMessage(msg, PacketFlags.Reliable);
-        await this.circuit.waitForAck(seqID, 10000);
+        return this.circuit.waitForAck(seqID, 10000);
     }
 
     async dragGrabbedObject(localID: number | UUID,
@@ -1641,7 +1633,7 @@ export class RegionCommands extends CommandsBase
                        faceIndex: number = 0,
                        position: Vector3 = Vector3.getZero(),
                        normal: Vector3 = Vector3.getZero(),
-                       binormal: Vector3 = Vector3.getZero())
+                       binormal: Vector3 = Vector3.getZero()): Promise<void>
     {
         // For some reason this message takes a UUID when the others take a LocalID - wtf?
         if (!(localID instanceof UUID))
@@ -1671,7 +1663,7 @@ export class RegionCommands extends CommandsBase
             }
         ];
         const seqID = this.circuit.sendMessage(msg, PacketFlags.Reliable);
-        await this.circuit.waitForAck(seqID, 10000);
+        return this.circuit.waitForAck(seqID, 10000);
     }
 
     async touchObject(localID: number | UUID,
@@ -1681,7 +1673,7 @@ export class RegionCommands extends CommandsBase
                       faceIndex: number = 0,
                       position: Vector3 = Vector3.getZero(),
                       normal: Vector3 = Vector3.getZero(),
-                      binormal: Vector3 = Vector3.getZero())
+                      binormal: Vector3 = Vector3.getZero()): Promise<void>
     {
         if (localID instanceof UUID)
         {
@@ -1689,6 +1681,6 @@ export class RegionCommands extends CommandsBase
             localID = obj.ID;
         }
         await this.grabObject(localID, grabOffset, uvCoordinate, stCoordinate, faceIndex, position, normal, binormal);
-        await this.deGrabObject(localID, grabOffset, uvCoordinate, stCoordinate, faceIndex, position, normal, binormal);
+        return this.deGrabObject(localID, grabOffset, uvCoordinate, stCoordinate, faceIndex, position, normal, binormal);
     }
 }

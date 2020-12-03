@@ -142,7 +142,7 @@ export class ObjectStoreLite implements IObjectStore
             {
                 selectObjects.push(key);
             }
-            function shuffle(a: any)
+            function shuffle(a: string[]): string[]
             {
                 let j, x, i;
                 for (i = a.length - 1; i > 0; i--)
@@ -170,7 +170,7 @@ export class ObjectStoreLite implements IObjectStore
                 for (const id of selectObjects)
                 {
                     selectObject.ObjectData.push({
-                        ObjectLocalID: id
+                        ObjectLocalID: parseInt(id, 10)
                     });
                 }
                 this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
@@ -178,17 +178,13 @@ export class ObjectStoreLite implements IObjectStore
         }, 1000)
     }
 
-    private applyObjectProperties(o: GameObject, obj: any)
+    private applyObjectProperties(o: GameObject, obj: any): void
     {
         if (this.selectedPrimsWithoutUpdate[o.ID])
         {
             delete this.selectedPrimsWithoutUpdate[o.ID];
         }
-        const n = Utils.BufferToStringSimple(obj.Name);
-        if (n === 'FullPerm')
-        {
-            const h  = 5;
-        }
+        // const n = Utils.BufferToStringSimple(obj.Name); // Currently unused
         o.creatorID = obj.CreatorID;
         o.creationDate = obj.CreationDate;
         o.baseMask = obj.BaseMask;
@@ -225,6 +221,8 @@ export class ObjectStoreLite implements IObjectStore
         }
         if (o.Flags !== undefined)
         {
+            // tslint:disable-next-line:no-bitwise
+            // noinspection JSBitwiseOperatorUsage
             if (o.Flags & PrimFlags.CreateSelected)
             {
                 const evt = new SelectedObjectEvent();
@@ -234,7 +232,7 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected async requestMissingObject(localID: number, attempt = 0)
+    protected async requestMissingObject(localID: number, attempt = 0): Promise<void>
     {
         if (this.requestedObjects[localID])
         {
@@ -309,7 +307,7 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected objectUpdate(objectUpdate: ObjectUpdateMessage)
+    protected objectUpdate(objectUpdate: ObjectUpdateMessage): void
     {
         for (const objData of objectUpdate.ObjectData)
         {
@@ -425,7 +423,7 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected notifyTerseUpdate(obj: GameObject)
+    protected notifyTerseUpdate(obj: GameObject): void
     {
         if (this.objects[obj.ID])
         {
@@ -448,7 +446,7 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected notifyObjectUpdate(newObject: boolean, obj: GameObject)
+    protected notifyObjectUpdate(newObject: boolean, obj: GameObject): void
     {
         if (obj.PCode === PCode.Avatar)
         {
@@ -512,7 +510,7 @@ export class ObjectStoreLite implements IObjectStore
                             {
                                 console.error(err);
                             }
-                        }).catch((err) =>
+                        }).catch(() =>
                         {
                             console.error('Failed to resolve new avatar attachment');
                         });
@@ -526,6 +524,8 @@ export class ObjectStoreLite implements IObjectStore
                 newObj.object = obj;
                 newObj.createSelected = obj.Flags !== undefined && (obj.Flags & PrimFlags.CreateSelected) !== 0;
                 obj.createdSelected = newObj.createSelected;
+                // tslint:disable-next-line:no-bitwise
+                // noinspection JSBitwiseOperatorUsage
                 if (obj.Flags !== undefined && obj.Flags & PrimFlags.CreateSelected && !this.pendingObjectProperties[obj.FullID.toString()])
                 {
                     this.selectedPrimsWithoutUpdate[obj.ID] = true;
@@ -548,7 +548,7 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage)
+    protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage): void
     {
         const rmo = new RequestMultipleObjectsMessage();
         rmo.AgentData = {
@@ -566,11 +566,10 @@ export class ObjectStoreLite implements IObjectStore
         this.circuit.sendMessage(rmo, 0);
     }
 
-    protected async objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage)
+    protected objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage): void
     {
         for (const obj of objectUpdateCompressed.ObjectData)
         {
-            const flags = obj.UpdateFlags;
             const buf = obj.Data;
             let pos = 0;
 
@@ -715,16 +714,18 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected decodeAttachPoint(state: number)
+    protected decodeAttachPoint(state: number): number
     {
         const mask = 0xf << 4 >>> 0;
         return (((state & mask) >>> 4) | ((state & ~mask) << 4)) >>> 0;
     }
 
-    protected objectUpdateTerse(objectUpdateTerse: ImprovedTerseObjectUpdateMessage)
-    {    }
+    protected objectUpdateTerse(_objectUpdateTerse: ImprovedTerseObjectUpdateMessage): void
+    {
 
-    protected killObject(killObj: KillObjectMessage)
+    }
+
+    protected killObject(killObj: KillObjectMessage): void
     {
         for (const obj of killObj.ObjectData)
         {
@@ -749,7 +750,7 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    deleteObject(objectID: number)
+    deleteObject(objectID: number): void
     {
         if (this.objects[objectID])
         {
@@ -861,7 +862,7 @@ export class ObjectStoreLite implements IObjectStore
         return nv;
     }
 
-    shutdown()
+    shutdown(): void
     {
         this.physicsSubscription.unsubscribe();
         this.objects = {};
@@ -889,7 +890,7 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    populateChildren(obj: GameObject, resolve = false)
+    populateChildren(obj: GameObject, _resolve = false): void
     {
         if (obj !== undefined)
         {
@@ -918,7 +919,7 @@ export class ObjectStoreLite implements IObjectStore
         for (const k of Object.keys(this.objects))
         {
             const go = this.objects[parseInt(k, 10)];
-            if (go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || go.IsAttachment === false))
+            if (go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || !go.IsAttachment))
             {
                 try
                 {
@@ -978,12 +979,12 @@ export class ObjectStoreLite implements IObjectStore
         {
             const o = obj as ITreeBoundingBox;
             const go = o.gameObject as GameObject;
-            if (go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || go.IsAttachment === false))
+            if (go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || !go.IsAttachment))
             {
                 try
                 {
                     const parent = this.findParent(go);
-                    if (parent.PCode !== PCode.Avatar && (parent.IsAttachment === undefined || parent.IsAttachment === false) && parent.ParentID === 0)
+                    if (parent.PCode !== PCode.Avatar && (parent.IsAttachment === undefined || !parent.IsAttachment) && parent.ParentID === 0)
                     {
                         const uuid = parent.FullID.toString();
 
@@ -1035,7 +1036,7 @@ export class ObjectStoreLite implements IObjectStore
         return this.objects[localID];
     }
 
-    insertIntoRtree(obj: GameObject)
+    insertIntoRtree(obj: GameObject): void
     {
         if (!this.rtree)
         {
@@ -1049,7 +1050,7 @@ export class ObjectStoreLite implements IObjectStore
         {
             return;
         }
-        const normalizedScale = new Vector3(obj.Scale).multiplyByQuat(new Quaternion(obj.Rotation));
+        const normalizedScale = new Vector3(obj.Scale).multiplyByTSMQuat(new Quaternion(obj.Rotation));
 
         const bounds: ITreeBoundingBox = {
             minX: obj.Position.x - (normalizedScale.x / 2),

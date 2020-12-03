@@ -30,15 +30,15 @@
  */
 
 
-import { vec2 } from './vec2';
+import { TSMVec2 } from './vec2';
 
-export class mat2
+export class TSMMat2
 {
-    static identity = new mat2().setIdentity();
+    static identity = new TSMMat2().setIdentity();
 
     private values = new Float32Array(4);
 
-    static product(m1: mat2, m2: mat2, result: mat2 | null = null): mat2
+    static product(m1: TSMMat2, m2: TSMMat2, result: TSMMat2 | null = null): TSMMat2
     {
         const a11 = m1.at(0),
             a12 = m1.at(1),
@@ -58,7 +58,7 @@ export class mat2
         }
         else
         {
-            return new mat2([
+            return new TSMMat2([
                 a11 * m2.at(0) + a12 * m2.at(2),
                 a11 * m2.at(1) + a12 * m2.at(3),
                 a21 * m2.at(0) + a22 * m2.at(2),
@@ -80,7 +80,7 @@ export class mat2
         return this.values[index];
     }
 
-    init(values: number[]): mat2
+    init(values: number[]): TSMMat2
     {
         for (let i = 0; i < 4; i++)
         {
@@ -98,11 +98,11 @@ export class mat2
         }
     }
 
-    copy(dest: mat2 | null = null): mat2
+    copy(dest: TSMMat2 | null = null): TSMMat2
     {
         if (!dest)
         {
-            dest = new mat2();
+            dest = new TSMMat2();
         }
 
         for (let i = 0; i < 4; i++)
@@ -140,7 +140,7 @@ export class mat2
         ];
     }
 
-    equals(matrix: mat2, threshold = EPSILON): boolean
+    equals(matrix: TSMMat2, threshold = EPSILON): boolean
     {
         for (let i = 0; i < 4; i++)
         {
@@ -158,7 +158,7 @@ export class mat2
         return this.values[0] * this.values[3] - this.values[2] * this.values[1];
     }
 
-    setIdentity(): mat2
+    setIdentity(): TSMMat2
     {
         this.values[0] = 1;
         this.values[1] = 0;
@@ -168,7 +168,7 @@ export class mat2
         return this;
     }
 
-    transpose(): mat2
+    transpose(): TSMMat2
     {
         const temp = this.values[1];
 
@@ -178,7 +178,7 @@ export class mat2
         return this;
     }
 
-    inverse(): mat2 | null
+    inverse(): TSMMat2 | null
     {
         let det = this.determinant();
 
@@ -197,7 +197,7 @@ export class mat2
         return this;
     }
 
-    multiply(matrix: mat2): mat2
+    multiply(matrix: TSMMat2): TSMMat2
     {
         const a11 = this.values[0],
             a12 = this.values[1],
@@ -212,7 +212,7 @@ export class mat2
         return this;
     }
 
-    rotate(angle: number): mat2
+    rotate(angle: number): TSMMat2
     {
         const a11 = this.values[0],
             a12 = this.values[1],
@@ -230,7 +230,7 @@ export class mat2
         return this;
     }
 
-    multiplyVec2(vector: vec2, result: vec2 | null = null): vec2
+    multiplyTSMVec2(vector: TSMVec2, result: TSMVec2 | null = null): TSMVec2
     {
         const x = vector.x,
             y = vector.y;
@@ -246,14 +246,14 @@ export class mat2
         }
         else
         {
-            return new vec2([
+            return new TSMVec2([
                 x * this.values[0] + y * this.values[1],
                 x * this.values[2] + y * this.values[3]
             ]);
         }
     }
 
-    scale(vector: vec2): mat2
+    scale(vector: TSMVec2): TSMMat2
     {
         const a11 = this.values[0],
             a12 = this.values[1],

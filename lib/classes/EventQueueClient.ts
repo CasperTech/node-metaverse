@@ -1,6 +1,3 @@
-import * as LLSD from '@caspertech/llsd';
-import * as request from 'request';
-import * as Long from 'long';
 import { ClientEvents } from './ClientEvents';
 import { Agent } from './Agent';
 import { Caps } from './Caps';
@@ -22,6 +19,10 @@ import { Utils } from './Utils';
 import { InventoryLibrary } from '../enums/InventoryLibrary';
 import { LandStatsEvent } from '../events/LandStatsEvent';
 
+import * as LLSD from '@caspertech/llsd';
+import * as request from 'request';
+import * as Long from 'long';
+
 export class EventQueueClient
 {
     caps: Caps;
@@ -41,7 +42,8 @@ export class EventQueueClient
         state.active = true;
         this.clientEvents.onEventQueueStateChange.next(state);
     }
-    shutdown()
+
+    shutdown(): void
     {
         // We must ACK any outstanding events
         this.done = true;
@@ -53,14 +55,15 @@ export class EventQueueClient
             'ack': this.ack,
             'done': true
         };
-        this.capsPostXML('EventQueueGet', req).then((data) =>
+        this.capsPostXML('EventQueueGet', req).then(() =>
         {
             const state = new EventQueueStateChangeEvent();
             state.active = false;
             this.clientEvents.onEventQueueStateChange.next(state);
         });
     }
-    Get()
+
+    Get(): void
     {
         const req = {
             'ack': this.ack,
@@ -358,7 +361,7 @@ export class EventQueueClient
                                                 'method': 'accept invitation',
                                                 'session-id': imSessionID
                                             };
-                                            this.caps.capsPostXML('ChatSessionRequest', requested).then((ignore: any) =>
+                                            this.caps.capsPostXML('ChatSessionRequest', requested).then((_ignore: unknown) =>
                                             {
                                                 this.agent.addChatSession(groupChatEvent.groupID);
 
@@ -520,7 +523,7 @@ export class EventQueueClient
             {
                 this.Get();
             }
-        }).catch((err) =>
+        }).catch(() =>
         {
             const time = (new Date().getTime()) - startTime;
             if (time > 30000)
@@ -563,7 +566,7 @@ export class EventQueueClient
                 'rejectUnauthorized': false,
                 'method': 'POST',
                 'timeout': 1800000 // Super long timeout
-            }, (err, res, body) =>
+            }, (err, _res, body) =>
             {
                 this.currentRequest = null;
                 if (err)
@@ -599,7 +602,8 @@ export class EventQueueClient
                             // Retry caps request three times before giving up
                             if (attempt < 3 && capability !== 'EventQueueGet')
                             {
-                                return this.capsPostXML(capability, data, ++attempt);
+                                this.capsPostXML(capability, data, ++attempt);
+                                return;
                             }
                             else
                             {

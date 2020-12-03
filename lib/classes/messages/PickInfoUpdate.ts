@@ -34,6 +34,7 @@ export class PickInfoUpdateMessage implements MessageBase
         return (this.Data['Name'].length + 1 + this.Data['Desc'].length + 2) + 126;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -65,6 +66,7 @@ export class PickInfoUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

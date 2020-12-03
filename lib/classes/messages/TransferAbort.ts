@@ -21,6 +21,7 @@ export class TransferAbortMessage implements MessageBase
         return 20;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -31,10 +32,10 @@ export class TransferAbortMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjTransferInfo: {
             TransferID: UUID,
             ChannelType: number

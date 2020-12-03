@@ -21,6 +21,7 @@ export class ScriptControlChangeMessage implements MessageBase
         return ((6) * this.Data.length) + 1;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -36,10 +37,10 @@ export class ScriptControlChangeMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         if (pos >= buf.length)
         {
             return pos - startPos;

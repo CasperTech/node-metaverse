@@ -27,6 +27,7 @@ export class ScriptQuestionMessage implements MessageBase
         return (this.Data['ObjectName'].length + 1 + this.Data['ObjectOwner'].length + 1) + 52;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -47,6 +48,7 @@ export class ScriptQuestionMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

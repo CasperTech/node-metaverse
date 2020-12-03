@@ -30,6 +30,7 @@ export class ChatPassMessage implements MessageBase
         return (this.ChatData['Name'].length + 1 + this.ChatData['Message'].length + 2) + 55;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -56,6 +57,7 @@ export class ChatPassMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

@@ -23,6 +23,7 @@ export class InternalScriptMailMessage implements MessageBase
         return (this.DataBlock['From'].length + 1 + this.DataBlock['Subject'].length + 1 + this.DataBlock['Body'].length + 2) + 16;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -41,6 +42,7 @@ export class InternalScriptMailMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

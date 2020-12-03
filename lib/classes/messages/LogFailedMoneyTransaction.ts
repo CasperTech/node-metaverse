@@ -31,6 +31,7 @@ export class LogFailedMoneyTransactionMessage implements MessageBase
         return 74;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -57,10 +58,10 @@ export class LogFailedMoneyTransactionMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjTransactionData: {
             TransactionID: UUID,
             TransactionTime: number,

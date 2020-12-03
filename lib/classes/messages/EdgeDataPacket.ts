@@ -21,6 +21,7 @@ export class EdgeDataPacketMessage implements MessageBase
         return (this.EdgeData['LayerData'].length + 2) + 2;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -33,6 +34,7 @@ export class EdgeDataPacketMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

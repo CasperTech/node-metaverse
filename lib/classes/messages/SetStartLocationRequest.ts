@@ -28,6 +28,7 @@ export class SetStartLocationRequestMessage implements MessageBase
         return (this.StartLocationData['SimName'].length + 1) + 60;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -47,6 +48,7 @@ export class SetStartLocationRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

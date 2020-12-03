@@ -69,7 +69,7 @@ export class Avatar extends AvatarQueryResult
                 this._gameObject.region.clientCommands.region.resolveObject(attachment, true, false).then(() =>
                 {
                     this.addAttachment(attachment);
-                }).catch((err) =>
+                }).catch(() =>
                 {
                     console.error('Failed to resolve attachment for avatar');
                 });
@@ -91,7 +91,7 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    setTitle(newTitle: string)
+    setTitle(newTitle: string): void
     {
         if (newTitle !== this.title)
         {
@@ -140,7 +140,7 @@ export class Avatar extends AvatarQueryResult
         return new Quaternion(this.rotation);
     }
 
-    processObjectUpdate(obj: GameObject)
+    processObjectUpdate(obj: GameObject): void
     {
         if (obj !== this._gameObject)
         {
@@ -157,7 +157,7 @@ export class Avatar extends AvatarQueryResult
         this.isVisible = true;
     }
 
-    setGeometry(position: Vector3, rotation: Quaternion)
+    setGeometry(position: Vector3, rotation: Quaternion): void
     {
         const oldPosition = this._position;
         const oldRotation = this.rotation;
@@ -173,7 +173,7 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    getAttachment(itemID: UUID)
+    getAttachment(itemID: UUID): GameObject
     {
         if (this.attachments[itemID.toString()] !== undefined)
         {
@@ -182,7 +182,7 @@ export class Avatar extends AvatarQueryResult
         throw new Error('Attachment not found');
     }
 
-    waitForAttachment(itemID: UUID | string, timeout: number = 30000)
+    waitForAttachment(itemID: UUID | string, timeout: number = 30000): Promise<GameObject>
     {
         return new Promise<GameObject>((resolve, reject) =>
         {
@@ -234,7 +234,7 @@ export class Avatar extends AvatarQueryResult
         });
     }
 
-    addAttachment(obj: GameObject)
+    addAttachment(obj: GameObject): void
     {
         if (obj.itemID !== undefined)
         {
@@ -243,7 +243,7 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    removeAttachment(obj: GameObject)
+    removeAttachment(obj: GameObject): void
     {
         if (obj.NameValue['AttachItemID'])
         {
@@ -256,7 +256,7 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    coarseLeftRegion()
+    coarseLeftRegion(): void
     {
         this.onLeftRegion.next(this);
     }

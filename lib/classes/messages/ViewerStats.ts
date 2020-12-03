@@ -58,6 +58,7 @@ export class ViewerStatsMessage implements MessageBase
         return (this.AgentData['SysOS'].length + 1 + this.AgentData['SysCPU'].length + 1 + this.AgentData['SysGPU'].length + 1) + ((12) * this.MiscStats.length) + 142;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -135,6 +136,7 @@ export class ViewerStatsMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

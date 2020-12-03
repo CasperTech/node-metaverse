@@ -24,6 +24,7 @@ export class AssetUploadRequestMessage implements MessageBase
         return (this.AssetBlock['AssetData'].length + 2) + 19;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -39,6 +40,7 @@ export class AssetUploadRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

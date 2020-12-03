@@ -36,6 +36,7 @@ export class MultipleObjectUpdateMessage implements MessageBase
         return size;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -57,6 +58,7 @@ export class MultipleObjectUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

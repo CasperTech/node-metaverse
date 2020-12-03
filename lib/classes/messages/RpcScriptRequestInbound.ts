@@ -28,6 +28,7 @@ export class RpcScriptRequestInboundMessage implements MessageBase
         return (this.DataBlock['StringValue'].length + 2) + 60;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -50,6 +51,7 @@ export class RpcScriptRequestInboundMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

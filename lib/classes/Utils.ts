@@ -6,12 +6,13 @@ import { Vector3 } from './Vector3';
 import { Subject, Subscription } from 'rxjs';
 import { AssetType } from '../enums/AssetType';
 import { InventoryType } from '../enums/InventoryType';
-import * as zlib from 'zlib';
 import { FilterResponse } from '../enums/FilterResponse';
-import Timeout = NodeJS.Timeout;
-import * as xml2js from 'xml2js';
-import { XMLElement } from 'xmlbuilder';
 import { Logger } from './Logger';
+
+import * as zlib from 'zlib';
+import * as xml2js from 'xml2js';
+
+import Timeout = NodeJS.Timeout;
 
 export class Utils
 {
@@ -28,7 +29,7 @@ export class Utils
         return Buffer.from(str + '\0', 'utf8');
     }
 
-    static BufferToStringSimple(buf: Buffer, startPos?: number): string
+    static BufferToStringSimple(buf: Buffer): string
     {
         if (buf.length === 0)
         {
@@ -44,14 +45,14 @@ export class Utils
         }
     }
 
-    static Clamp(value: number, min: number, max: number)
+    static Clamp(value: number, min: number, max: number): number
     {
         value = (value > max) ? max : value;
         value = (value < min) ? min : value;
         return value;
     }
 
-    static fillArray<T>(value: T, count: number)
+    static fillArray<T>(value: T, count: number): T[]
     {
         const arr: T[] = new Array<T>(count);
         while (count--)
@@ -61,10 +62,10 @@ export class Utils
         return arr;
     }
 
-    static JSONStringify(obj: object, space: number)
+    static JSONStringify(obj: object, space: number): string
     {
         const cache: any[] = [];
-        return JSON.stringify(obj, function (key, value)
+        return JSON.stringify(obj, function (_: string, value): unknown
         {
             if (typeof value === 'object' && value !== null)
             {
@@ -330,7 +331,7 @@ export class Utils
         }
     }
 
-    static FloatToByte(val: number, lower: number, upper: number)
+    static FloatToByte(val: number, lower: number, upper: number): number
     {
         val = Utils.Clamp(val, lower, upper);
         val -= lower;
@@ -338,7 +339,7 @@ export class Utils
         return Math.round(val * 255);
     }
 
-    static ByteToFloat(byte: number, lower: number, upper: number)
+    static ByteToFloat(byte: number, lower: number, upper: number): number
     {
         const ONE_OVER_BYTEMAX: number = 1.0 / 255;
 
@@ -355,7 +356,7 @@ export class Utils
         return fval;
     }
 
-    static UInt16ToFloat(val: number, lower: number, upper: number)
+    static UInt16ToFloat(val: number, lower: number, upper: number): number
     {
         const ONE_OVER_U16_MAX = 1.0 / 65535;
         let fval = val * ONE_OVER_U16_MAX;
@@ -383,7 +384,7 @@ export class Utils
         return buff.toString('utf8');
     }
 
-    static HexToLong(hex: string)
+    static HexToLong(hex: string): Long
     {
         while (hex.length < 16)
         {
@@ -408,14 +409,14 @@ export class Utils
         return offset / 32767.0;
     }
 
-    static TEOffsetShort(num: number)
+    static TEOffsetShort(num: number): number
     {
         num = Utils.Clamp(num, -1.0, 1.0);
         num *= 32767.0;
         return Math.round(num);
     }
 
-    static IEEERemainder(x: number, y: number)
+    static IEEERemainder(x: number, y: number): number
     {
         if (isNaN(x))
         {
@@ -461,12 +462,12 @@ export class Utils
         }
     }
 
-    static TERotationShort(rotation: number)
+    static TERotationShort(rotation: number): number
     {
         return Math.floor(((Utils.IEEERemainder(rotation, Utils.TWO_PI) / Utils.TWO_PI) * 32768.0) + 0.5);
     }
 
-    static OctetsToUInt32BE(octets: number[])
+    static OctetsToUInt32BE(octets: number[]): number
     {
         const buf = Buffer.allocUnsafe(4);
         let pos = 0;
@@ -484,7 +485,7 @@ export class Utils
         return buf.readUInt32BE(0);
     }
 
-    static OctetsToUInt32LE(octets: number[])
+    static OctetsToUInt32LE(octets: number[]): number
     {
         const buf = Buffer.allocUnsafe(4);
         let pos = 0;
@@ -502,7 +503,7 @@ export class Utils
         return buf.readUInt32LE(0);
     }
 
-    static numberToFixedHex(num: number)
+    static numberToFixedHex(num: number): string
     {
         let str = num.toString(16);
         while (str.length < 8)
@@ -512,7 +513,7 @@ export class Utils
         return str;
     }
 
-    static TEGlowByte(glow: number)
+    static TEGlowByte(glow: number): number
     {
         return (glow * 255.0);
     }
@@ -645,7 +646,7 @@ export class Utils
         return profileHollow * Utils.HOLLOW_QUANTA;
     }
 
-    static nullTerminatedString(str: string)
+    static nullTerminatedString(str: string): string
     {
         const index = str.indexOf('\0');
         if (index === -1)
@@ -660,7 +661,7 @@ export class Utils
 
     static promiseConcurrent<T>(promises: (() => Promise<T>)[], concurrency: number, timeout: number): Promise<{results: T[], errors: Error[]}>
     {
-        return new Promise<{results: T[], errors: Error[]}>(async (resolve, reject) =>
+        return new Promise<{results: T[], errors: Error[]}>(async (resolve) =>
         {
             const originalConcurrency = concurrency;
             const promiseQueue: (() => Promise<T>)[] = [];
@@ -673,9 +674,9 @@ export class Utils
             const errors: Error[] = [];
             const results: T[] = [];
 
-            function waitForAvailable()
+            function waitForAvailable(): Promise<void>
             {
-                return new Promise<void>((resolve1, reject1) =>
+                return new Promise<void>((resolve1) =>
                 {
                     const subs = slotAvailable.subscribe(() =>
                     {
@@ -685,7 +686,7 @@ export class Utils
                 });
             }
 
-            function runPromise(promise: () => Promise<T>)
+            function runPromise(promise: () => Promise<T>): void
             {
                 concurrency--;
                 let timedOut = false;
@@ -754,7 +755,7 @@ export class Utils
 
     static waitFor(timeout: number): Promise<void>
     {
-        return new Promise<void>((resolve, reject) =>
+        return new Promise<void>((resolve) =>
         {
             setTimeout(() =>
             {
@@ -920,7 +921,7 @@ export class Utils
         }
     }
 
-    static sanitizePath(input: string)
+    static sanitizePath(input: string): string
     {
         return input.replace(/[^a-z0-9]/gi, '').replace(/ /gi, '_');
     }

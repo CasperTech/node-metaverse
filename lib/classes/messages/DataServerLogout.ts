@@ -24,6 +24,7 @@ export class DataServerLogoutMessage implements MessageBase
         return 37;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -37,10 +38,10 @@ export class DataServerLogoutMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjUserData: {
             AgentID: UUID,
             ViewerIP: IPAddress,

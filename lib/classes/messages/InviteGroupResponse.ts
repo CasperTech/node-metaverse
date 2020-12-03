@@ -27,6 +27,7 @@ export class InviteGroupResponseMessage implements MessageBase
         return 72;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -45,10 +46,10 @@ export class InviteGroupResponseMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjInviteData: {
             AgentID: UUID,
             InviteeID: UUID,

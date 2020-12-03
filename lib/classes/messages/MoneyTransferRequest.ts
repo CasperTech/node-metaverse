@@ -31,6 +31,7 @@ export class MoneyTransferRequestMessage implements MessageBase
         return (this.MoneyData['Description'].length + 1) + 75;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -55,6 +56,7 @@ export class MoneyTransferRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

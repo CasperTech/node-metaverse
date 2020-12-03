@@ -23,6 +23,7 @@ export class AvatarPropertiesRequestBackendMessage implements MessageBase
         return 34;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -35,10 +36,10 @@ export class AvatarPropertiesRequestBackendMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             AvatarID: UUID,

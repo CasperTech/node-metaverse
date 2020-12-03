@@ -20,6 +20,7 @@ export class ParcelOverlayMessage implements MessageBase
         return (this.ParcelData['Data'].length + 2) + 4;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -32,6 +33,7 @@ export class ParcelOverlayMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

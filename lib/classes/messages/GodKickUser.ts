@@ -24,6 +24,7 @@ export class GodKickUserMessage implements MessageBase
         return (this.UserInfo['Reason'].length + 2) + 52;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -42,6 +43,7 @@ export class GodKickUserMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

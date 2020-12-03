@@ -22,6 +22,7 @@ export class ReplyTaskInventoryMessage implements MessageBase
         return (this.InventoryData['Filename'].length + 1) + 18;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -35,6 +36,7 @@ export class ReplyTaskInventoryMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

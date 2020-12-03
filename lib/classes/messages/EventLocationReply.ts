@@ -26,6 +26,7 @@ export class EventLocationReplyMessage implements MessageBase
         return 45;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -39,10 +40,10 @@ export class EventLocationReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjQueryData: {
             QueryID: UUID
         } = {

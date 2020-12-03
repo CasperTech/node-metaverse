@@ -25,6 +25,7 @@ export class LoadURLMessage implements MessageBase
         return (this.Data['ObjectName'].length + 1 + this.Data['Message'].length + 1 + this.Data['URL'].length + 1) + 33;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -45,6 +46,7 @@ export class LoadURLMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

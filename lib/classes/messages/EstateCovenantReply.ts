@@ -23,6 +23,7 @@ export class EstateCovenantReplyMessage implements MessageBase
         return (this.Data['EstateName'].length + 1) + 36;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -38,6 +39,7 @@ export class EstateCovenantReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

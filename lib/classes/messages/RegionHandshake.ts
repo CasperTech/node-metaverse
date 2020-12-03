@@ -58,6 +58,7 @@ export class RegionHandshakeMessage implements MessageBase
         return (this.RegionInfo['SimName'].length + 1) + (this.RegionInfo3['ColoName'].length + 1 + this.RegionInfo3['ProductSKU'].length + 1 + this.RegionInfo3['ProductName'].length + 1) + ((16) * this.RegionInfo4.length) + 231;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -139,6 +140,7 @@ export class RegionHandshakeMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

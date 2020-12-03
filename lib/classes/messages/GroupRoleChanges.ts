@@ -27,6 +27,7 @@ export class GroupRoleChangesMessage implements MessageBase
         return ((36) * this.RoleChange.length) + 49;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -50,10 +51,10 @@ export class GroupRoleChangesMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID,

@@ -1,12 +1,11 @@
 import { GameObject } from './public/GameObject';
-import { PCode, PrimFlags, UUID } from '..';
-import * as LLSD from '@caspertech/llsd';
+import { PrimFlags, UUID } from '..';
 import { Region } from './Region';
-import { skip } from 'rxjs/operators';
-import { on } from 'cluster';
 import { IResolveJob } from './interfaces/IResolveJob';
 import { Subject, Subscription } from 'rxjs';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
+
+import * as LLSD from '@caspertech/llsd';
 
 export class ObjectResolver
 {
@@ -26,7 +25,7 @@ export class ObjectResolver
 
     resolveObjects(objects: GameObject[], forceResolve: boolean = false, skipInventory = false, log = false): Promise<GameObject[]>
     {
-        return new Promise<GameObject[]>((resolve, reject) =>
+        return new Promise<GameObject[]>((resolve) =>
         {
             if (log)
             {
@@ -40,12 +39,6 @@ export class ObjectResolver
             {
                 this.region.objects.populateChildren(obj);
                 this.scanObject(obj, objs);
-            }
-
-            let amountLeft = Object.keys(objs).length;
-            if (log)
-            {
-                // console.log('[RESOLVER] ' + amountLeft + ' objects remaining to resolve (' + this.queue.length + ' in queue)');
             }
 
             const queueObject = (id: number) =>
@@ -91,7 +84,6 @@ export class ObjectResolver
             for (const id of skipped)
             {
                 delete objs[id];
-                amountLeft--;
                 if (log)
                 {
                     // console.log('[RESOLVER] Skipping already resolved object. ' + amountLeft + ' objects remaining to resolve (' + this.queue.length + ' in queue)');
@@ -114,7 +106,6 @@ export class ObjectResolver
                 {
                     if (skipInventory || obj.resolvedInventory)
                     {
-                        amountLeft--;
                         if (log)
                         {
                             // console.log('[RESOLVER] Resolved an object. ' + amountLeft + ' objects remaining to resolve (' + this.queue.length + ' in queue)');
@@ -124,12 +115,6 @@ export class ObjectResolver
                 }
                 if (obj.resolveAttempts > 2)
                 {
-                    // Give up
-                    amountLeft--;
-                    if (log)
-                    {
-                        // console.log('[RESOLVER] Failed to resolve an object. ' + amountLeft + ' objects remaining to resolve (' + this.queue.length + ' in queue)');
-                    }
                     failed.push(obj);
                     done = true;
                 }
@@ -217,7 +202,7 @@ export class ObjectResolver
         });
     }
 
-    private scanObject(obj: GameObject, map: {[key: number]: GameObject})
+    private scanObject(obj: GameObject, map: {[key: number]: GameObject}): void
     {
         const localID = obj.ID;
         if (!map[localID])
@@ -233,7 +218,7 @@ export class ObjectResolver
         }
     }
 
-    private async run()
+    private async run(): Promise<void>
     {
         if (this.currentlyRunning)
         {
@@ -275,7 +260,7 @@ export class ObjectResolver
         }
     }
 
-    private async doResolve(jobs: IResolveJob[])
+    private async doResolve(jobs: IResolveJob[]): Promise<void>
     {
         const resolveTime = new Date().getTime() / 1000;
         const objectList = [];
@@ -373,7 +358,7 @@ export class ObjectResolver
                 }
             }
             const that  = this;
-            const getCosts = async function(objIDs: UUID[])
+            const getCosts = async function(objIDs: UUID[]): Promise<void>
             {
                 const result = await that.region.caps.capsPostXML('GetObjectCost', {
                     'object_ids': objIDs

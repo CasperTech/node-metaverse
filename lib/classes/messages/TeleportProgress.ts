@@ -24,6 +24,7 @@ export class TeleportProgressMessage implements MessageBase
         return (this.Info['Message'].length + 1) + 20;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -37,6 +38,7 @@ export class TeleportProgressMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

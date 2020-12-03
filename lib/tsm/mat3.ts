@@ -32,18 +32,18 @@
 
 ///<reference path='./common.ts' />
 
-import { vec3 } from './vec3';
-import { quat } from './quat';
-import { mat4 } from './mat4';
-import { vec2 } from './vec2';
+import { TSMVec2 } from './vec2';
+import { TSMVec3 } from './vec3';
+import { TSMMat4 } from './mat4';
+import { TSMQuat } from './quat';
 
-export class mat3
+export class TSMMat3
 {
-    static identity = new mat3().setIdentity();
+    static identity = new TSMMat3().setIdentity();
 
     private values = new Float32Array(9);
 
-    static product(m1: mat3, m2: mat3, result: mat3 | null = null): mat3
+    static product(m1: TSMMat3, m2: TSMMat3, result: TSMMat3 | null = null): TSMMat3
     {
         const a00 = m1.at(0), a01 = m1.at(1), a02 = m1.at(2),
             a10 = m1.at(3), a11 = m1.at(4), a12 = m1.at(5),
@@ -73,7 +73,7 @@ export class mat3
         }
         else
         {
-            return new mat3([
+            return new TSMMat3([
                 b00 * a00 + b01 * a10 + b02 * a20,
                 b00 * a01 + b01 * a11 + b02 * a21,
                 b00 * a02 + b01 * a12 + b02 * a22,
@@ -102,7 +102,7 @@ export class mat3
         return this.values[index];
     }
 
-    init(values: number[]): mat3
+    init(values: number[]): TSMMat3
     {
         for (let i = 0; i < 9; i++)
         {
@@ -120,11 +120,11 @@ export class mat3
         }
     }
 
-    copy(dest: mat3 | null = null): mat3
+    copy(dest: TSMMat3 | null = null): TSMMat3
     {
         if (!dest)
         {
-            dest = new mat3();
+            dest = new TSMMat3();
         }
 
         for (let i = 0; i < 9; i++)
@@ -164,7 +164,7 @@ export class mat3
         ];
     }
 
-    equals(matrix: mat3, threshold = EPSILON): boolean
+    equals(matrix: TSMMat3, threshold = EPSILON): boolean
     {
         for (let i = 0; i < 9; i++)
         {
@@ -190,7 +190,7 @@ export class mat3
         return a00 * det01 + a01 * det11 + a02 * det21;
     }
 
-    setIdentity(): mat3
+    setIdentity(): TSMMat3
     {
         this.values[0] = 1;
         this.values[1] = 0;
@@ -205,7 +205,7 @@ export class mat3
         return this;
     }
 
-    transpose(): mat3
+    transpose(): TSMMat3
     {
         const temp01 = this.values[1],
             temp02 = this.values[2],
@@ -221,7 +221,7 @@ export class mat3
         return this;
     }
 
-    inverse(): mat3 | null
+    inverse(): TSMMat3 | null
     {
         const a00 = this.values[0], a01 = this.values[1], a02 = this.values[2],
             a10 = this.values[3], a11 = this.values[4], a12 = this.values[5],
@@ -253,7 +253,7 @@ export class mat3
         return this;
     }
 
-    multiply(matrix: mat3): mat3
+    multiply(matrix: TSMMat3): TSMMat3
     {
         const a00 = this.values[0], a01 = this.values[1], a02 = this.values[2],
             a10 = this.values[3], a11 = this.values[4], a12 = this.values[5],
@@ -278,7 +278,7 @@ export class mat3
         return this;
     }
 
-    multiplyVec2(vector: vec2, result: vec2 | null = null): vec2
+    multiplyTSMVec2(vector: TSMVec2, result: TSMVec2 | null = null): TSMVec2
     {
         const x = vector.x,
             y = vector.y;
@@ -294,14 +294,14 @@ export class mat3
         }
         else
         {
-            return new vec2([
+            return new TSMVec2([
                 x * this.values[0] + y * this.values[3] + this.values[6],
                 x * this.values[1] + y * this.values[4] + this.values[7]
             ]);
         }
     }
 
-    multiplyVec3(vector: vec3, result: vec3 | null = null): vec3
+    multiplyTSMVec3(vector: TSMVec3, result: TSMVec3 | null = null): TSMVec3
     {
         const x = vector.x,
             y = vector.y,
@@ -319,7 +319,7 @@ export class mat3
         }
         else
         {
-            return new vec3([
+            return new TSMVec3([
                 x * this.values[0] + y * this.values[3] + z * this.values[6],
                 x * this.values[1] + y * this.values[4] + z * this.values[7],
                 x * this.values[2] + y * this.values[5] + z * this.values[8]
@@ -327,7 +327,7 @@ export class mat3
         }
     }
 
-    toMat4(result: mat4 | null = null): mat4
+    toTSMMat4(result: TSMMat4 | null = null): TSMMat4
     {
         if (result)
         {
@@ -357,7 +357,7 @@ export class mat3
         }
         else
         {
-            return new mat4([
+            return new TSMMat4([
                 this.values[0],
                 this.values[1],
                 this.values[2],
@@ -381,7 +381,7 @@ export class mat3
         }
     }
 
-    toQuat(): quat
+    toQuat(): TSMQuat
     {
         const m00 = this.values[0], m01 = this.values[1], m02 = this.values[2],
             m10 = this.values[3], m11 = this.values[4], m12 = this.values[5],
@@ -417,7 +417,7 @@ export class mat3
         const biggestVal = Math.sqrt(fourBiggestSquaredMinus1 + 1) * 0.5;
         const mult = 0.25 / biggestVal;
 
-        const result = new quat();
+        const result = new TSMQuat();
 
         switch (biggestIndex)
         {
@@ -461,7 +461,7 @@ export class mat3
         return result;
     }
 
-    rotate(angle: number, axis: vec3): mat3 | null
+    rotate(angle: number, axis: TSMVec3): TSMMat3 | null
     {
         let x = axis.x,
             y = axis.y,

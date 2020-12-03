@@ -60,6 +60,7 @@ export class RezObjectMessage implements MessageBase
         return (this.InventoryData['Name'].length + 1 + this.InventoryData['Description'].length + 1) + 260;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -132,6 +133,7 @@ export class RezObjectMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

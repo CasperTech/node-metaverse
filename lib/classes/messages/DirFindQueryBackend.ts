@@ -28,6 +28,7 @@ export class DirFindQueryBackendMessage implements MessageBase
         return (this.QueryData['QueryText'].length + 1) + 45;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -48,6 +49,7 @@ export class DirFindQueryBackendMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

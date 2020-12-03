@@ -25,6 +25,7 @@ export class UserInfoReplyMessage implements MessageBase
         return (this.UserData['DirectoryVisibility'].length + 1 + this.UserData['EMail'].length + 2) + 17;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -41,6 +42,7 @@ export class UserInfoReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

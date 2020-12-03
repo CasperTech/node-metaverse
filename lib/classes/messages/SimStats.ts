@@ -33,6 +33,7 @@ export class SimStatsMessage implements MessageBase
         return ((8) * this.Stat.length) + ((8) * this.RegionInfo.length) + 22;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -67,10 +68,10 @@ export class SimStatsMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjRegion: {
             RegionX: number,
             RegionY: number,

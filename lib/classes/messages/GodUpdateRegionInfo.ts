@@ -35,6 +35,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
         return (this.RegionInfo['SimName'].length + 1) + ((8) * this.RegionInfo2.length) + 61;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -71,6 +72,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

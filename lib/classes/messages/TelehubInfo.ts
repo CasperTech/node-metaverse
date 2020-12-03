@@ -28,6 +28,7 @@ export class TelehubInfoMessage implements MessageBase
         return (this.TelehubBlock['ObjectName'].length + 1) + ((12) * this.SpawnPointBlock.length) + 41;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -50,6 +51,7 @@ export class TelehubInfoMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

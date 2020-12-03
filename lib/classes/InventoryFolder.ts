@@ -80,7 +80,7 @@ export class InventoryFolder
         return children;
     }
 
-    async createFolder(name: string, type: FolderType)
+    async createFolder(name: string, type: FolderType): Promise<InventoryFolder>
     {
         const msg = new CreateInventoryFolderMessage();
         msg.AgentData = {
@@ -214,7 +214,7 @@ export class InventoryFolder
         });
     }
 
-    async removeItem(itemID: UUID, save: boolean = false)
+    async removeItem(itemID: UUID, save: boolean = false): Promise<void>
     {
         if (this.agent.inventory.itemsByID[itemID.toString()])
         {
@@ -226,11 +226,11 @@ export class InventoryFolder
         }
         if (save)
         {
-            await this.saveCache();
+            return this.saveCache();
         }
     }
 
-    async addItem(item: InventoryItem, save: boolean = false)
+    async addItem(item: InventoryItem, save: boolean = false): Promise<void>
     {
         if (this.agent.inventory.itemsByID[item.itemID.toString()])
         {
@@ -240,13 +240,13 @@ export class InventoryFolder
         this.agent.inventory.itemsByID[item.itemID.toString()] = item;
         if (save)
         {
-            await this.saveCache();
+            return this.saveCache();
         }
     }
 
     private populateInternal(): Promise<void>
     {
-        return new Promise<void>((resolve, reject) =>
+        return new Promise<void>((resolve) =>
         {
             const requestFolder = {
                 folder_id: new LLSD.UUID(this.folderID),
@@ -358,7 +358,7 @@ export class InventoryFolder
             this.loadCache().then(() =>
             {
                 resolve();
-            }).catch((err) =>
+            }).catch(() =>
             {
                 this.populateInternal().then(() =>
                 {
@@ -747,7 +747,7 @@ export class InventoryFolder
         });
     }
 
-    checkCopyright(creatorID: UUID)
+    checkCopyright(creatorID: UUID): void
     {
         if (!creatorID.equals(this.agent.agentID) && !creatorID.isZero())
         {

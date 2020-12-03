@@ -16,11 +16,13 @@ export class TallyVotesMessage implements MessageBase
         return 0;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         return 0;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         return 0;

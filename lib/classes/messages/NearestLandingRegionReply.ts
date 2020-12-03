@@ -20,6 +20,7 @@ export class NearestLandingRegionReplyMessage implements MessageBase
         return 8;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -30,10 +31,10 @@ export class NearestLandingRegionReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjLandingRegionData: {
             RegionHandle: Long
         } = {

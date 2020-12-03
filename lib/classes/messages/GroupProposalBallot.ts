@@ -26,6 +26,7 @@ export class GroupProposalBallotMessage implements MessageBase
         return (this.ProposalData['VoteCast'].length + 1) + 64;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -43,6 +44,7 @@ export class GroupProposalBallotMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

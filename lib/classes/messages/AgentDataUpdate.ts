@@ -27,6 +27,7 @@ export class AgentDataUpdateMessage implements MessageBase
         return (this.AgentData['FirstName'].length + 1 + this.AgentData['LastName'].length + 1 + this.AgentData['GroupTitle'].length + 1 + this.AgentData['GroupName'].length + 1) + 40;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -53,6 +54,7 @@ export class AgentDataUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

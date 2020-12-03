@@ -28,6 +28,7 @@ export class StartLureMessage implements MessageBase
         return (this.Info['Message'].length + 1) + ((16) * this.TargetData.length) + 34;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -49,6 +50,7 @@ export class StartLureMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

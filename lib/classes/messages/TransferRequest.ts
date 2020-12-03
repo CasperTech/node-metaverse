@@ -24,6 +24,7 @@ export class TransferRequestMessage implements MessageBase
         return (this.TransferInfo['Params'].length + 2) + 28;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -42,6 +43,7 @@ export class TransferRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

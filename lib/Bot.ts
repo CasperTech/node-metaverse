@@ -14,7 +14,6 @@ import { RegionHandshakeReplyMessage } from './classes/messages/RegionHandshakeR
 import { RegionProtocolFlags } from './enums/RegionProtocolFlags';
 import { AgentDataUpdateRequestMessage } from './classes/messages/AgentDataUpdateRequest';
 import { TeleportProgressMessage } from './classes/messages/TeleportProgress';
-import { TeleportStartMessage } from './classes/messages/TeleportStart';
 import { TeleportEvent } from './events/TeleportEvent';
 import { ClientEvents } from './classes/ClientEvents';
 import { TeleportEventType } from './enums/TeleportEventType';
@@ -102,7 +101,7 @@ export class Bot
         });
     }
 
-    stayPut(stay: boolean, regionName?: string, position?: Vector3)
+    stayPut(stay: boolean, regionName?: string, position?: Vector3): void
     {
         this.stay = stay;
         if (regionName !== undefined && position !== undefined)
@@ -117,7 +116,7 @@ export class Bot
         return this.currentRegion;
     }
 
-    async login()
+    async login(): Promise<LoginResponse>
     {
         const loginHandler = new LoginHandler(this.clientEvents, this.options);
         const response: LoginResponse = await loginHandler.Login(this.loginParams);
@@ -128,7 +127,7 @@ export class Bot
         return response;
     }
 
-    async changeRegion(region: Region, requested: boolean)
+    async changeRegion(region: Region, requested: boolean): Promise<void>
     {
         this.closeCircuit();
         this._currentRegion = region;
@@ -172,7 +171,7 @@ export class Bot
         });
     }
 
-    private closeCircuit()
+    private closeCircuit(): void
     {
         this.currentRegion.shutdown();
         if (this.circuitSubscription !== null)
@@ -192,7 +191,7 @@ export class Bot
 
     }
 
-    private kicked(message: string)
+    private kicked(message: string): void
     {
         this.closeCircuit();
         this.agent.shutdown();
@@ -200,7 +199,7 @@ export class Bot
         this.disconnected(false, message);
     }
 
-    private disconnected(requested: boolean, message: string)
+    private disconnected(requested: boolean, message: string): void
     {
         const disconnectEvent = new DisconnectEvent();
         disconnectEvent.requested = requested;
@@ -211,7 +210,7 @@ export class Bot
         }
     }
 
-    async close()
+    async close(): Promise<void>
     {
         const circuit = this.currentRegion.circuit;
         const msg: LogoutRequestMessage = new LogoutRequestMessage();
@@ -234,7 +233,7 @@ export class Bot
         return this.agent.agentID;
     }
 
-    async connectToSim(requested: boolean = true)
+    async connectToSim(requested: boolean = true): Promise<void>
     {
         this.agent.setCurrentRegion(this.currentRegion);
         const circuit = this.currentRegion.circuit;
@@ -416,8 +415,6 @@ export class Bot
                     }
                     case Message.TeleportStart:
                     {
-                        const teleportStart = packet.message as TeleportStartMessage;
-
                         const tpEvent = new TeleportEvent();
                         tpEvent.message = '';
                         tpEvent.eventType = TeleportEventType.TeleportStarted;

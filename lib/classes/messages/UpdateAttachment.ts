@@ -51,6 +51,7 @@ export class UpdateAttachmentMessage implements MessageBase
         return (this.InventoryData['Name'].length + 1 + this.InventoryData['Description'].length + 1) + 171;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -104,6 +105,7 @@ export class UpdateAttachmentMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

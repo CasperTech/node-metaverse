@@ -9,7 +9,6 @@ import { StartPingCheckMessage } from './messages/StartPingCheck';
 import { CompletePingCheckMessage } from './messages/CompletePingCheck';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { filter } from 'rxjs/operators';
-import { ClientEvents } from './ClientEvents';
 import { FilterResponse } from '../enums/FilterResponse';
 import { Subject } from 'rxjs/internal/Subject';
 import { TimeoutError } from './TimeoutError';
@@ -17,12 +16,13 @@ import { RequestXferMessage } from './messages/RequestXfer';
 import { SendXferPacketMessage } from './messages/SendXferPacket';
 import { ConfirmXferPacketMessage } from './messages/ConfirmXferPacket';
 import { AbortXferMessage } from './messages/AbortXfer';
-import Timer = NodeJS.Timer;
 import { PacketFlags } from '../enums/PacketFlags';
 import { AssetType } from '../enums/AssetType';
 import { Utils } from './Utils';
+
 import * as Long from 'long';
-import { AssetUploadCompleteMessage } from './messages/AssetUploadComplete';
+
+import Timer = NodeJS.Timer;
 
 export class Circuit
 {
@@ -47,19 +47,17 @@ export class Circuit
         [key: number]: Timer
     } = {};
     active = false;
-    private clientEvents: ClientEvents;
 
     private onPacketReceived: Subject<Packet>;
     private onAckReceived: Subject<number>;
 
-    constructor(clientEvents: ClientEvents)
+    constructor()
     {
-        this.clientEvents = clientEvents;
         this.onPacketReceived = new Subject<Packet>();
         this.onAckReceived = new Subject<number>();
     }
 
-    subscribeToMessages(ids: number[], callback: (packet: Packet) => void)
+    subscribeToMessages(ids: number[], callback: (packet: Packet) => void): Subscription
     {
         const lookupObject: { [key: number]: boolean } = {};
         for (const id of ids)
@@ -87,7 +85,7 @@ export class Circuit
         return packet.sequenceNumber;
     }
 
-    private sendXferPacket(xferID: Long, packetID: number, data: Buffer, pos: {position: number})
+    private sendXferPacket(xferID: Long, packetID: number, data: Buffer, pos: {position: number}): void
     {
         const sendXfer = new SendXferPacketMessage();
         let final = false;
@@ -127,7 +125,7 @@ export class Circuit
         }
     }
 
-    XferFileUp(xferID: Long, data: Buffer)
+    XferFileUp(xferID: Long, data: Buffer): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
@@ -189,7 +187,7 @@ export class Circuit
             {
                 console.log( '     ... Got ' + Object.keys(receivedChunks).length + ' packets');
             }, 5000);
-            const resetTimeout = function ()
+            const resetTimeout = function(): void
             {
                 if (timeout !== null)
                 {
@@ -318,7 +316,7 @@ export class Circuit
         });
     }
 
-    resend(sequenceNumber: number)
+    resend(sequenceNumber: number): void
     {
         if (!this.active)
         {
@@ -373,7 +371,7 @@ export class Circuit
         });
     }
 
-    init()
+    init(): void
     {
         if (this.client !== null)
         {
@@ -393,14 +391,14 @@ export class Circuit
             }
         });
 
-        this.client.on('error', (error) =>
+        this.client.on('error', () =>
         {
 
         });
         this.active = true;
     }
 
-    shutdown()
+    shutdown(): void
     {
         for (const sequenceNumber of Object.keys(this.awaitingAck))
         {
@@ -494,7 +492,7 @@ export class Circuit
         });
     }
 
-    sendPacket(packet: Packet)
+    sendPacket(packet: Packet): void
     {
         if (packet.packetFlags & PacketFlags.Reliable)
         {
@@ -509,7 +507,7 @@ export class Circuit
         dataToSend = packet.writeToBuffer(dataToSend, 0);
         if (this.client !== null)
         {
-            this.client.send(dataToSend, 0, dataToSend.length, this.port, this.ipAddress, (err, bytes) =>
+            this.client.send(dataToSend, 0, dataToSend.length, this.port, this.ipAddress, (_err, _bytes) =>
             {
                 /*let resend = '';
                 if (packet.packetFlags & PacketFlags.Resent)
@@ -526,7 +524,7 @@ export class Circuit
         }
     }
 
-    ackReceived(sequenceNumber: number)
+    ackReceived(sequenceNumber: number): void
     {
         if (this.awaitingAck[sequenceNumber])
         {
@@ -536,7 +534,7 @@ export class Circuit
         this.onAckReceived.next(sequenceNumber);
     }
 
-    sendAck(sequenceNumber: number)
+    sendAck(sequenceNumber: number): void
     {
         const msg: PacketAckMessage = new PacketAckMessage();
         msg.Packets = [
@@ -567,7 +565,7 @@ export class Circuit
         return result;
     }
 
-    expireReceivedPacket(sequenceNumber: number)
+    expireReceivedPacket(sequenceNumber: number): void
     {
         // Enough time has elapsed that we can forget about this packet
         if (this.receivedPackets[sequenceNumber])
@@ -576,7 +574,7 @@ export class Circuit
         }
     }
 
-    receivedPacket(bytes: Buffer)
+    receivedPacket(bytes: Buffer): void
     {
         const packet = new Packet();
         try

@@ -10,7 +10,6 @@ import { PacketFlags } from '../../enums/PacketFlags';
 import { Vector3 } from '../Vector3';
 import { LandStatRequestMessage } from '../messages/LandStatRequest';
 import { LandStatReportType } from '../../enums/LandStatReportType';
-import { LandStatReplyMessage } from '../messages/LandStatReply';
 import { LandStatFlags } from '../../enums/LandStatFlags';
 import { LandStatsEvent } from '../../events/LandStatsEvent';
 

@@ -32,6 +32,7 @@ export class CreateGroupRequestExtendedMessage implements MessageBase
         return (this.GroupData['Name'].length + 1 + this.GroupData['Charter'].length + 2) + 60;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -59,6 +60,7 @@ export class CreateGroupRequestExtendedMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

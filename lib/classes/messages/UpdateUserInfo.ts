@@ -25,6 +25,7 @@ export class UpdateUserInfoMessage implements MessageBase
         return (this.UserData['DirectoryVisibility'].length + 1) + 33;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -39,6 +40,7 @@ export class UpdateUserInfoMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

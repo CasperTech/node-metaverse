@@ -26,6 +26,7 @@ export class SimulatorViewerTimeMessageMessage implements MessageBase
         return 44;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -46,10 +47,10 @@ export class SimulatorViewerTimeMessageMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjTimeInfo: {
             UsecSinceStart: Long,
             SecPerDay: number,

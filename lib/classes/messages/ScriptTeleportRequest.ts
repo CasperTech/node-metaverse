@@ -23,6 +23,7 @@ export class ScriptTeleportRequestMessage implements MessageBase
         return (this.Data['ObjectName'].length + 1 + this.Data['SimName'].length + 1) + 24;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -39,6 +40,7 @@ export class ScriptTeleportRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

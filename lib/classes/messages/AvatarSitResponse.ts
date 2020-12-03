@@ -30,6 +30,7 @@ export class AvatarSitResponseMessage implements MessageBase
         return 66;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -48,10 +49,10 @@ export class AvatarSitResponseMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjSitObject: {
             ID: UUID
         } = {

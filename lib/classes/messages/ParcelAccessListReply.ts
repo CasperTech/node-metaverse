@@ -28,6 +28,7 @@ export class ParcelAccessListReplyMessage implements MessageBase
         return ((24) * this.List.length) + 29;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -53,10 +54,10 @@ export class ParcelAccessListReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjData: {
             AgentID: UUID,
             SequenceID: number,

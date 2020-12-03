@@ -27,6 +27,7 @@ export class ScriptDialogReplyMessage implements MessageBase
         return (this.Data['ButtonLabel'].length + 1) + 56;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -46,6 +47,7 @@ export class ScriptDialogReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

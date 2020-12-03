@@ -32,26 +32,26 @@
 
 ///<reference path='./common.ts' />
 
-import { mat4 } from './mat4';
-import { mat3 } from './mat3';
-import { vec3 } from './vec3';
+import { TSMVec3 } from './vec3';
+import { TSMMat3 } from './mat3';
+import { TSMMat4 } from './mat4';
 
-export class quat
+export class TSMQuat
 {
-    static identity = new quat().setIdentity();
+    static identity = new TSMQuat().setIdentity();
 
     private values = new Float32Array(4);
 
-    static dot(q1: quat, q2: quat): number
+    static dot(q1: TSMQuat, q2: TSMQuat): number
     {
         return q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
     }
 
-    static sum(q1: quat, q2: quat, dest: quat | null = null): quat
+    static sum(q1: TSMQuat, q2: TSMQuat, dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
-            dest = new quat();
+            dest = new TSMQuat();
         }
 
         dest.x = q1.x + q2.x;
@@ -62,11 +62,11 @@ export class quat
         return dest;
     }
 
-    static product(q1: quat, q2: quat, dest: quat | null = null): quat
+    static product(q1: TSMQuat, q2: TSMQuat, dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
-            dest = new quat();
+            dest = new TSMQuat();
         }
 
         const q1x = q1.x,
@@ -87,11 +87,11 @@ export class quat
         return dest;
     }
 
-    static cross(q1: quat, q2: quat, dest: quat | null = null): quat
+    static cross(q1: TSMQuat, q2: TSMQuat, dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
-            dest = new quat();
+            dest = new TSMQuat();
         }
 
         const q1x = q1.x,
@@ -112,11 +112,11 @@ export class quat
         return dest;
     }
 
-    static shortMix(q1: quat, q2: quat, time: number, dest: quat | null = null): quat
+    static shortMix(q1: TSMQuat, q2: TSMQuat, time: number, dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
-            dest = new quat();
+            dest = new TSMQuat();
         }
 
         if (time <= 0.0)
@@ -132,7 +132,7 @@ export class quat
             return dest;
         }
 
-        let cos = quat.dot(q1, q2);
+        let cos = TSMQuat.dot(q1, q2);
         const q2a = q2.copy();
 
         if (cos < 0.0)
@@ -168,11 +168,11 @@ export class quat
         return dest;
     }
 
-    static mix(q1: quat, q2: quat, time: number, dest: quat | null = null): quat
+    static mix(q1: TSMQuat, q2: TSMQuat, time: number, dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
-            dest = new quat();
+            dest = new TSMQuat();
         }
 
         const cosHalfTheta = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
@@ -208,11 +208,11 @@ export class quat
         return dest;
     }
 
-    static fromAxis(axis: vec3, angle: number, dest: quat | null = null): quat
+    static fromAxis(axis: TSMVec3, angle: number, dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
-            dest = new quat();
+            dest = new TSMQuat();
         }
 
         angle *= 0.5;
@@ -335,11 +335,11 @@ export class quat
         }
     }
 
-    copy(dest: quat | null = null): quat
+    copy(dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
-            dest = new quat();
+            dest = new TSMQuat();
         }
 
         for (let i = 0; i < 4; i++)
@@ -375,7 +375,7 @@ export class quat
         return Math.asin(2.0 * (this.x * this.z - this.w * this.y));
     }
 
-    equals(vector: quat, threshold = EPSILON): boolean
+    equals(vector: TSMQuat, threshold = EPSILON): boolean
     {
         for (let i = 0; i < 4; i++)
         {
@@ -388,7 +388,7 @@ export class quat
         return true;
     }
 
-    setIdentity(): quat
+    setIdentity(): TSMQuat
     {
         this.x = 0;
         this.y = 0;
@@ -398,7 +398,7 @@ export class quat
         return this;
     }
 
-    calculateW(): quat
+    calculateW(): TSMQuat
     {
         const x = this.x,
             y = this.y,
@@ -409,9 +409,9 @@ export class quat
         return this;
     }
 
-    inverse(): quat
+    inverse(): TSMQuat
     {
-        const dot = quat.dot(this, this);
+        const dot = TSMQuat.dot(this, this);
 
         if (!dot)
         {
@@ -430,7 +430,7 @@ export class quat
         return this;
     }
 
-    conjugate(): quat
+    conjugate(): TSMQuat
     {
         this.values[0] *= -1;
         this.values[1] *= -1;
@@ -449,7 +449,7 @@ export class quat
         return Math.sqrt(x * x + y * y + z * z + w * w);
     }
 
-    normalize(dest: quat | null = null): quat
+    normalize(dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
@@ -483,7 +483,7 @@ export class quat
         return dest;
     }
 
-    add(other: quat): quat
+    add(other: TSMQuat): TSMQuat
     {
         for (let i = 0; i < 4; i++)
         {
@@ -493,7 +493,7 @@ export class quat
         return this;
     }
 
-    multiply(other: quat): quat
+    multiply(other: TSMQuat): TSMQuat
     {
         const q1x = this.values[0],
             q1y = this.values[1],
@@ -513,11 +513,11 @@ export class quat
         return this;
     }
 
-    multiplyVec3(vector: vec3, dest: vec3 | null = null): vec3
+    multiplyTSMVec3(vector: TSMVec3, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         const x = vector.x,
@@ -541,11 +541,11 @@ export class quat
         return dest;
     }
 
-    toMat3(dest: mat3 | null = null): mat3
+    toTSMMat3(dest: TSMMat3 | null = null): TSMMat3
     {
         if (!dest)
         {
-            dest = new mat3();
+            dest = new TSMMat3();
         }
 
         const x = this.x,
@@ -584,11 +584,11 @@ export class quat
         return dest;
     }
 
-    toMat4(dest: mat4 | null = null): mat4
+    toTSMMat4(dest: TSMMat4 | null = null): TSMMat4
     {
         if (!dest)
         {
-            dest = new mat4();
+            dest = new TSMMat4();
         }
 
         const x = this.x,

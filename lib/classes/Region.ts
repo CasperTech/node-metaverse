@@ -158,7 +158,7 @@ export class Region
 
     private parcelOverlayReceived: {[key: number]: Buffer} = {};
 
-    static IDCTColumn16(linein: number[], lineout: number[], column: number)
+    static IDCTColumn16(linein: number[], lineout: number[], column: number): void
     {
         let total: number;
         let usize: number;
@@ -177,7 +177,7 @@ export class Region
         }
     }
 
-    static IDCTLine16(linein: number[], lineout: number[], line: number)
+    static IDCTLine16(linein: number[], lineout: number[], line: number): void
     {
         const oosob: number = 2.0 / 16.0;
         const lineSize: number = line * 16;
@@ -196,7 +196,7 @@ export class Region
         }
     }
 
-    static InitialSetup()
+    static InitialSetup(): void
     {
         // Build copy matrix 16
         {
@@ -329,7 +329,7 @@ export class Region
         this.agent = agent;
         this.options = options;
         this.clientEvents = clientEvents;
-        this.circuit = new Circuit(clientEvents);
+        this.circuit = new Circuit();
         if (options & BotOptionFlags.LiteObjectStore)
         {
             this.objects = new ObjectStoreLite(this.circuit, agent, clientEvents, options);
@@ -338,7 +338,7 @@ export class Region
         {
             this.objects = new ObjectStoreFull(this.circuit, agent, clientEvents, options);
         }
-        this.comms = new Comms(this.circuit, agent, clientEvents);
+        this.comms = new Comms(this.circuit, clientEvents);
 
         this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe(async (parcelProperties: ParcelPropertiesEvent) =>
         {
@@ -645,7 +645,8 @@ export class Region
 
                     const nibbler = new BitPack(layerData.LayerData.Data, 0);
 
-                    const stride = nibbler.UnpackBits(16);
+                    // stride - unused for now
+                    nibbler.UnpackBits(16);
                     const patchSize = nibbler.UnpackBits(8);
                     const headerLayerType = nibbler.UnpackBits(8);
 
@@ -957,7 +958,7 @@ export class Region
     }
      */
 
-    private fillParcel(parcelID: number, x: number, y: number)
+    private fillParcel(parcelID: number, x: number, y: number): void
     {
         if ( x < 0 || y < 0 || x > 63 || y > 63)
         {
@@ -1223,15 +1224,15 @@ export class Region
         return document.end({pretty: true, allowEmpty: true});
     }
 
-    activateCaps(seedURL: string)
+    activateCaps(seedURL: string): void
     {
         if (this.caps !== undefined)
         {
             this.caps.shutdown();
         }
-        this.caps = new Caps(this.agent, this, seedURL, this.clientEvents);
+        this.caps = new Caps(this.agent, seedURL, this.clientEvents);
     }
-    async handshake(handshake: RegionHandshakeMessage)
+    async handshake(handshake: RegionHandshakeMessage): Promise<void>
     {
         this.regionName = Utils.BufferToStringSimple(handshake.RegionInfo.SimName);
         this.simAccess = handshake.RegionInfo.SimAccess;
@@ -1301,7 +1302,7 @@ export class Region
             Name: handshake.RegionInfo.SimName
         };
         this.circuit.sendMessage(msg, PacketFlags.Reliable);
-        const reply: MapBlockReplyMessage = await this.circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 10000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
+        await this.circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 10000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
         {
             for (const region of filterMsg.Data)
             {
@@ -1403,7 +1404,8 @@ export class Region
         this.handshakeComplete = true;
         this.handshakeCompleteEvent.next();
     }
-    shutdown()
+
+    shutdown(): void
     {
         this.parcelPropertiesSubscription.unsubscribe();
         this.messageSubscription.unsubscribe();

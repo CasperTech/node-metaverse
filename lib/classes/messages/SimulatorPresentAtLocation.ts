@@ -41,6 +41,7 @@ export class SimulatorPresentAtLocationMessage implements MessageBase
         return (this.SimulatorBlock['SimName'].length + 1) + ((13) * this.TelehubBlock.length) + 68;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -83,6 +84,7 @@ export class SimulatorPresentAtLocationMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

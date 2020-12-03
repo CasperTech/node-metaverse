@@ -6,7 +6,15 @@
     "outDir": "dist",
     "sourceMap": true,
     "strict": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strictBindCallApply": true,
     "strictPropertyInitialization": false,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": true,
     "types": ["node"]
   },
   "include": [

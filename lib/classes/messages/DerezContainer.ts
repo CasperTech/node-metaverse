@@ -21,6 +21,7 @@ export class DerezContainerMessage implements MessageBase
         return 17;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -30,10 +31,10 @@ export class DerezContainerMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjData: {
             ObjectID: UUID,
             Delete: boolean
