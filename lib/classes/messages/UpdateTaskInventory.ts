@@ -48,6 +48,7 @@ export class UpdateTaskInventoryMessage implements MessageBase
         return (this.InventoryData['Name'].length + 1 + this.InventoryData['Description'].length + 1) + 173;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -101,6 +102,7 @@ export class UpdateTaskInventoryMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

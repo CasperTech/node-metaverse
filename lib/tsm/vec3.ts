@@ -32,25 +32,24 @@
 
 ///<reference path='./common.ts' />
 
+import { TSMQuat } from './quat';
+import { TSMMat3 } from './mat3';
 
-import { mat3 } from './mat3';
-import { quat } from './quat';
-
-export class vec3
+export class TSMVec3
 {
-    static zero = new vec3([0, 0, 0]);
+    static zero = new TSMVec3([0, 0, 0]);
 
-    static up = new vec3([0, 1, 0]);
-    static right = new vec3([1, 0, 0]);
-    static forward = new vec3([0, 0, 1]);
+    static up = new TSMVec3([0, 1, 0]);
+    static right = new TSMVec3([1, 0, 0]);
+    static forward = new TSMVec3([0, 0, 1]);
 
     private values = new Float32Array(3);
 
-    static cross(vector: vec3, vector2: vec3, dest: vec3 | null = null): vec3
+    static cross(vector: TSMVec3, vector2: TSMVec3, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         const x = vector.x,
@@ -68,7 +67,7 @@ export class vec3
         return dest;
     }
 
-    static dot(vector: vec3, vector2: vec3): number
+    static dot(vector: TSMVec3, vector2: TSMVec3): number
     {
         const x = vector.x,
             y = vector.y,
@@ -81,16 +80,12 @@ export class vec3
         return (x * x2 + y * y2 + z * z2);
     }
 
-    static distance(vector: vec3, vector2: vec3): number
+    static distance(vector: TSMVec3, vector2: TSMVec3): number
     {
-        const x = vector2.x - vector.x,
-            y = vector2.y - vector.y,
-            z = vector2.z - vector.z;
-
         return Math.sqrt(this.squaredDistance(vector, vector2));
     }
 
-    static squaredDistance(vector: vec3, vector2: vec3): number
+    static squaredDistance(vector: TSMVec3, vector2: TSMVec3): number
     {
         const x = vector2.x - vector.x,
             y = vector2.y - vector.y,
@@ -99,11 +94,11 @@ export class vec3
         return (x * x + y * y + z * z);
     }
 
-    static direction(vector: vec3, vector2: vec3, dest: vec3 | null = null): vec3
+    static direction(vector: TSMVec3, vector2: TSMVec3, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         const x = vector.x - vector2.x,
@@ -130,11 +125,11 @@ export class vec3
         return dest;
     }
 
-    static mix(vector: vec3, vector2: vec3, time: number, dest: vec3 | null = null): vec3
+    static mix(vector: TSMVec3, vector2: TSMVec3, time: number, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         dest.x = vector.x + time * (vector2.x - vector.x);
@@ -144,11 +139,11 @@ export class vec3
         return dest;
     }
 
-    static sum(vector: vec3, vector2: vec3, dest: vec3 | null = null): vec3
+    static sum(vector: TSMVec3, vector2: TSMVec3, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         dest.x = vector.x + vector2.x;
@@ -158,11 +153,11 @@ export class vec3
         return dest;
     }
 
-    static difference(vector: vec3, vector2: vec3, dest: vec3 | null = null): vec3
+    static difference(vector: TSMVec3, vector2: TSMVec3, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         dest.x = vector.x - vector2.x;
@@ -172,11 +167,11 @@ export class vec3
         return dest;
     }
 
-    static product(vector: vec3, vector2: vec3, dest: vec3 | null = null): vec3
+    static product(vector: TSMVec3, vector2: TSMVec3, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         dest.x = vector.x * vector2.x;
@@ -186,11 +181,11 @@ export class vec3
         return dest;
     }
 
-    static quotient(vector: vec3, vector2: vec3, dest: vec3 | null = null): vec3
+    static quotient(vector: TSMVec3, vector2: TSMVec3, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         dest.x = vector.x / vector2.x;
@@ -282,11 +277,11 @@ export class vec3
         this.z = 0;
     }
 
-    copy(dest: vec3 | null = null): vec3
+    copy(dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
-            dest = new vec3();
+            dest = new TSMVec3();
         }
 
         dest.x = this.x;
@@ -296,7 +291,7 @@ export class vec3
         return dest;
     }
 
-    negate(dest: vec3 | null = null): vec3
+    negate(dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
@@ -310,7 +305,7 @@ export class vec3
         return dest;
     }
 
-    equals(vector: vec3, threshold = EPSILON): boolean
+    equals(vector: TSMVec3, threshold = EPSILON): boolean
     {
         if (Math.abs(this.x - vector.x) > threshold)
         {
@@ -345,7 +340,7 @@ export class vec3
         return (x * x + y * y + z * z);
     }
 
-    add(vector: vec3): vec3
+    add(vector: TSMVec3): TSMVec3
     {
         this.x += vector.x;
         this.y += vector.y;
@@ -354,7 +349,7 @@ export class vec3
         return this;
     }
 
-    subtract(vector: vec3): vec3
+    subtract(vector: TSMVec3): TSMVec3
     {
         this.x -= vector.x;
         this.y -= vector.y;
@@ -363,7 +358,7 @@ export class vec3
         return this;
     }
 
-    multiply(vector: vec3): vec3
+    multiply(vector: TSMVec3): TSMVec3
     {
         this.x *= vector.x;
         this.y *= vector.y;
@@ -372,7 +367,7 @@ export class vec3
         return this;
     }
 
-    divide(vector: vec3): vec3
+    divide(vector: TSMVec3): TSMVec3
     {
         this.x /= vector.x;
         this.y /= vector.y;
@@ -381,7 +376,7 @@ export class vec3
         return this;
     }
 
-    scale(value: number, dest: vec3 | null = null): vec3
+    scale(value: number, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
@@ -395,7 +390,7 @@ export class vec3
         return dest;
     }
 
-    normalize(dest: vec3 | null = null): vec3
+    normalize(dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
@@ -427,35 +422,35 @@ export class vec3
         return dest;
     }
 
-    multiplyByMat3(matrix: mat3, dest: vec3 | null = null): vec3
+    multiplyByTSMMat3(matrix: TSMMat3, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
             dest = this;
         }
 
-        return matrix.multiplyVec3(this, dest);
+        return matrix.multiplyTSMVec3(this, dest);
     }
 
-    multiplyByQuat(quat: quat, dest: vec3 | null = null): vec3
+    multiplyByTSMQuat(src: TSMQuat, dest: TSMVec3 | null = null): TSMVec3
     {
         if (!dest)
         {
             dest = this;
         }
 
-        return quat.multiplyVec3(this, dest);
+        return src.multiplyTSMVec3(this, dest);
     }
 
-    toQuat(dest: quat | null = null): quat
+    toTSMQuat(dest: TSMQuat | null = null): TSMQuat
     {
         if (!dest)
         {
-            dest = new quat();
+            dest = new TSMQuat();
         }
 
-        const c = new vec3();
-        const s = new vec3();
+        const c = new TSMVec3();
+        const s = new TSMVec3();
 
         c.x = Math.cos(this.x * 0.5);
         s.x = Math.sin(this.x * 0.5);

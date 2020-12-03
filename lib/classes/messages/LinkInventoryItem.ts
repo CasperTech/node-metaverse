@@ -31,6 +31,7 @@ export class LinkInventoryItemMessage implements MessageBase
         return (this.InventoryBlock['Name'].length + 1 + this.InventoryBlock['Description'].length + 1) + 86;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -57,6 +58,7 @@ export class LinkInventoryItemMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

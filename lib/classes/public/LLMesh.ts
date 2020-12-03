@@ -4,9 +4,9 @@ import { LLSubMesh } from './interfaces/LLSubMesh';
 import { Vector3 } from '../Vector3';
 import { Vector2 } from '../Vector2';
 import { LLSkin } from './interfaces/LLSkin';
-import { mat4 } from '../../tsm/mat4';
 import { LLPhysicsConvex } from './interfaces/LLPhysicsConvex';
 import { Utils } from '../Utils';
+import { TSMMat4 } from '../../tsm/mat4';
 
 export class LLMesh
 {
@@ -100,7 +100,7 @@ export class LLMesh
         }
         const skin: LLSkin = {
             jointNames: mesh['joint_names'],
-            bindShapeMatrix: new mat4(mesh['bind_shape_matrix']),
+            bindShapeMatrix: new TSMMat4(mesh['bind_shape_matrix']),
             inverseBindMatrix: []
         };
         if (mesh['inverse_bind_matrix'])
@@ -108,7 +108,7 @@ export class LLMesh
             skin.inverseBindMatrix = [];
             for (const inv of mesh['inverse_bind_matrix'])
             {
-                skin.inverseBindMatrix.push(new mat4(inv));
+                skin.inverseBindMatrix.push(new TSMMat4(inv));
             }
         }
         if (mesh['alt_inverse_bind_matrix'])
@@ -116,12 +116,12 @@ export class LLMesh
             skin.altInverseBindMatrix = [];
             for (const inv of mesh['alt_inverse_bind_matrix'])
             {
-                skin.altInverseBindMatrix.push(new mat4(inv));
+                skin.altInverseBindMatrix.push(new TSMMat4(inv));
             }
         }
         if (mesh['pelvis_offset'])
         {
-            skin.pelvisOffset = new mat4(mesh['pelvis_offset']);
+            skin.pelvisOffset = new TSMMat4(mesh['pelvis_offset']);
         }
         return skin;
     }
@@ -341,31 +341,18 @@ export class LLMesh
         }
         return result;
     }
-    static normalizeDomain(value: number, min: number, max: number)
+
+    static normalizeDomain(value: number, min: number, max: number): number
     {
         return ((value / 65535) * (max - min)) + min;
     }
-    private encodeSubMesh(mesh: LLSubMesh)
+
+    private encodeSubMesh(mesh: LLSubMesh): LLSubMesh
     {
-        const data: {
-            NoGeometry?: true,
-            Position?: any, // LLSD.Binary
-            PositionDomain?: {
-                Min: number[],
-                Max: number[]
-            },
-            Normal?: any, // LLSD.Binary
-            TexCoord0?: any, // LLSD.Binary
-            TexCoord0Domain?: {
-                Min: number[],
-                Max: number[]
-            },
-            TriangleList?: any, // LLSD.Binary
-            Weights?: any // LLSD.Binary
-        } = {};
+        const data: LLSubMesh = {};
         if (mesh.noGeometry === true)
         {
-            data.NoGeometry = true;
+            data.noGeometry = true;
             return data;
         }
         if (!mesh.position)
@@ -374,23 +361,23 @@ export class LLMesh
         }
         if (mesh.positionDomain !== undefined)
         {
-            data.Position = new LLSD.Binary(Array.from(this.expandFromDomain(mesh.position, mesh.positionDomain.min, mesh.positionDomain.max)));
-            data.PositionDomain = {
-                Min: LLMesh.fixReal(mesh.positionDomain.min.toArray()),
-                Max: LLMesh.fixReal(mesh.positionDomain.max.toArray())
+            data.position = new LLSD.Binary(Array.from(this.expandFromDomain(mesh.position, mesh.positionDomain.min, mesh.positionDomain.max)));
+            data.positionDomain = {
+                min: new Vector3(LLMesh.fixReal(mesh.positionDomain.min.toArray())),
+                max: new Vector3(LLMesh.fixReal(mesh.positionDomain.max.toArray()))
             };
         }
         if (mesh.texCoord0 && mesh.texCoord0Domain !== undefined)
         {
-            data.TexCoord0 = new LLSD.Binary(Array.from(this.expandFromDomain(mesh.texCoord0, mesh.texCoord0Domain.min, mesh.texCoord0Domain.max)));
-            data.TexCoord0Domain = {
-                Min: LLMesh.fixReal(mesh.texCoord0Domain.min.toArray()),
-                Max: LLMesh.fixReal(mesh.texCoord0Domain.max.toArray())
+            data.texCoord0 = new LLSD.Binary(Array.from(this.expandFromDomain(mesh.texCoord0, mesh.texCoord0Domain.min, mesh.texCoord0Domain.max)));
+            data.texCoord0Domain = {
+                min: new Vector2(LLMesh.fixReal(mesh.texCoord0Domain.min.toArray())),
+                max: new Vector2(LLMesh.fixReal(mesh.texCoord0Domain.max.toArray()))
             };
         }
         if (mesh.normal)
         {
-            data.Normal = new LLSD.Binary(Array.from(this.expandFromDomain(mesh.normal, new Vector3([-1.0, -1.0, -1.0]), new Vector3([1.0, 1.0, 1.0]))));
+            data.normal = new LLSD.Binary(Array.from(this.expandFromDomain(mesh.normal, new Vector3([-1.0, -1.0, -1.0]), new Vector3([1.0, 1.0, 1.0]))));
         }
         if (mesh.triangleList)
         {
@@ -400,7 +387,7 @@ export class LLMesh
             {
                 triangles.writeUInt16LE(mesh.triangleList[x], pos); pos = pos + 2;
             }
-            data.TriangleList = new LLSD.Binary(Array.from(triangles));
+            data.triangleList = new LLSD.Binary(Array.from(triangles));
         }
         else
         {
@@ -434,11 +421,12 @@ export class LLMesh
                     weightBuff.writeUInt8(0xFF, pos++);
                 }
             }
-            data.Weights = new LLSD.Binary(Array.from(weightBuff));
+            data.weights = new LLSD.Binary(Array.from(weightBuff));
         }
         return data;
     }
-    private expandFromDomain(data: Vector3[] | Vector2[], domainMin: Vector3 | Vector2, domainMax: Vector3 | Vector2)
+
+    private expandFromDomain(data: Vector3[] | Vector2[], domainMin: Vector3 | Vector2, domainMax: Vector3 | Vector2): Buffer
     {
         let length = 4;
         if (data.length > 0 && data[0] instanceof Vector3)
@@ -466,7 +454,8 @@ export class LLMesh
         }
         return buf;
     }
-    private async encodeLODLevel(name: string, submeshes: LLSubMesh[]): Promise<Buffer>
+
+    private async encodeLODLevel(_: string, submeshes: LLSubMesh[]): Promise<Buffer>
     {
         const smList = [];
         for (const sub of submeshes)
@@ -474,8 +463,9 @@ export class LLMesh
             smList.push(this.encodeSubMesh(sub))
         }
         const mesh = LLSD.LLSD.formatBinary(smList);
-        return await Utils.deflate(Buffer.from(mesh.toArray()));
+        return Utils.deflate(Buffer.from(mesh.toArray()));
     }
+
     private async encodePhysicsConvex(conv: LLPhysicsConvex): Promise<Buffer>
     {
         const llsd: {

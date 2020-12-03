@@ -29,6 +29,7 @@ export class ObjectOwnerMessage implements MessageBase
         return ((4) * this.ObjectData.length) + 66;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -51,10 +52,10 @@ export class ObjectOwnerMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID

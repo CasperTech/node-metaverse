@@ -32,6 +32,7 @@ export class RezSingleAttachmentFromInvMessage implements MessageBase
         return (this.ObjectData['Name'].length + 1 + this.ObjectData['Description'].length + 1) + 81;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -61,6 +62,7 @@ export class RezSingleAttachmentFromInvMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

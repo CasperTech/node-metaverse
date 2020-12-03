@@ -29,6 +29,7 @@ export class MapItemRequestMessage implements MessageBase
         return 53;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -50,10 +51,10 @@ export class MapItemRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID,

@@ -32,6 +32,7 @@ export class AvatarPropertiesReplyMessage implements MessageBase
         return (this.PropertiesData['AboutText'].length + 2 + this.PropertiesData['FLAboutText'].length + 1 + this.PropertiesData['BornOn'].length + 1 + this.PropertiesData['ProfileURL'].length + 1 + this.PropertiesData['CharterMember'].length + 1) + 84;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -66,6 +67,7 @@ export class AvatarPropertiesReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

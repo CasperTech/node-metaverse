@@ -37,6 +37,7 @@ export class ParcelInfoReplyMessage implements MessageBase
         return (this.Data['Name'].length + 1 + this.Data['Desc'].length + 1 + this.Data['SimName'].length + 1) + 97;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -77,6 +78,7 @@ export class ParcelInfoReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

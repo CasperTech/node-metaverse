@@ -21,6 +21,7 @@ export class OpenCircuitMessage implements MessageBase
         return 6;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -31,10 +32,10 @@ export class OpenCircuitMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjCircuitInfo: {
             IP: IPAddress,
             Port: number

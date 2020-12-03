@@ -24,6 +24,7 @@ export class DataHomeLocationRequestMessage implements MessageBase
         return 24;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -36,10 +37,10 @@ export class DataHomeLocationRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjInfo: {
             AgentID: UUID,
             KickedFromEstateID: number

@@ -25,6 +25,7 @@ export class Inventory
 
     itemsByID: {[key: string]: InventoryItem} = {};
 
+    // @ts-ignore
     private clientEvents: ClientEvents;
     private agent: Agent;
 

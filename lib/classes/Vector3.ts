@@ -1,14 +1,14 @@
-import { vec3 } from '../tsm/vec3';
 import { XMLNode } from 'xmlbuilder';
+import { TSMVec3 } from '../tsm/vec3';
 
-export class Vector3 extends vec3
+export class Vector3 extends TSMVec3
 {
     static getZero(): Vector3
     {
         return new Vector3();
     }
 
-    static getXML(doc: XMLNode, v?: Vector3)
+    static getXML(doc: XMLNode, v?: Vector3): void
     {
         if (v === undefined)
         {
@@ -56,7 +56,7 @@ export class Vector3 extends vec3
         return false;
     }
 
-    constructor(buf?: Buffer | number[] | Vector3 | vec3, pos?: number, double?: boolean)
+    constructor(buf?: Buffer | number[] | Vector3 | TSMVec3, pos?: number, double?: boolean)
     {
         if (buf instanceof Vector3)
         {
@@ -65,7 +65,7 @@ export class Vector3 extends vec3
             this.y = buf.y;
             this.z = buf.z;
         }
-        else if (buf instanceof vec3)
+        else if (buf instanceof TSMVec3)
         {
             super();
             this.x = buf.x;
@@ -105,7 +105,8 @@ export class Vector3 extends vec3
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number, double: boolean)
+
+    writeToBuffer(buf: Buffer, pos: number, double: boolean): void
     {
         if (double)
         {
@@ -130,11 +131,13 @@ export class Vector3 extends vec3
         this.writeToBuffer(buf, 0, double);
         return buf;
     }
-    compareApprox(vec: Vector3)
+
+    compareApprox(vec: Vector3): boolean
     {
         return vec.equals(this, 0.00001);
     }
-    toArray()
+
+    toArray(): number[]
     {
         return [this.x, this.y, this.z];
     }

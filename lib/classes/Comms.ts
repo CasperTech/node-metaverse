@@ -1,5 +1,4 @@
 import { Circuit } from './Circuit';
-import { Agent } from './Agent';
 import { Packet } from './Packet';
 import { Message } from '../enums/Message';
 import { ChatFromSimulatorMessage } from './messages/ChatFromSimulator';
@@ -27,14 +26,12 @@ import { InventoryResponseEvent } from '../events/InventoryResponseEvent';
 export class Comms
 {
     private circuit: Circuit;
-    private agent: Agent;
     private clientEvents: ClientEvents;
 
-    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents)
+    constructor(circuit: Circuit, clientEvents: ClientEvents)
     {
         this.clientEvents = clientEvents;
         this.circuit = circuit;
-        this.agent = agent;
 
         this.circuit.subscribeToMessages([
             Message.ImprovedInstantMessage,
@@ -336,7 +333,7 @@ export class Comms
         });
     }
 
-    shutdown()
+    shutdown(): void
     {
 
     }

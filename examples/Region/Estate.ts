@@ -4,7 +4,7 @@ class Estate extends ExampleBot
 {
     wait(ms: number): Promise<void>
     {
-        return new Promise<void>((resolve, reject) =>
+        return new Promise<void>((resolve) =>
         {
             setTimeout(() =>
             {
@@ -12,7 +12,7 @@ class Estate extends ExampleBot
             }, ms)
         });
     }
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         console.log('Sending a message');
         await this.bot.clientCommands.region.simulatorMessage('In about 10 seconds, the region will begin to restart. This is only a test, and the restart will be cancelled.');

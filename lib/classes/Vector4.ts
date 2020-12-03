@@ -1,14 +1,14 @@
-import { vec4 } from '../tsm/vec4';
+import { TSMVec4 } from '../tsm/vec4';
 import { XMLNode } from 'xmlbuilder';
 
-export class Vector4 extends vec4
+export class Vector4 extends TSMVec4
 {
     static getZero(): Vector4
     {
         return new Vector4();
     }
 
-    static getXML(doc: XMLNode, v?: Vector4)
+    static getXML(doc: XMLNode, v?: Vector4): void
     {
         if (v === undefined)
         {
@@ -39,13 +39,15 @@ export class Vector4 extends vec4
             super();
         }
     }
-    writeToBuffer(buf: Buffer, pos: number)
+
+    writeToBuffer(buf: Buffer, pos: number): void
     {
         buf.writeFloatLE(this.x, pos);
         buf.writeFloatLE(this.y, pos + 4);
         buf.writeFloatLE(this.z, pos + 8);
         buf.writeFloatLE(this.w, pos + 12);
     }
+
     toString(): string
     {
         return '<' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + '>';

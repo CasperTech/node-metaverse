@@ -28,6 +28,7 @@ export class SoundTriggerMessage implements MessageBase
         return 88;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -50,10 +51,10 @@ export class SoundTriggerMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjSoundData: {
             SoundID: UUID,
             OwnerID: UUID,

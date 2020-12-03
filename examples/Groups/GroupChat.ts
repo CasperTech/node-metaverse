@@ -6,7 +6,7 @@ class GroupChat extends ExampleBot
 {
     private pings: {[key: string]: number} = {};
 
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         const groupID = new UUID('4b35083d-b51a-a148-c400-6f1038a5589e');
 
@@ -23,6 +23,7 @@ class GroupChat extends ExampleBot
 
         // Now, the group mute stuff is often pretty useless because an avatar can just leave the session and re-join.
         // Let's enforce it a little better.
+        // @ts-ignore
         const groupChatSubscriber = this.bot.clientEvents.onGroupChatAgentListUpdate.subscribe((event) =>
         {
             if (event.groupID.equals(groupID) && event.agentID.equals(badGuyID) && event.entered)
@@ -42,7 +43,7 @@ class GroupChat extends ExampleBot
         await this.bot.clientCommands.group.ejectFromGroup(groupID, badGuyID);
     }
 
-    async onGroupChat(event: GroupChatEvent)
+    async onGroupChat(event: GroupChatEvent): Promise<void>
     {
         console.log('Group chat: ' + event.fromName + ': ' + event.message);
         if (event.message === '!ping')

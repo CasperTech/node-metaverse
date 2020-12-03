@@ -27,19 +27,9 @@ export class TextureEntry
             return result;
         }
         let b = 0;
-        let outputValue = false;
-        let str = '0x';
         do
         {
             b = buf.readUInt8(result.pos);
-            if (b === 0x81)
-            {
-                outputValue = true;
-            }
-            if (outputValue)
-            {
-                str += b.toString(16);
-            }
             result.faceBits = (result.faceBits << 7) | (b & 0x7F);
             result.bitfieldSize += 7;
             result.pos++;
@@ -78,7 +68,7 @@ export class TextureEntry
         return bytes;
     }
 
-    static from(buf: Buffer)
+    static from(buf: Buffer): TextureEntry
     {
         const te = new TextureEntry();
         if (buf.length < 16)
@@ -357,7 +347,6 @@ export class TextureEntry
 
             // MaterialID
             {
-                const len = i - pos + 16;
                 if (i - pos + 16 <= buf.length)
                 {
                     te.defaultTexture.materialID = new UUID(buf, i);
@@ -394,7 +383,7 @@ export class TextureEntry
 
     }
 
-    private createFace(face: number)
+    private createFace(face: number): void
     {
         if (face > 32)
         {
@@ -582,7 +571,7 @@ export class TextureEntry
         return Buffer.concat(chunks);
     }
 
-    getChunks(chunks: Buffer[], items: number[], func: (item: TextureEntryFace) => Buffer)
+    getChunks(chunks: Buffer[], items: number[], func: (item: TextureEntryFace) => Buffer): void
     {
         if (this.defaultTexture !== null)
         {

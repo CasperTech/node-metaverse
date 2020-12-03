@@ -28,6 +28,7 @@ export class ObjectBuyMessage implements MessageBase
         return ((9) * this.ObjectData.length) + 65;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -52,10 +53,10 @@ export class ObjectBuyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID,

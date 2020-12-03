@@ -11,7 +11,7 @@ export class TarReader
 {
     private outFile: string;
 
-    constructor(private fileName: string)
+    constructor()
     {
 
     }
@@ -30,7 +30,6 @@ export class TarReader
             let fileSize = 0;
             let paddingSize = 0;
             let pos = 0;
-            let fileCount = 0;
             const archive = new TarArchive();
             this.outFile = path.resolve(os.tmpdir() + '/' + uuid.v4() + '.tar');
             const outStream = fs.openSync(this.outFile, 'w');
@@ -99,7 +98,6 @@ export class TarReader
                                     sum += header[x];
                                 }
                             }
-                            fileCount++;
                             if (sum !== checksum)
                             {
                                     readState = 3;
@@ -177,13 +175,13 @@ export class TarReader
         });
     }
 
-    close()
+    close(): void
     {
         fs.unlinkSync(this.outFile);
         this.outFile = '';
     }
 
-    private trimEntry(buf: Buffer)
+    private trimEntry(buf: Buffer): string
     {
         let end = buf.indexOf('\0');
         if (end === -1)
@@ -193,7 +191,7 @@ export class TarReader
         return buf.slice(0, end).toString('ascii');
     }
 
-    private decodeOctal(buf: Buffer)
+    private decodeOctal(buf: Buffer): number
     {
         const str = this.trimEntry(buf);
         return parseInt(str, 8);

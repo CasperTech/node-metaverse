@@ -42,6 +42,7 @@ export class UpdateParcelMessage implements MessageBase
         return (this.ParcelData['Name'].length + 1 + this.ParcelData['Description'].length + 1 + this.ParcelData['MusicURL'].length + 1) + 111;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -88,6 +89,7 @@ export class UpdateParcelMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

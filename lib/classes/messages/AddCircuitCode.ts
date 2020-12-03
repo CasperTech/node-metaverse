@@ -22,6 +22,7 @@ export class AddCircuitCodeMessage implements MessageBase
         return 36;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -34,10 +35,10 @@ export class AddCircuitCodeMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjCircuitCode: {
             Code: number,
             SessionID: UUID,

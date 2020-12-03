@@ -26,6 +26,7 @@ export class SimulatorLoadMessage implements MessageBase
         return ((6) * this.AgentList.length) + 10;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -46,10 +47,10 @@ export class SimulatorLoadMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjSimulatorLoad: {
             TimeDilation: number,
             AgentCount: number,

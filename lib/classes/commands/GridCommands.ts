@@ -32,7 +32,7 @@ import { GameObject } from '../public/GameObject';
 
 export class GridCommands extends CommandsBase
 {
-    getRegionByName(regionName: string)
+    getRegionByName(regionName: string): Promise<RegionInfoReplyEvent>
     {
         return new Promise<RegionInfoReplyEvent>((resolve, reject) =>
         {
@@ -186,7 +186,8 @@ export class GridCommands extends CommandsBase
                 {
                     for (const data of responseMsg2.Data)
                     {
-                        for (let index = 0; index <= data.Extra; index++) {
+                        for (let index = 0; index <= data.Extra; index++)
+                        {
                             response.avatars.push(new Vector2([
                                 data.X,
                                 data.Y
@@ -251,12 +252,12 @@ export class GridCommands extends CommandsBase
                     return FilterResponse.Match;
                 }
                 return FilterResponse.NoMatch;
-            }).then((ignore: MapBlockReplyMessage) =>
+            }).then((_ignore: MapBlockReplyMessage) =>
             {
 
             }).catch((err) =>
             {
-                if (err instanceof TimeoutError && err.timeout === true)
+                if (err instanceof TimeoutError && err.timeout)
                 {
                     resolve(response);
                 }
@@ -438,7 +439,7 @@ export class GridCommands extends CommandsBase
         return this.pay(target, amount, description, MoneyTransactionType.Gift, TransactionFlags.None);
     }
 
-    private async pay(target: UUID, amount: number, description: string, type: MoneyTransactionType, flags: TransactionFlags = TransactionFlags.None)
+    private async pay(target: UUID, amount: number, description: string, type: MoneyTransactionType, flags: TransactionFlags = TransactionFlags.None): Promise<void>
     {
         if (amount % 1 !== 0)
         {

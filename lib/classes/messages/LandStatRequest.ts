@@ -27,6 +27,7 @@ export class LandStatRequestMessage implements MessageBase
         return (this.RequestData['Filter'].length + 1) + 44;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -46,6 +47,7 @@ export class LandStatRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

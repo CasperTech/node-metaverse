@@ -22,6 +22,7 @@ export class LiveHelpGroupReplyMessage implements MessageBase
         return (this.ReplyData['Selection'].length + 1) + 32;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -35,6 +36,7 @@ export class LiveHelpGroupReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

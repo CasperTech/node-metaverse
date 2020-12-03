@@ -27,6 +27,7 @@ export class LogDwellTimeMessage implements MessageBase
         return (this.DwellInfo['SimName'].length + 1) + 46;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -48,6 +49,7 @@ export class LogDwellTimeMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

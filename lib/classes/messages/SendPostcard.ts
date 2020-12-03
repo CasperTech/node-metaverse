@@ -31,6 +31,7 @@ export class SendPostcardMessage implements MessageBase
         return (this.AgentData['To'].length + 1 + this.AgentData['From'].length + 1 + this.AgentData['Name'].length + 1 + this.AgentData['Subject'].length + 1 + this.AgentData['Msg'].length + 2) + 74;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -63,6 +64,7 @@ export class SendPostcardMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

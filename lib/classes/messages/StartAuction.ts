@@ -25,6 +25,7 @@ export class StartAuctionMessage implements MessageBase
         return (this.ParcelData['Name'].length + 1) + 48;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -40,6 +41,7 @@ export class StartAuctionMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

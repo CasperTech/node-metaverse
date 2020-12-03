@@ -29,6 +29,7 @@ export class TeleportFinishMessage implements MessageBase
         return (this.Info['SeedCapability'].length + 2) + 39;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -54,6 +55,7 @@ export class TeleportFinishMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

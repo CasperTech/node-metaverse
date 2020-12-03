@@ -26,7 +26,7 @@ export class ExtraParams
         const extraParamCount = buf.readUInt8(pos++);
         for (let k = 0; k < extraParamCount; k++)
         {
-            const type: ExtraParamType = buf.readUInt16LE(pos);
+            // UNUSED: const type: ExtraParamType = buf.readUInt16LE(pos);
             pos = pos + 2;
             const paramLength = buf.readUInt32LE(pos);
             pos = pos + 4 + paramLength;

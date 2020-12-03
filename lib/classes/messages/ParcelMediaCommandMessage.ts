@@ -21,6 +21,7 @@ export class ParcelMediaCommandMessageMessage implements MessageBase
         return 12;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -33,10 +34,10 @@ export class ParcelMediaCommandMessageMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjCommandBlock: {
             Flags: number,
             Command: number,

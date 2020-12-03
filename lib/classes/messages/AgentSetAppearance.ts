@@ -34,6 +34,7 @@ export class AgentSetAppearanceMessage implements MessageBase
         return ((17) * this.WearableData.length) + (this.ObjectData['TextureEntry'].length + 2) + ((1) * this.VisualParam.length) + 50;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -66,6 +67,7 @@ export class AgentSetAppearanceMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

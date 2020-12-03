@@ -34,6 +34,7 @@ export class CrossedRegionMessage implements MessageBase
         return (this.RegionData['SeedCapability'].length + 2) + 70;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -60,6 +61,7 @@ export class CrossedRegionMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

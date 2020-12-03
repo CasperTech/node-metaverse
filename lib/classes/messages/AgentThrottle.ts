@@ -26,6 +26,7 @@ export class AgentThrottleMessage implements MessageBase
         return (this.Throttle['Throttles'].length + 1) + 40;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -43,6 +44,7 @@ export class AgentThrottleMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

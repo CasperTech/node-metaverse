@@ -23,6 +23,7 @@ export class ScriptMailRegistrationMessage implements MessageBase
         return (this.DataBlock['TargetIP'].length + 1) + 22;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -38,6 +39,7 @@ export class ScriptMailRegistrationMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

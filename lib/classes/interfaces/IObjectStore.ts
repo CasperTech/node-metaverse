@@ -1,7 +1,6 @@
 import { RBush3D } from 'rbush-3d/dist';
 import { UUID } from '../UUID';
 import { GameObject } from '../public/GameObject';
-import { Avatar } from '../public/Avatar';
 
 export interface IObjectStore
 {

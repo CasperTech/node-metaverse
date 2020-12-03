@@ -7,16 +7,18 @@ import { ChatFromViewerMessage } from '../messages/ChatFromViewer';
 import { ChatType } from '../../enums/ChatType';
 import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
 import { ScriptDialogReplyMessage } from '../messages/ScriptDialogReply';
-import * as LLSD from '@caspertech/llsd';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { GroupChatSessionJoinEvent } from '../../events/GroupChatSessionJoinEvent';
 import { ScriptDialogEvent } from '../../events/ScriptDialogEvent';
-import Timer = NodeJS.Timer;
 import { StartLureMessage } from '../messages/StartLure';
 import { InventoryItem } from '../InventoryItem';
 import { InventoryFolder } from '../InventoryFolder';
 import { InstantMessageOnline } from '../../enums/InstantMessageOnline';
 import { AssetType } from '../../enums/AssetType';
+
+import Timer = NodeJS.Timer;
+
+import * as LLSD from '@caspertech/llsd';
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -159,7 +161,7 @@ export class CommunicationsCommands extends CommandsBase
         return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async sendTeleport(target: UUID | string, message?: string)
+    sendTeleport(target: UUID | string, message?: string): Promise<void>
     {
         if (typeof target === 'string')
         {
@@ -182,7 +184,7 @@ export class CommunicationsCommands extends CommandsBase
           TargetID: target
         }];
         const sequenceNo = this.circuit.sendMessage(p, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        return this.circuit.waitForAck(sequenceNo, 10000);
     }
 
     async stopTypingLocal(): Promise<void>
@@ -441,12 +443,12 @@ export class CommunicationsCommands extends CommandsBase
                         }
                     }
                 });
-                const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
+                circuit.sendMessage(im, PacketFlags.Reliable);
             }
         });
     }
 
-    async moderateGroupChat(groupID: UUID | string, memberID: UUID | string, muteText: boolean, muteVoice: boolean)
+    async moderateGroupChat(groupID: UUID | string, memberID: UUID | string, muteText: boolean, muteVoice: boolean): Promise<void>
     {
         if (typeof groupID === 'object')
         {

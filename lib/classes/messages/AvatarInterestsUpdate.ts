@@ -28,6 +28,7 @@ export class AvatarInterestsUpdateMessage implements MessageBase
         return (this.PropertiesData['WantToText'].length + 1 + this.PropertiesData['SkillsText'].length + 1 + this.PropertiesData['LanguagesText'].length + 1) + 40;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -51,6 +52,7 @@ export class AvatarInterestsUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

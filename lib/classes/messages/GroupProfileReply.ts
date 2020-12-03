@@ -39,6 +39,7 @@ export class GroupProfileReplyMessage implements MessageBase
         return (this.GroupData['Name'].length + 1 + this.GroupData['Charter'].length + 2 + this.GroupData['MemberTitle'].length + 1) + 108;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -81,6 +82,7 @@ export class GroupProfileReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

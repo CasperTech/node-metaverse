@@ -24,6 +24,7 @@ export class AvatarNotesReplyMessage implements MessageBase
         return (this.Data['Notes'].length + 2) + 32;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -38,6 +39,7 @@ export class AvatarNotesReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

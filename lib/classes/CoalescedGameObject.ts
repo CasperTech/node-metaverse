@@ -2,7 +2,7 @@ import { Vector3 } from './Vector3';
 import { GameObject } from './public/GameObject';
 import { UUID } from './UUID';
 import * as builder from 'xmlbuilder';
-import { XMLElement, XMLNode } from 'xmlbuilder';
+import { XMLElement } from 'xmlbuilder';
 import { Utils } from './Utils';
 
 export class CoalescedGameObject
@@ -14,7 +14,7 @@ export class CoalescedGameObject
         object: GameObject
     }[];
 
-    static async fromXML(xml: string)
+    static async fromXML(xml: string): Promise<CoalescedGameObject>
     {
         const obj = new CoalescedGameObject();
 

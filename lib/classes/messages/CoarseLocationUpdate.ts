@@ -29,6 +29,7 @@ export class CoarseLocationUpdateMessage implements MessageBase
         return ((3) * this.Location.length) + ((16) * this.AgentData.length) + 6;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -54,10 +55,10 @@ export class CoarseLocationUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         if (pos >= buf.length)
         {
             return pos - startPos;

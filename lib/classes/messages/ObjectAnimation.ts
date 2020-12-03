@@ -24,6 +24,7 @@ export class ObjectAnimationMessage implements MessageBase
         return ((20) * this.AnimationList.length) + 17;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -41,10 +42,10 @@ export class ObjectAnimationMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjSender: {
             ID: UUID
         } = {

@@ -29,6 +29,7 @@ export class ParcelMediaUpdateMessage implements MessageBase
         return (this.DataBlock['MediaURL'].length + 1) + (this.DataBlockExtended['MediaType'].length + 1 + this.DataBlockExtended['MediaDesc'].length + 1) + 26;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -52,6 +53,7 @@ export class ParcelMediaUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

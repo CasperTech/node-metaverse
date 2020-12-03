@@ -23,6 +23,7 @@ export class UpdateSimulatorMessage implements MessageBase
         return (this.SimulatorInfo['SimName'].length + 1) + 21;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -37,6 +38,7 @@ export class UpdateSimulatorMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

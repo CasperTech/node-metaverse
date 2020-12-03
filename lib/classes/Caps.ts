@@ -1,7 +1,3 @@
-import * as LLSD from '@caspertech/llsd';
-import * as request from 'request';
-import * as url from 'url';
-import { Region } from './Region';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { EventQueueClient } from './EventQueueClient';
 import { UUID } from './UUID';
@@ -11,6 +7,10 @@ import { Subject } from 'rxjs/internal/Subject';
 import { ICapResponse } from './interfaces/ICapResponse';
 import { HTTPAssets } from '../enums/HTTPAssets';
 
+import * as LLSD from '@caspertech/llsd';
+import * as request from 'request';
+import * as url from 'url';
+
 export class Caps
 {
     static CAP_INVOCATION_DELAY_MS: {[key: string]: number} = {
@@ -18,7 +18,6 @@ export class Caps
         'FetchInventory2': 200
     };
 
-    private region: Region;
     private onGotSeedCap: Subject<void> = new Subject<void>();
     private gotSeedCap = false;
     private capabilities: { [key: string]: string } = {};
@@ -28,11 +27,10 @@ export class Caps
     private timeLastCapExecuted: {[key: string]: number} = {};
     eventQueueClient: EventQueueClient | null = null;
 
-    constructor(agent: Agent, region: Region, seedURL: string, clientEvents: ClientEvents)
+    constructor(agent: Agent, seedURL: string, clientEvents: ClientEvents)
     {
         this.agent = agent;
         this.clientEvents = clientEvents;
-        this.region = region;
         const req: string[] = [];
         req.push('AbuseCategories');
         req.push('AcceptFriendship');
@@ -165,7 +163,7 @@ export class Caps
                     'rejectUnauthorized': false,
                     'method': 'GET',
                     'encoding': null
-                }, (err, res, body) =>
+                }, (err, _res, body) =>
                 {
                     if (err)
                     {
@@ -261,7 +259,7 @@ export class Caps
 
     waitForSeedCapability(): Promise<void>
     {
-        return new Promise((resolve, reject) =>
+        return new Promise((resolve) =>
         {
             if (this.gotSeedCap)
             {
@@ -342,7 +340,7 @@ export class Caps
 
     private waitForCapTimeout(capName: string): Promise<void>
     {
-        return new Promise((resolve, reject) =>
+        return new Promise((resolve) =>
         {
             if (!Caps.CAP_INVOCATION_DELAY_MS[capName])
             {
@@ -599,7 +597,7 @@ export class Caps
         }
     }
 
-    shutdown()
+    shutdown(): void
     {
         this.onGotSeedCap.complete();
         if (this.eventQueueClient)

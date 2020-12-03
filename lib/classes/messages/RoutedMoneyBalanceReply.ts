@@ -40,6 +40,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
         return (this.MoneyData['Description'].length + 1) + (this.TransactionInfo['ItemDescription'].length + 1) + 93;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -77,6 +78,7 @@ export class RoutedMoneyBalanceReplyMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

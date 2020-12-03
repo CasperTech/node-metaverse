@@ -26,6 +26,7 @@ export class DeactivateGesturesMessage implements MessageBase
         return ((20) * this.Data.length) + 37;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -47,10 +48,10 @@ export class DeactivateGesturesMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID,

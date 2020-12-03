@@ -35,6 +35,7 @@ export class RequestParcelTransferMessage implements MessageBase
         return 110;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -67,10 +68,10 @@ export class RequestParcelTransferMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjData: {
             TransactionID: UUID,
             TransactionTime: number,

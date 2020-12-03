@@ -318,7 +318,7 @@ for (const message of messages)
             '        return size;\n' +
             '    }\n\n';
     }
-
+    classString+='    // @ts-ignore\n';
     classString+='    writeToBuffer(buf: Buffer, pos: number): number\n';
     classString+='    {\n';
     if (message.blocks.length > 0)
@@ -491,12 +491,30 @@ for (const message of messages)
     }
     classString +='    }\n';
     classString +='\n';
+    classString+='    // @ts-ignore\n';
     classString+='    readFromBuffer(buf: Buffer, pos: number): number\n';
     classString+='    {\n';
     if (message.blocks.length > 0)
     {
         classString += '        const startPos = pos;\n';
-        classString += '        let varLength = 0;\n';
+
+        let foundVarLength = false;
+        for (const block of message.blocks)
+        {
+            for (const param of block.params)
+            {
+                if (param.type === 'Variable')
+                {
+                    classString += '        let varLength = 0;\n';
+                    foundVarLength = true;
+                    break;
+                }
+            }
+            if (foundVarLength)
+            {
+                break;
+            }
+        }
 
         let firstCount = true;
 

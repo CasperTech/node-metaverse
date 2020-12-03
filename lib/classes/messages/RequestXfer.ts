@@ -27,6 +27,7 @@ export class RequestXferMessage implements MessageBase
         return (this.XferID['Filename'].length + 1) + 29;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -47,6 +48,7 @@ export class RequestXferMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

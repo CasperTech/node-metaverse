@@ -31,6 +31,7 @@ export class ParcelDisableObjectsMessage implements MessageBase
         return ((16) * this.TaskIDs.length) + ((16) * this.OwnerIDs.length) + 42;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -59,10 +60,10 @@ export class ParcelDisableObjectsMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID

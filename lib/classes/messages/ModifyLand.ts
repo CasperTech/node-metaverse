@@ -37,6 +37,7 @@ export class ModifyLandMessage implements MessageBase
         return ((20) * this.ParcelData.length) + ((4) * this.ModifyBlockExtended.length) + 44;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -75,10 +76,10 @@ export class ModifyLandMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID

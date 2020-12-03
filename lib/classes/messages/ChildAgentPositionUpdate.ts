@@ -33,6 +33,7 @@ export class ChildAgentPositionUpdateMessage implements MessageBase
         return 129;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -64,10 +65,10 @@ export class ChildAgentPositionUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             RegionHandle: Long,
             ViewerCircuitCode: number,

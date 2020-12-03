@@ -26,6 +26,7 @@ export class ObjectUpdateCachedMessage implements MessageBase
         return ((12) * this.ObjectData.length) + 11;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -49,10 +50,10 @@ export class ObjectUpdateCachedMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjRegionData: {
             RegionHandle: Long,
             TimeDilation: number

@@ -22,6 +22,7 @@ export class ForceObjectSelectMessage implements MessageBase
         return ((4) * this.Data.length) + 2;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -36,10 +37,10 @@ export class ForceObjectSelectMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjHeader: {
             ResetList: boolean
         } = {

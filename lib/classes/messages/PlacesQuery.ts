@@ -31,6 +31,7 @@ export class PlacesQueryMessage implements MessageBase
         return (this.QueryData['QueryText'].length + 1 + this.QueryData['SimName'].length + 1) + 69;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -54,6 +55,7 @@ export class PlacesQueryMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

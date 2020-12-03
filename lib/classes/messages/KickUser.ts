@@ -27,6 +27,7 @@ export class KickUserMessage implements MessageBase
         return (this.UserInfo['Reason'].length + 2) + 38;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -45,6 +46,7 @@ export class KickUserMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

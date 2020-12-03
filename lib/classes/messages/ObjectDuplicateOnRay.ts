@@ -34,6 +34,7 @@ export class ObjectDuplicateOnRayMessage implements MessageBase
         return ((4) * this.ObjectData.length) + 97;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -65,10 +66,10 @@ export class ObjectDuplicateOnRayMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID,

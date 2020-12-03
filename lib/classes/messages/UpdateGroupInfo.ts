@@ -31,6 +31,7 @@ export class UpdateGroupInfoMessage implements MessageBase
         return (this.GroupData['Charter'].length + 2) + 72;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -55,6 +56,7 @@ export class UpdateGroupInfoMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

@@ -30,6 +30,7 @@ export class TransferInventoryMessage implements MessageBase
         return ((17) * this.InventoryBlock.length) + 54;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -53,10 +54,10 @@ export class TransferInventoryMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjInfoBlock: {
             SourceID: UUID,
             DestID: UUID,

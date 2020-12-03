@@ -29,6 +29,7 @@ export class DirPlacesQueryMessage implements MessageBase
         return (this.QueryData['QueryText'].length + 1 + this.QueryData['SimName'].length + 1) + 57;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -52,6 +53,7 @@ export class DirPlacesQueryMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

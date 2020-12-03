@@ -5,10 +5,9 @@ export class TarWriter extends Transform
 {
     private thisFileSize = 0;
 
-    private realPath: string;
     private fileActive = false;
 
-    async newFile(archivePath: string, realPath: string)
+    async newFile(archivePath: string, realPath: string): Promise<void>
     {
         if (this.fileActive)
         {
@@ -16,22 +15,19 @@ export class TarWriter extends Transform
         }
         const stat = fs.statSync(realPath);
 
-        //if (archivePath.length > 100)
-        //{
-            const buf = Buffer.from(archivePath, 'ascii');
-            this.writeHeader(
-                this.chopString('././@LongName', 100),
-                stat.mode,
-                stat.uid,
-                stat.gid,
-                buf.length,
-                stat.mtime,
-                'L'
-            );
-            this.thisFileSize = buf.length;
-            await this.pipeFromBuffer(buf);
-            this.endFile();
-        //}
+        const buf = Buffer.from(archivePath, 'ascii');
+        this.writeHeader(
+            this.chopString('././@LongName', 100),
+            stat.mode,
+            stat.uid,
+            stat.gid,
+            buf.length,
+            stat.mtime,
+            'L'
+        );
+        this.thisFileSize = buf.length;
+        await this.pipeFromBuffer(buf);
+        this.endFile();
 
         this.writeHeader(
             this.chopString(archivePath, 100),
@@ -50,7 +46,7 @@ export class TarWriter extends Transform
     async pipeFromBuffer(buf: Buffer): Promise<void>
     {
         const readableInstanceStream = new Readable({
-            read()
+            read(): void
             {
                 this.push(buf);
                 this.push(null);
@@ -75,7 +71,7 @@ export class TarWriter extends Transform
         });
     }
 
-    private async writeHeader(fileName: string, mode: number, uid: number, gid: number, fileSize: number, mTime: Date, fileType: string)
+    private async writeHeader(fileName: string, mode: number, uid: number, gid: number, fileSize: number, mTime: Date, fileType: string): Promise<void>
     {
         const header = Buffer.alloc(512);
 
@@ -108,7 +104,7 @@ export class TarWriter extends Transform
         return this.pipeFromBuffer(header);
     }
 
-    async endFile()
+    async endFile(): Promise<void>
     {
         const finalSize = Math.ceil(this.thisFileSize / 512) * 512;
         const remainingSize = finalSize - this.thisFileSize;

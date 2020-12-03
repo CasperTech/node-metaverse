@@ -41,6 +41,7 @@ export class GroupRoleUpdateMessage implements MessageBase
         return size;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -74,6 +75,7 @@ export class GroupRoleUpdateMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

@@ -48,7 +48,6 @@ import { ObjectDeselectMessage } from '../messages/ObjectDeselect';
 import { AttachmentPoint } from '../../enums/AttachmentPoint';
 import { RequestTaskInventoryMessage } from '../messages/RequestTaskInventory';
 import { ReplyTaskInventoryMessage } from '../messages/ReplyTaskInventory';
-import { AssetTypeLL } from '../../enums/AssetTypeLL';
 import { InventoryType } from '../../enums/InventoryType';
 import { InventoryFolder } from '../InventoryFolder';
 import { ObjectUpdateMessage } from '../messages/ObjectUpdate';
@@ -175,7 +174,7 @@ export class GameObject implements IGameObjectData
     isMarkedRoot = false;
     onTextureUpdate: Subject<void> = new Subject<void>();
 
-    private static partFromXMLJS(obj: any, isRoot: boolean)
+    private static partFromXMLJS(obj: any, isRoot: boolean): GameObject
     {
         const go = new GameObject();
         go.Flags = 0;
@@ -657,7 +656,7 @@ export class GameObject implements IGameObjectData
         return go;
     }
 
-    static async fromXML(xml: string | any)
+    static async fromXML(xml: string | any): Promise<GameObject>
     {
         let result;
         if (typeof xml === 'string')
@@ -760,7 +759,7 @@ export class GameObject implements IGameObjectData
             {
                 for (const inv of message.InventoryData)
                 {
-                    const name = Utils.BufferToStringSimple(inv.Name, 0);
+                    const name = Utils.BufferToStringSimple(inv.Name);
                     if (name === objects[0].name)
                     {
                         return FilterResponse.Finish;
@@ -771,7 +770,7 @@ export class GameObject implements IGameObjectData
             {
                 for (const inv of createInventoryMsg.InventoryData)
                 {
-                    const name = Utils.BufferToStringSimple(inv.Name, 0);
+                    const name = Utils.BufferToStringSimple(inv.Name);
                     if (name === objects[0].name)
                     {
                         const itemID = inv.ItemID;
@@ -834,7 +833,7 @@ export class GameObject implements IGameObjectData
         this.SoundGain = 1.0;
     }
 
-    async waitForTextureUpdate(timeout?: number)
+    async waitForTextureUpdate(timeout?: number): Promise<void>
     {
         return Utils.waitOrTimeOut<void>(this.onTextureUpdate, timeout);
     }
@@ -901,7 +900,7 @@ export class GameObject implements IGameObjectData
         {
             if (item.name === tmpName)
             {
-                item.renameInTask(this, name).then(() => {}).catch((err) => {});
+                item.renameInTask(this, name).then(() => {}).catch(() => {});
                 await this.waitForInventoryUpdate();
                 await this.updateInventory();
                 for (const newItem of this.inventory)
@@ -917,7 +916,7 @@ export class GameObject implements IGameObjectData
         throw new Error('Failed to add script to object');
     }
 
-    async updateInventory()
+    updateInventory(): Promise<void>
     {
         const req = new RequestTaskInventoryMessage();
         req.AgentData = {
@@ -928,15 +927,13 @@ export class GameObject implements IGameObjectData
             LocalID: this.ID
         };
         this.region.circuit.sendMessage(req, PacketFlags.Reliable);
-        await this.waitForTaskInventory();
+        return this.waitForTaskInventory();
     }
 
-    private async waitForTaskInventory()
+    private async waitForTaskInventory(): Promise<void>
     {
-        let serial = 0;
         const inventory = await this.region.circuit.waitForMessage<ReplyTaskInventoryMessage>(Message.ReplyTaskInventory, 10000, (message: ReplyTaskInventoryMessage): FilterResponse =>
         {
-            serial = message.InventoryData.Serial;
             if (message.InventoryData.TaskID.equals(this.FullID))
             {
                 return FilterResponse.Finish;
@@ -968,12 +965,13 @@ export class GameObject implements IGameObjectData
             while (lineObj.lineNum < lineObj.lines.length)
             {
                 const line = lineObj.lines[lineObj.lineNum++];
-                let result = Utils.parseLine(line);
+                const result = Utils.parseLine(line);
                 if (result.key !== null)
                 {
                     switch (result.key)
                     {
                         case 'inv_object':
+                            /*
                             let itemID = UUID.zero();
                             let parentID = UUID.zero();
                             let name = '';
@@ -1016,7 +1014,7 @@ export class GameObject implements IGameObjectData
                             {
                                 console.log('TODO: Do something useful with inv_objects')
                             }
-
+                            */
                             break;
                         case 'inv_item':
                             this.inventory.push(InventoryItem.fromAsset(lineObj, this, this.region.agent));
@@ -1045,7 +1043,7 @@ export class GameObject implements IGameObjectData
         return '';
     }
 
-    setIfDefined(def?: number, v?: number)
+    setIfDefined(def?: number, v?: number): number
     {
         if (def === undefined)
         {
@@ -1078,7 +1076,7 @@ export class GameObject implements IGameObjectData
                    PathSkew?: number,
                    ProfileBegin?: number,
                    ProfileEnd?: number,
-                   ProfileHollow?: number)
+                   ProfileHollow?: number): Promise<void>
     {
         this.PathCurve = this.setIfDefined(this.PathCurve, PathCurve);
         this.ProfileCurve = this.setIfDefined(this.ProfileCurve, ProfileCurve);
@@ -1130,10 +1128,10 @@ export class GameObject implements IGameObjectData
                 ProfileHollow: Utils.packProfileHollow(this.ProfileHollow)
             }
         ];
-        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
     }
 
-    async setName(name: string)
+    async setName(name: string): Promise<void>
     {
         this.name = name;
         if (!this.region)
@@ -1151,10 +1149,10 @@ export class GameObject implements IGameObjectData
                 Name: Utils.StringToBuffer(name)
             }
         ];
-        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
     }
 
-    async setGeometry(pos?: Vector3, rot?: Quaternion, scale?: Vector3, wholeLinkset: boolean = false)
+    async setGeometry(pos?: Vector3, rot?: Quaternion, scale?: Vector3, wholeLinkset: boolean = false): Promise<void>
     {
         const data = [];
         const linked = (wholeLinkset) ? UpdateType.Linked : 0;
@@ -1195,10 +1193,10 @@ export class GameObject implements IGameObjectData
             SessionID: this.region.circuit.sessionID
         };
         msg.ObjectData = data;
-        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
     }
 
-    async linkTo(rootObj: GameObject)
+    linkTo(rootObj: GameObject): Promise<void>
     {
         const msg = new ObjectLinkMessage();
         msg.AgentData = {
@@ -1213,7 +1211,7 @@ export class GameObject implements IGameObjectData
                 ObjectLocalID: this.ID
             }
         ];
-        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
     }
 
     async linkFrom(objects: GameObject[]): Promise<void>
@@ -1266,7 +1264,7 @@ export class GameObject implements IGameObjectData
                     return FilterResponse.Match;
                 }
                 return FilterResponse.NoMatch;
-            }).then((message: ObjectUpdateMessage) =>
+            }).then(() =>
             {
                 resolve();
             }).catch((err) =>
@@ -1278,7 +1276,7 @@ export class GameObject implements IGameObjectData
 
     }
 
-    async setDescription(desc: string)
+    async setDescription(desc: string): Promise<void>
     {
         this.description = desc;
         if (!this.region)
@@ -1296,10 +1294,10 @@ export class GameObject implements IGameObjectData
                 Description: Utils.StringToBuffer(desc)
             }
         ];
-        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
     }
 
-    async setTextureEntry(e: TextureEntry)
+    async setTextureEntry(e: TextureEntry): Promise<void>
     {
         this.TextureEntry = e;
         if (!this.region)
@@ -1307,10 +1305,10 @@ export class GameObject implements IGameObjectData
             return;
         }
 
-        await this.setTextureAndMediaURL();
+        return this.setTextureAndMediaURL();
     }
 
-    private async setTextureAndMediaURL()
+    setTextureAndMediaURL(): Promise<void>
     {
         const msg = new ObjectImageMessage();
         msg.AgentData = {
@@ -1332,10 +1330,10 @@ export class GameObject implements IGameObjectData
                 MediaURL: Utils.StringToBuffer(this.MediaURL)
             }
         ];
-        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
     }
 
-    async setExtraParams(ex: ExtraParams)
+    async setExtraParams(ex: ExtraParams): Promise<void>
     {
         this.extraParams = ex;
         if (!this.region)
@@ -1414,11 +1412,11 @@ export class GameObject implements IGameObjectData
         if (params > 0)
         {
             const ack = this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
-            await this.region.circuit.waitForAck(ack, 10000);
+            return this.region.circuit.waitForAck(ack, 10000);
         }
     }
 
-    private async getInventoryXML(xml: XMLNode, inv: InventoryItem)
+    private async getInventoryXML(xml: XMLNode, inv: InventoryItem): Promise<void>
     {
         if (!inv.assetID.isZero() || !inv.itemID.isZero())
         {
@@ -1474,13 +1472,7 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    private async resolve(objectsToResolve: GameObject[])
-    {
-        this.populateChildren();
-        return this.region.resolver.resolveObjects(objectsToResolve, true, false);
-    }
-
-    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string)
+    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string): Promise<void>
     {
         if (this.resolvedAt === undefined || this.resolvedAt === 0 || this.resolvedInventory === false)
         {
@@ -1694,7 +1686,7 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    async populateChildren()
+    populateChildren(): void
     {
         this.region.objects.populateChildren(this);
     }
@@ -1815,17 +1807,19 @@ export class GameObject implements IGameObjectData
             restitution: this.restitution
         }
     }
-    setObjectData(data: Buffer)
+    setObjectData(data: Buffer): void
     {
         let dataPos = 0;
 
         // noinspection FallThroughInSwitchStatementJS, TsLint
         switch (data.length)
         {
+            // @ts-ignore
             case 76:
                 // Avatar collision normal;
                 this.CollisionPlane = new Vector4(data, dataPos);
                 dataPos += 16;
+                /* falls through */
             case 60:
                 // Position
                 this.Position = new Vector3(data, dataPos);
@@ -1839,9 +1833,11 @@ export class GameObject implements IGameObjectData
                 this.AngularVelocity = new Vector3(data, dataPos);
                 dataPos += 12;
                 break;
+            // @ts-ignore
             case 48:
                 this.CollisionPlane = new Vector4(data, dataPos);
                 dataPos += 16;
+                /* falls through */
             case 32:
                 this.Position = new Vector3([
                     Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -0.5 * 256.0, 1.5 * 256.0),
@@ -1994,7 +1990,7 @@ export class GameObject implements IGameObjectData
         await this.deselect();
     }
 
-    async select()
+    select(): Promise<void>
     {
         const selectObject = new ObjectSelectMessage();
         selectObject.AgentData = {
@@ -2005,10 +2001,10 @@ export class GameObject implements IGameObjectData
             ObjectLocalID: this.ID
         }];
         const ack = this.region.circuit.sendMessage(selectObject, PacketFlags.Reliable);
-        await this.region.circuit.waitForAck(ack, 10000);
+        return this.region.circuit.waitForAck(ack, 10000);
     }
 
-    async deselect()
+    deselect(): Promise<void>
     {
         const deselectObject = new ObjectDeselectMessage();
         deselectObject.AgentData = {

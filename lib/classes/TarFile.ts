@@ -26,7 +26,7 @@ export class TarFile
                 else
                 {
                     const buf = Buffer.alloc(this.fileSize);
-                    fs.read(fd, buf, 0, this.fileSize, this.offset, (err2: Error | null, bytesRead: number, buffer: Buffer) =>
+                    fs.read(fd, buf, 0, this.fileSize, this.offset, (err2: Error | null, _: number, buffer: Buffer) =>
                     {
                         if (err2)
                         {

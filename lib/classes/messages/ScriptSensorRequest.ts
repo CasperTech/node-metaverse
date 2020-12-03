@@ -33,6 +33,7 @@ export class ScriptSensorRequestMessage implements MessageBase
         return (this.Requester['SearchName'].length + 1) + 93;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -63,6 +64,7 @@ export class ScriptSensorRequestMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

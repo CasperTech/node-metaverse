@@ -1,11 +1,12 @@
-import Signals = NodeJS.Signals;
-import Timeout = NodeJS.Timeout;
-
-import * as path from 'path';
 import { LoginResponse } from '../lib/classes/LoginResponse';
 import { Bot } from '../lib/Bot';
 import { LoginParameters } from '../lib/classes/LoginParameters';
 import { BotOptionFlags } from '../lib/enums/BotOptionFlags';
+
+import * as path from 'path';
+
+import Signals = NodeJS.Signals;
+import Timeout = NodeJS.Timeout;
 
 export class ExampleBot
 {
@@ -47,7 +48,7 @@ export class ExampleBot
         this.bot.stayPut(true);
     }
 
-    public async run()
+    public async run(): Promise<void>
     {
         const exitHandler = async(options: { exit?: boolean }, err: Error | number | Signals) =>
         {
@@ -94,12 +95,12 @@ export class ExampleBot
         await this.login();
     }
 
-    protected async onConnected()
+    protected async onConnected(): Promise<void>
     {
 
     }
 
-    private async login()
+    private async login(): Promise<void>
     {
         if (this.isConnecting)
         {
@@ -134,7 +135,7 @@ export class ExampleBot
         return this.connected();
     }
 
-    private async reconnectCheck()
+    private async reconnectCheck(): Promise<void>
     {
         if (!this.isConnected)
         {
@@ -142,7 +143,7 @@ export class ExampleBot
         }
     }
 
-    private async connected()
+    private async connected(): Promise<void>
     {
         this.bot.clientEvents.onDisconnected.subscribe((event) =>
         {
@@ -159,7 +160,8 @@ export class ExampleBot
         await this.onConnected();
     }
 
-    private async close()
+    // @ts-ignore
+    private async close(): Promise<void>
     {
         if (this.reconnectTimer !== undefined)
         {

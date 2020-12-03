@@ -33,6 +33,7 @@ export class ObjectDeGrabMessage implements MessageBase
         return ((64) * this.SurfaceInfo.length) + 37;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -62,10 +63,10 @@ export class ObjectDeGrabMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjAgentData: {
             AgentID: UUID,
             SessionID: UUID

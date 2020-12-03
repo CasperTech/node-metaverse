@@ -1,14 +1,14 @@
-import { vec2 } from '../tsm/vec2';
+import { TSMVec2 } from '../tsm/vec2';
 import { XMLNode } from 'xmlbuilder';
 
-export class Vector2 extends vec2
+export class Vector2 extends TSMVec2
 {
     static getZero(): Vector2
     {
         return new Vector2();
     }
 
-    static getXML(doc: XMLNode, v?: Vector2)
+    static getXML(doc: XMLNode, v?: Vector2): void
     {
         if (v === undefined)
         {
@@ -48,7 +48,8 @@ export class Vector2 extends vec2
             super();
         }
     }
-    writeToBuffer(buf: Buffer, pos: number, double: boolean)
+
+    writeToBuffer(buf: Buffer, pos: number, double: boolean): void
     {
         if (double)
         {
@@ -65,7 +66,8 @@ export class Vector2 extends vec2
     {
         return '<' + this.x + ', ' + this.y + '>';
     }
-    toArray()
+
+    toArray(): number[]
     {
         return [this.x, this.y];
     }

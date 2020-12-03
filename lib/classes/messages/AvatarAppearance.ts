@@ -36,6 +36,7 @@ export class AvatarAppearanceMessage implements MessageBase
         return (this.ObjectData['TextureEntry'].length + 2) + ((1) * this.VisualParam.length) + ((9) * this.AppearanceData.length) + ((12) * this.AppearanceHover.length) + 20;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -72,6 +73,7 @@ export class AvatarAppearanceMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;

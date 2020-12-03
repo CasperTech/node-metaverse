@@ -57,7 +57,7 @@ export class ParticleSystem
                 return ps;
             }
             pos = this.unpackSystem(ps, buf, pos);
-            const dataSize = buf.readInt32LE(pos);
+            // const dataSize = buf.readInt32LE(pos) // currently unused;
             pos += 4;
             pos = this.unpackLegacyData(ps, buf, pos);
 

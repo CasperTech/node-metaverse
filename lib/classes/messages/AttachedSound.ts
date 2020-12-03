@@ -24,6 +24,7 @@ export class AttachedSoundMessage implements MessageBase
         return 53;
     }
 
+    // @ts-ignore
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
@@ -39,10 +40,10 @@ export class AttachedSoundMessage implements MessageBase
         return pos - startPos;
     }
 
+    // @ts-ignore
     readFromBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        let varLength = 0;
         const newObjDataBlock: {
             SoundID: UUID,
             ObjectID: UUID,
