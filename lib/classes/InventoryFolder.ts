@@ -120,14 +120,23 @@ export class InventoryFolder
         {
             for (const folder of folderContents['folders'][0]['categories'])
             {
-                const foundFolderID = new UUID(folder['category_id'].toString());
+                let folderID = folder['category_id'];
+                if (folderID === undefined)
+                {
+                    folderID = folder['folder_id'];
+                }
+                if (folderID === undefined)
+                {
+                    continue;
+                }
+                const foundFolderID = new UUID(folderID.toString());
                 if (foundFolderID.equals(msg.FolderData.FolderID))
                 {
                     const newFolder = new InventoryFolder(this.library, this.agent.inventory.main, this.agent);
                     newFolder.typeDefault = parseInt(folder['type_default'], 10);
                     newFolder.version = parseInt(folder['version'], 10);
                     newFolder.name = String(folder['name']);
-                    newFolder.folderID = new UUID(folder['category_id']);
+                    newFolder.folderID = new UUID(folderID);
                     newFolder.parentID = new UUID(folder['parent_id']);
                     this.folders.push(newFolder);
                     return newFolder;
@@ -271,7 +280,12 @@ export class InventoryFolder
             {
                 for (const folder of folderContents['folders'][0]['categories'])
                 {
-                    const folderID = new UUID(folder['category_id']);
+                    let folderIDStr = folder['category_id'];
+                    if (folderIDStr === undefined)
+                    {
+                        folderIDStr = folder['folder_id'];
+                    }
+                    const folderID = new UUID(folderIDStr);
                     let found = false;
                     for (const fld of this.folders)
                     {
