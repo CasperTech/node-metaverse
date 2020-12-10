@@ -586,7 +586,24 @@ export class RegionCommands extends CommandsBase
                 'FullMaterialsPerFace': []
             };
 
-            let gotSomeActualMaterials = false;
+            const materialFaces: {[key: string]: boolean} = {};
+            if (obj.TextureEntry.defaultTexture !== undefined && obj.TextureEntry.defaultTexture !== null)
+            {
+                const materialID = obj.TextureEntry.defaultTexture.materialID;
+                if (!materialID.isZero())
+                {
+                    const storedMat = buildMap.assetMap.materials[materialID.toString()];
+                    if (storedMat !== null && storedMat !== undefined)
+                    {
+                        materialUpload.FullMaterialsPerFace.push({
+                            ID: object.ID,
+                            Material: storedMat.toLLSDObject()
+                        });
+                        materialFaces[-1] = true;
+                    }
+                }
+            }
+
             for (let face = 0; face < obj.TextureEntry.faces.length; face++)
             {
                 const materialID = obj.TextureEntry.faces[face].materialID;
@@ -600,12 +617,12 @@ export class RegionCommands extends CommandsBase
                             ID: object.ID,
                             Material: storedMat.toLLSDObject()
                         });
-                        gotSomeActualMaterials = true;
+                        materialFaces[face] = true;
                     }
                 }
             }
 
-            if (gotSomeActualMaterials)
+            if (Object.keys(materialFaces).length > 0)
             {
                 const zipped = await Utils.deflate(Buffer.from(LLSD.LLSD.formatBinary(materialUpload).octets));
                 const newMat = {
@@ -617,11 +634,56 @@ export class RegionCommands extends CommandsBase
                 });
                 try
                 {
-                    await object.waitForTextureUpdate(1000);
+                    let complete = false;
+                    do
+                    {
+                        complete = true;
+                        await object.waitForTextureUpdate(10000);
+                        for (const materialFace of Object.keys(materialFaces))
+                        {
+                            const entry = object.TextureEntry;
+                            if (entry === undefined)
+                            {
+                                complete = false;
+                            }
+                            else if (parseInt(materialFace, 10) === -1)
+                            {
+                                const def = entry.defaultTexture
+                                if (def === undefined || def === null)
+                                {
+                                    complete = false;
+                                }
+                                else
+                                {
+                                    if (def.materialID.equals(UUID.zero()))
+                                    {
+                                        complete = false;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                const fc = parseInt(materialFace, 10);
+                                const thisFace = entry.faces[fc];
+                                if (thisFace === undefined)
+                                {
+                                    complete = false;
+                                }
+                                else
+                                {
+                                    if (thisFace.materialID.equals(UUID.zero()))
+                                    {
+                                        complete = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    while (!complete);
                 }
                 catch (error)
                 {
-                    console.error('Timed out while waiting for RenderMaterials update');
+                    console.error(obj.name + ':Timed out while waiting for RenderMaterials update');
                 }
                 if (object.TextureEntry !== undefined)
                 {
@@ -640,10 +702,13 @@ export class RegionCommands extends CommandsBase
                             }
                         }
                     }
+                    if (obj.TextureEntry.defaultTexture !== null && object.TextureEntry.defaultTexture !== null)
+                    {
+                        obj.TextureEntry.defaultTexture.materialID = object.TextureEntry.defaultTexture.materialID;
+                    }
                 }
             }
 
-            // We're zero-ing out the materialID here because we'll apply materials immediately after
             if (obj.TextureEntry.defaultTexture !== null)
             {
                 const oldTextureID = obj.TextureEntry.defaultTexture.textureID.toString();
@@ -667,10 +732,7 @@ export class RegionCommands extends CommandsBase
 
             try
             {
-                await object.setTextureEntry(obj.TextureEntry).then(() => {}).catch((err) =>
-                {
-                    console.error(err);
-                });
+                await object.setTextureEntry(obj.TextureEntry);
             }
             catch (error)
             {
