@@ -11,5 +11,6 @@ dist/tests/
 testing/
 .npmignore
 .gitignore
+localDeploy.js
 caspertech-node-metaverse-*.tgz
 dist/classes/cache
