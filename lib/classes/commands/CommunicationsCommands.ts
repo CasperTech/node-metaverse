@@ -429,19 +429,14 @@ export class CommunicationsCommands extends CommandsBase
                 };
                 const waitForJoin = this.currentRegion.clientEvents.onGroupChatSessionJoin.subscribe((event: GroupChatSessionJoinEvent) =>
                 {
-                    if (event.sessionID.toString() === groupID.toString())
+                    if (event.success)
                     {
-                        if (event.success)
+                        if (event.sessionID.toString() === groupID.toString())
                         {
                             waitForJoin.unsubscribe();
-
-                            resolve();
-                        }
-                        else
-                        {
-                            reject();
                         }
                     }
+                    resolve();
                 });
                 circuit.sendMessage(im, PacketFlags.Reliable);
             }
