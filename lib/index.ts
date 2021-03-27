@@ -98,6 +98,7 @@ import { InventoryItem } from './classes/InventoryItem';
 import { InventoryType } from './enums/InventoryType';
 import { TarWriter } from './classes/TarWriter';
 import { TarReader } from './classes/TarReader';
+import { LoginResponse } from './classes/LoginResponse';
 import { LLGesture } from './classes/LLGesture';
 import { LLGestureAnimationStep } from './classes/LLGestureAnimationStep';
 import { LLGestureSoundStep } from './classes/LLGestureSoundStep';
@@ -218,6 +219,7 @@ export {
     InventoryItem,
     TarReader,
     TarWriter,
+    LoginResponse,
 
     // Public Interfaces
     GlobalPosition,
