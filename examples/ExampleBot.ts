@@ -85,6 +85,9 @@ export class ExampleBot
         // Catches ctrl+c event
         process.on('SIGINT', exitHandler.bind(this, { exit: true }));
 
+        // Catches service restart event
+        process.on('SIGTERM', exitHandler.bind(this, { exit: true }));
+
         // Catches "kill pid"
         process.on('SIGUSR1', exitHandler.bind(this, { exit: true }));
         process.on('SIGUSR2', exitHandler.bind(this, { exit: true }));
