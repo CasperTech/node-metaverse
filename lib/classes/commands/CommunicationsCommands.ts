@@ -391,7 +391,7 @@ export class CommunicationsCommands extends CommandsBase
 
     startGroupChatSession(groupID: UUID | string, message: string): Promise<void>
     {
-        return new Promise<void>((resolve, reject) =>
+        return new Promise<void>((resolve) =>
         {
             if (typeof groupID === 'string')
             {
