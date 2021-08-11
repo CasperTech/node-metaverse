@@ -80,6 +80,24 @@ export class InventoryFolder
         return children;
     }
 
+    getChildFoldersRecursive(): InventoryFolder[]
+    {
+        const children: InventoryFolder[] = [];
+        const toBrowse: UUID[] = [this.folderID];
+        while (toBrowse.length > 0){
+            const uuid = toBrowse.pop();
+            if (!uuid) { break; }
+            const folder = this.inventoryBase.skeleton[uuid.toString()]
+            if (folder){
+
+                for (const child of folder.getChildFolders()){
+                    children.push(child);
+                    toBrowse.push(child.folderID)
+                }
+            }
+        }
+        return children;
+    }
     async createFolder(name: string, type: FolderType): Promise<InventoryFolder>
     {
         const msg = new CreateInventoryFolderMessage();
@@ -144,6 +162,32 @@ export class InventoryFolder
             }
         }
         throw new Error('Failed to create inventory folder');
+    }
+
+    async delete(saveCache: boolean = false): Promise<void> {
+        const { caps } = this.agent.currentRegion;
+        const invCap = await caps.getCapability('InventoryAPIv3');
+
+        await this.agent.currentRegion.caps.requestDelete(`${invCap}/category/${this.folderID}`)
+        const ids = this.getChildFoldersRecursive().map(x => x.folderID)
+
+        for (const id of ids){
+           delete this.inventoryBase.skeleton[id.toString()]
+        }
+        if (saveCache){
+            for (const id of ids){
+                const fileName = path.join(this.cacheDir + '/' + id.toString());
+                await new Promise<void>( resolve => {
+                        fs.stat(fileName, (error, stat) => {
+                            if (!error && stat.isFile()){
+                                fs.unlink(fileName, () => resolve())
+                            }else{
+                                resolve()
+                            }
+                        })
+                })
+             }
+        }
     }
 
     private saveCache(): Promise<void>
