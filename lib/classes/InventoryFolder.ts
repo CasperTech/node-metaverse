@@ -589,6 +589,7 @@ export class InventoryFolder
                         break;
                     }
                     case InventoryType.Script:
+                    case InventoryType.LSL:
                     {
                         this.agent.currentRegion.caps.capsPostXML('UpdateScriptAgent', {
                             'item_id': new LLSD.UUID(createInventoryMsg.InventoryData[0].ItemID.toString()),
@@ -673,6 +674,7 @@ export class InventoryFolder
                 case InventoryType.Notecard:
                 case InventoryType.Gesture:
                 case InventoryType.Script:
+                case InventoryType.LSL:
                     // These types must be created first and then modified
                     this.uploadInventoryItem(type, inventoryType, data, name, description).then((invItemID: UUID) =>
                     {

@@ -238,6 +238,9 @@ export class InventoryItem
                         case 'script':
                             item.inventoryType = InventoryType.Script;
                             break;
+                        case  'LSL':
+                            item.inventoryType = InventoryType.LSL;
+                            break;
                         case 'snapshot':
                             item.inventoryType = InventoryType.Snapshot;
                             break;

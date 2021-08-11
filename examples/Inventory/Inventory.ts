@@ -24,6 +24,7 @@ class Inventory extends ExampleBot
 
         const exampleFolderName = 'node-metaverse example';
         const exampleNotecardName = 'Example Notecard';
+        const exampleScriptName = 'Example script';
 
         let exampleFolder: InventoryFolder | undefined = undefined;
         for (const childFolder of rootFolder.folders)
@@ -65,6 +66,20 @@ class Inventory extends ExampleBot
 
         exampleNotecard.permissions.nextOwnerMask = PermissionMask.Transfer | PermissionMask.Modify;
         await exampleNotecard.update();
+
+        let exampleScript = exampleFolder.items.find(f => f.name === exampleScriptName);
+        if (exampleScript === undefined){
+            exampleScript = await exampleFolder.uploadAsset(
+                AssetType.LSLText,
+                InventoryType.LSL,
+                Buffer.from(
+                    'default { touch_start(integer total_number) {  llSay(0, "Hello, world!"); } } '
+                  , 'utf-8'
+                ),
+                'Script',
+                ''
+              );
+        }
 
         // Give the notecard to our owner
         await this.bot.clientCommands.comms.giveInventory(this.masterAvatar, exampleNotecard);
