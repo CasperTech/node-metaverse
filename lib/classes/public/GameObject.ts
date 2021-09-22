@@ -900,8 +900,16 @@ export class GameObject implements IGameObjectData
         {
             if (item.name === tmpName)
             {
+                // We are intentionally not waiting for this rename job so that the wait below succeeds
                 item.renameInTask(this, name).then(() => {}).catch(() => {});
-                await this.waitForInventoryUpdate();
+                try
+                {
+                    await this.waitForInventoryUpdate();
+                }
+                catch (error)
+                {
+
+                }
                 await this.updateInventory();
                 for (const newItem of this.inventory)
                 {
@@ -1964,6 +1972,7 @@ export class GameObject implements IGameObjectData
     async waitForInventoryUpdate(inventorySerial?: number): Promise<void>
     {
         // We need to select the object or we won't get the objectProperties message
+        await this.deselect();
         this.select();
         await this.region.circuit.waitForMessage<ObjectPropertiesMessage>(Message.ObjectProperties, 10000, (message: ObjectPropertiesMessage) =>
         {
