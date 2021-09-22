@@ -174,6 +174,8 @@ export class Utils
                 return 'gesture';
             case InventoryType.Mesh:
                 return 'mesh';
+            case InventoryType.LSL:
+                return 'LSL';
             default:
                 console.error('Unknown inventory type: ' + InventoryType[type]);
                 return 'texture';
