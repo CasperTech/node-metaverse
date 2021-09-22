@@ -2,7 +2,7 @@ import { CommandsBase } from './CommandsBase';
 import { Region } from '../Region';
 import { Agent } from '../Agent';
 import { Bot } from '../../Bot';
-import { Subscription } from 'rxjs/internal/Subscription';
+import { Subscription } from 'rxjs';
 import { Message } from '../../enums/Message';
 import { Packet } from '../Packet';
 import { OnlineNotificationMessage } from '../messages/OnlineNotification';

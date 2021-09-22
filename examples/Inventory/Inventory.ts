@@ -11,7 +11,7 @@ import { InventoryOfferedEvent } from '../../lib/events/InventoryOfferedEvent';
 
 class Inventory extends ExampleBot
 {
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         this.bot.clientEvents.onInventoryOffered.subscribe(this.onInventoryOffered.bind(this));
         this.bot.clientEvents.onInventoryResponse.subscribe(this.onInventoryResponse.bind(this));
@@ -94,7 +94,7 @@ class Inventory extends ExampleBot
         console.log('Done iterating through library');
     }
 
-    async onInventoryResponse(response: InventoryResponseEvent)
+    async onInventoryResponse(response: InventoryResponseEvent): Promise<void>
     {
         if (response.accepted)
         {
@@ -106,7 +106,7 @@ class Inventory extends ExampleBot
         }
     }
 
-    async iterateFolder(folder: InventoryFolder, prefix: string)
+    async iterateFolder(folder: InventoryFolder, prefix: string): Promise<void>
     {
         console.log(prefix + ' [' + folder.name + ']');
         await folder.populate(false);
@@ -128,7 +128,7 @@ class Inventory extends ExampleBot
         }
     }
 
-    async onInventoryOffered(event: InventoryOfferedEvent)
+    async onInventoryOffered(event: InventoryOfferedEvent): Promise<void>
     {
         if (event.from.toString() === this.masterAvatar)
         {

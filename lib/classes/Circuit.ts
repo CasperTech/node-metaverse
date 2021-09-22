@@ -7,10 +7,10 @@ import { PacketAckMessage } from './messages/PacketAck';
 import { Message } from '../enums/Message';
 import { StartPingCheckMessage } from './messages/StartPingCheck';
 import { CompletePingCheckMessage } from './messages/CompletePingCheck';
-import { Subscription } from 'rxjs/internal/Subscription';
-import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators'
 import { FilterResponse } from '../enums/FilterResponse';
-import { Subject } from 'rxjs/internal/Subject';
+import { Subject } from 'rxjs';
 import { TimeoutError } from './TimeoutError';
 import { RequestXferMessage } from './messages/RequestXfer';
 import { SendXferPacketMessage } from './messages/SendXferPacket';
@@ -65,10 +65,10 @@ export class Circuit
             lookupObject[id] = true;
         }
 
-        return this.onPacketReceived.pipe(filter((packet: Packet) =>
+        return this.onPacketReceived.pipe(filter((packet: Packet): boolean =>
         {
-            return lookupObject[packet.message.id] === true;
-        })).subscribe(callback);
+            return lookupObject[packet.message.id];
+        }) as any).subscribe(callback as any);
     }
 
     sendMessage(message: MessageBase, flags: PacketFlags): number

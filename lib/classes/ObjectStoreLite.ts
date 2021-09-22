@@ -20,7 +20,7 @@ import { FilterResponse } from '../enums/FilterResponse';
 import { ObjectSelectMessage } from './messages/ObjectSelect';
 import { ObjectDeselectMessage } from './messages/ObjectDeselect';
 import { Quaternion } from './Quaternion';
-import { Subscription } from 'rxjs/internal/Subscription';
+import { Subscription } from 'rxjs';
 import { ExtraParams } from './public/ExtraParams';
 import { ObjectPropertiesMessage } from './messages/ObjectProperties';
 import { SelectedObjectEvent } from '../events/SelectedObjectEvent';
