@@ -1,5 +1,5 @@
 import 'mocha';
-import * as validator from 'validator';
+import validator from 'validator';
 import * as assert from 'assert';
 import { UUID } from '../classes/UUID';
 
