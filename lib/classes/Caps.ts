@@ -126,6 +126,8 @@ export class Caps
         req.push('ViewerMetrics');
         req.push('ViewerStartAuction');
         req.push('ViewerStats');
+        req.push('InventoryAPIv3');
+
         this.active = true;
         this.request(seedURL, LLSD.LLSD.formatXML(req), 'application/llsd+xml').then((resp: ICapResponse) =>
         {
@@ -243,6 +245,28 @@ export class Caps
                 'uri': requestURL,
                 'rejectUnauthorized': false,
                 'method': 'GET'
+            }, (err, res, body) =>
+            {
+                if (err)
+                {
+                    reject(err);
+                }
+                else
+                {
+                    resolve({status: res.statusCode, body: body});
+                }
+            });
+        });
+    }
+
+    requestDelete(requestURL: string): Promise<ICapResponse>
+    {
+        return new Promise<ICapResponse>((resolve, reject) =>
+        {
+            request({
+                'uri': requestURL,
+                'rejectUnauthorized': false,
+                'method': 'DELETE'
             }, (err, res, body) =>
             {
                 if (err)

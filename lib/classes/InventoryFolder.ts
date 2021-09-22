@@ -1,6 +1,7 @@
 import { UUID } from './UUID';
 import { InventoryItem } from './InventoryItem';
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import * as LLSD from '@caspertech/llsd';
 import { InventorySortOrder } from '../enums/InventorySortOrder';
@@ -54,14 +55,14 @@ export class InventoryFolder
         this.library = lib;
         this.inventoryBase = invBase;
         const cacheLocation = path.resolve(__dirname + '/cache');
-        if (!fs.existsSync(cacheLocation))
+        if (!fsSync.existsSync(cacheLocation))
         {
-            fs.mkdirSync(cacheLocation, 0o777);
+            fsSync.mkdirSync(cacheLocation, 0o777);
         }
         this.cacheDir = path.resolve(cacheLocation + '/' + this.agent.agentID.toString());
-        if (!fs.existsSync(this.cacheDir))
+        if (!fsSync.existsSync(this.cacheDir))
         {
-            fs.mkdirSync(this.cacheDir, 0o777);
+            fsSync.mkdirSync(this.cacheDir, 0o777);
         }
     }
 
@@ -75,6 +76,31 @@ export class InventoryFolder
             if (folder.parentID.toString() === ofi)
             {
                 children.push(folder);
+            }
+        }
+        return children;
+    }
+
+    getChildFoldersRecursive(): InventoryFolder[]
+    {
+        const children: InventoryFolder[] = [];
+        const toBrowse: UUID[] = [this.folderID];
+        while (toBrowse.length > 0)
+        {
+            const uuid = toBrowse.pop();
+            if (!uuid)
+            {
+                break;
+            }
+            const folder = this.inventoryBase.skeleton[uuid.toString()]
+            if (folder)
+            {
+
+                for (const child of folder.getChildFolders())
+                {
+                    children.push(child);
+                    toBrowse.push(child.folderID)
+                }
             }
         }
         return children;
@@ -146,81 +172,84 @@ export class InventoryFolder
         throw new Error('Failed to create inventory folder');
     }
 
-    private saveCache(): Promise<void>
+    async delete(saveCache: boolean = false): Promise<void>
     {
-        return new Promise((resolve, reject) =>
+        const { caps } = this.agent.currentRegion;
+        const invCap = await caps.getCapability('InventoryAPIv3');
+
+        await this.agent.currentRegion.caps.requestDelete(`${invCap}/category/${this.folderID}`)
+        const folders = this.getChildFoldersRecursive();
+
+        for (const folder of folders)
         {
-            const json = {
-                version: this.version,
-                items: this.items
-            };
-            const fileName = path.join(this.cacheDir + '/' + this.folderID.toString());
-            fs.writeFile(fileName, JSON.stringify(json), (err) =>
+            delete this.inventoryBase.skeleton[folder.folderID.toString()]
+        }
+        if (saveCache)
+        {
+            for (const folder of folders)
             {
-                if (err)
+                const fileName = path.join(this.cacheDir + '/' + folder.folderID.toString());
+
+                try
                 {
-                    reject(err);
+                    const stat = await fs.stat(fileName);
+                    if (stat.isFile())
+                    {
+                        await fs.unlink(fileName);
+                    }
                 }
-                else
+                catch (error: unknown)
                 {
-                    resolve();
+
                 }
-            });
-        });
+            }
+        }
     }
 
-    private loadCache(): Promise<void>
+    private async saveCache(): Promise<void>
     {
-        return new Promise((resolve, reject) =>
+        const json = {
+            version: this.version,
+            items: this.items
+        };
+        const fileName = path.join(this.cacheDir + '/' + this.folderID.toString());
+        await fs.writeFile(fileName, JSON.stringify(json));
+    }
+
+    private async loadCache(): Promise<void>
+    {
+        const fileName = path.join(this.cacheDir + '/' + this.folderID.toString());
+
+        try
         {
-            const fileName = path.join(this.cacheDir + '/' + this.folderID.toString());
-            if (fs.existsSync(fileName))
+            const data = await fs.readFile(fileName);
+
+            const json: any = JSON.parse(data.toString('utf8'));
+            if (json['version'] >= this.version)
             {
-                fs.readFile(fileName, (err, data) =>
+                this.items = [];
+                for (const item of json['items'])
                 {
-                    if (err)
-                    {
-                        reject(err);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            const json: any = JSON.parse(data.toString('utf8'));
-                            if (json['version'] >= this.version)
-                            {
-                                this.items = [];
-                                for (const item of json['items'])
-                                {
-                                    item.created = new Date(item.created.mUUID);
-                                    item.assetID = new UUID(item.assetID.mUUID);
-                                    item.parentID = new UUID(item.parentID.mUUID);
-                                    item.itemID = new UUID(item.itemID.mUUID);
-                                    item.permissions.lastOwner = new UUID(item.permissions.lastOwner.mUUID);
-                                    item.permissions.owner = new UUID(item.permissions.owner.mUUID);
-                                    item.permissions.creator = new UUID(item.permissions.creator.mUUID);
-                                    item.permissions.group = new UUID(item.permissions.group.mUUID);
-                                    this.addItem(item, false);
-                                }
-                                resolve();
-                            }
-                            else
-                            {
-                                reject(new Error('Old version'));
-                            }
-                        }
-                        catch (err)
-                        {
-                            reject(err);
-                        }
-                    }
-                });
+                    item.created = new Date(item.created.mUUID);
+                    item.assetID = new UUID(item.assetID.mUUID);
+                    item.parentID = new UUID(item.parentID.mUUID);
+                    item.itemID = new UUID(item.itemID.mUUID);
+                    item.permissions.lastOwner = new UUID(item.permissions.lastOwner.mUUID);
+                    item.permissions.owner = new UUID(item.permissions.owner.mUUID);
+                    item.permissions.creator = new UUID(item.permissions.creator.mUUID);
+                    item.permissions.group = new UUID(item.permissions.group.mUUID);
+                    await this.addItem(item, false);
+                }
             }
             else
             {
-                reject(new Error('Cache miss'));
+                throw new Error('Old version');
             }
-        });
+        }
+        catch (error: unknown)
+        {
+            throw new Error('Cache miss');
+        }
     }
 
     async removeItem(itemID: UUID, save: boolean = false): Promise<void>
