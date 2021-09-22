@@ -570,11 +570,20 @@ export class RegionCommands extends CommandsBase
         {
             await object.setExtraParams(obj.extraParams);
         }
-        catch (err)
+        catch (err: unknown)
         {
-            console.error('Error setting ExtraParams on ' + obj.name);
-            console.error(err);
-            throw new Error(err);
+            if (err instanceof Error)
+            {
+                throw(err);
+            }
+            else if (typeof err === 'string')
+            {
+                throw new Error(err);
+            }
+            else
+            {
+                throw new Error('Error setting ExtraParams on ' + obj.name);
+            }
         }
 
         if (obj.TextureEntry !== undefined)
@@ -751,9 +760,18 @@ export class RegionCommands extends CommandsBase
             }
             catch (error)
             {
-                console.error('Error setting name on ' + obj.name);
-                console.error(error);
-                throw new Error(error);
+                if (error instanceof Error)
+                {
+                    throw error;
+                }
+                else if (typeof error === 'string')
+                {
+                    throw new Error(error);
+                }
+                else
+                {
+                    throw new Error('Error setting name on ' + obj.name);
+                }
             }
         }
 
@@ -765,9 +783,18 @@ export class RegionCommands extends CommandsBase
             }
             catch (error)
             {
-                console.error('Error setting name on ' + obj.name);
-                console.error(error);
-                throw new Error(error);
+                if (error instanceof Error)
+                {
+                    throw error;
+                }
+                else if (typeof error === 'string')
+                {
+                    throw new Error(error);
+                }
+                else
+                {
+                    throw new Error('Error setting name on ' + obj.name);
+                }
             }
         }
 
