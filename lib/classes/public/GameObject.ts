@@ -1019,10 +1019,6 @@ export class GameObject implements IGameObjectData
                         case 'inv_item':
                             this.inventory.push(InventoryItem.fromAsset(lineObj, this, this.region.agent));
                             break;
-                        default:
-                        {
-                            console.log('Unrecognised task inventory token: [' + result.key + ']');
-                        }
                     }
                 }
             }

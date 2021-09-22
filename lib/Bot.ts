@@ -30,7 +30,7 @@ import { UUID } from './classes/UUID';
 import { Vector3 } from './classes/Vector3';
 import { RegionHandshakeMessage } from './classes/messages/RegionHandshake';
 import { AgentMovementCompleteMessage } from './classes/messages/AgentMovementComplete';
-import { Subscription } from 'rxjs/internal/Subscription';
+import { Subscription } from 'rxjs';
 import Timer = NodeJS.Timer;
 
 export class Bot

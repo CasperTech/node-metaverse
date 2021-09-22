@@ -1,4 +1,4 @@
-import { Subject } from 'rxjs/internal/Subject';
+import { Subject } from 'rxjs';
 import { NewObjectEvent } from '../events/NewObjectEvent';
 import { ObjectUpdatedEvent } from '../events/ObjectUpdatedEvent';
 import { ObjectKilledEvent } from '../events/ObjectKilledEvent';

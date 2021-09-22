@@ -1,9 +1,9 @@
-import { Subscription } from 'rxjs/internal/Subscription';
+import { Subscription } from 'rxjs';
 import { EventQueueClient } from './EventQueueClient';
 import { UUID } from './UUID';
 import { ClientEvents } from './ClientEvents';
 import { Agent } from './Agent';
-import { Subject } from 'rxjs/internal/Subject';
+import { Subject } from 'rxjs';
 import { ICapResponse } from './interfaces/ICapResponse';
 import { HTTPAssets } from '../enums/HTTPAssets';
 

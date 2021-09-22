@@ -6,7 +6,7 @@ import { Vector3 } from '../Vector3';
 import { TeleportLocationRequestMessage } from '../messages/TeleportLocationRequest';
 import * as Long from 'long';
 import { Agent } from '../Agent';
-import { Subscription } from 'rxjs/internal/Subscription';
+import { Subscription } from 'rxjs';
 import { TeleportEvent } from '../../events/TeleportEvent';
 import { LureEvent } from '../../events/LureEvent';
 import { TeleportFlags } from '../../enums/TeleportFlags';
