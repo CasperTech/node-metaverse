@@ -166,6 +166,8 @@ export class Utils
                 return 'snapshot';
             case InventoryType.Attachment:
                 return 'attach';
+            case InventoryType.Bodypart:
+                return 'bodypart';
             case InventoryType.Wearable:
                 return 'wearable';
             case InventoryType.Animation:

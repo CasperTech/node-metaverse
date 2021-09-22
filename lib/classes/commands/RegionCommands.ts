@@ -820,6 +820,7 @@ export class RegionCommands extends CommandsBase
                         }
                         break;
                     }
+                    case InventoryType.Wearable:
                     case InventoryType.Bodypart:
                     {
                         if (buildMap.assetMap.bodyparts[invItem.assetID.toString()] !== undefined)
@@ -1028,6 +1029,7 @@ export class RegionCommands extends CommandsBase
                             }
                             break;
                         }
+                        case InventoryType.Wearable:
                         case InventoryType.Bodypart:
                         {
                             if (buildMap.assetMap.bodyparts[assetID.toString()] === undefined)
@@ -1076,6 +1078,7 @@ export class RegionCommands extends CommandsBase
                             }
                             break;
                         }
+                        case InventoryType.Script:
                         case InventoryType.LSL:
                         {
                             if (buildMap.assetMap.scripts[assetID.toString()] === undefined)
@@ -1088,6 +1091,7 @@ export class RegionCommands extends CommandsBase
                             }
                             break;
                         }
+                        case InventoryType.Texture:
                         case InventoryType.Snapshot:
                         {
                             if (buildMap.assetMap.textures[assetID.toString()] === undefined)
@@ -1130,7 +1134,11 @@ export class RegionCommands extends CommandsBase
                             {
                                 buildMap.assetMap.objects[assetID.toString()] = null;
                             }
+                            break;
                         }
+                        default:
+                            console.error('Unsupported inventory type: ' + j.inventoryType);
+                            break;
                     }
                 }
             }
