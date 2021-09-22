@@ -241,6 +241,9 @@ export class InventoryItem
                         case 'snapshot':
                             item.inventoryType = InventoryType.Snapshot;
                             break;
+                        case 'LSL':
+                            item.inventoryType = InventoryType.LSL;
+                            break;
                         case 'attach':
                             item.inventoryType = InventoryType.Attachment;
                             break;
