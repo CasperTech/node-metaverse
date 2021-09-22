@@ -1563,13 +1563,13 @@ export class RegionCommands extends CommandsBase
         return this.currentRegion.getParcels();
     }
 
-    async getAllObjects(resolve: boolean = false, onlyUnresolved: boolean = false): Promise<GameObject[]>
+    async getAllObjects(resolve = false, onlyUnresolved = false, skipInventory = false, outputLog = false): Promise<GameObject[]>
     {
         const objs = await this.currentRegion.objects.getAllObjects();
         if (resolve)
         {
             const resolver = new ObjectResolver(this.currentRegion);
-            await resolver.resolveObjects(objs, onlyUnresolved);
+            await resolver.resolveObjects(objs, onlyUnresolved, skipInventory, outputLog);
         }
         return objs;
     }
