@@ -1,29 +1,29 @@
-import { UUID } from './UUID';
-import { InventoryItem } from './InventoryItem';
-import * as fs from 'fs/promises';
-import * as fsSync from 'fs';
-import * as path from 'path';
 import * as LLSD from '@caspertech/llsd';
-import { InventorySortOrder } from '../enums/InventorySortOrder';
-import { Agent } from './Agent';
-import { FolderType } from '../enums/FolderType';
-import { CreateInventoryFolderMessage } from './messages/CreateInventoryFolder';
-import { Utils } from './Utils';
-import { PacketFlags } from '../enums/PacketFlags';
-import { Message } from '../enums/Message';
-import { FilterResponse } from '../enums/FilterResponse';
-import { UpdateCreateInventoryItemMessage } from './messages/UpdateCreateInventoryItem';
+import * as fsSync from 'fs';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { LLMesh } from '..';
-import { CreateInventoryItemMessage } from './messages/CreateInventoryItem';
-import { WearableType } from '../enums/WearableType';
-import { PermissionMask } from '../enums/PermissionMask';
 import { AssetType } from '../enums/AssetType';
-import { LLWearable } from './LLWearable';
-import { InventoryType } from '../enums/InventoryType';
-import { AssetUploadRequestMessage } from './messages/AssetUploadRequest';
-import { RequestXferMessage } from './messages/RequestXfer';
-import { Logger } from './Logger';
+import { FilterResponse } from '../enums/FilterResponse';
+import { FolderType } from '../enums/FolderType';
 import { InventoryLibrary } from '../enums/InventoryLibrary';
+import { InventorySortOrder } from '../enums/InventorySortOrder';
+import { InventoryType } from '../enums/InventoryType';
+import { Message } from '../enums/Message';
+import { PacketFlags } from '../enums/PacketFlags';
+import { PermissionMask } from '../enums/PermissionMask';
+import { WearableType } from '../enums/WearableType';
+import { Agent } from './Agent';
+import { InventoryItem } from './InventoryItem';
+import { LLWearable } from './LLWearable';
+import { Logger } from './Logger';
+import { AssetUploadRequestMessage } from './messages/AssetUploadRequest';
+import { CreateInventoryFolderMessage } from './messages/CreateInventoryFolder';
+import { CreateInventoryItemMessage } from './messages/CreateInventoryItem';
+import { RequestXferMessage } from './messages/RequestXfer';
+import { UpdateCreateInventoryItemMessage } from './messages/UpdateCreateInventoryItem';
+import { Utils } from './Utils';
+import { UUID } from './UUID';
 
 export class InventoryFolder
 {
@@ -674,6 +674,7 @@ export class InventoryFolder
             switch (inventoryType)
             {
                 case InventoryType.Wearable:
+                case InventoryType.Bodypart:
                     // Wearables have to be uploaded using the legacy method and then created
                     this.uploadInventoryAssetLegacy(type, inventoryType, data, name, description).then((invItemID: UUID) =>
                     {
