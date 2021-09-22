@@ -60,7 +60,7 @@
     "tar-stream": "^2.1.0",
     "tiny-async-pool": "^1.2.0",
     "uuid": "^3.4.0",
-    "validator": "^10.11.0",
+    "validator": "^13.6.0",
     "winston": "^3.2.1",
     "xml": "^1.0.1",
     "xml2js": "^0.4.23",
