@@ -62,6 +62,13 @@ export class AssetMap
             item: InventoryItem | null
         }
     } = {};
+    settings: {
+        [key: string]: {
+            name?: string,
+            description?: string,
+            item: InventoryItem | null
+        }
+    } = {};
     notecards: {
         [key: string]: {
             name?: string,

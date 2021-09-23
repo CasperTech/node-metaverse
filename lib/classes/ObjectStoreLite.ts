@@ -828,6 +828,9 @@ export class ObjectStoreLite implements IObjectStore
                 result.push(this.objects[localID]);
             }
         }
+        result.sort((a: GameObject, b: GameObject) => {
+            return a.ID - b.ID;
+        });
         return result;
     }
 

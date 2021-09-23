@@ -1,17 +1,16 @@
 import * as Long from 'long';
-import { Quaternion } from './Quaternion';
-import { GlobalPosition } from './public/interfaces/GlobalPosition';
-import { HTTPAssets } from '../enums/HTTPAssets';
-import { Vector3 } from './Vector3';
 import { Subject, Subscription } from 'rxjs';
-import { AssetType } from '../enums/AssetType';
-import { InventoryType } from '../enums/InventoryType';
-import { FilterResponse } from '../enums/FilterResponse';
-import { Logger } from './Logger';
-
-import * as zlib from 'zlib';
 import * as xml2js from 'xml2js';
 
+import * as zlib from 'zlib';
+import { AssetType } from '../enums/AssetType';
+import { FilterResponse } from '../enums/FilterResponse';
+import { HTTPAssets } from '../enums/HTTPAssets';
+import { InventoryType } from '../enums/InventoryType';
+import { Logger } from './Logger';
+import { GlobalPosition } from './public/interfaces/GlobalPosition';
+import { Quaternion } from './Quaternion';
+import { Vector3 } from './Vector3';
 import Timeout = NodeJS.Timeout;
 
 export class Utils
@@ -177,7 +176,13 @@ export class Utils
             case InventoryType.Mesh:
                 return 'mesh';
             case InventoryType.LSL:
-                return 'LSL';
+                return 'script';
+            case InventoryType.Widget:
+                return 'widget';
+            case InventoryType.Person:
+                return 'person';
+            case InventoryType.Settings:
+                return 'settings';
             default:
                 console.error('Unknown inventory type: ' + InventoryType[type]);
                 return 'texture';
@@ -216,6 +221,12 @@ export class Utils
                 return AssetType.Bodypart;
             case HTTPAssets.ASSET_MESH:
                 return AssetType.Mesh;
+            case HTTPAssets.ASSET_SETTINGS:
+                return AssetType.Settings;
+            case HTTPAssets.ASSET_WIDGET:
+                return AssetType.Widget;
+            case HTTPAssets.ASSET_PERSON:
+                return AssetType.Person;
             default:
                 return 0;
         }
@@ -253,6 +264,12 @@ export class Utils
                 return HTTPAssets.ASSET_BODYPART;
             case AssetType.Mesh:
                 return HTTPAssets.ASSET_MESH;
+            case AssetType.Settings:
+                return HTTPAssets.ASSET_SETTINGS;
+            case AssetType.Person:
+                return HTTPAssets.ASSET_PERSON;
+            case AssetType.Widget:
+                return HTTPAssets.ASSET_WIDGET;
             default:
                 return HTTPAssets.ASSET_TEXTURE;
         }
@@ -276,7 +293,7 @@ export class Utils
             case HTTPAssets.ASSET_CALLINGCARD:
                 return InventoryType.CallingCard;
             case HTTPAssets.ASSET_SCRIPT:
-                return InventoryType.Script;
+                return InventoryType.LSL;
             case HTTPAssets.ASSET_CLOTHING:
                 return InventoryType.Wearable;
             case HTTPAssets.ASSET_OBJECT:
@@ -284,9 +301,9 @@ export class Utils
             case HTTPAssets.ASSET_NOTECARD:
                 return InventoryType.Notecard;
             case HTTPAssets.ASSET_LSL_TEXT:
-                return InventoryType.Script;
+                return InventoryType.LSL;
             case HTTPAssets.ASSET_LSL_BYTECODE:
-                return InventoryType.Script;
+                return InventoryType.LSL;
             case HTTPAssets.ASSET_BODYPART:
                 return InventoryType.Wearable;
             case HTTPAssets.ASSET_MESH:

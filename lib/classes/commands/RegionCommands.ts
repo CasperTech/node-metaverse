@@ -1,40 +1,40 @@
-import { CommandsBase } from './CommandsBase';
-import { UUID } from '../UUID';
-import { RegionHandleRequestMessage } from '../messages/RegionHandleRequest';
-import { Message } from '../../enums/Message';
-import { FilterResponse } from '../../enums/FilterResponse';
-import { RegionIDAndHandleReplyMessage } from '../messages/RegionIDAndHandleReply';
-import { ObjectGrabMessage } from '../messages/ObjectGrab';
-import { ObjectDeGrabMessage } from '../messages/ObjectDeGrab';
-import { ObjectGrabUpdateMessage } from '../messages/ObjectGrabUpdate';
-import { ObjectSelectMessage } from '../messages/ObjectSelect';
-import { ObjectPropertiesMessage } from '../messages/ObjectProperties';
-import { Utils } from '../Utils';
-import { ObjectDeselectMessage } from '../messages/ObjectDeselect';
-import { ObjectAddMessage } from '../messages/ObjectAdd';
-import { Quaternion } from '../Quaternion';
-import { PacketFlags } from '../../enums/PacketFlags';
-import { GameObject } from '../public/GameObject';
-import { PCode } from '../../enums/PCode';
-import { PrimFlags } from '../../enums/PrimFlags';
-import { NewObjectEvent } from '../../events/NewObjectEvent';
-import { Vector3 } from '../Vector3';
-import { Parcel } from '../public/Parcel';
-import { Subscription } from 'rxjs';
-import { SculptType } from '../..';
-import { AssetMap } from '../AssetMap';
-import { InventoryType } from '../../enums/InventoryType';
-import { BuildMap } from '../BuildMap';
-import { ObjectResolver } from '../ObjectResolver';
-import { Avatar } from '../public/Avatar';
-import { EstateOwnerMessageMessage } from '../messages/EstateOwnerMessage';
+import * as LLSD from '@caspertech/llsd';
 
 import * as Long from 'long';
 import * as micromatch from 'micromatch';
-import * as LLSD from '@caspertech/llsd';
+import { Subscription } from 'rxjs';
+import { SculptType } from '../../enums/SculptType';
+import { FilterResponse } from '../../enums/FilterResponse';
+import { InventoryType } from '../../enums/InventoryType';
+import { Message } from '../../enums/Message';
+import { PacketFlags } from '../../enums/PacketFlags';
+import { PCode } from '../../enums/PCode';
+import { PrimFlags } from '../../enums/PrimFlags';
+import { NewObjectEvent } from '../../events/NewObjectEvent';
+import { AssetMap } from '../AssetMap';
+import { BuildMap } from '../BuildMap';
+import { EstateOwnerMessageMessage } from '../messages/EstateOwnerMessage';
+import { ObjectAddMessage } from '../messages/ObjectAdd';
+import { ObjectDeGrabMessage } from '../messages/ObjectDeGrab';
+import { ObjectDeselectMessage } from '../messages/ObjectDeselect';
+import { ObjectGrabMessage } from '../messages/ObjectGrab';
+import { ObjectGrabUpdateMessage } from '../messages/ObjectGrabUpdate';
+import { ObjectPropertiesMessage } from '../messages/ObjectProperties';
+import { ObjectSelectMessage } from '../messages/ObjectSelect';
+import { RegionHandleRequestMessage } from '../messages/RegionHandleRequest';
+import { RegionIDAndHandleReplyMessage } from '../messages/RegionIDAndHandleReply';
+import { ObjectResolver } from '../ObjectResolver';
+import { Avatar } from '../public/Avatar';
+import { GameObject } from '../public/GameObject';
+import { Parcel } from '../public/Parcel';
+import { Quaternion } from '../Quaternion';
+import { Utils } from '../Utils';
+import { UUID } from '../UUID';
+import { Vector3 } from '../Vector3';
+import { CommandsBase } from './CommandsBase';
+import Timeout = NodeJS.Timeout;
 
 import Timer = NodeJS.Timer;
-import Timeout = NodeJS.Timeout;
 
 export class RegionCommands extends CommandsBase
 {
@@ -820,6 +820,18 @@ export class RegionCommands extends CommandsBase
                         }
                         break;
                     }
+                    case InventoryType.Settings:
+                    {
+                        if (buildMap.assetMap.settings[invItem.assetID.toString()] !== undefined)
+                        {
+                            const item = buildMap.assetMap.settings[invItem.assetID.toString()].item;
+                            if (item !== null)
+                            {
+                                await object.dropInventoryIntoContents(item);
+                            }
+                        }
+                        break;
+                    }
                     case InventoryType.Wearable:
                     case InventoryType.Bodypart:
                     {
@@ -1068,7 +1080,7 @@ export class RegionCommands extends CommandsBase
                         }
                         case InventoryType.Gesture:
                         {
-                            if (buildMap.assetMap.clothing[assetID.toString()] === undefined)
+                            if (buildMap.assetMap.gestures[assetID.toString()] === undefined)
                             {
                                 buildMap.assetMap.gestures[assetID.toString()] = {
                                     name: j.name,
@@ -1136,6 +1148,18 @@ export class RegionCommands extends CommandsBase
                             }
                             break;
                         }
+                        case InventoryType.Settings:
+                        {
+                            if (buildMap.assetMap.settings[assetID.toString()] === undefined)
+                            {
+                                buildMap.assetMap.settings[assetID.toString()] = {
+                                    name: j.name,
+                                    description: j.description,
+                                    item: null
+                                };
+                            }
+                            break;
+                        }
                         default:
                             console.error('Unsupported inventory type: ' + j.inventoryType);
                             break;
@@ -1167,7 +1191,8 @@ export class RegionCommands extends CommandsBase
             '8e915e25-31d1-cc95-ae08-d58a47488251',
             '9742065b-19b5-297c-858a-29711d539043',
             '03642e83-2bd1-4eb9-34b4-4c47ed586d2d',
-            'edd51b77-fc10-ce7a-4b3d-011dfc349e4f'
+            'edd51b77-fc10-ce7a-4b3d-011dfc349e4f',
+            'c228d1cf-4b5d-4ba8-84f4-899a0796aa97' // 'non existent asset'
         ];
         for (const bomTexture of bomTextures)
         {
@@ -1251,7 +1276,10 @@ export class RegionCommands extends CommandsBase
         const parts = [];
         parts.push(async () =>
         {
-            return await this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap, true);
+            return {
+                index: 1,
+                object: await this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap, true)
+            }
         });
 
         if (obj.children)
@@ -1264,26 +1292,36 @@ export class RegionCommands extends CommandsBase
             {
                 obj.Rotation = Quaternion.getIdentity();
             }
+            let childIndex = 2;
             for (const child of obj.children)
             {
                 if (child.Position !== undefined && child.Rotation !== undefined)
                 {
+                    const index = childIndex++;
                     parts.push(async () =>
                     {
-                        return await this.buildPart(child, new Vector3(obj.Position), new Quaternion(obj.Rotation), buildMap, false);
+                        return {
+                            index,
+                            object: await this.buildPart(child, new Vector3(obj.Position), new Quaternion(obj.Rotation), buildMap, false)
+                        }
                     });
-
                 }
             }
         }
         let results: {
-            results: GameObject[],
+            results: {
+               index: number,
+               object: GameObject
+            }[],
             errors: Error[]
         } = {
             results: [],
             errors: []
         };
-        results = await Utils.promiseConcurrent<GameObject>(parts, 5, 0);
+        results = await Utils.promiseConcurrent<{
+            index: number,
+            object: GameObject
+        }>(parts, 5, 0);
         if (results.errors.length > 0)
         {
             for (const err of results.errors)
@@ -1295,9 +1333,9 @@ export class RegionCommands extends CommandsBase
         let rootObj: GameObject | null = null;
         for (const childObject of results.results)
         {
-            if (childObject.isMarkedRoot)
+            if (childObject.object.isMarkedRoot)
             {
-                rootObj = childObject;
+                rootObj = childObject.object;
                 break;
             }
         }
@@ -1307,11 +1345,15 @@ export class RegionCommands extends CommandsBase
         }
 
         const childPrims: GameObject[] = [];
+        results.results.sort((a: {index: number, object: GameObject}, b: {index: number, object: GameObject}) =>
+        {
+            return a.index - b.index;
+        });
         for (const childObject of results.results)
         {
-            if (childObject !== rootObj)
+            if (childObject.object !== rootObj)
             {
-                childPrims.push(childObject);
+                childPrims.push(childObject.object);
             }
         }
         try

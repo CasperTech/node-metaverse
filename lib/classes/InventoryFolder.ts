@@ -2,10 +2,10 @@ import * as LLSD from '@caspertech/llsd';
 import * as fsSync from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { LLMesh } from '..';
 import { AssetType } from '../enums/AssetType';
 import { FilterResponse } from '../enums/FilterResponse';
 import { FolderType } from '../enums/FolderType';
+import { InventoryItemFlags } from '../enums/InventoryItemFlags';
 import { InventoryLibrary } from '../enums/InventoryLibrary';
 import { InventorySortOrder } from '../enums/InventorySortOrder';
 import { InventoryType } from '../enums/InventoryType';
@@ -22,6 +22,7 @@ import { CreateInventoryFolderMessage } from './messages/CreateInventoryFolder';
 import { CreateInventoryItemMessage } from './messages/CreateInventoryItem';
 import { RequestXferMessage } from './messages/RequestXfer';
 import { UpdateCreateInventoryItemMessage } from './messages/UpdateCreateInventoryItem';
+import { LLMesh } from './public/LLMesh';
 import { Utils } from './Utils';
 import { UUID } from './UUID';
 
@@ -414,7 +415,7 @@ export class InventoryFolder
         });
     }
 
-    private uploadInventoryAssetLegacy(assetType: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string): Promise<UUID>
+    private uploadInventoryAssetLegacy(assetType: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string, flags: InventoryItemFlags): Promise<UUID>
     {
         return new Promise<UUID>(async (resolve, reject) =>
         {
@@ -439,6 +440,14 @@ export class InventoryFolder
             {
                 const wearable = new LLWearable(data.toString('utf-8'));
                 wearableType = wearable.type;
+            }
+            else
+            {
+                const wearableInFlags = flags & InventoryItemFlags.FlagsSubtypeMask;
+                if (wearableInFlags > 0)
+                {
+                    wearableType = wearableInFlags;
+                }
             }
 
             createMsg.AgentData = {
@@ -493,11 +502,16 @@ export class InventoryFolder
         });
     }
 
-    private uploadInventoryItem(assetType: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string): Promise<UUID>
+    private uploadInventoryItem(assetType: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string, flags: InventoryItemFlags): Promise<UUID>
     {
         return new Promise<UUID>((resolve, reject) =>
         {
-            const wearableType = WearableType.Shape;
+            let wearableType = WearableType.Shape;
+            const wearableInFlags = flags & InventoryItemFlags.FlagsSubtypeMask;
+            if (wearableInFlags > 0)
+            {
+                wearableType = wearableInFlags;
+            }
 
             const transactionID = UUID.zero();
             const callbackID = ++this.callbackID;
@@ -534,6 +548,41 @@ export class InventoryFolder
                     case InventoryType.Notecard:
                     {
                         this.agent.currentRegion.caps.capsPostXML('UpdateNotecardAgentInventory', {
+                            'item_id': new LLSD.UUID(createInventoryMsg.InventoryData[0].ItemID.toString()),
+                        }).then((result: any) =>
+                        {
+                            if (result['uploader'])
+                            {
+                                const uploader = result['uploader'];
+                                this.agent.currentRegion.caps.capsRequestUpload(uploader, data).then((uploadResult: any) =>
+                                {
+                                    if (uploadResult['state'] && uploadResult['state'] === 'complete')
+                                    {
+                                        const itemID: UUID = createInventoryMsg.InventoryData[0].ItemID;
+                                        resolve(itemID);
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Asset upload failed'))
+                                    }
+                                }).catch((err) =>
+                                {
+                                    reject(err);
+                                });
+                            }
+                            else
+                            {
+                                reject(new Error('Invalid response when attempting to request upload URL for notecard'));
+                            }
+                        }).catch((err) =>
+                        {
+                            reject(err);
+                        });
+                        break;
+                    }
+                    case InventoryType.Settings:
+                    {
+                        this.agent.currentRegion.caps.capsPostXML('UpdateSettingsAgentInventory', {
                             'item_id': new LLSD.UUID(createInventoryMsg.InventoryData[0].ItemID.toString()),
                         }).then((result: any) =>
                         {
@@ -606,7 +655,7 @@ export class InventoryFolder
                            }
                            else
                            {
-                               this.uploadInventoryAssetLegacy(assetType, inventoryType, data, name, description).then((invItemID: UUID) =>
+                               this.uploadInventoryAssetLegacy(assetType, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
                                {
                                    resolve(invItemID);
                                }).catch((err: Error) =>
@@ -667,7 +716,7 @@ export class InventoryFolder
         });
     }
 
-    uploadAsset(type: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string): Promise<InventoryItem>
+    uploadAsset(type: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string, flags: InventoryItemFlags = InventoryItemFlags.None): Promise<InventoryItem>
     {
         return new Promise<InventoryItem>((resolve, reject) =>
         {
@@ -676,7 +725,7 @@ export class InventoryFolder
                 case InventoryType.Wearable:
                 case InventoryType.Bodypart:
                     // Wearables have to be uploaded using the legacy method and then created
-                    this.uploadInventoryAssetLegacy(type, inventoryType, data, name, description).then((invItemID: UUID) =>
+                    this.uploadInventoryAssetLegacy(type, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
                     {
                         this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>
                         {
@@ -705,8 +754,9 @@ export class InventoryFolder
                 case InventoryType.Gesture:
                 case InventoryType.Script:
                 case InventoryType.LSL:
+                case InventoryType.Settings:
                     // These types must be created first and then modified
-                    this.uploadInventoryItem(type, inventoryType, data, name, description).then((invItemID: UUID) =>
+                    this.uploadInventoryItem(type, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
                     {
                         this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>
                         {
