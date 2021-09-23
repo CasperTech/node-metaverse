@@ -52,6 +52,7 @@ export class Caps
         req.push('EstateAccess');
         req.push('EstateChangeInfo');
         req.push('EventQueueGet');
+        req.push('ExtEnvironment');
         req.push('FetchLib2');
         req.push('FetchLibDescendents2');
         req.push('FetchInventory2');
@@ -69,7 +70,9 @@ export class Caps
         req.push('UpdateExperience');
         req.push('IsExperienceAdmin');
         req.push('IsExperienceContributor');
+        req.push('InventoryAPIv3');
         req.push('RegionExperiences');
+        req.push('ExperienceQuery');
         req.push('GetMetadata');
         req.push('GetObjectCost');
         req.push('GetObjectPhysicsData');
@@ -120,13 +123,15 @@ export class Caps
         req.push('UpdateNotecardTaskInventory');
         req.push('UpdateScriptAgent');
         req.push('UpdateScriptTask');
+        req.push('UpdateSettingsAgentInventory');
+        req.push('UpdateSettingsTaskInventory');
         req.push('UploadBakedTexture');
         req.push('UserInfo');
         req.push('ViewerAsset');
+        req.push('ViewerBenefits');
         req.push('ViewerMetrics');
         req.push('ViewerStartAuction');
         req.push('ViewerStats');
-        req.push('InventoryAPIv3');
 
         this.active = true;
         this.request(seedURL, LLSD.LLSD.formatXML(req), 'application/llsd+xml').then((resp: ICapResponse) =>

@@ -20,5 +20,6 @@ export enum HTTPAssets
     ASSET_MESH = 'mesh',
     ASSET_WIDGET = 'widget',
     ASSET_PERSON = 'person',
-    ASSET_MATERIAL = 'material'
+    ASSET_MATERIAL = 'material',
+    ASSET_SETTINGS = 'settings',
 }

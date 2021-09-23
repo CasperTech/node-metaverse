@@ -21,5 +21,8 @@ export enum AssetTypeLL
     simstate = 22,
     link = 24,
     link_f = 25,
-    mesh = 49
+    widget = 40,
+    person = 45,
+    mesh = 49,
+    settings = 56,
 }

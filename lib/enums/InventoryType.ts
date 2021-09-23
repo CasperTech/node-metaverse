@@ -13,15 +13,14 @@ export enum InventoryType
     Folder = 8,
     RootCategory = 9,
     LSL = 10,
-    LSLBytecode = 11,
-    TextureTGA = 12,
     Bodypart = 13,
-    Trash = 14,
     Snapshot = 15,
-    LostAndFound = 16,
     Attachment = 17,
     Wearable = 18,
     Animation = 19,
     Gesture = 20,
-    Mesh = 22
+    Mesh = 22,
+    Widget = 23,
+    Person = 24,
+    Settings = 25
 }

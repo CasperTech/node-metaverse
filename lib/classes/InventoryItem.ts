@@ -1,33 +1,33 @@
-import { UUID } from './UUID';
-import { InventoryType } from '../enums/InventoryType';
-import { PermissionMask } from '../enums/PermissionMask';
-import { InventoryItemFlags } from '../enums/InventoryItemFlags';
-import { AssetType } from '../enums/AssetType';
-import * as builder from 'xmlbuilder';
-import { Utils } from './Utils';
-import { AttachmentPoint } from '../enums/AttachmentPoint';
-import { RezSingleAttachmentFromInvMessage } from './messages/RezSingleAttachmentFromInv';
-import { GameObject } from '..';
-import { Agent } from './Agent';
-import { Subscription } from 'rxjs';
-import { DetachAttachmentIntoInvMessage } from './messages/DetachAttachmentIntoInv';
-import { Vector3 } from './Vector3';
-import { RezObjectMessage } from './messages/RezObject';
-import { NewObjectEvent } from '../events/NewObjectEvent';
-import { InventoryFolder } from './InventoryFolder';
-import { MoveInventoryItemMessage } from './messages/MoveInventoryItem';
-import { RemoveInventoryItemMessage } from './messages/RemoveInventoryItem';
-import { SaleTypeLL } from '../enums/SaleTypeLL';
-import { AssetTypeLL } from '../enums/AssetTypeLL';
-import { UpdateTaskInventoryMessage } from './messages/UpdateTaskInventory';
-import { PacketFlags } from '../enums/PacketFlags';
-import Timeout = NodeJS.Timeout;
 import * as LLSD from '@caspertech/llsd';
-import { MoveTaskInventoryMessage } from './messages/MoveTaskInventory';
-import { UpdateCreateInventoryItemMessage } from './messages/UpdateCreateInventoryItem';
-import { Message } from '../enums/Message';
+import { Subscription } from 'rxjs';
+import * as builder from 'xmlbuilder';
+import { GameObject } from '..';
+import { AssetType } from '../enums/AssetType';
+import { AssetTypeLL } from '../enums/AssetTypeLL';
+import { AttachmentPoint } from '../enums/AttachmentPoint';
 import { FilterResponse } from '../enums/FilterResponse';
+import { InventoryItemFlags } from '../enums/InventoryItemFlags';
+import { InventoryType } from '../enums/InventoryType';
+import { Message } from '../enums/Message';
+import { PacketFlags } from '../enums/PacketFlags';
+import { PermissionMask } from '../enums/PermissionMask';
+import { SaleTypeLL } from '../enums/SaleTypeLL';
+import { NewObjectEvent } from '../events/NewObjectEvent';
+import { Agent } from './Agent';
+import { InventoryFolder } from './InventoryFolder';
+import { DetachAttachmentIntoInvMessage } from './messages/DetachAttachmentIntoInv';
+import { MoveInventoryItemMessage } from './messages/MoveInventoryItem';
+import { MoveTaskInventoryMessage } from './messages/MoveTaskInventory';
+import { RemoveInventoryItemMessage } from './messages/RemoveInventoryItem';
+import { RezObjectMessage } from './messages/RezObject';
+import { RezSingleAttachmentFromInvMessage } from './messages/RezSingleAttachmentFromInv';
+import { UpdateCreateInventoryItemMessage } from './messages/UpdateCreateInventoryItem';
 import { UpdateInventoryItemMessage } from './messages/UpdateInventoryItem';
+import { UpdateTaskInventoryMessage } from './messages/UpdateTaskInventory';
+import { Utils } from './Utils';
+import { UUID } from './UUID';
+import { Vector3 } from './Vector3';
+import Timeout = NodeJS.Timeout;
 
 export class InventoryItem
 {
@@ -235,14 +235,10 @@ export class InventoryItem
                         case 'root':
                             item.inventoryType = InventoryType.RootCategory;
                             break;
-                        case 'script':
-                            item.inventoryType = InventoryType.Script;
-                            break;
                         case 'snapshot':
                             item.inventoryType = InventoryType.Snapshot;
                             break;
-                        case 'LSL':
-                        case 'lsl':
+                        case 'script':
                             item.inventoryType = InventoryType.LSL;
                             break;
                         case 'attach':
@@ -259,6 +255,15 @@ export class InventoryItem
                             break;
                         case 'mesh':
                             item.inventoryType = InventoryType.Mesh;
+                            break;
+                        case 'settings':
+                            item.inventoryType = InventoryType.Settings;
+                            break;
+                        case 'widget':
+                            item.inventoryType = InventoryType.Widget;
+                            break;
+                        case 'person':
+                            item.inventoryType = InventoryType.Person;
                             break;
                         default:
                             console.error('Unknown inventory type: ' + typeString);
