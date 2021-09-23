@@ -183,6 +183,7 @@ export class Circuit
         {
             let subscription: null | Subscription = null;
             let timeout: Timer | null = null;
+            const receivedChunks: { [key: number]: Buffer } = {};
             const progress = setInterval(() =>
             {
                 console.log( '     ... Got ' + Object.keys(receivedChunks).length + ' packets');
@@ -218,7 +219,6 @@ export class Circuit
             this.sendMessage(xferRequest, PacketFlags.Reliable);
             let finished = false;
             let finishID = 0;
-            const receivedChunks: { [key: number]: Buffer } = {};
             let firstPacket = true;
             let dataSize = 0;
             subscription = this.subscribeToMessages([
@@ -509,13 +509,7 @@ export class Circuit
         {
             this.client.send(dataToSend, 0, dataToSend.length, this.port, this.ipAddress, (_err, _bytes) =>
             {
-                /*let resend = '';
-                if (packet.packetFlags & PacketFlags.Resent)
-                {
-                    resend = ' (resent)';
-                }
-                console.log('--> ' + packet.message.name + resend);
-                */
+
             })
         }
         else

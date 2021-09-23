@@ -901,7 +901,13 @@ export class GameObject implements IGameObjectData
             if (item.name === tmpName)
             {
                 // We are intentionally not waiting for this rename job so that the wait below succeeds
-                item.renameInTask(this, name).then(() => {}).catch(() => {});
+                item.renameInTask(this, name).then(() =>
+                {
+
+                }).catch(() =>
+                {
+
+                });
                 try
                 {
                     await this.waitForInventoryUpdate();

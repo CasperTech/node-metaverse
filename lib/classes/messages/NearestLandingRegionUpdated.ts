@@ -40,7 +40,7 @@ export class NearestLandingRegionUpdatedMessage implements MessageBase
         } = {
             RegionHandle: Long.ZERO
         };
-        newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         this.RegionData = newObjRegionData;
         return pos - startPos;

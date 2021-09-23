@@ -271,7 +271,7 @@ export class ChildAgentUpdateMessage implements MessageBase
             AgentTextures: Buffer.allocUnsafe(0),
             ActiveGroupID: UUID.zero()
         };
-        newObjAgentData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjAgentData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjAgentData['ViewerCircuitCode'] = buf.readUInt32LE(pos);
         pos += 4;
@@ -342,7 +342,7 @@ export class ChildAgentUpdateMessage implements MessageBase
             };
             newObjGroupData['GroupID'] = new UUID(buf, pos);
             pos += 16;
-            newObjGroupData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjGroupData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             newObjGroupData['AcceptNotices'] = (buf.readUInt8(pos++) === 1);
             this.GroupData.push(newObjGroupData);

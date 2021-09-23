@@ -19,7 +19,7 @@
   },
   "include": [
     "lib/**/*.ts",
-    "examples/**/*.ts"
+    "examples/**/*.ts",
   ],
   "exclude": [
     "node_modules"

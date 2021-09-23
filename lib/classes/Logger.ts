@@ -4,7 +4,7 @@ import * as moment from 'moment';
 import * as chalk from 'chalk';
 import {TransformableInfo} from 'logform';
 
-const formatLevel = function(text: string, level: string)
+const formatLevel = function(text: string, level: string): string
 {
     switch (level)
     {
@@ -21,7 +21,7 @@ const formatLevel = function(text: string, level: string)
     }
 };
 
-const formatMessage = function(text: string, level: string)
+const formatMessage = function(text: string, level: string): string
 {
     switch (level)
     {
@@ -34,7 +34,7 @@ const formatMessage = function(text: string, level: string)
     }
 };
 
-const logFormat = winston.format.printf(function(info: TransformableInfo)
+const logFormat = winston.format.printf(function(info: TransformableInfo): string
 {
     const logComponents = [
         moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -61,19 +61,19 @@ export class Logger
     private static prefixLevel = 0;
     static prefix = '';
 
-    static increasePrefixLevel()
+    static increasePrefixLevel(): void
     {
         this.prefixLevel++;
         this.generatePrefix();
     }
 
-    static decreasePrefixLevel()
+    static decreasePrefixLevel(): void
     {
         this.prefixLevel--;
         this.generatePrefix();
     }
 
-    static generatePrefix()
+    static generatePrefix(): void
     {
         this.prefix = '';
         for (let x = 0; x < this.prefixLevel; x++)
@@ -86,7 +86,7 @@ export class Logger
         }
     }
 
-    static Debug(message: string | object)
+    static Debug(message: string | object): void
     {
         if (typeof message === 'string')
         {
@@ -94,7 +94,7 @@ export class Logger
         }
         this.Log('debug', message);
     }
-    static Info(message: string | object)
+    static Info(message: string | object): void
     {
         if (typeof message === 'string')
         {
@@ -102,7 +102,7 @@ export class Logger
         }
         this.Log('info', message);
     }
-    static Warn(message: string | object)
+    static Warn(message: string | object): void
     {
         if (typeof message === 'string')
         {
@@ -110,7 +110,7 @@ export class Logger
         }
         this.Log('warn', message);
     }
-    static Error(message: string | object)
+    static Error(message: string | object): void
     {
         if (typeof message === 'string')
         {
@@ -119,7 +119,7 @@ export class Logger
         this.Log('error', message);
     }
 
-    static Log(type: string, message: string | object)
+    static Log(type: string, message: string | object): void
     {
         if (typeof message === 'object')
         {

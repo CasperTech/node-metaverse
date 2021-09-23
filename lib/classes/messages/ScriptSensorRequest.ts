@@ -113,7 +113,7 @@ export class ScriptSensorRequestMessage implements MessageBase
         pos += 4;
         newObjRequester['Arc'] = buf.readFloatLE(pos);
         pos += 4;
-        newObjRequester['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjRequester['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjRequester['SearchRegions'] = buf.readUInt8(pos++);
         this.Requester = newObjRequester;

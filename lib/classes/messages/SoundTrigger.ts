@@ -80,7 +80,7 @@ export class SoundTriggerMessage implements MessageBase
         pos += 16;
         newObjSoundData['ParentID'] = new UUID(buf, pos);
         pos += 16;
-        newObjSoundData['Handle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjSoundData['Handle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjSoundData['Position'] = new Vector3(buf, pos, false);
         pos += 12;

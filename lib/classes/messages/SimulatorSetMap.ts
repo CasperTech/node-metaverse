@@ -51,7 +51,7 @@ export class SimulatorSetMapMessage implements MessageBase
             Type: 0,
             MapImage: UUID.zero()
         };
-        newObjMapData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjMapData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjMapData['Type'] = buf.readInt32LE(pos);
         pos += 4;

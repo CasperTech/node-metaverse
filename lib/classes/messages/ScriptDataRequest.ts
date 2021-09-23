@@ -75,7 +75,7 @@ export class ScriptDataRequestMessage implements MessageBase
                 RequestType: 0,
                 Request: Buffer.allocUnsafe(0)
             };
-            newObjDataBlock['Hash'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjDataBlock['Hash'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             newObjDataBlock['RequestType'] = buf.readInt8(pos++);
             varLength = buf.readUInt16LE(pos);

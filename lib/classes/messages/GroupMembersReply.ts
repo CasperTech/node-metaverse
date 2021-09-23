@@ -138,7 +138,7 @@ export class GroupMembersReplyMessage implements MessageBase
             varLength = buf.readUInt8(pos++);
             newObjMemberData['OnlineStatus'] = buf.slice(pos, pos + varLength);
             pos += varLength;
-            newObjMemberData['AgentPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjMemberData['AgentPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             varLength = buf.readUInt8(pos++);
             newObjMemberData['Title'] = buf.slice(pos, pos + varLength);

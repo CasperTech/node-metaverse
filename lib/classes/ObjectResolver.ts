@@ -253,7 +253,10 @@ export class ObjectResolver
         }
         if (this.queue.length > 0)
         {
-            this.run().then(() => {}, (err) =>
+            this.run().then(() =>
+            {
+
+            }, (err) =>
             {
                 console.error(err);
             });

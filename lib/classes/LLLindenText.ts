@@ -112,7 +112,7 @@ export class LLLindenText
         return Buffer.from(lines.join('\n') + '\n', 'utf-8');
     }
 
-    private parseEmbeddedItems()
+    private parseEmbeddedItems(): void
     {
         let line = this.getLine();
         if (line !== '{')

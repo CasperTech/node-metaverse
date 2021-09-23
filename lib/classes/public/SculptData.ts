@@ -18,7 +18,7 @@ export class SculptData
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number)
+    writeToBuffer(buf: Buffer, pos: number): void
     {
         this.texture.writeToBuffer(buf, pos); pos = pos + 16;
         buf.writeUInt8(this.type, pos);

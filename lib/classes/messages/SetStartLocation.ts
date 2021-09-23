@@ -73,7 +73,7 @@ export class SetStartLocationMessage implements MessageBase
         pos += 16;
         newObjStartLocationData['LocationID'] = buf.readUInt32LE(pos);
         pos += 4;
-        newObjStartLocationData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjStartLocationData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjStartLocationData['LocationPos'] = new Vector3(buf, pos, false);
         pos += 12;

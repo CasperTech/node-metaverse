@@ -85,7 +85,7 @@ export class GroupDataUpdateMessage implements MessageBase
             pos += 16;
             newObjAgentGroupData['GroupID'] = new UUID(buf, pos);
             pos += 16;
-            newObjAgentGroupData['AgentPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjAgentGroupData['AgentPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             varLength = buf.readUInt8(pos++);
             newObjAgentGroupData['GroupTitle'] = buf.slice(pos, pos + varLength);

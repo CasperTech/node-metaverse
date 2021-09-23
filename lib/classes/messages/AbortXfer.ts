@@ -45,7 +45,7 @@ export class AbortXferMessage implements MessageBase
             ID: Long.ZERO,
             Result: 0
         };
-        newObjXferID['ID'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjXferID['ID'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjXferID['Result'] = buf.readInt32LE(pos);
         pos += 4;

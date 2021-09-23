@@ -42,15 +42,15 @@ export class InventoryFolder
     private callbackID = 1;
 
     private inventoryBase: {
-        skeleton:  {[key: string]: InventoryFolder},
+        skeleton: { [key: string]: InventoryFolder },
         root?: UUID
     };
 
     constructor(lib: InventoryLibrary,
-                invBase: {
-        skeleton:  {[key: string]: InventoryFolder},
-        root?: UUID
-    }, agent: Agent)
+        invBase: {
+            skeleton: { [key: string]: InventoryFolder },
+            root?: UUID
+        }, agent: Agent)
     {
         this.agent = agent;
         this.library = lib;
@@ -406,7 +406,7 @@ export class InventoryFolder
             {
                 this.populateInternal().then(() =>
                 {
-                  resolve();
+                    resolve();
                 }).catch((erro: Error) =>
                 {
                     reject(erro);
@@ -619,50 +619,50 @@ export class InventoryFolder
                     {
                         this.agent.currentRegion.caps.isCapAvailable('UpdateGestureAgentInventory').then((available) =>
                         {
-                           if (available)
-                           {
-                               this.agent.currentRegion.caps.capsPostXML('UpdateGestureAgentInventory', {
-                                   'item_id': new LLSD.UUID(createInventoryMsg.InventoryData[0].ItemID.toString()),
-                               }).then((result: any) =>
-                               {
-                                   if (result['uploader'])
-                                   {
-                                       const uploader = result['uploader'];
-                                       this.agent.currentRegion.caps.capsRequestUpload(uploader, data).then((uploadResult: any) =>
-                                       {
-                                           if (uploadResult['state'] && uploadResult['state'] === 'complete')
-                                           {
-                                               const itemID: UUID = createInventoryMsg.InventoryData[0].ItemID;
-                                               resolve(itemID);
-                                           }
-                                           else
-                                           {
-                                               reject(new Error('Asset upload failed'))
-                                           }
-                                       }).catch((err) =>
-                                       {
-                                           reject(err);
-                                       });
-                                   }
-                                   else
-                                   {
-                                       reject(new Error('Invalid response when attempting to request upload URL for notecard'));
-                                   }
-                               }).catch((err) =>
-                               {
-                                   reject(err);
-                               });
-                           }
-                           else
-                           {
-                               this.uploadInventoryAssetLegacy(assetType, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
-                               {
-                                   resolve(invItemID);
-                               }).catch((err: Error) =>
-                               {
-                                   reject(err);
-                               });
-                           }
+                            if (available)
+                            {
+                                this.agent.currentRegion.caps.capsPostXML('UpdateGestureAgentInventory', {
+                                    'item_id': new LLSD.UUID(createInventoryMsg.InventoryData[0].ItemID.toString()),
+                                }).then((result: any) =>
+                                {
+                                    if (result['uploader'])
+                                    {
+                                        const uploader = result['uploader'];
+                                        this.agent.currentRegion.caps.capsRequestUpload(uploader, data).then((uploadResult: any) =>
+                                        {
+                                            if (uploadResult['state'] && uploadResult['state'] === 'complete')
+                                            {
+                                                const itemID: UUID = createInventoryMsg.InventoryData[0].ItemID;
+                                                resolve(itemID);
+                                            }
+                                            else
+                                            {
+                                                reject(new Error('Asset upload failed'))
+                                            }
+                                        }).catch((err) =>
+                                        {
+                                            reject(err);
+                                        });
+                                    }
+                                    else
+                                    {
+                                        reject(new Error('Invalid response when attempting to request upload URL for notecard'));
+                                    }
+                                }).catch((err) =>
+                                {
+                                    reject(err);
+                                });
+                            }
+                            else
+                            {
+                                this.uploadInventoryAssetLegacy(assetType, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
+                                {
+                                    resolve(invItemID);
+                                }).catch((err: Error) =>
+                                {
+                                    reject(err);
+                                });
+                            }
                         });
                         break;
                     }
@@ -705,7 +705,7 @@ export class InventoryFolder
                     }
                     default:
                     {
-                        reject(new Error('Currently unsupported CreateInventoryType: '  + inventoryType));
+                        reject(new Error('Currently unsupported CreateInventoryType: ' + inventoryType));
                     }
                 }
             }).catch(() =>
@@ -724,7 +724,7 @@ export class InventoryFolder
             {
                 case InventoryType.Wearable:
                 case InventoryType.Bodypart:
-                    // Wearables have to be uploaded using the legacy method and then created
+                // Wearables have to be uploaded using the legacy method and then created
                     this.uploadInventoryAssetLegacy(type, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
                     {
                         this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>
@@ -755,7 +755,7 @@ export class InventoryFolder
                 case InventoryType.Script:
                 case InventoryType.LSL:
                 case InventoryType.Settings:
-                    // These types must be created first and then modified
+                // These types must be created first and then modified
                     this.uploadInventoryItem(type, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
                     {
                         this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>

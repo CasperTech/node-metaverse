@@ -81,7 +81,6 @@ export class ParticleSystem
     {
         let totalBits = intBits + fracBits;
         let min;
-        let max;
 
         if (signed)
         {
@@ -93,7 +92,8 @@ export class ParticleSystem
         {
             min = 0;
         }
-        max = 1 << intBits;
+
+        const max = 1 << intBits;
 
         let fixedVal = Utils.Clamp(data, min, max);
         if (signed)

@@ -234,7 +234,7 @@ export class RegionInfoMessage implements MessageBase
             } = {
                 RegionFlagsExtended: Long.ZERO
             };
-            newObjRegionInfo3['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjRegionInfo3['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             this.RegionInfo3.push(newObjRegionInfo3);
         }

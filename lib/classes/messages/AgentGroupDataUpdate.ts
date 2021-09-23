@@ -105,7 +105,7 @@ export class AgentGroupDataUpdateMessage implements MessageBase
             };
             newObjGroupData['GroupID'] = new UUID(buf, pos);
             pos += 16;
-            newObjGroupData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjGroupData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             newObjGroupData['AcceptNotices'] = (buf.readUInt8(pos++) === 1);
             newObjGroupData['GroupInsigniaID'] = new UUID(buf, pos);

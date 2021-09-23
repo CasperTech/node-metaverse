@@ -637,7 +637,10 @@ export class RegionCommands extends CommandsBase
                 const newMat = {
                     'Zipped': new LLSD.Binary(Array.from(zipped), 'BASE64')
                 };
-                this.currentRegion.caps.capsPutXML('RenderMaterials', newMat).then(() => {}).catch((err) =>
+                this.currentRegion.caps.capsPutXML('RenderMaterials', newMat).then(() =>
+                {
+
+                }).catch((err) =>
                 {
                     console.error(err);
                 });

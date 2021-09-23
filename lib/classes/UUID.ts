@@ -29,7 +29,7 @@ export class UUID
         }
     }
 
-    static getXML(doc: XMLNode, u?: UUID)
+    static getXML(doc: XMLNode, u?: UUID): void
     {
         const str = UUID.getString(u);
         doc.ele('UUID', str);
@@ -122,7 +122,7 @@ export class UUID
         return this.mUUID;
     };
 
-    writeToBuffer(buf: Buffer, pos: number)
+    writeToBuffer(buf: Buffer, pos: number): void
     {
         const shortened = this.mUUID.substr(0, 8) + this.mUUID.substr(9, 4) + this.mUUID.substr(14, 4) + this.mUUID.substr(19, 4) + this.mUUID.substr(24, 12);
         const binary = Buffer.from(shortened, 'hex');
@@ -150,14 +150,14 @@ export class UUID
         }
     }
 
-    public getBuffer()
+    public getBuffer(): Buffer
     {
         const buf = Buffer.allocUnsafe(16);
         this.writeToBuffer(buf, 0);
         return buf;
     }
 
-    public getLong()
+    public getLong(): Long
     {
         const buf = this.getBuffer();
         return new Long(buf.readUInt32LE(7), buf.readUInt32LE(12));

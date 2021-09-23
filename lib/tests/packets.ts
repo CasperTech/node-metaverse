@@ -5,10 +5,10 @@ import { Packet } from '../classes/Packet';
 import { DecodeFlags } from '../enums/DecodeFlags';
 import { PacketFlags } from '../enums/PacketFlags';
 
-function compareArrays(arr1: any[], arr2: any[])
+function compareArrays(arr1: any[], arr2: any[]): boolean
 {
     if (arr1.length === arr2.length
-        && arr1.every(function (u, i)
+        && arr1.every(function (u, i): boolean
         {
             return u === arr2[i];
         })

@@ -143,7 +143,7 @@ export class GroupProfileReplyMessage implements MessageBase
         varLength = buf.readUInt8(pos++);
         newObjGroupData['MemberTitle'] = buf.slice(pos, pos + varLength);
         pos += varLength;
-        newObjGroupData['PowersMask'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjGroupData['PowersMask'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjGroupData['InsigniaID'] = new UUID(buf, pos);
         pos += 16;

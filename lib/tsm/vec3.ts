@@ -29,9 +29,6 @@
  *    distribution.
  */
 
-
-///<reference path='./common.ts' />
-
 import { TSMQuat } from './quat';
 import { TSMMat3 } from './mat3';
 

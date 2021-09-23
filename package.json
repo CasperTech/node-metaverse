@@ -23,9 +23,14 @@
     "url": "git+https://github.com/CasperTech/node-metaverse.git"
   },
   "devDependencies": {
+    "@angular-eslint/eslint-plugin": "^12.5.0",
     "@types/micromatch": "^4.0.2",
     "@types/node": "^16.9.6",
     "@types/uuid": "^8.3.1",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/eslint-plugin-tslint": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
+    "eslint": "^7.32.0",
     "mocha": "^9.1.1",
     "source-map-support": "^0.5.20",
     "ts-node": "^10.2.1",

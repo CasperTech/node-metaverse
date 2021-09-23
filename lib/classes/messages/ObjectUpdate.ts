@@ -196,7 +196,7 @@ export class ObjectUpdateMessage implements MessageBase
             RegionHandle: Long.ZERO,
             TimeDilation: 0
         };
-        newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjRegionData['TimeDilation'] = buf.readUInt16LE(pos);
         pos += 2;

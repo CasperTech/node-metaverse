@@ -89,7 +89,7 @@ export class AgentDataUpdateMessage implements MessageBase
         pos += varLength;
         newObjAgentData['ActiveGroupID'] = new UUID(buf, pos);
         pos += 16;
-        newObjAgentData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjAgentData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         varLength = buf.readUInt8(pos++);
         newObjAgentData['GroupName'] = buf.slice(pos, pos + varLength);

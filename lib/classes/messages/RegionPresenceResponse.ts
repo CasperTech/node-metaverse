@@ -99,7 +99,7 @@ export class RegionPresenceResponseMessage implements MessageBase
             };
             newObjRegionData['RegionID'] = new UUID(buf, pos);
             pos += 16;
-            newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             newObjRegionData['InternalRegionIP'] = new IPAddress(buf, pos);
             pos += 4;

@@ -87,7 +87,7 @@ export class MapItemRequestMessage implements MessageBase
         };
         newObjRequestData['ItemType'] = buf.readUInt32LE(pos);
         pos += 4;
-        newObjRequestData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjRequestData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         this.RequestData = newObjRequestData;
         return pos - startPos;

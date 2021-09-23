@@ -1,4 +1,5 @@
-export enum Message {
+export enum Message
+{
     TestMessage = 4294901761,
     PacketAck = 4294967291,
     OpenCircuit = 4294967292,

@@ -17,7 +17,8 @@ export class CommandsBase
         this.bot = bot;
         this.circuit = this.currentRegion.circuit;
     }
-    shutdown()
+
+    shutdown(): void
     {
 
     }

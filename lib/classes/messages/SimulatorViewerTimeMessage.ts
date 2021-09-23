@@ -66,7 +66,7 @@ export class SimulatorViewerTimeMessageMessage implements MessageBase
             SunPhase: 0,
             SunAngVelocity: Vector3.getZero()
         };
-        newObjTimeInfo['UsecSinceStart'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjTimeInfo['UsecSinceStart'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjTimeInfo['SecPerDay'] = buf.readUInt32LE(pos);
         pos += 4;

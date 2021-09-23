@@ -96,7 +96,10 @@ export class Bot
                     this.eventQueueWaits[waitID].resolve();
                     delete this.eventQueueWaits[waitID];
                 }
-                catch (ignore){}
+                catch (ignore)
+                {
+
+                }
             }
         });
     }

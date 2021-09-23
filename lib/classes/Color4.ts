@@ -6,7 +6,7 @@ export class Color4
     static black: Color4 = new Color4(0.0, 0.0, 0.0, 1.0);
     static white: Color4 = new Color4(1.0, 1.0, 1.0, 1.0);
 
-    static getXML(doc: XMLNode, c?: Color4)
+    static getXML(doc: XMLNode, c?: Color4): void
     {
         if (c === undefined)
         {
@@ -139,7 +139,7 @@ export class Color4
         return 0;
     }
 
-    writeToBuffer(buf: Buffer, pos: number, inverted: boolean = false)
+    writeToBuffer(buf: Buffer, pos: number, inverted: boolean = false): void
     {
         buf.writeUInt8(Utils.FloatToByte(this.getRed(), 0, 1.0), pos);
         buf.writeUInt8(Utils.FloatToByte(this.getGreen(), 0, 1.0), pos + 1);

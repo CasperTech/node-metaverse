@@ -204,7 +204,7 @@ export class ObjectPropertiesMessage implements MessageBase
             pos += 16;
             newObjObjectData['GroupID'] = new UUID(buf, pos);
             pos += 16;
-            newObjObjectData['CreationDate'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjObjectData['CreationDate'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             newObjObjectData['BaseMask'] = buf.readUInt32LE(pos);
             pos += 4;

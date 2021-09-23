@@ -141,7 +141,7 @@ export class UpdateParcelMessage implements MessageBase
         };
         newObjParcelData['ParcelID'] = new UUID(buf, pos);
         pos += 16;
-        newObjParcelData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjParcelData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjParcelData['OwnerID'] = new UUID(buf, pos);
         pos += 16;

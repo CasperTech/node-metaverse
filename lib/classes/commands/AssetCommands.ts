@@ -66,7 +66,10 @@ export class AssetCommands extends CommandsBase
                 'notecard-id': new LLSD.UUID(notecardID.toString()),
                 'object-id': new LLSD.UUID(objectID.toString())
             };
-            this.currentRegion.caps.capsPostXML('CopyInventoryFromNotecard', request).then(() => {}).catch((err) =>
+            this.currentRegion.caps.capsPostXML('CopyInventoryFromNotecard', request).then(() =>
+            {
+
+            }).catch((err) =>
             {
                 throw err;
             });

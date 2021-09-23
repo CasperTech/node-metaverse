@@ -31,7 +31,7 @@ export class BVH
         pos = pos + 4;
         this.length = buf.readFloatLE(pos);
         pos = pos + 4;
-        let result = Utils.BufferToString(buf, pos);
+        const result = Utils.BufferToString(buf, pos);
         pos += result.readLength;
         this.expressionName = result.result;
         this.inPoint = buf.readFloatLE(pos);

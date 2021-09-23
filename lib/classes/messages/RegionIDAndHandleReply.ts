@@ -48,7 +48,7 @@ export class RegionIDAndHandleReplyMessage implements MessageBase
         };
         newObjReplyBlock['RegionID'] = new UUID(buf, pos);
         pos += 16;
-        newObjReplyBlock['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjReplyBlock['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         this.ReplyBlock = newObjReplyBlock;
         return pos - startPos;

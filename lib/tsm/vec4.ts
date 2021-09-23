@@ -30,7 +30,7 @@
  */
 
 
-///<reference path='./common.ts' />
+/// <reference path='./common.ts' />
 
 
 import { TSMMat4 } from './mat4';
@@ -63,10 +63,10 @@ export class TSMVec4
             dest = new TSMVec4();
         }
 
-        dest.x = vector.x + vector2.x,
-            dest.y = vector.y + vector2.y,
-            dest.z = vector.z + vector2.z,
-            dest.w = vector.w + vector2.w
+        dest.x = vector.x + vector2.x;
+        dest.y = vector.y + vector2.y;
+        dest.z = vector.z + vector2.z;
+        dest.w = vector.w + vector2.w;
 
         return dest;
     }
@@ -78,10 +78,10 @@ export class TSMVec4
             dest = new TSMVec4();
         }
 
-        dest.x = vector.x - vector2.x,
-            dest.y = vector.y - vector2.y,
-            dest.z = vector.z - vector2.z,
-            dest.w = vector.w - vector2.w
+        dest.x = vector.x - vector2.x;
+        dest.y = vector.y - vector2.y;
+        dest.z = vector.z - vector2.z;
+        dest.w = vector.w - vector2.w;
 
         return dest;
     }
@@ -93,10 +93,10 @@ export class TSMVec4
             dest = new TSMVec4();
         }
 
-        dest.x = vector.x * vector2.x,
-            dest.y = vector.y * vector2.y,
-            dest.z = vector.z * vector2.z,
-            dest.w = vector.w * vector2.w
+        dest.x = vector.x * vector2.x;
+        dest.y = vector.y * vector2.y;
+        dest.z = vector.z * vector2.z;
+        dest.w = vector.w * vector2.w;
 
         return dest;
     }
@@ -108,10 +108,10 @@ export class TSMVec4
             dest = new TSMVec4();
         }
 
-        dest.x = vector.x / vector2.x,
-            dest.y = vector.y / vector2.y,
-            dest.z = vector.z / vector2.z,
-            dest.w = vector.w / vector2.w
+        dest.x = vector.x / vector2.x;
+        dest.y = vector.y / vector2.y;
+        dest.z = vector.z / vector2.z;
+        dest.w = vector.w / vector2.w;
 
         return dest;
     }

@@ -29,18 +29,7 @@
  *    distribution.
  */
 
-
-let EPSILON = 0.000001;
-
-///<reference path='./vec2.ts' />
-///<reference path='./vec3.ts' />
-///<reference path='./vec4.ts' />
-
-///<reference path='./mat2.ts' />
-///<reference path='./mat3.ts' />
-///<reference path='./mat4.ts' />
-
-///<reference path='./quat.ts' />
+const EPSILON = 0.000001;
 
 
 
