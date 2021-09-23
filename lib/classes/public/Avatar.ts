@@ -22,7 +22,7 @@ export class Avatar extends AvatarQueryResult
     private _position: Vector3 = Vector3.getZero();
     private _coarsePosition: Vector3 = Vector3.getZero();
 
-    private attachments: {[key: string]: GameObject} = {};
+    private attachments: { [key: string]: GameObject } = {};
 
 
     static fromGameObject(obj: GameObject): Avatar

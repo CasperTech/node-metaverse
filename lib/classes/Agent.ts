@@ -42,12 +42,12 @@ export class Agent
     regionAccess: string;
     agentAccess: string;
     currentRegion: Region;
-    chatSessions: {[key: string]: {
+    chatSessions: { [key: string]: {
             [key: string]: {
                 hasVoice: boolean,
                 isModerator: boolean
             }
-        }} = {};
+        } } = {};
     controlFlags: ControlFlags = 0;
     openID: {
         'token'?: string,

@@ -2,7 +2,7 @@ import * as logger from 'winston';
 import * as winston from 'winston';
 import * as moment from 'moment';
 import * as chalk from 'chalk';
-import {TransformableInfo} from 'logform';
+import { TransformableInfo } from 'logform';
 
 const formatLevel = function(text: string, level: string): string
 {

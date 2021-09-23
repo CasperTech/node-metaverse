@@ -31,7 +31,7 @@ export class GroupRoleUpdateMessage implements MessageBase
         return this.calculateVarVarSize(this.RoleData, 'Name', 1) + this.calculateVarVarSize(this.RoleData, 'Description', 1) + this.calculateVarVarSize(this.RoleData, 'Title', 1) + ((25) * this.RoleData.length) + 49;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

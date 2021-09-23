@@ -269,7 +269,7 @@ export class GridCommands extends CommandsBase
         });
     }
 
-    avatarName2KeyAndName(name: string): Promise<{avatarKey: UUID, avatarName: string}>
+    avatarName2KeyAndName(name: string): Promise<{ avatarKey: UUID, avatarName: string }>
     {
         name = name.trim().replace('.', ' ');
         if (name.trim().indexOf(' ') === -1)
@@ -279,7 +279,7 @@ export class GridCommands extends CommandsBase
         name = name.toLowerCase();
 
         const queryID = UUID.random();
-        return new Promise<{avatarKey: UUID, avatarName: string}>((resolve, reject) =>
+        return new Promise<{ avatarKey: UUID, avatarName: string }>((resolve, reject) =>
         {
             const aprm = new AvatarPickerRequestMessage();
             aprm.AgentData = {
@@ -478,7 +478,7 @@ export class GridCommands extends CommandsBase
 
     avatarKey2Name(uuid: UUID | UUID[]): Promise<AvatarQueryResult | AvatarQueryResult[]>
     {
-        return new Promise<AvatarQueryResult | AvatarQueryResult[]>(async (resolve, reject) =>
+        return new Promise<AvatarQueryResult | AvatarQueryResult[]>(async(resolve, reject) =>
         {
             const req = new UUIDNameRequestMessage();
             req.UUIDNameBlock = [];
@@ -495,7 +495,7 @@ export class GridCommands extends CommandsBase
             for (const id of uuid)
             {
                 waitingFor[id.toString()] = null;
-                req.UUIDNameBlock.push({'ID': id});
+                req.UUIDNameBlock.push({ 'ID': id });
                 remaining++;
             }
 

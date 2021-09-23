@@ -85,7 +85,7 @@ export class Circuit
         return packet.sequenceNumber;
     }
 
-    private sendXferPacket(xferID: Long, packetID: number, data: Buffer, pos: {position: number}): void
+    private sendXferPacket(xferID: Long, packetID: number, data: Buffer, pos: { position: number }): void
     {
         const sendXfer = new SendXferPacketMessage();
         let final = false;

@@ -21,7 +21,7 @@ export class ParcelRenameMessage implements MessageBase
         return this.calculateVarVarSize(this.ParcelData, 'NewName', 1) + ((16) * this.ParcelData.length) + 1;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

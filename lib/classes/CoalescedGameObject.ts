@@ -61,6 +61,6 @@ export class CoalescedGameObject
 
     async exportXML(rootNode?: string): Promise<string>
     {
-        return (await this.exportXMLElement(rootNode)).end({pretty: true, allowEmpty: true});
+        return (await this.exportXMLElement(rootNode)).end({ pretty: true, allowEmpty: true });
     }
 }

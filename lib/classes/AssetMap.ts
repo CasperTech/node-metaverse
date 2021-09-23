@@ -92,5 +92,5 @@ export class AssetMap
     byUUID: {
         [key: string]: InventoryItem
     } = {};
-    pending: {[key: string]: boolean} = {};
+    pending: { [key: string]: boolean } = {};
 }

@@ -417,7 +417,7 @@ export class InventoryFolder
 
     private uploadInventoryAssetLegacy(assetType: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string, flags: InventoryItemFlags): Promise<UUID>
     {
-        return new Promise<UUID>(async (resolve, reject) =>
+        return new Promise<UUID>(async(resolve, reject) =>
         {
             // Send an AssetUploadRequest and a CreateInventoryRequest simultaneously
             const msg = new AssetUploadRequestMessage();

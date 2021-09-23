@@ -322,7 +322,7 @@ export class Bot
 
         this.lastSuccessfulPing = new Date().getTime();
 
-        this.ping = setInterval(async () =>
+        this.ping = setInterval(async() =>
         {
             this.pingNumber++;
             if (this.pingNumber % 12 === 0 && this.stay)

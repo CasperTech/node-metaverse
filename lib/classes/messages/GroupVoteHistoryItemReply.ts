@@ -42,7 +42,7 @@ export class GroupVoteHistoryItemReplyMessage implements MessageBase
         return (this.HistoryItemData['TerseDateID'].length + 1 + this.HistoryItemData['StartDateTime'].length + 1 + this.HistoryItemData['EndDateTime'].length + 1 + this.HistoryItemData['VoteType'].length + 1 + this.HistoryItemData['VoteResult'].length + 1 + this.HistoryItemData['ProposalText'].length + 2) + this.calculateVarVarSize(this.VoteItem, 'VoteCast', 1) + ((20) * this.VoteItem.length) + 93;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

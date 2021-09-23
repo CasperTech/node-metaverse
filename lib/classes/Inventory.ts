@@ -10,20 +10,20 @@ import { InventoryLibrary } from '../enums/InventoryLibrary';
 export class Inventory
 {
     main: {
-        skeleton:  {[key: string]: InventoryFolder},
+        skeleton:  { [key: string]: InventoryFolder },
         root?: UUID
     } = {
         skeleton: {}
     };
     library: {
         owner?: UUID,
-        skeleton: {[key: string]: InventoryFolder},
+        skeleton: { [key: string]: InventoryFolder },
         root?: UUID
     } = {
         skeleton: {}
     };
 
-    itemsByID: {[key: string]: InventoryItem} = {};
+    itemsByID: { [key: string]: InventoryItem } = {};
 
     // @ts-ignore
     private clientEvents: ClientEvents;

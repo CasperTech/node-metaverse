@@ -46,7 +46,7 @@ export class UpdateCreateInventoryItemMessage implements MessageBase
         return this.calculateVarVarSize(this.InventoryData, 'Name', 1) + this.calculateVarVarSize(this.InventoryData, 'Description', 1) + ((140) * this.InventoryData.length) + 34;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

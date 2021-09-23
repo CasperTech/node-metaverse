@@ -47,7 +47,7 @@ export class ObjectPropertiesMessage implements MessageBase
         return this.calculateVarVarSize(this.ObjectData, 'Name', 1) + this.calculateVarVarSize(this.ObjectData, 'Description', 1) + this.calculateVarVarSize(this.ObjectData, 'TouchName', 1) + this.calculateVarVarSize(this.ObjectData, 'SitName', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureID', 1) + ((174) * this.ObjectData.length) + 1;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

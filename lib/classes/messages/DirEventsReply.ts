@@ -34,7 +34,7 @@ export class DirEventsReplyMessage implements MessageBase
         return this.calculateVarVarSize(this.QueryReplies, 'Name', 1) + this.calculateVarVarSize(this.QueryReplies, 'Date', 1) + ((28) * this.QueryReplies.length) + ((4) * this.StatusData.length) + 34;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

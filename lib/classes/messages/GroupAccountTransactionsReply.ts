@@ -34,7 +34,7 @@ export class GroupAccountTransactionsReplyMessage implements MessageBase
         return (this.MoneyData['StartDate'].length + 1) + this.calculateVarVarSize(this.HistoryData, 'Time', 1) + this.calculateVarVarSize(this.HistoryData, 'User', 1) + this.calculateVarVarSize(this.HistoryData, 'Item', 1) + ((8) * this.HistoryData.length) + 57;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

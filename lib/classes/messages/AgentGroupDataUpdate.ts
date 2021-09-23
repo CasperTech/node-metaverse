@@ -29,7 +29,7 @@ export class AgentGroupDataUpdateMessage implements MessageBase
         return this.calculateVarVarSize(this.GroupData, 'GroupName', 1) + ((45) * this.GroupData.length) + 17;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

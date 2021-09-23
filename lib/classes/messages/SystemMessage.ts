@@ -25,7 +25,7 @@ export class SystemMessageMessage implements MessageBase
         return (this.MethodData['Method'].length + 1) + this.calculateVarVarSize(this.ParamList, 'Parameter', 1) + 49;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

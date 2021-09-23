@@ -11,7 +11,7 @@ import { TSMMat4 } from '../../tsm/mat4';
 export class LLMesh
 {
     version: number;
-    lodLevels: {[key: string]: LLSubMesh[]} = {};
+    lodLevels: { [key: string]: LLSubMesh[] } = {};
     physicsConvex: LLPhysicsConvex;
     skin?: LLSkin;
     creatorID: UUID;
@@ -293,7 +293,7 @@ export class LLMesh
                     let pos = 0;
                     while (pos < skinBuf.length)
                     {
-                        const entry: {[key: number]: number} = {};
+                        const entry: { [key: number]: number } = {};
                         for (let x = 0; x < 4; x++)
                         {
                             const jointNum = skinBuf.readUInt8(pos++);
@@ -517,7 +517,7 @@ export class LLMesh
     }
     private async encodeSkin(skin: LLSkin): Promise<Buffer>
     {
-        const llsd: {[key: string]: any} = {};
+        const llsd: { [key: string]: any } = {};
         llsd['joint_names'] = skin.jointNames;
         llsd['bind_shape_matrix'] = skin.bindShapeMatrix.toArray();
         llsd['inverse_bind_matrix'] = [];
@@ -542,7 +542,7 @@ export class LLMesh
     }
     async toAsset(): Promise<Buffer>
     {
-        const llsd: {[key: string]: any} = {
+        const llsd: { [key: string]: any } = {
             'creator': new LLSD.UUID(this.creatorID.toString()),
             'version': this.version,
             'date': null

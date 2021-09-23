@@ -76,7 +76,7 @@ export class ChildAgentUpdateMessage implements MessageBase
         return (this.AgentData['Throttles'].length + 1 + this.AgentData['AgentTextures'].length + 2) + ((25) * this.GroupData.length) + ((32) * this.AnimationData.length) + ((16) * this.GranterBlock.length) + this.calculateVarVarSize(this.NVPairData, 'NVPairs', 2) + ((1) * this.VisualParam.length) + ((2) * this.AgentAccess.length) + ((4) * this.AgentInfo.length) + this.calculateVarVarSize(this.AgentInventoryHost, 'InventoryHost', 1) + 216;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

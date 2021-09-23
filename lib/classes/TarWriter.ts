@@ -67,7 +67,7 @@ export class TarWriter extends Transform
             {
                 resolve();
             });
-            str.pipe(this, {end: false});
+            str.pipe(this, { end: false });
         });
     }
 

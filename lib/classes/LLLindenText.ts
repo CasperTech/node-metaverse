@@ -13,7 +13,7 @@ export class LLLindenText
     };
 
     body = '';
-    embeddedItems: {[key: number]: InventoryItem} = {};
+    embeddedItems: { [key: number]: InventoryItem } = {};
 
     constructor(data?: Buffer)
     {

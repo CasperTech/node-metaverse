@@ -71,7 +71,7 @@ export class ObjectUpdateMessage implements MessageBase
         return this.calculateVarVarSize(this.ObjectData, 'ObjectData', 1) + this.calculateVarVarSize(this.ObjectData, 'TextureEntry', 2) + this.calculateVarVarSize(this.ObjectData, 'TextureAnim', 1) + this.calculateVarVarSize(this.ObjectData, 'NameValue', 2) + this.calculateVarVarSize(this.ObjectData, 'Data', 2) + this.calculateVarVarSize(this.ObjectData, 'Text', 1) + this.calculateVarVarSize(this.ObjectData, 'MediaURL', 1) + this.calculateVarVarSize(this.ObjectData, 'PSBlock', 1) + this.calculateVarVarSize(this.ObjectData, 'ExtraParams', 1) + ((141) * this.ObjectData.length) + 11;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

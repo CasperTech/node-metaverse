@@ -29,7 +29,7 @@ export class ViewerEffectMessage implements MessageBase
         return this.calculateVarVarSize(this.Effect, 'TypeData', 1) + ((41) * this.Effect.length) + 33;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

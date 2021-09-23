@@ -33,7 +33,7 @@ export class AvatarGroupsReplyMessage implements MessageBase
         return this.calculateVarVarSize(this.GroupData, 'GroupTitle', 1) + this.calculateVarVarSize(this.GroupData, 'GroupName', 1) + ((41) * this.GroupData.length) + 34;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

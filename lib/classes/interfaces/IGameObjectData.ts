@@ -61,7 +61,7 @@ export interface IGameObjectData
     ParentID?: number;
     OwnerID: UUID;
     IsAttachment: boolean;
-    NameValue: {[key: string]: NameValue};
+    NameValue: { [key: string]: NameValue };
     PCode: PCode;
     State?: number;
     CRC?: number;

@@ -64,7 +64,7 @@ export class Utils
     static JSONStringify(obj: object, space: number): string
     {
         const cache: any[] = [];
-        return JSON.stringify(obj, function (_: string, value): unknown
+        return JSON.stringify(obj, function(_: string, value): unknown
         {
             if (typeof value === 'object' && value !== null)
             {
@@ -680,9 +680,9 @@ export class Utils
         }
     }
 
-    static promiseConcurrent<T>(promises: (() => Promise<T>)[], concurrency: number, timeout: number): Promise<{results: T[], errors: Error[]}>
+    static promiseConcurrent<T>(promises: (() => Promise<T>)[], concurrency: number, timeout: number): Promise<{ results: T[], errors: Error[] }>
     {
-        return new Promise<{results: T[], errors: Error[]}>(async (resolve) =>
+        return new Promise<{ results: T[], errors: Error[] }>(async(resolve) =>
         {
             const originalConcurrency = concurrency;
             const promiseQueue: (() => Promise<T>)[] = [];
@@ -770,7 +770,7 @@ export class Utils
             {
                 await waitForAvailable();
             }
-            resolve({results: results, errors: errors});
+            resolve({ results: results, errors: errors });
         });
     }
 
@@ -839,7 +839,7 @@ export class Utils
     {
         return new Promise<Buffer>((resolve, reject) =>
         {
-            zlib.deflate(buf, { level: 9}, (error: (Error| null), result: Buffer) =>
+            zlib.deflate(buf, { level: 9 }, (error: (Error| null), result: Buffer) =>
             {
                 if (error)
                 {

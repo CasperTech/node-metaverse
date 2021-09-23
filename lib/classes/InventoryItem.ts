@@ -70,7 +70,7 @@ export class InventoryItem
         groupOwned: false
     };
 
-    static fromAsset(lineObj: {lines: string[], lineNum: number}, container?: GameObject | InventoryFolder, agent?: Agent): InventoryItem
+    static fromAsset(lineObj: { lines: string[], lineNum: number }, container?: GameObject | InventoryFolder, agent?: Agent): InventoryItem
     {
         const item: InventoryItem = new InventoryItem(container, agent);
         while (lineObj.lineNum < lineObj.lines.length)
@@ -673,7 +673,7 @@ export class InventoryItem
         document.ele('Flags', this.flags);
         document.ele('GroupID', this.permissions.group.toString());
         document.ele('GroupOwned', this.permissions.groupOwned);
-        return document.end({pretty: true, allowEmpty: true});
+        return document.end({ pretty: true, allowEmpty: true });
     }
 
     async detachFromAvatar(): Promise<void>
@@ -760,7 +760,7 @@ export class InventoryItem
 
     rezGroupInWorld(position: Vector3): Promise<GameObject[]>
     {
-        return new Promise<GameObject[]>(async (resolve, reject) =>
+        return new Promise<GameObject[]>(async(resolve, reject) =>
         {
             if (this.agent === undefined)
             {
@@ -818,7 +818,7 @@ export class InventoryItem
 
             const gotObjects: GameObject[] = [];
 
-            objSub = this.agent.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (evt: NewObjectEvent) =>
+            objSub = this.agent.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(evt: NewObjectEvent) =>
             {
                 if (evt.createSelected && !evt.object.resolvedAt)
                 {
@@ -863,7 +863,7 @@ export class InventoryItem
 
     rezInWorld(position: Vector3, objectScale?: Vector3): Promise<GameObject>
     {
-        return new Promise<GameObject>(async (resolve, reject) =>
+        return new Promise<GameObject>(async(resolve, reject) =>
         {
             if (this.agent === undefined)
             {
@@ -932,7 +932,7 @@ export class InventoryItem
             }, 10000);
             let claimedPrim = false;
             const agent = this.agent;
-            objSub = this.agent.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (evt: NewObjectEvent) =>
+            objSub = this.agent.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(evt: NewObjectEvent) =>
             {
                 if (evt.createSelected && !evt.object.resolvedAt)
                 {

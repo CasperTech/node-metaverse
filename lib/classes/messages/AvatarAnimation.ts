@@ -30,7 +30,7 @@ export class AvatarAnimationMessage implements MessageBase
         return ((20) * this.AnimationList.length) + ((16) * this.AnimationSourceList.length) + this.calculateVarVarSize(this.PhysicalAvatarEventList, 'TypeData', 1) + 19;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

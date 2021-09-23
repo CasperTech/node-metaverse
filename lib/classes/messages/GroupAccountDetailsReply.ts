@@ -31,7 +31,7 @@ export class GroupAccountDetailsReplyMessage implements MessageBase
         return (this.MoneyData['StartDate'].length + 1) + this.calculateVarVarSize(this.HistoryData, 'Description', 1) + ((4) * this.HistoryData.length) + 57;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)
