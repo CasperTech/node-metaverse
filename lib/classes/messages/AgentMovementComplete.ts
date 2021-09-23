@@ -89,7 +89,7 @@ export class AgentMovementCompleteMessage implements MessageBase
         pos += 12;
         newObjData['LookAt'] = new Vector3(buf, pos, false);
         pos += 12;
-        newObjData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjData['Timestamp'] = buf.readUInt32LE(pos);
         pos += 4;

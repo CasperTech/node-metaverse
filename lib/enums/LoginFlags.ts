@@ -1,4 +1,5 @@
-export enum LoginFlags {
+export enum LoginFlags
+{
     everLoggedIn = 1,
     daylightSavings = 2,
     stipendSinceLogin = 4,

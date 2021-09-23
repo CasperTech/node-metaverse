@@ -177,12 +177,12 @@ export class GroupCommands extends CommandsBase
         return await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async unbanMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[])
+    async unbanMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[]): Promise<void>
     {
-        this.banMembers(groupID, avatars, GroupBanAction.Unban);
+        return this.banMembers(groupID, avatars, GroupBanAction.Unban);
     }
 
-    async banMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[], groupAction: GroupBanAction = GroupBanAction.Ban)
+    async banMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[], groupAction: GroupBanAction = GroupBanAction.Ban): Promise<void>
     {
         const listOfIDs: string[] = [];
         if (typeof groupID === 'string')

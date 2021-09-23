@@ -25,7 +25,7 @@ export class BVHJoint
         this.rotationKeyframeCount = buf.readInt32LE(pos);
         pos = pos + 4;
 
-        for (let x = 0; x < this.rotationKeyframeCount; x++)
+        for (let frameNum = 0; frameNum < this.rotationKeyframeCount; frameNum++)
         {
             const jointKF = new BVHJointKeyframe();
             jointKF.time = Utils.UInt16ToFloat(buf.readUInt16LE(pos), inPoint, outPoint);
@@ -43,7 +43,7 @@ export class BVHJoint
         this.positionKeyframeCount = buf.readInt32LE(pos);
         pos = pos + 4;
 
-        for (let x = 0; x < this.positionKeyframeCount; x++)
+        for (let frameNum = 0; frameNum < this.positionKeyframeCount; frameNum++)
         {
             const jointKF = new BVHJointKeyframe();
             jointKF.time = Utils.UInt16ToFloat(buf.readUInt16LE(pos), inPoint, outPoint);

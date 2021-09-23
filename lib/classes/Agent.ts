@@ -142,7 +142,7 @@ export class Agent
         }
     }
 
-    addChatSession(uuid: UUID)
+    addChatSession(uuid: UUID): void
     {
         const str = uuid.toString();
         if (this.chatSessions[str] === undefined)
@@ -157,7 +157,7 @@ export class Agent
         return !(this.chatSessions[str] === undefined);
     }
 
-    setCurrentRegion(region: Region)
+    setCurrentRegion(region: Region): void
     {
         if (this.animSubscription !== undefined)
         {
@@ -170,11 +170,11 @@ export class Agent
             Message.BulkUpdateInventory
         ], this.onMessage.bind(this));
     }
-    circuitActive()
+    circuitActive(): void
     {
         this.agentUpdateTimer = setInterval(this.sendAgentUpdate.bind(this), 1000);
     }
-    sendAgentUpdate()
+    sendAgentUpdate(): void
     {
         if (!this.currentRegion)
         {
@@ -198,7 +198,7 @@ export class Agent
         };
         circuit.sendMessage(agentUpdate, 0);
     }
-    shutdown()
+    shutdown(): void
     {
         if (this.agentUpdateTimer !== null)
         {
@@ -206,7 +206,7 @@ export class Agent
             this.agentUpdateTimer = null;
         }
     }
-    onMessage(packet: Packet)
+    onMessage(packet: Packet): void
     {
         if (packet.message.id === Message.AgentDataUpdate)
         {
@@ -295,7 +295,7 @@ export class Agent
         throw new Error('Unable to get wearables from inventory')
     }
 
-    async setInitialAppearance()
+    async setInitialAppearance(): Promise<void>
     {
         const circuit = this.currentRegion.circuit;
         const wearablesRequest: AgentWearablesRequestMessage = new AgentWearablesRequestMessage();

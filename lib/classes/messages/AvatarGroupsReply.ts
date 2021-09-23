@@ -115,7 +115,7 @@ export class AvatarGroupsReplyMessage implements MessageBase
                 GroupName: Buffer.allocUnsafe(0),
                 GroupInsigniaID: UUID.zero()
             };
-            newObjGroupData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjGroupData['GroupPowers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             newObjGroupData['AcceptNotices'] = (buf.readUInt8(pos++) === 1);
             varLength = buf.readUInt8(pos++);

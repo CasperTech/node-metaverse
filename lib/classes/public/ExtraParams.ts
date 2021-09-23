@@ -76,19 +76,19 @@ export class ExtraParams
         }
         return ep;
     }
-    setMeshData(type: number, uuid: UUID)
+    setMeshData(type: number, uuid: UUID): void
     {
         this.meshData = new MeshData();
         this.meshData.type = type;
         this.meshData.meshData = uuid;
     }
-    setSculptData(type: number, uuid: UUID)
+    setSculptData(type: number, uuid: UUID): void
     {
         this.sculptData = new SculptData();
         this.sculptData.type = type;
         this.sculptData.texture = uuid;
     }
-    setFlexiData(softness: number, tension: number, drag: number, gravity: number, wind: number, force: Vector3)
+    setFlexiData(softness: number, tension: number, drag: number, gravity: number, wind: number, force: Vector3): void
     {
         this.flexibleData = new FlexibleData();
         this.flexibleData.Softness = softness;
@@ -98,7 +98,7 @@ export class ExtraParams
         this.flexibleData.Wind = wind;
         this.flexibleData.Force = force;
     }
-    setLightData(color: Color4, radius: number, cutoff: number, falloff: number, intensity: number)
+    setLightData(color: Color4, radius: number, cutoff: number, falloff: number, intensity: number): void
     {
         this.lightData = new LightData();
         this.lightData.Color = color;

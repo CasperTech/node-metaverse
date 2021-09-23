@@ -41,7 +41,8 @@ export class ClientCommands
         this.group = new GroupCommands(region, agent, bot);
         this.inventory = new InventoryCommands(region, agent, bot);
     }
-    shutdown()
+
+    shutdown(): void
     {
         this.network.shutdown();
         this.asset.shutdown();

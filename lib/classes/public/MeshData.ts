@@ -18,7 +18,7 @@ export class MeshData
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number)
+    writeToBuffer(buf: Buffer, pos: number): void
     {
         this.meshData.writeToBuffer(buf, pos); pos = pos + 16;
         buf.writeUInt8(this.type, pos);

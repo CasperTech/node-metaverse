@@ -56,7 +56,7 @@ export class TeleportCommands extends CommandsBase
         });
     }
 
-    shutdown()
+    shutdown(): void
     {
         this.teleportSubscription.unsubscribe();
     }

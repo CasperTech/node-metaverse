@@ -438,7 +438,7 @@ export class InventoryItem
 
     }
 
-    toAsset(indent: string = '')
+    toAsset(indent: string = ''): string
     {
         const lines: string[] = [];
         lines.push('{');
@@ -628,7 +628,7 @@ export class InventoryItem
         }
     }
 
-    async delete()
+    async delete(): Promise<void>
     {
         if (this.agent !== undefined)
         {
@@ -676,7 +676,7 @@ export class InventoryItem
         return document.end({pretty: true, allowEmpty: true});
     }
 
-    detachFromAvatar()
+    async detachFromAvatar(): Promise<void>
     {
         if (this.agent === undefined)
         {
@@ -691,7 +691,7 @@ export class InventoryItem
         return this.agent.currentRegion.circuit.waitForAck(ack, 10000);
     }
 
-    attachToAvatar(attachPoint: AttachmentPoint, timeout: number = 10000): Promise<GameObject>
+    async attachToAvatar(attachPoint: AttachmentPoint, timeout: number = 10000): Promise<GameObject>
     {
         return new Promise<GameObject>((resolve, reject) =>
         {
@@ -973,7 +973,7 @@ export class InventoryItem
         });
     }
 
-    async renameInTask(task: GameObject, newName: string)
+    async renameInTask(task: GameObject, newName: string): Promise<void>
     {
         this.name = newName;
         if (this.agent === undefined)

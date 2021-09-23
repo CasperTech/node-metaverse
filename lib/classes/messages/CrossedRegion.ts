@@ -93,7 +93,7 @@ export class CrossedRegionMessage implements MessageBase
         pos += 4;
         newObjRegionData['SimPort'] = buf.readUInt16LE(pos);
         pos += 2;
-        newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjRegionData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         varLength = buf.readUInt16LE(pos);
         pos += 2;

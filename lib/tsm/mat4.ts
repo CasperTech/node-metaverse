@@ -29,9 +29,6 @@
  *    distribution.
  */
 
-
-///<reference path='./common.ts' />
-
 import { TSMMat3 } from './mat3';
 import { TSMVec3 } from './vec3';
 import { TSMVec4 } from './vec4';

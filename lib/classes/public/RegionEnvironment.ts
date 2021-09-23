@@ -18,7 +18,7 @@ export class RegionEnvironment
     } = {};
     water: WaterPreset;
 
-    getXML(xml: XMLNode)
+    getXML(xml: XMLNode): void
     {
         const env = xml.ele('Environment');
         const dayCycle = env.ele('DayCycle');

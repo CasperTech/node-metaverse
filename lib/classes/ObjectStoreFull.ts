@@ -34,7 +34,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         this.rtree = new RBush3D();
     }
 
-    protected objectUpdate(objectUpdate: ObjectUpdateMessage)
+    protected objectUpdate(objectUpdate: ObjectUpdateMessage): void
     {
         for (const objData of objectUpdate.ObjectData)
         {
@@ -210,7 +210,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage)
+    protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage): void
     {
         const rmo = new RequestMultipleObjectsMessage();
         rmo.AgentData = {
@@ -234,7 +234,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected async objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage)
+    protected async objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage): Promise<void>
     {
         for (const obj of objectUpdateCompressed.ObjectData)
         {
@@ -434,7 +434,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected objectUpdateTerse(objectUpdateTerse: ImprovedTerseObjectUpdateMessage)
+    protected objectUpdateTerse(objectUpdateTerse: ImprovedTerseObjectUpdateMessage): void
     {
         const dilation = objectUpdateTerse.RegionData.TimeDilation / 65535.0;
         this.clientEvents.onRegionTimeDilation.next(dilation);
@@ -497,7 +497,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 else
                 {
                     // We don't know about this object, so request it
-                    this.requestMissingObject(localID);
+                    this.requestMissingObject(localID).catch(() =>
+                    {
+
+                    });
                 }
             }
         }

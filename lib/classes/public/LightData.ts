@@ -29,7 +29,7 @@ export class LightData
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number)
+    writeToBuffer(buf: Buffer, pos: number): void
     {
         const tmpColour = new Color4(this.Color.getRed(), this.Color.getGreen(), this.Color.getBlue(), this.Color.getAlpha());
         tmpColour.alpha = this.Intensity;

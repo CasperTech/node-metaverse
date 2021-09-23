@@ -56,7 +56,7 @@ export class SimStatusMessage implements MessageBase
         } = {
             Flags: Long.ZERO
         };
-        newObjSimFlags['Flags'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjSimFlags['Flags'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         this.SimFlags = newObjSimFlags;
         return pos - startPos;

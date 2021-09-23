@@ -59,7 +59,7 @@ export class DataHomeLocationReplyMessage implements MessageBase
         };
         newObjInfo['AgentID'] = new UUID(buf, pos);
         pos += 16;
-        newObjInfo['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjInfo['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjInfo['Position'] = new Vector3(buf, pos, false);
         pos += 12;

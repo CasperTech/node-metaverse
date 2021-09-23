@@ -130,7 +130,7 @@ export class GroupRoleUpdateMessage implements MessageBase
             varLength = buf.readUInt8(pos++);
             newObjRoleData['Title'] = buf.slice(pos, pos + varLength);
             pos += varLength;
-            newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             newObjRoleData['UpdateType'] = buf.readUInt8(pos++);
             this.RoleData.push(newObjRoleData);

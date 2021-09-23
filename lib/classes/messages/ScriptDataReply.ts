@@ -71,7 +71,7 @@ export class ScriptDataReplyMessage implements MessageBase
                 Hash: Long.ZERO,
                 Reply: Buffer.allocUnsafe(0)
             };
-            newObjDataBlock['Hash'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjDataBlock['Hash'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             varLength = buf.readUInt16LE(pos);
             pos += 2;

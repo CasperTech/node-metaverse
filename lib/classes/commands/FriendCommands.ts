@@ -158,7 +158,7 @@ export class FriendCommands extends CommandsBase
         });
     }
 
-    async grantFriendRights(friend: Friend | UUID | string, rights: RightsFlags)
+    async grantFriendRights(friend: Friend | UUID | string, rights: RightsFlags): Promise<void>
     {
         let friendKey = UUID.zero();
         if (friend instanceof UUID)
@@ -314,7 +314,7 @@ export class FriendCommands extends CommandsBase
         return await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    shutdown()
+    shutdown(): void
     {
         this.friendMessages.unsubscribe();
     }

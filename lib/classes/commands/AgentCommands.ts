@@ -1,3 +1,4 @@
+import { InventoryFolder } from '../InventoryFolder';
 import { UUID } from '../UUID';
 import { AgentAnimationMessage } from '../messages/AgentAnimation';
 import { PacketFlags } from '../../enums/PacketFlags';
@@ -46,7 +47,7 @@ export class AgentCommands extends CommandsBase
         return await this.animate(anim, false);
     }
 
-    setCamera(position: Vector3, lookAt: Vector3, viewDistance?: number, leftAxis?: Vector3, upAxis?: Vector3)
+    setCamera(position: Vector3, lookAt: Vector3, viewDistance?: number, leftAxis?: Vector3, upAxis?: Vector3): void
     {
         this.agent.cameraCenter = position;
         this.agent.cameraLookAt = lookAt;
@@ -65,13 +66,13 @@ export class AgentCommands extends CommandsBase
         this.agent.sendAgentUpdate();
     }
 
-    setViewDistance(viewDistance: number)
+    setViewDistance(viewDistance: number): void
     {
         this.agent.cameraFar = viewDistance;
         this.agent.sendAgentUpdate();
     }
 
-    async getWearables()
+    async getWearables(): Promise<InventoryFolder>
     {
         return this.agent.getWearables();
     }

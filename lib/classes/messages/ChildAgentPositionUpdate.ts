@@ -96,7 +96,7 @@ export class ChildAgentPositionUpdateMessage implements MessageBase
             UpAxis: Vector3.getZero(),
             ChangedGrid: false
         };
-        newObjAgentData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjAgentData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjAgentData['ViewerCircuitCode'] = buf.readUInt32LE(pos);
         pos += 4;

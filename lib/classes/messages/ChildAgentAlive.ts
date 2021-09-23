@@ -56,7 +56,7 @@ export class ChildAgentAliveMessage implements MessageBase
             AgentID: UUID.zero(),
             SessionID: UUID.zero()
         };
-        newObjAgentData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjAgentData['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjAgentData['ViewerCircuitCode'] = buf.readUInt32LE(pos);
         pos += 4;

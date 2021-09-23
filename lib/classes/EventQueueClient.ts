@@ -328,7 +328,7 @@ export class EventQueueClient
                                         this.clientEvents.onTeleportEvent.next(tpEvent);
                                         break;
                                     }
-                                    case "ChatterBoxSessionStartReply":
+                                    case 'ChatterBoxSessionStartReply':
                                     {
                                         if (event['body'])
                                         {

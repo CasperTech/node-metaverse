@@ -59,7 +59,7 @@ export class IPAddress
             this.ip = ipaddr.parse('0.0.0.0');
         }
     }
-    writeToBuffer(buf: Buffer, pos: number)
+    writeToBuffer(buf: Buffer, pos: number): void
     {
         const bytes: Uint8Array = this.ip.toByteArray();
         buf.writeUInt8(bytes[0], pos++);

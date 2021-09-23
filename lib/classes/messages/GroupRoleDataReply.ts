@@ -144,7 +144,7 @@ export class GroupRoleDataReplyMessage implements MessageBase
             varLength = buf.readUInt8(pos++);
             newObjRoleData['Description'] = buf.slice(pos, pos + varLength);
             pos += varLength;
-            newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjRoleData['Powers'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             newObjRoleData['Members'] = buf.readUInt32LE(pos);
             pos += 4;

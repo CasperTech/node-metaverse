@@ -51,7 +51,7 @@ export class EnableSimulatorMessage implements MessageBase
             IP: IPAddress.zero(),
             Port: 0
         };
-        newObjSimulatorInfo['Handle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjSimulatorInfo['Handle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjSimulatorInfo['IP'] = new IPAddress(buf, pos);
         pos += 4;

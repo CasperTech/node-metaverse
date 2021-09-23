@@ -294,9 +294,9 @@ export class RegionHandshakeMessage implements MessageBase
                 RegionFlagsExtended: Long.ZERO,
                 RegionProtocols: Long.ZERO
             };
-            newObjRegionInfo4['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjRegionInfo4['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
-            newObjRegionInfo4['RegionProtocols'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjRegionInfo4['RegionProtocols'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             this.RegionInfo4.push(newObjRegionInfo4);
         }

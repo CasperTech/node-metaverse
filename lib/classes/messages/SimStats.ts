@@ -134,7 +134,7 @@ export class SimStatsMessage implements MessageBase
             } = {
                 RegionFlagsExtended: Long.ZERO
             };
-            newObjRegionInfo['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjRegionInfo['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             this.RegionInfo.push(newObjRegionInfo);
         }

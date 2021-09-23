@@ -72,7 +72,7 @@ export class TeleportLocationRequestMessage implements MessageBase
             Position: Vector3.getZero(),
             LookAt: Vector3.getZero()
         };
-        newObjInfo['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+        newObjInfo['RegionHandle'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
         pos += 8;
         newObjInfo['Position'] = new Vector3(buf, pos, false);
         pos += 12;

@@ -702,7 +702,7 @@ for (const message of messages)
                         break;
                     case 'U64':
                     case 'S64':
-                        classString += spaces + '        newObj' + block.name + '[\'' + param.name + '\'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));\n';
+                        classString += spaces + '        newObj' + block.name + '[\'' + param.name + '\'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));\n';
                         classString += spaces + '        pos += 8;\n';
                         break;
                     case 'F64':

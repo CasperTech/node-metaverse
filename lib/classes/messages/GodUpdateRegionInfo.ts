@@ -139,7 +139,7 @@ export class GodUpdateRegionInfoMessage implements MessageBase
             } = {
                 RegionFlagsExtended: Long.ZERO
             };
-            newObjRegionInfo2['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos+4));
+            newObjRegionInfo2['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             this.RegionInfo2.push(newObjRegionInfo2);
         }

@@ -40,7 +40,7 @@ export class BitPack
         return output.readInt32LE(0);
     }
 
-    UnpackUBits(count: number)
+    UnpackUBits(count: number): number
     {
         const output = this.UnpackBitsBuffer(count);
         return output.readUInt32LE(0);
@@ -74,14 +74,13 @@ export class BitPack
 
     UnpackFixed(signed: boolean, intBits: number, fracBits: number): number
     {
-        let maxVal;
         let totalBits = intBits + fracBits;
 
         if (signed)
         {
             totalBits++;
         }
-        maxVal = 1 << intBits;
+        const maxVal = 1 << intBits;
         let fixedVal = 0;
         if (totalBits <= 8)
         {

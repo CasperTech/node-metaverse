@@ -24,7 +24,7 @@ export class FlexibleData
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number)
+    writeToBuffer(buf: Buffer, pos: number): void
     {
         buf[pos] = (this.Softness & 2) << 6;
         buf[pos + 1] = (this.Softness & 1) << 7;
