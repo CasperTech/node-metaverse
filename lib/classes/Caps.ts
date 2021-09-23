@@ -13,7 +13,7 @@ import * as url from 'url';
 
 export class Caps
 {
-    static CAP_INVOCATION_DELAY_MS: {[key: string]: number} = {
+    static CAP_INVOCATION_DELAY_MS: { [key: string]: number } = {
         'NewFileAgentInventory': 2000,
         'FetchInventory2': 200
     };
@@ -24,7 +24,7 @@ export class Caps
     private clientEvents: ClientEvents;
     private agent: Agent;
     private active = false;
-    private timeLastCapExecuted: {[key: string]: number} = {};
+    private timeLastCapExecuted: { [key: string]: number } = {};
     eventQueueClient: EventQueueClient | null = null;
 
     constructor(agent: Agent, seedURL: string, clientEvents: ClientEvents)
@@ -209,7 +209,7 @@ export class Caps
                 }
                 else
                 {
-                    resolve({status: res.statusCode, body: body});
+                    resolve({ status: res.statusCode, body: body });
                 }
             });
         });
@@ -236,7 +236,7 @@ export class Caps
                 }
                 else
                 {
-                    resolve({status: res.statusCode, body: body});
+                    resolve({ status: res.statusCode, body: body });
                 }
             });
         });
@@ -258,7 +258,7 @@ export class Caps
                 }
                 else
                 {
-                    resolve({status: res.statusCode, body: body});
+                    resolve({ status: res.statusCode, body: body });
                 }
             });
         });
@@ -280,7 +280,7 @@ export class Caps
                 }
                 else
                 {
-                    resolve({status: res.statusCode, body: body});
+                    resolve({ status: res.statusCode, body: body });
                 }
             });
         });
@@ -403,10 +403,10 @@ export class Caps
 
     capsPerformXMLPost(capURL: string, data: any): Promise<any>
     {
-        return new Promise<any>(async (resolve, reject) =>
+        return new Promise<any>(async(resolve, reject) =>
         {
             const xml = LLSD.LLSD.formatXML(data);
-            this.request(capURL, xml, 'application/llsd+xml').then(async (resp: ICapResponse) =>
+            this.request(capURL, xml, 'application/llsd+xml').then(async(resp: ICapResponse) =>
             {
                 let result: any = null;
                 try
@@ -443,7 +443,7 @@ export class Caps
 
     capsPerformXMLPut(capURL: string, data: any): Promise<any>
     {
-        return new Promise<any>(async (resolve, reject) =>
+        return new Promise<any>(async(resolve, reject) =>
         {
             const xml = LLSD.LLSD.formatXML(data);
             this.requestPut(capURL, xml, 'application/llsd+xml').then((resp: ICapResponse) =>
@@ -479,7 +479,7 @@ export class Caps
 
     capsPerformXMLGet(capURL: string): Promise<any>
     {
-        return new Promise<any>(async (resolve, reject) =>
+        return new Promise<any>(async(resolve, reject) =>
         {
             this.requestGet(capURL).then((resp: ICapResponse) =>
             {
@@ -512,10 +512,10 @@ export class Caps
         });
     }
 
-    async capsGetXML(capability: string | [string, {[key: string]: string}]): Promise<any>
+    async capsGetXML(capability: string | [string, { [key: string]: string }]): Promise<any>
     {
         let capName = '';
-        let queryParams: {[key: string]: string} = {};
+        let queryParams: { [key: string]: string } = {};
         if (typeof capability === 'string')
         {
             capName = capability;
@@ -550,10 +550,10 @@ export class Caps
         }
     }
 
-    async capsPostXML(capability: string | [string, {[key: string]: string}], data: any): Promise<any>
+    async capsPostXML(capability: string | [string, { [key: string]: string }], data: any): Promise<any>
     {
         let capName = '';
-        let queryParams: {[key: string]: string} = {};
+        let queryParams: { [key: string]: string } = {};
         if (typeof capability === 'string')
         {
             capName = capability;
@@ -588,10 +588,10 @@ export class Caps
         }
     }
 
-    async capsPutXML(capability: string | [string, {[key: string]: string}], data: any): Promise<any>
+    async capsPutXML(capability: string | [string, { [key: string]: string }], data: any): Promise<any>
     {
         let capName = '';
-        let queryParams: {[key: string]: string} = {};
+        let queryParams: { [key: string]: string } = {};
         if (typeof capability === 'string')
         {
             capName = capability;

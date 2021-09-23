@@ -16,6 +16,6 @@ export interface LLSubMesh
         max: Vector2
     }
     triangleList?: number[],
-    weights?: {[key: number]: number}[],
+    weights?: { [key: number]: number }[],
 
 }

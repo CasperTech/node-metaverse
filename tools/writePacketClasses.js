@@ -308,7 +308,7 @@ for (const message of messages)
     classString+='\n';
     if (calcVarVar)
     {
-        classString+='    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number\n' +
+        classString+='    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number\n' +
             '    {\n' +
             '        let size = 0;\n' +
             '        for (const bl of block)\n' +
@@ -801,7 +801,7 @@ for (const message of messages)
 }
 classString += 'import { Message } from \'../enums/Message\';\n';
 classString += '\n';
-classString += 'const messages: {[index: number]: string} = {};\n';
+classString += 'const messages: { [index: number]: string } = {};\n';
 const msgs = [];
 for (const message of messages)
 {
@@ -819,7 +819,7 @@ fs.writeFile(p, classString, (err) =>
 
 });
 
-classString = 'export enum Message {\n';
+classString = 'export enum Message\n{\n';
 const msgArr = [];
 for (const message of messages)
 {

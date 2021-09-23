@@ -27,7 +27,7 @@ export class GroupTitlesReplyMessage implements MessageBase
         return this.calculateVarVarSize(this.GroupData, 'Title', 1) + ((17) * this.GroupData.length) + 49;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

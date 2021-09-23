@@ -481,7 +481,7 @@ export * from './messages/JoinGroupRequestExtended';
 export * from './messages/CreateGroupRequestExtended';
 import { Message } from '../enums/Message';
 
-const messages: {[index: number]: string} = {};
+const messages: { [index: number]: string } = {};
 messages[<number>Message.TestMessage] = 'TestMessageMessage';
 messages[<number>Message.PacketAck] = 'PacketAckMessage';
 messages[<number>Message.OpenCircuit] = 'OpenCircuitMessage';

@@ -9,7 +9,7 @@ import * as LLSD from '@caspertech/llsd';
 
 export class ObjectResolver
 {
-    private objectsInQueue: {[key: number]: IResolveJob} = {};
+    private objectsInQueue: { [key: number]: IResolveJob } = {};
 
     private queue: number[] = [];
 
@@ -33,7 +33,7 @@ export class ObjectResolver
             }
 
             // First, create a map of all object IDs
-            const objs: {[key: number]: GameObject} = {};
+            const objs: { [key: number]: GameObject } = {};
             const failed: GameObject[] = [];
             for (const obj of objects)
             {
@@ -202,7 +202,7 @@ export class ObjectResolver
         });
     }
 
-    private scanObject(obj: GameObject, map: {[key: number]: GameObject}): void
+    private scanObject(obj: GameObject, map: { [key: number]: GameObject }): void
     {
         const localID = obj.ID;
         if (!map[localID])

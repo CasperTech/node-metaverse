@@ -23,7 +23,7 @@ export class RemoveNameValuePairMessage implements MessageBase
         return this.calculateVarVarSize(this.NameValueData, 'NVPair', 2) + 17;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

@@ -129,6 +129,6 @@ export class Parcel
         document.ele('UserLookAt', this.UserLookAt.toString());
         document.ele('Dwell', 0);
         document.ele('OtherCleanTime', this.OtherCleanTime);
-        return document.end({pretty: true, allowEmpty: true});
+        return document.end({ pretty: true, allowEmpty: true });
     }
 }

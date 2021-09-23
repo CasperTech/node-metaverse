@@ -45,12 +45,12 @@ export class ObjectStoreLite implements IObjectStore
     protected objectsByParent: { [key: number]: number[] } = {};
     protected clientEvents: ClientEvents;
     protected options: BotOptionFlags;
-    protected requestedObjects: {[key: number]: boolean} = {};
+    protected requestedObjects: { [key: number]: boolean } = {};
     protected deadObjects: number[] = [];
     protected persist = false;
-    protected pendingObjectProperties: {[key: string]: any} = {};
+    protected pendingObjectProperties: { [key: string]: any } = {};
     private physicsSubscription: Subscription;
-    private selectedPrimsWithoutUpdate: {[key: number]: boolean} = {};
+    private selectedPrimsWithoutUpdate: { [key: number]: boolean } = {};
 
     rtree?: RBush3D;
 
@@ -68,7 +68,7 @@ export class ObjectStoreLite implements IObjectStore
             Message.ImprovedTerseObjectUpdate,
             Message.ObjectProperties,
             Message.KillObject
-        ], async (packet: Packet) =>
+        ], async(packet: Packet) =>
         {
             switch (packet.message.id)
             {
@@ -919,7 +919,7 @@ export class ObjectStoreLite implements IObjectStore
     async getAllObjects(): Promise<GameObject[]>
     {
         const results = [];
-        const found: {[key: string]: GameObject} = {};
+        const found: { [key: string]: GameObject } = {};
         for (const k of Object.keys(this.objects))
         {
             const go = this.objects[parseInt(k, 10)];
@@ -977,7 +977,7 @@ export class ObjectStoreLite implements IObjectStore
             minZ: minZ,
             maxZ: maxZ
         });
-        const found: {[key: string]: GameObject} = {};
+        const found: { [key: string]: GameObject } = {};
         const objs: GameObject[] = [];
         for (const obj of result)
         {

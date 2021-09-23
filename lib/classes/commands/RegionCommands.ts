@@ -195,7 +195,7 @@ export class RegionCommands extends CommandsBase
                 SessionID: this.circuit.sessionID
             };
             deselectObject.ObjectData = [];
-            const uuidMap: {[key: string]: GameObject} = {};
+            const uuidMap: { [key: string]: GameObject } = {};
             for (const obj of objects)
             {
                 const uuidStr = obj.FullID.toString();
@@ -279,7 +279,7 @@ export class RegionCommands extends CommandsBase
                 SessionID: this.circuit.sessionID
             };
             selectObject.ObjectData = [];
-            const uuidMap: {[key: string]: GameObject} = {};
+            const uuidMap: { [key: string]: GameObject } = {};
             for (const obj of objects)
             {
                 const uuidStr = obj.FullID.toString();
@@ -387,7 +387,7 @@ export class RegionCommands extends CommandsBase
         return new Promise<GameObject>((resolve, reject) =>
         {
             let tmr: Timer | null = null;
-            const subscription = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (event: NewObjectEvent) =>
+            const subscription = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(event: NewObjectEvent) =>
             {
                 if (event.localID === localID)
                 {
@@ -412,7 +412,7 @@ export class RegionCommands extends CommandsBase
         return new Promise<GameObject>((resolve, reject) =>
         {
             let tmr: Timer | null = null;
-            const subscription = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (event: NewObjectEvent) =>
+            const subscription = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(event: NewObjectEvent) =>
             {
                 if (event.objectID.equals(objectID))
                 {
@@ -574,7 +574,7 @@ export class RegionCommands extends CommandsBase
         {
             if (err instanceof Error)
             {
-                throw(err);
+                throw (err);
             }
             else if (typeof err === 'string')
             {
@@ -595,7 +595,7 @@ export class RegionCommands extends CommandsBase
                 'FullMaterialsPerFace': []
             };
 
-            const materialFaces: {[key: string]: boolean} = {};
+            const materialFaces: { [key: string]: boolean } = {};
             if (obj.TextureEntry.defaultTexture !== undefined && obj.TextureEntry.defaultTexture !== null)
             {
                 const materialID = obj.TextureEntry.defaultTexture.materialID;
@@ -1277,7 +1277,7 @@ export class RegionCommands extends CommandsBase
         }
 
         const parts = [];
-        parts.push(async () =>
+        parts.push(async() =>
         {
             return {
                 index: 1,
@@ -1301,7 +1301,7 @@ export class RegionCommands extends CommandsBase
                 if (child.Position !== undefined && child.Rotation !== undefined)
                 {
                     const index = childIndex++;
-                    parts.push(async () =>
+                    parts.push(async() =>
                     {
                         return {
                             index,
@@ -1348,7 +1348,7 @@ export class RegionCommands extends CommandsBase
         }
 
         const childPrims: GameObject[] = [];
-        results.results.sort((a: {index: number, object: GameObject}, b: {index: number, object: GameObject}) =>
+        results.results.sort((a: { index: number, object: GameObject }, b: { index: number, object: GameObject }) =>
         {
             return a.index - b.index;
         });
@@ -1395,7 +1395,7 @@ export class RegionCommands extends CommandsBase
                 }
                 reject(new Error('Failed to gather ' + count + ' prims - only gathered ' + gatheredPrims.length));
             }, 30000);
-            objSub = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async (evt: NewObjectEvent) =>
+            objSub = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(evt: NewObjectEvent) =>
             {
                 if (!evt.object.resolvedAt)
                 {
@@ -1508,7 +1508,7 @@ export class RegionCommands extends CommandsBase
             }
             else
             {
-                throw(error);
+                throw (error);
             }
         }
         if (resolve)
@@ -1533,7 +1533,7 @@ export class RegionCommands extends CommandsBase
             }
             else
             {
-                throw(error);
+                throw (error);
             }
         }
         if (resolve)
@@ -1554,7 +1554,7 @@ export class RegionCommands extends CommandsBase
         {
             objects = await this.getAllObjects(true);
         }
-        const idCheck: {[key: string]: boolean} = {};
+        const idCheck: { [key: string]: boolean } = {};
         const matches: GameObject[] = [];
         const it = function(go: GameObject): void
         {
@@ -1570,7 +1570,7 @@ export class RegionCommands extends CommandsBase
                 }
                 else
                 {
-                    match = micromatch.isMatch(go.name, pattern, {nocase: true});
+                    match = micromatch.isMatch(go.name, pattern, { nocase: true });
                 }
 
                 if (match)
@@ -1633,11 +1633,11 @@ export class RegionCommands extends CommandsBase
     {
         let uuids = [];
         let objects = [];
-        const stillAlive: {[key: string]: GameObject} = {};
-        const checkObjects = async (uuidList: any[], objectList: GameObject[]) =>
+        const stillAlive: { [key: string]: GameObject } = {};
+        const checkObjects = async(uuidList: any[], objectList: GameObject[]) =>
         {
 
-            const objRef: {[key: string]: GameObject} = {};
+            const objRef: { [key: string]: GameObject } = {};
             for (const obj of objectList)
             {
                 objRef[obj.FullID.toString()] = obj;

@@ -141,12 +141,12 @@ export class Region
     parcelOverlayCompleteEvent: Subject<void> = new Subject<void>();
 
     parcelOverlay: ILandBlock[] = [];
-    parcels: {[key: number]: Parcel} = {};
-    parcelsByUUID: {[key: string]: Parcel} = {};
+    parcels: { [key: number]: Parcel } = {};
+    parcelsByUUID: { [key: string]: Parcel } = {};
     parcelMap: number[][] = [];
 
 
-    parcelCoordinates: {x: number, y: number}[] = [];
+    parcelCoordinates: { x: number, y: number }[] = [];
 
     environment: RegionEnvironment;
 
@@ -154,9 +154,9 @@ export class Region
 
     resolver: ObjectResolver = new ObjectResolver(this);
 
-    agents: {[key: string]: Avatar} = {};
+    agents: { [key: string]: Avatar } = {};
 
-    private parcelOverlayReceived: {[key: number]: Buffer} = {};
+    private parcelOverlayReceived: { [key: number]: Buffer } = {};
 
     static IDCTColumn16(linein: number[], lineout: number[], column: number): void
     {
@@ -340,7 +340,7 @@ export class Region
         }
         this.comms = new Comms(this.circuit, clientEvents);
 
-        this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe(async (parcelProperties: ParcelPropertiesEvent) =>
+        this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe(async(parcelProperties: ParcelPropertiesEvent) =>
         {
             await this.resolveParcel(parcelProperties);
         });
@@ -352,7 +352,7 @@ export class Region
             Message.SimStats,
             Message.CoarseLocationUpdate,
             Message.MoneyBalanceReply
-        ], async (packet: Packet) =>
+        ], async(packet: Packet) =>
         {
             switch (packet.message.id)
             {
@@ -382,7 +382,7 @@ export class Region
                 case Message.CoarseLocationUpdate:
                 {
                     const locations: CoarseLocationUpdateMessage = packet.message as CoarseLocationUpdateMessage;
-                    const foundAgents: {[key: string]: Vector3} = {};
+                    const foundAgents: { [key: string]: Vector3 } = {};
                     for (let x = 0; x < locations.AgentData.length; x++)
                     {
                         const agentData = locations.AgentData[x];
@@ -622,7 +622,7 @@ export class Region
                         {
                             if (this.parcelOverlay[(y * 64) + x].parcelID === -1)
                             {
-                                this.parcelCoordinates.push({x, y});
+                                this.parcelCoordinates.push({ x, y });
                                 currentParcelID++;
                                 this.fillParcel(currentParcelID, x, y);
                             }
@@ -1009,7 +1009,7 @@ export class Region
             let messageAwait: Subscription | undefined = undefined;
             let messageWaitTimer: number | undefined = undefined;
 
-            messageAwait = this.clientEvents.onParcelPropertiesEvent.subscribe(async (parcelProperties: ParcelPropertiesEvent) =>
+            messageAwait = this.clientEvents.onParcelPropertiesEvent.subscribe(async(parcelProperties: ParcelPropertiesEvent) =>
             {
                 if (Region.doesBitmapContainCoordinate(parcelProperties.Bitmap, x, y))
                 {
@@ -1221,7 +1221,7 @@ export class Region
         terrain.ele('FixedSun', (this.regionFlags & RegionFlags.SunFixed) ? 'True' : 'False');
         terrain.ele('SunPosition', this.sunHour);
         this.environment.getXML(document);
-        return document.end({pretty: true, allowEmpty: true});
+        return document.end({ pretty: true, allowEmpty: true });
     }
 
     activateCaps(seedURL: string): void

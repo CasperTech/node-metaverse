@@ -21,7 +21,7 @@ export class UUIDGroupNameReplyMessage implements MessageBase
         return this.calculateVarVarSize(this.UUIDNameBlock, 'GroupName', 1) + ((16) * this.UUIDNameBlock.length) + 1;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

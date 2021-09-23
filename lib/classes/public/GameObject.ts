@@ -109,7 +109,7 @@ export class GameObject implements IGameObjectData
     ParentID?: number;
     OwnerID = UUID.zero();
     IsAttachment = false;
-    NameValue: {[key: string]: NameValue} = {};
+    NameValue: { [key: string]: NameValue } = {};
     PCode: PCode = PCode.None;
 
     State?: number;
@@ -1233,7 +1233,7 @@ export class GameObject implements IGameObjectData
                 resolve();
                 return;
             }
-            const primsExpectingUpdate: {[key: number]: GameObject} = {};
+            const primsExpectingUpdate: { [key: number]: GameObject } = {};
             const msg = new ObjectLinkMessage();
             msg.AgentData = {
                 AgentID: this.region.agent.agentID,
@@ -1719,7 +1719,7 @@ export class GameObject implements IGameObjectData
 
     async exportXML(rootNode?: string): Promise<string>
     {
-        return (await this.exportXMLElement(rootNode)).end({pretty: true, allowEmpty: true});
+        return (await this.exportXMLElement(rootNode)).end({ pretty: true, allowEmpty: true });
     }
 
     public toJSON(): IGameObjectData

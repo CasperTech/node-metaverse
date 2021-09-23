@@ -27,7 +27,7 @@ export class AlertMessageMessage implements MessageBase
         return (this.AlertData['Message'].length + 1) + this.calculateVarVarSize(this.AlertInfo, 'Message', 1) + this.calculateVarVarSize(this.AlertInfo, 'ExtraParams', 1) + ((16) * this.AgentInfo.length) + 2;
     }
 
-    calculateVarVarSize(block: {[key: string]: any}[], paramName: string, extraPerVar: number): number
+    calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
     {
         let size = 0;
         for (const bl of block)

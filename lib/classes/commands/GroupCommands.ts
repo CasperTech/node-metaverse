@@ -221,7 +221,7 @@ export class GroupCommands extends CommandsBase
             requestData.ban_ids.push(new LLSD.UUID(id));
         }
 
-        await this.currentRegion.caps.capsPostXML(['GroupAPIv1', {'group_id': groupID.toString()}], requestData);
+        await this.currentRegion.caps.capsPostXML(['GroupAPIv1', { 'group_id': groupID.toString() }], requestData);
     }
 
     async getBanList(groupID: UUID | string): Promise<GroupBan[]>
@@ -230,7 +230,7 @@ export class GroupCommands extends CommandsBase
         {
             groupID = new UUID(groupID);
         }
-        const result = await this.currentRegion.caps.capsGetXML(['GroupAPIv1', {'group_id': groupID.toString()}]);
+        const result = await this.currentRegion.caps.capsGetXML(['GroupAPIv1', { 'group_id': groupID.toString() }]);
         const bans: GroupBan[] = [];
         if (result.ban_list !== undefined)
         {

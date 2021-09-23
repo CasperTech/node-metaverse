@@ -49,7 +49,7 @@ export class FriendCommands extends CommandsBase
             Message.OfflineNotification,
             Message.TerminateFriendship,
             Message.ChangeUserRights
-        ], async (packet: Packet) =>
+        ], async(packet: Packet) =>
         {
             switch (packet.message.id)
             {

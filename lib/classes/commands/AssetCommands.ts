@@ -331,7 +331,7 @@ export class AssetCommands extends CommandsBase
         });
     }
 
-    private async getMaterialsLimited(uuidArray: any[], uuids: {[key: string]: Material | null}): Promise<void>
+    private async getMaterialsLimited(uuidArray: any[], uuids: { [key: string]: Material | null }): Promise<void>
     {
         const binary = LLSD.LLSD.formatBinary(uuidArray);
         const res: Buffer = await Utils.deflate(Buffer.from(binary.toArray()));
@@ -372,10 +372,10 @@ export class AssetCommands extends CommandsBase
         }
     }
 
-    async getMaterials(uuids: {[key: string]: Material | null}): Promise<void>
+    async getMaterials(uuids: { [key: string]: Material | null }): Promise<void>
     {
         let uuidArray: any[] = [];
-        let submittedUUIDS: {[key: string]: Material | null} = {};
+        let submittedUUIDS: { [key: string]: Material | null } = {};
         for (const uuid of Object.keys(uuids))
         {
             if (uuidArray.length > 32)

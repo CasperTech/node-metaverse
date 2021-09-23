@@ -8,8 +8,8 @@ export class LLWearable
 {
     name: string;
     type: WearableType;
-    parameters: {[key: number]: number} = {};
-    textures: {[key: number]: UUID} = {};
+    parameters: { [key: number]: number } = {};
+    textures: { [key: number]: UUID } = {};
     permission: {
         baseMask: number,
         ownerMask: number,
