@@ -1,4 +1,7 @@
 import * as xmlrpc from 'xmlrpc';
+import * as http from 'http';
+import * as tunnel from 'tunnel';
+import * as process from 'process';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 import * as url from 'url';
@@ -54,7 +57,26 @@ export class LoginHandler
                 port = secure ? '443' : '80';
             }
 
+            let agent: http.Agent | undefined = undefined;
+            if (process.env.http_proxy)
+            {
+                const proxyURI = url.parse(process.env.http_proxy);
+                // DefinitelyTyped's type specifications are missing rejectUnauthorized and timeout
+                // @ts-ignore
+                const agentOptions = {
+                    proxy: {
+                        host: proxyURI.hostname || '',
+                        port: proxyURI.port ? parseInt(proxyURI.port, 10) : 80,
+                        proxyAuth: proxyURI.auth || undefined,
+                    },
+                    rejectUnauthorized: false,
+                    timeout: 60000,
+                }
+                agent = (secure) ? tunnel.httpsOverHttp(agentOptions) : tunnel.httpOverHttp(agentOptions);
+            }
+
             const secureClientOptions = {
+                agent: agent,
                 host: loginURI.hostname || undefined,
                 port: parseInt(port, 10),
                 path: loginURI.path || undefined,
