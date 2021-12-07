@@ -50,7 +50,7 @@ export class LoginResponse
 
     private static parseVector3(str: string): Vector3
     {
-        const num = str.replace(/[\[\]]r/g, '').split(',');
+        const num = str.replace(/[\[\]r\s]/g, '').split(',');
         const x = parseFloat(num[0]);
         const y = parseFloat(num[1]);
         const z = parseFloat(num[2]);
@@ -61,7 +61,7 @@ export class LoginResponse
         return new Vector3([x, y, z]);
     }
 
-    private static parseHome(str: string): {
+    private static parseHome(home: string | { region_handle: string, look_at: string, position: string }): {
         'regionHandle'?: Long,
         'position'?: Vector3,
         'lookAt'?: Vector3
@@ -73,9 +73,17 @@ export class LoginResponse
             'lookAt'?: Vector3
         } = {};
 
-        const json = str.replace(/[\[\]']/g, '\"');
-        const parsed = JSON.parse(json);
-
+        let parseStart: { region_handle: string, look_at: string, position: string } | null = null;
+        if (typeof home === 'string')
+        {
+            const json = home.replace(/[\[\]']/g, '\"');
+            parseStart = JSON.parse(json);
+        }
+        else
+        {
+            parseStart = home;
+        }
+        const parsed = parseStart as { region_handle: string, look_at: string, position: string };
         if (parsed['region_handle'])
         {
             const coords = parsed['region_handle'].replace(/r/g, '').split(', ');
@@ -96,7 +104,7 @@ export class LoginResponse
         {
             try
             {
-                result['lookAt'] = this.parseVector3('[' + parsed['lookAt'] + ']');
+                result['lookAt'] = this.parseVector3('[' + parsed['look_at'] + ']');
             }
             catch (error)
             {
