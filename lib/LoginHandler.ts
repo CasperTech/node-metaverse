@@ -1,6 +1,5 @@
 import validator from 'validator';
 import * as xmlrpc from 'xmlrpc';
-import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { LoginError } from './classes/LoginError';
@@ -87,7 +86,7 @@ export class LoginHandler
                     {
                         'first': params.firstName,
                         'last': params.lastName,
-                        'passwd': '$1$' + crypto.createHash('md5').update(params.password.substr(0, 16)).digest('hex'),
+                        'passwd': params.getHashedPassword(),
                         'start': params.start,
                         'major': '0',
                         'minor': '0',
