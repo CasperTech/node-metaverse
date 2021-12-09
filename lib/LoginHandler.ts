@@ -1,5 +1,4 @@
 import * as xmlrpc from 'xmlrpc';
-import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 import * as url from 'url';
 import { LoginParameters } from './classes/LoginParameters';
@@ -67,7 +66,7 @@ export class LoginHandler
                     {
                         'first': params.firstName,
                         'last': params.lastName,
-                        'passwd': '$1$' + crypto.createHash('md5').update(params.password.substr(0, 16)).digest('hex'),
+                        'passwd': params.getHashedPassword(),
                         'start': params.start,
                         'major': '0',
                         'minor': '0',
