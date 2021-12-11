@@ -12,6 +12,7 @@ import { GroupCommands } from './commands/GroupCommands';
 import { InventoryCommands } from './commands/InventoryCommands';
 import { ParcelCommands } from './commands/ParcelCommands';
 import { FriendCommands } from './commands/FriendCommands';
+import { MovementCommands } from './commands/MovementCommands';
 
 export class ClientCommands
 {
@@ -26,6 +27,7 @@ export class ClientCommands
     public agent: AgentCommands;
     public group: GroupCommands;
     public inventory: InventoryCommands;
+    public movement: MovementCommands;
 
     constructor(region: Region, agent: Agent, bot: Bot)
     {
@@ -40,6 +42,7 @@ export class ClientCommands
         this.agent = new AgentCommands(region, agent, bot);
         this.group = new GroupCommands(region, agent, bot);
         this.inventory = new InventoryCommands(region, agent, bot);
+        this.movement = new MovementCommands(region, agent, bot);
     }
 
     shutdown(): void
