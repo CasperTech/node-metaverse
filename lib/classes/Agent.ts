@@ -370,4 +370,14 @@ export class Agent
         this.appearanceComplete = true;
         this.appearanceCompleteEvent.next();
     }
+
+    setControlFlag(flag: ControlFlags): void
+    {
+        this.controlFlags = this.controlFlags | flag;
+    }
+
+    clearControlFlag(flag: ControlFlags): void
+    {
+        this.controlFlags = this.controlFlags & ~flag;
+    }
 }
