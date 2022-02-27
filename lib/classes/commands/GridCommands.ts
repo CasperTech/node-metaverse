@@ -269,131 +269,95 @@ export class GridCommands extends CommandsBase
         });
     }
 
-    avatarName2KeyAndName(name: string): Promise<{ avatarKey: UUID, avatarName: string }>
+    async avatarName2KeyAndName(name: string, useCap = true): Promise<{ avatarKey: UUID, avatarName: string }>
     {
         name = name.trim().replace('.', ' ');
+        name = name.toLowerCase();
         if (name.trim().indexOf(' ') === -1)
         {
             name = name.trim() + ' resident';
         }
-        name = name.toLowerCase();
 
-        const queryID = UUID.random();
-        return new Promise<{ avatarKey: UUID, avatarName: string }>((resolve, reject) =>
+        if (useCap && await this.currentRegion.caps.isCapAvailable('AvatarPickerSearch'))
         {
-            const aprm = new AvatarPickerRequestMessage();
-            aprm.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: this.circuit.sessionID,
-                QueryID: queryID
-            };
-            aprm.Data = {
-                Name: Utils.StringToBuffer(name)
-            };
-
-            this.circuit.sendMessage(aprm, PacketFlags.Reliable);
-            this.circuit.waitForMessage<AvatarPickerReplyMessage>(Message.AvatarPickerReply, 10000, (apr: AvatarPickerReplyMessage): FilterResponse =>
+            const trimmedName = name.replace(' resident', '');
+            const result = await this.currentRegion.caps.capsGetXML(['AvatarPickerSearch', { page_size: '100', names: trimmedName }]);
+            if (result.agents)
             {
-                if (apr.AgentData.QueryID.toString() === queryID.toString())
+                for (const agent of result.agents)
                 {
-                    return FilterResponse.Finish;
-                }
-                else
-                {
-                    return FilterResponse.NoMatch;
-                }
-            }).then((apr: AvatarPickerReplyMessage) =>
-            {
-                let foundKey: UUID | undefined;
-                let foundName: string | undefined;
-                for (const dataBlock of apr.Data)
-                {
-                    const resultName = (Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' +
-                        Utils.BufferToStringSimple(dataBlock.LastName));
-                    if (resultName.toLowerCase() === name)
+                    if (!agent.username)
                     {
-                        foundKey = dataBlock.AvatarID;
-                        foundName = resultName;
+                        continue;
+                    }
+                    const avatarName = agent.legacy_first_name + ' ' + agent.legacy_last_name;
+                    if (avatarName.toLowerCase() === name)
+                    {
+                        return {
+                            avatarName,
+                            avatarKey: new UUID(agent.id.toString()),
+                        }
                     }
                 }
+            }
+        }
 
-                if (foundKey !== undefined && foundName !== undefined)
-                {
-                    resolve({
-                        avatarName: foundName,
-                        avatarKey: foundKey
-                    });
-                }
-                else
-                {
-                    reject('Name not found')
-                }
-            }).catch((err) =>
+        const queryID = UUID.random();
+
+
+        const aprm = new AvatarPickerRequestMessage();
+        aprm.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID,
+            QueryID: queryID
+        };
+        aprm.Data = {
+            Name: Utils.StringToBuffer(name)
+        };
+
+        this.circuit.sendMessage(aprm, PacketFlags.Reliable);
+        const apr: AvatarPickerReplyMessage = await this.circuit.waitForMessage<AvatarPickerReplyMessage>(Message.AvatarPickerReply, 10000, (apr: AvatarPickerReplyMessage): FilterResponse =>
+        {
+            if (apr.AgentData.QueryID.toString() === queryID.toString())
             {
-                reject(err);
-            });
+                return FilterResponse.Finish;
+            }
+            else
+            {
+                return FilterResponse.NoMatch;
+            }
         });
+
+        let foundKey: UUID | undefined;
+        let foundName: string | undefined;
+        for (const dataBlock of apr.Data)
+        {
+            const resultName = (Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' +
+                Utils.BufferToStringSimple(dataBlock.LastName));
+            if (resultName.toLowerCase() === name)
+            {
+                foundKey = dataBlock.AvatarID;
+                foundName = resultName;
+            }
+        }
+
+        if (foundKey !== undefined && foundName !== undefined)
+        {
+            return {
+                avatarName: foundName,
+                avatarKey: foundKey
+            };
+        }
+        else
+        {
+            throw new Error('Name not found');
+        }
     }
 
-    avatarName2Key(name: string): Promise<UUID>
+    async avatarName2Key(name: string, useCap = true): Promise<UUID>
     {
-        name = name.trim().replace('.', ' ');
-        if (name.trim().indexOf(' ') === -1)
-        {
-            name = name.trim() + ' resident';
-        }
-        name = name.toLowerCase();
-
-        const queryID = UUID.random();
-        return new Promise<UUID>((resolve, reject) =>
-        {
-            const aprm = new AvatarPickerRequestMessage();
-            aprm.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: this.circuit.sessionID,
-                QueryID: queryID
-            };
-            aprm.Data = {
-                Name: Utils.StringToBuffer(name)
-            };
-
-            this.circuit.sendMessage(aprm, PacketFlags.Reliable);
-            this.circuit.waitForMessage<AvatarPickerReplyMessage>(Message.AvatarPickerReply, 10000, (apr: AvatarPickerReplyMessage): FilterResponse =>
-            {
-                if (apr.AgentData.QueryID.toString() === queryID.toString())
-                {
-                    return FilterResponse.Finish;
-                }
-                else
-                {
-                    return FilterResponse.NoMatch;
-                }
-            }).then((apr: AvatarPickerReplyMessage) =>
-            {
-                let found: UUID | null = null;
-                for (const dataBlock of apr.Data)
-                {
-                    const resultName = (Utils.BufferToStringSimple(dataBlock.FirstName) + ' ' +
-                        Utils.BufferToStringSimple(dataBlock.LastName)).toLowerCase();
-                    if (resultName === name)
-                    {
-                        found = dataBlock.AvatarID;
-                    }
-                }
-
-                if (found !== null)
-                {
-                    resolve(found);
-                }
-                else
-                {
-                    reject('Name not found')
-                }
-            }).catch((err) =>
-            {
-                reject(err);
-            });
-        });
+        const result = await this.avatarName2KeyAndName(name, useCap);
+        return result.avatarKey;
     }
 
     async getBalance(): Promise<number>

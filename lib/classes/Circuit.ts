@@ -184,10 +184,6 @@ export class Circuit
             let subscription: null | Subscription = null;
             let timeout: Timer | null = null;
             const receivedChunks: { [key: number]: Buffer } = {};
-            const progress = setInterval(() =>
-            {
-                console.log( '     ... Got ' + Object.keys(receivedChunks).length + ' packets');
-            }, 5000);
             const resetTimeout = function(): void
             {
                 if (timeout !== null)
@@ -200,7 +196,6 @@ export class Circuit
                     {
                         subscription.unsubscribe();
                     }
-                    clearInterval(progress);
                     reject(new Error('Xfer Timeout'));
                 }, 10000);
             };
@@ -241,7 +236,6 @@ export class Circuit
                             {
                                 subscription.unsubscribe();
                             }
-                            clearInterval(progress);
                             reject(new Error('Xfer Aborted'));
                         }
                         break;
@@ -300,7 +294,6 @@ export class Circuit
                                 {
                                     subscription.unsubscribe();
                                 }
-                                clearInterval(progress);
                                 const buf = Buffer.concat(conc);
                                 if (buf.length !== dataSize)
                                 {

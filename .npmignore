@@ -14,3 +14,4 @@ testing/
 localDeploy.js
 caspertech-node-metaverse-*.tgz
 dist/classes/cache
+examples/loginParameters.json
