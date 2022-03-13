@@ -6,6 +6,7 @@ import { LoginParameters } from './classes/LoginParameters';
 import { LoginResponse } from './classes/LoginResponse';
 import { ClientEvents } from './classes/ClientEvents';
 import { BotOptionFlags } from './enums/BotOptionFlags';
+import { platform } from 'process';
 
 export class LoginHandler
 {
@@ -28,6 +29,24 @@ export class LoginHandler
 
         return macAddress;
     }
+    // Gathers the current OS from the Node OS Module, to be added to the login information. Gives this in a manner that SL uses normally. 
+  static GetNodeOS(): string
+  	{
+  		let runningPlatform;
+  		if (platform.includes('win'))
+  		{
+  			runningPlatform = "Win";
+  		}
+  		else if (platform.includes('darwin')
+  			{
+  				runningPlatform = "Mac";
+  			}
+  			else
+  			{
+  				runningPlatform = "Lin";
+  			}
+        return runningPlatform;
+  		}
 
     constructor(ce: ClientEvents, options: BotOptionFlags)
     {
@@ -73,7 +92,7 @@ export class LoginHandler
                         'minor': '0',
                         'patch': '1',
                         'build': '0',
-                        'platform': 'win',
+                        'platform': LoginHandler.GetNodeOS(),
                         'mac': LoginHandler.GenerateMAC(),
                         'viewer_digest': uuid.v4(),
                         'user_agent': 'node-metaverse',
