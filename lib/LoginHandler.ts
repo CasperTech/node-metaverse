@@ -37,7 +37,7 @@ export class LoginHandler
   		{
   			runningPlatform = "Win";
   		}
-  		else if (platform.includes('darwin')
+  		else if (platform.includes('darwin'))
   			{
   				runningPlatform = "Mac";
   			}
