@@ -338,7 +338,7 @@ export class Region
         {
             this.objects = new ObjectStoreFull(this.circuit, agent, clientEvents, options);
         }
-        this.comms = new Comms(this.circuit, clientEvents);
+        this.comms = new Comms(this.circuit, agent, clientEvents);
 
         this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe(async(parcelProperties: ParcelPropertiesEvent) =>
         {

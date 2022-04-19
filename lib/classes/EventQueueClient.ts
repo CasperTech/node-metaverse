@@ -337,7 +337,11 @@ export class EventQueueClient
                                             if (gcsje.success)
                                             {
                                                 gcsje.sessionID = new UUID(event['body']['session_id'].toString());
-                                                this.agent.addChatSession(gcsje.sessionID);
+                                                const added = this.agent.addChatSession(gcsje.sessionID, true);
+                                                if (!added)
+                                                {
+                                                    return;
+                                                }
                                             }
                                             this.clientEvents.onGroupChatSessionJoin.next(gcsje);
                                         }
@@ -363,13 +367,13 @@ export class EventQueueClient
                                             };
                                             this.caps.capsPostXML('ChatSessionRequest', requested).then((_ignore: unknown) =>
                                             {
-                                                this.agent.addChatSession(groupChatEvent.groupID);
-
+                                                this.agent.addChatSession(groupChatEvent.groupID, true);
                                                 const gcsje = new GroupChatSessionJoinEvent();
                                                 gcsje.sessionID = groupChatEvent.groupID;
                                                 gcsje.success = true;
                                                 this.clientEvents.onGroupChatSessionJoin.next(gcsje);
                                                 this.clientEvents.onGroupChat.next(groupChatEvent);
+                                                this.agent.updateLastMessage(groupChatEvent.groupID);
                                             }).catch((err) =>
                                             {
                                                 console.error(err);

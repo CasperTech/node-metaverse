@@ -42,12 +42,13 @@ export class Agent
     regionAccess: string;
     agentAccess: string;
     currentRegion: Region;
-    chatSessions: { [key: string]: {
-            [key: string]: {
-                hasVoice: boolean,
-                isModerator: boolean
-            }
-        } } = {};
+    chatSessions = new Map<string, {
+        agents: Map<string, {
+            hasVoice: boolean;
+            isModerator: boolean
+        }>,
+        timeout?: Timer
+    }>();
     controlFlags: ControlFlags = 0;
     openID: {
         'token'?: string,
@@ -96,6 +97,8 @@ export class Agent
     private clientEvents: ClientEvents;
     private animSubscription?: Subscription;
 
+    public onGroupChatExpired = new Subject<UUID>();
+
     constructor(clientEvents: ClientEvents)
     {
         this.inventory = new Inventory(clientEvents, this);
@@ -103,25 +106,49 @@ export class Agent
         this.clientEvents.onGroupChatAgentListUpdate.subscribe((event: GroupChatSessionAgentListEvent) =>
         {
             const str = event.groupID.toString();
-            if (this.chatSessions[str] === undefined)
-            {
-                this.chatSessions[str] = {};
-            }
 
             const agent = event.agentID.toString();
 
+            const session = this.chatSessions.get(str);
+            if (session === undefined)
+            {
+                return;
+            }
+
             if (event.entered)
             {
-                this.chatSessions[str][agent] = {
+                if (session.agents === undefined)
+                {
+                    session.agents = new Map<string, {
+                        hasVoice: boolean;
+                        isModerator: boolean
+                    }>();
+                }
+                session.agents.set(agent, {
                     hasVoice: event.canVoiceChat,
                     isModerator: event.isModerator
-                }
+                });
             }
             else
             {
-                delete this.chatSessions[str][agent];
+                session.agents.delete(agent);
             }
         });
+    }
+
+    public updateLastMessage(groupID: UUID): void
+    {
+        const str = groupID.toString();
+        const entry = this.chatSessions.get(str);
+        if (entry === undefined)
+        {
+            return;
+        }
+        if (entry.timeout !== undefined)
+        {
+            clearInterval(entry.timeout);
+            entry.timeout = setTimeout(this.groupChatExpired.bind(this, groupID), 900000);
+        }
     }
 
     setIsEstateManager(is: boolean): void
@@ -132,29 +159,54 @@ export class Agent
     getSessionAgentCount(uuid: UUID): number
     {
         const str = uuid.toString();
-        if (this.chatSessions[str] === undefined)
+        const session = this.chatSessions.get(str);
+        if (session === undefined)
         {
             return 0;
         }
         else
         {
-            return Object.keys(this.chatSessions[str]).length;
+            return Object.keys(session.agents).length;
         }
     }
 
-    addChatSession(uuid: UUID): void
+    addChatSession(uuid: UUID, timeout: boolean): boolean
     {
         const str = uuid.toString();
-        if (this.chatSessions[str] === undefined)
+        if (this.chatSessions.has(str))
         {
-            this.chatSessions[str] = {};
+            return false;
         }
+        this.chatSessions.set(str, {
+            agents: new Map<string, {
+                hasVoice: boolean,
+                isModerator: boolean
+            }>(),
+            timeout: timeout ? setTimeout(this.groupChatExpired.bind(this, uuid), 900000) : undefined
+        });
+        return true;
+    }
+
+    private groupChatExpired(groupID: UUID): void
+    {
+        this.onGroupChatExpired.next(groupID);
     }
 
     hasChatSession(uuid: UUID): boolean
     {
         const str = uuid.toString();
-        return !(this.chatSessions[str] === undefined);
+        return this.chatSessions.has(str);
+    }
+
+    deleteChatSession(uuid: UUID): boolean
+    {
+        const str = uuid.toString();
+        if (!this.chatSessions.has(str))
+        {
+            return false;
+        }
+        this.chatSessions.delete(str);
+        return true;
     }
 
     setCurrentRegion(region: Region): void
