@@ -12,6 +12,7 @@ import { GlobalPosition } from './public/interfaces/GlobalPosition';
 import { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
 import Timeout = NodeJS.Timeout;
+import * as crypto from 'crypto';
 
 export class Utils
 {
@@ -26,6 +27,11 @@ export class Utils
     static StringToBuffer(str: string): Buffer
     {
         return Buffer.from(str + '\0', 'utf8');
+    }
+
+    static SHA1String(str: string): string
+    {
+        return crypto.createHash('sha1').update(str).digest('hex');
     }
 
     static BufferToStringSimple(buf: Buffer): string

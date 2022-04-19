@@ -359,7 +359,7 @@ export class Comms
     private async groupChatExpired(groupID: UUID): Promise<void>
     {
         // Reconnect to group chat since it's been idle for 15 minutes
-        await this.agent.currentRegion.clientCommands.comms.endGroupChatSession(groupID, false);
+        await this.agent.currentRegion.clientCommands.comms.endGroupChatSession(groupID);
         await this.agent.currentRegion.clientCommands.comms.startGroupChatSession(groupID, '');
     }
 }

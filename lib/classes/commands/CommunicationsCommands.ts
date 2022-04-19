@@ -1,24 +1,23 @@
-import { CommandsBase } from './CommandsBase';
-import { UUID } from '../UUID';
-import { Utils } from '../Utils';
-import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
-import { Vector3 } from '../Vector3';
-import { ChatFromViewerMessage } from '../messages/ChatFromViewer';
+import * as LLSD from '@caspertech/llsd';
+import { AssetType } from '../../enums/AssetType';
 import { ChatType } from '../../enums/ChatType';
+import { FilterResponse } from '../../enums/FilterResponse';
 import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
-import { ScriptDialogReplyMessage } from '../messages/ScriptDialogReply';
+import { InstantMessageOnline } from '../../enums/InstantMessageOnline';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { GroupChatSessionJoinEvent } from '../../events/GroupChatSessionJoinEvent';
 import { ScriptDialogEvent } from '../../events/ScriptDialogEvent';
-import { StartLureMessage } from '../messages/StartLure';
-import { InventoryItem } from '../InventoryItem';
 import { InventoryFolder } from '../InventoryFolder';
-import { InstantMessageOnline } from '../../enums/InstantMessageOnline';
-import { AssetType } from '../../enums/AssetType';
-
+import { InventoryItem } from '../InventoryItem';
+import { ChatFromViewerMessage } from '../messages/ChatFromViewer';
+import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
+import { ScriptDialogReplyMessage } from '../messages/ScriptDialogReply';
+import { StartLureMessage } from '../messages/StartLure';
+import { Utils } from '../Utils';
+import { UUID } from '../UUID';
+import { Vector3 } from '../Vector3';
+import { CommandsBase } from './CommandsBase';
 import Timer = NodeJS.Timer;
-
-import * as LLSD from '@caspertech/llsd';
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -389,7 +388,7 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    public async endGroupChatSession(groupID: UUID | string, removeEntry = true): Promise<void>
+    public async endGroupChatSession(groupID: UUID | string): Promise<void>
     {
         if (typeof groupID === 'string')
         {
@@ -423,63 +422,55 @@ export class CommunicationsCommands extends CommandsBase
         im.EstateBlock = {
             EstateID: 0
         };
-        if (removeEntry)
-        {
-            this.agent.deleteChatSession(groupID);
-        }
+        this.agent.deleteChatSession(groupID);
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
         return this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    startGroupChatSession(groupID: UUID | string, message: string): Promise<void>
+    public async startGroupChatSession(groupID: UUID | string, message: string): Promise<void>
     {
-        return new Promise<void>((resolve, reject) =>
+        if (typeof groupID === 'string')
         {
-            if (typeof groupID === 'string')
-            {
-                groupID = new UUID(groupID);
-            }
+            groupID = new UUID(groupID);
+        }
 
-            const circuit = this.circuit;
-            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-            const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-            im.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: circuit.sessionID
-            };
-            im.MessageBlock = {
-                FromGroup: false,
-                ToAgentID: groupID,
-                ParentEstateID: 0,
-                RegionID: UUID.zero(),
-                Position: Vector3.getZero(),
-                Offline: 0,
-                Dialog: InstantMessageDialog.SessionGroupStart,
-                ID: groupID,
-                Timestamp: Math.floor(new Date().getTime() / 1000),
-                FromAgentName: Utils.StringToBuffer(agentName),
-                Message: Utils.StringToBuffer(message),
-                BinaryBucket: Utils.StringToBuffer('')
-            };
-            im.EstateBlock = {
-                EstateID: 0
-            };
-            const waitForJoin = this.currentRegion.clientEvents.onGroupChatSessionJoin.subscribe((event: GroupChatSessionJoinEvent) =>
+        if (this.agent.hasChatSession(groupID))
+        {
+            return;
+        }
+
+        const circuit = this.circuit;
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: groupID,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: 0,
+            Dialog: InstantMessageDialog.SessionGroupStart,
+            ID: groupID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils.StringToBuffer(agentName),
+            Message: Utils.StringToBuffer(message),
+            BinaryBucket: Utils.StringToBuffer('')
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        circuit.sendMessage(im, PacketFlags.Reliable);
+        await Utils.waitOrTimeOut(this.currentRegion.clientEvents.onGroupChatSessionJoin, 10000, (event: GroupChatSessionJoinEvent) =>
+        {
+            if (event.sessionID.toString() === groupID.toString())
             {
-                if (event.sessionID.toString() === groupID.toString())
-                {
-                    if (event.success)
-                    {
-                        waitForJoin.unsubscribe();
-                        resolve();
-                    }
-                    else
-                    {
-                        reject();
-                    }
-                }
-            });
-            circuit.sendMessage(im, PacketFlags.Reliable);
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.NoMatch;
         });
     }
 
@@ -510,12 +501,16 @@ export class CommunicationsCommands extends CommandsBase
 
     async sendGroupMessage(groupID: UUID | string, message: string): Promise<number>
     {
-        await this.startGroupChatSession(groupID, message);
-
         if (typeof groupID === 'string')
         {
             groupID = new UUID(groupID);
         }
+
+        if (!this.agent.hasChatSession(groupID))
+        {
+            await this.startGroupChatSession(groupID, message);
+        }
+
         const circuit = this.circuit;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
