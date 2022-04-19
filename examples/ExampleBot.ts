@@ -1,3 +1,4 @@
+import { Vector3 } from '../lib';
 import { LoginResponse } from '../lib/classes/LoginResponse';
 import { Bot } from '../lib/Bot';
 import { LoginParameters } from '../lib/classes/LoginParameters';
@@ -14,9 +15,11 @@ export class ExampleBot
     protected isConnected = false;
     protected isConnecting = false;
     protected loginResponse?: LoginResponse;
-
     protected bot: Bot;
     private reconnectTimer?: Timeout;
+
+    protected stayRegion?: string;
+    protected stayPosition?: Vector3;
 
     constructor()
     {
@@ -39,13 +42,6 @@ export class ExampleBot
         const options = BotOptionFlags.None;
 
         this.bot = new Bot(loginParameters, options);
-
-        // This will tell the bot to keep trying to teleport back to the 'stay' location.
-        // You can specify a region and position, such as:
-        // bot.stayPut(true, 'Izanagi', new nmv.Vector3([128, 128, 21]));
-        // Note that the 'stay' location will be updated if you request or accept a lure (a teleport).
-        // If no region is specified, it will be set to the region you log in to.
-        this.bot.stayPut(true);
     }
 
     public async run(): Promise<void>
@@ -91,6 +87,13 @@ export class ExampleBot
 
         // Catches uncaught exceptions
         process.on('uncaughtException', exitHandler.bind(this, { exit: true }));
+
+        // This will tell the bot to keep trying to teleport back to the 'stay' location.
+        // You can specify a region and position, such as:
+        // bot.stayPut(true, 'Izanagi', new nmv.Vector3([128, 128, 21]));
+        // Note that the 'stay' location will be updated if you request or accept a lure (a teleport).
+        // If no region is specified, it will be set to the region you log in to.
+        this.bot.stayPut(true, this.stayRegion, this.stayPosition);
 
         await this.login();
     }

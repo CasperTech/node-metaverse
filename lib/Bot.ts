@@ -107,10 +107,13 @@ export class Bot
     stayPut(stay: boolean, regionName?: string, position?: Vector3): void
     {
         this.stay = stay;
-        if (regionName !== undefined && position !== undefined)
+        if (regionName !== undefined)
         {
             this.stayRegion = regionName;
-            this.stayPosition = position;
+            if (position !== undefined)
+            {
+                this.stayPosition = position;
+            }
         }
     }
 
@@ -236,8 +239,16 @@ export class Bot
         return this.agent.agentID;
     }
 
-    async connectToSim(requested: boolean = true): Promise<void>
+    async connectToSim(requested: boolean = false): Promise<void>
     {
+        if (!requested)
+        {
+            if (this.stay && this.stayRegion === '')
+            {
+                requested = true;
+            }
+        }
+
         this.agent.setCurrentRegion(this.currentRegion);
         const circuit = this.currentRegion.circuit;
         circuit.init();
@@ -327,9 +338,13 @@ export class Bot
             this.pingNumber++;
             if (this.pingNumber % 12 === 0 && this.stay)
             {
-                if (this.currentRegion.regionName !== this.stayRegion)
+                if (this.currentRegion.regionName.toLowerCase() !== this.stayRegion.toLowerCase())
                 {
                     console.log('Stay Put: Attempting to teleport to ' + this.stayRegion);
+                    if (this.stayPosition === undefined)
+                    {
+                        this.stayPosition = new Vector3([128, 128, 20]);
+                    }
                     this.clientCommands.teleport.teleportTo(this.stayRegion, this.stayPosition, this.stayPosition).then(() =>
                     {
                         console.log('I found my way home.');
