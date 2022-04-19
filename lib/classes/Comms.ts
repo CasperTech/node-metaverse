@@ -1,3 +1,6 @@
+import { Subscription } from 'rxjs';
+import { GroupChatClosedEvent } from '../events/GroupChatClosedEvent';
+import { Agent } from './Agent';
 import { Circuit } from './Circuit';
 import { Packet } from './Packet';
 import { Message } from '../enums/Message';
@@ -25,13 +28,11 @@ import { InventoryResponseEvent } from '../events/InventoryResponseEvent';
 
 export class Comms
 {
-    private circuit: Circuit;
-    private clientEvents: ClientEvents;
+    private groupChatExpiredSub?: Subscription;
 
-    constructor(circuit: Circuit, clientEvents: ClientEvents)
+    constructor(public readonly circuit: Circuit, public readonly agent: Agent, public readonly clientEvents: ClientEvents)
     {
-        this.clientEvents = clientEvents;
-        this.circuit = circuit;
+        this.groupChatExpiredSub = this.agent.onGroupChatExpired.subscribe(this.groupChatExpired.bind(this));
 
         this.circuit.subscribeToMessages([
             Message.ImprovedInstantMessage,
@@ -263,6 +264,14 @@ export class Comms
                             this.clientEvents.onInstantMessage.next(imEvent);
                             break;
                         }
+                        case InstantMessageDialog.SessionDrop:
+                        {
+                            const groupChatClosedEvent = new GroupChatClosedEvent();
+                            groupChatClosedEvent.groupID = im.MessageBlock.ID;
+                            this.clientEvents.onGroupChatClosed.next(groupChatClosedEvent);
+                            this.agent.deleteChatSession(groupChatClosedEvent.groupID);
+                            break;
+                        }
                         case InstantMessageDialog.SessionSend:
                         {
                             const groupChatEvent = new GroupChatEvent();
@@ -270,6 +279,11 @@ export class Comms
                             groupChatEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
                             groupChatEvent.groupID = im.MessageBlock.ID;
                             groupChatEvent.message = Utils.BufferToStringSimple(im.MessageBlock.Message);
+                            if (!this.agent.hasChatSession(groupChatEvent.groupID))
+                            {
+                                this.agent.addChatSession(groupChatEvent.groupID, true);
+                            }
+                            this.agent.updateLastMessage(groupChatEvent.groupID);
                             this.clientEvents.onGroupChat.next(groupChatEvent);
                             break;
                         }
@@ -335,6 +349,17 @@ export class Comms
 
     shutdown(): void
     {
+        if (this.groupChatExpiredSub !== undefined)
+        {
+            this.groupChatExpiredSub.unsubscribe();
+            delete this.groupChatExpiredSub;
+        }
+    }
 
+    private async groupChatExpired(groupID: UUID): Promise<void>
+    {
+        // Reconnect to group chat since it's been idle for 15 minutes
+        await this.agent.currentRegion.clientCommands.comms.endGroupChatSession(groupID, false);
+        await this.agent.currentRegion.clientCommands.comms.startGroupChatSession(groupID, '');
     }
 }

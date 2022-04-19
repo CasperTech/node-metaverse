@@ -389,6 +389,48 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
+    public async endGroupChatSession(groupID: UUID | string, removeEntry = true): Promise<void>
+    {
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
+        if (!this.agent.hasChatSession(groupID))
+        {
+            throw new Error('Group session does not exist');
+        }
+        const circuit = this.circuit;
+        const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+        const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+        im.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        im.MessageBlock = {
+            FromGroup: false,
+            ToAgentID: groupID,
+            ParentEstateID: 0,
+            RegionID: UUID.zero(),
+            Position: Vector3.getZero(),
+            Offline: 0,
+            Dialog: InstantMessageDialog.SessionDrop,
+            ID: groupID,
+            Timestamp: Math.floor(new Date().getTime() / 1000),
+            FromAgentName: Utils.StringToBuffer(agentName),
+            Message: Buffer.allocUnsafe(0),
+            BinaryBucket: Buffer.allocUnsafe(0)
+        };
+        im.EstateBlock = {
+            EstateID: 0
+        };
+        if (removeEntry)
+        {
+            this.agent.deleteChatSession(groupID);
+        }
+        const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
+        return this.circuit.waitForAck(sequenceNo, 10000);
+    }
+
     startGroupChatSession(groupID: UUID | string, message: string): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
@@ -397,54 +439,47 @@ export class CommunicationsCommands extends CommandsBase
             {
                 groupID = new UUID(groupID);
             }
-            if (this.agent.hasChatSession(groupID))
-            {
-                resolve();
-            }
-            else
-            {
-                const circuit = this.circuit;
-                const agentName = this.agent.firstName + ' ' + this.agent.lastName;
-                const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
-                im.AgentData = {
-                    AgentID: this.agent.agentID,
-                    SessionID: circuit.sessionID
-                };
-                im.MessageBlock = {
-                    FromGroup: false,
-                    ToAgentID: groupID,
-                    ParentEstateID: 0,
-                    RegionID: UUID.zero(),
-                    Position: Vector3.getZero(),
-                    Offline: 0,
-                    Dialog: InstantMessageDialog.SessionGroupStart,
-                    ID: groupID,
-                    Timestamp: Math.floor(new Date().getTime() / 1000),
-                    FromAgentName: Utils.StringToBuffer(agentName),
-                    Message: Utils.StringToBuffer(message),
-                    BinaryBucket: Utils.StringToBuffer('')
-                };
-                im.EstateBlock = {
-                    EstateID: 0
-                };
-                const waitForJoin = this.currentRegion.clientEvents.onGroupChatSessionJoin.subscribe((event: GroupChatSessionJoinEvent) =>
-                {
-                    if (event.sessionID.toString() === groupID.toString())
-                    {
-                        if (event.success)
-                        {
-                            waitForJoin.unsubscribe();
 
-                            resolve();
-                        }
-                        else
-                        {
-                            reject();
-                        }
+            const circuit = this.circuit;
+            const agentName = this.agent.firstName + ' ' + this.agent.lastName;
+            const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
+            im.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID
+            };
+            im.MessageBlock = {
+                FromGroup: false,
+                ToAgentID: groupID,
+                ParentEstateID: 0,
+                RegionID: UUID.zero(),
+                Position: Vector3.getZero(),
+                Offline: 0,
+                Dialog: InstantMessageDialog.SessionGroupStart,
+                ID: groupID,
+                Timestamp: Math.floor(new Date().getTime() / 1000),
+                FromAgentName: Utils.StringToBuffer(agentName),
+                Message: Utils.StringToBuffer(message),
+                BinaryBucket: Utils.StringToBuffer('')
+            };
+            im.EstateBlock = {
+                EstateID: 0
+            };
+            const waitForJoin = this.currentRegion.clientEvents.onGroupChatSessionJoin.subscribe((event: GroupChatSessionJoinEvent) =>
+            {
+                if (event.sessionID.toString() === groupID.toString())
+                {
+                    if (event.success)
+                    {
+                        waitForJoin.unsubscribe();
+                        resolve();
                     }
-                });
-                circuit.sendMessage(im, PacketFlags.Reliable);
-            }
+                    else
+                    {
+                        reject();
+                    }
+                }
+            });
+            circuit.sendMessage(im, PacketFlags.Reliable);
         });
     }
 

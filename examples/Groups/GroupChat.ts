@@ -1,10 +1,12 @@
+import { GroupChatSessionJoinEvent, GroupChatEvent, UUID } from '../../lib';
+import { GroupChatClosedEvent } from '../../lib/events/GroupChatClosedEvent';
 import { ExampleBot } from '../ExampleBot';
-import { UUID } from '../../lib/classes/UUID';
-import { GroupChatEvent } from '../../lib/events/GroupChatEvent';
 
 class GroupChat extends ExampleBot
 {
-    private pings: {[key: string]: number} = {};
+    private pings: {
+        [key: string]: number
+    } = {};
 
     async onConnected(): Promise<void>
     {
@@ -14,9 +16,6 @@ class GroupChat extends ExampleBot
 
         // Start a group chat session - equivalent to opening a group chat but not sending a message
         await this.bot.clientCommands.comms.startGroupChatSession(groupID, '');
-
-        // Send a group message
-        await this.bot.clientCommands.comms.sendGroupMessage(groupID, 'Test');
 
         const badGuyID = new UUID('1481561a-9113-46f8-9c02-9ac1bf005de7');
         await this.bot.clientCommands.comms.moderateGroupChat(groupID, badGuyID, true, true);
@@ -36,6 +35,23 @@ class GroupChat extends ExampleBot
                     console.error(err);
                 });
             }
+        });
+
+        this.bot.clientEvents.onGroupChatSessionJoin.subscribe((event: GroupChatSessionJoinEvent) =>
+        {
+            if (event.success)
+            {
+                console.log('We have joined a chat session! Group ID: ' + event.sessionID);
+            }
+            else
+            {
+                console.log('We have FAILED to join a chat session! Group ID: ' + event.sessionID);
+            }
+        });
+
+        this.bot.clientEvents.onGroupChatClosed.subscribe((event: GroupChatClosedEvent) =>
+        {
+            console.log('Group chat session closed! Group ID: ' + event.groupID.toString());
         });
 
         // Actually, maybe we want to ban the chump.
@@ -61,6 +77,15 @@ class GroupChat extends ExampleBot
                 console.error(error);
             }
         }
+        else if (event.message === '!rejoin')
+        {
+            console.log('Leaving the session..');
+            await this.bot.clientCommands.comms.endGroupChatSession(event.groupID);
+            console.log('Session terminated');
+            console.log('Rejoining session');
+            await this.bot.clientCommands.comms.startGroupChatSession(event.groupID, '');
+            await this.bot.clientCommands.comms.sendGroupMessage(event.groupID, 'I am back!');
+        }
         else if (event.from.toString() === this.bot.agentID().toString())
         {
             if (event.message.substr(0, 5) === 'ping ')
@@ -78,4 +103,10 @@ class GroupChat extends ExampleBot
     }
 }
 
-new GroupChat().run().then(() => {}).catch((err: Error) => { console.error(err) });
+new GroupChat().run().then(() =>
+{
+
+}).catch((err: Error) =>
+{
+    console.error(err)
+});

@@ -1,4 +1,5 @@
 import { Subject } from 'rxjs';
+import { GroupChatClosedEvent } from '../events/GroupChatClosedEvent';
 import { NewObjectEvent } from '../events/NewObjectEvent';
 import { ObjectUpdatedEvent } from '../events/ObjectUpdatedEvent';
 import { ObjectKilledEvent } from '../events/ObjectKilledEvent';
@@ -43,6 +44,7 @@ export class ClientEvents
     onDisconnected: Subject<DisconnectEvent>  = new Subject<DisconnectEvent>();
     onCircuitLatency: Subject<number> = new Subject<number>();
     onGroupChat: Subject<GroupChatEvent> = new Subject<GroupChatEvent>();
+    onGroupChatClosed: Subject<GroupChatClosedEvent> = new Subject<GroupChatClosedEvent>();
     onGroupNotice: Subject<GroupNoticeEvent> = new Subject<GroupNoticeEvent>();
     onGroupChatSessionJoin: Subject<GroupChatSessionJoinEvent> = new Subject<GroupChatSessionJoinEvent>();
     onGroupChatAgentListUpdate: Subject<GroupChatSessionAgentListEvent> = new Subject<GroupChatSessionAgentListEvent>();
