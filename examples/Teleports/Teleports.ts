@@ -1,9 +1,15 @@
+import { LureEvent, Vector3 } from '../../lib';
 import { ExampleBot } from '../ExampleBot';
-import { LureEvent } from '../../lib/events/LureEvent';
 
 class Teleports extends ExampleBot
 {
-    async onConnected()
+    // We can make the bot always try to get to a certain region regardless of where it logged in
+    protected stayRegion = 'Izanagi';
+
+    // And we can optionally specify a position
+    protected stayPosition = new Vector3([122, 156, 189]);
+
+    async onConnected(): Promise<void>
     {
         // "OnLure" event fires when someone tries to teleport us
         this.bot.clientEvents.onLure.subscribe(this.onLure.bind(this));
@@ -12,7 +18,7 @@ class Teleports extends ExampleBot
         await this.bot.clientCommands.comms.sendTeleport(this.masterAvatar);
     }
 
-    async onLure(lureEvent: LureEvent)
+    async onLure(lureEvent: LureEvent): Promise<void>
     {
         try
         {
@@ -45,4 +51,10 @@ class Teleports extends ExampleBot
     }
 }
 
-new Teleports().run().then(() => {}).catch((err) => { console.error(err) });
+new Teleports().run().then(() =>
+{
+
+}).catch((err) =>
+{
+    console.error(err)
+});
