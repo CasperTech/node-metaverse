@@ -1,33 +1,16 @@
 import * as xmlrpc from 'xmlrpc';
 import * as crypto from 'crypto';
-import * as uuid from 'uuid';
 import * as url from 'url';
 import { LoginParameters } from './classes/LoginParameters';
 import { LoginResponse } from './classes/LoginResponse';
 import { ClientEvents } from './classes/ClientEvents';
+import { Utils } from './classes/Utils';
 import { BotOptionFlags } from './enums/BotOptionFlags';
 
 export class LoginHandler
 {
     private clientEvents: ClientEvents;
     private options: BotOptionFlags;
-
-    static GenerateMAC(): string
-    {
-        const hexDigits = '0123456789ABCDEF';
-        let macAddress = '';
-        for (let i = 0; i < 6; i++)
-        {
-            macAddress += hexDigits.charAt(Math.round(Math.random() * 15));
-            macAddress += hexDigits.charAt(Math.round(Math.random() * 15));
-            if (i !== 5)
-            {
-                macAddress += ':';
-            }
-        }
-
-        return macAddress;
-    }
 
     constructor(ce: ClientEvents, options: BotOptionFlags)
     {
@@ -61,7 +44,16 @@ export class LoginHandler
                 rejectUnauthorized: false,
                 timeout: 60000
             };
+            const viewerDigest = 'ce50e500-e6f0-15ab-4b9d-0591afb91ffe';
             const client = (secure) ? xmlrpc.createSecureClient(secureClientOptions) : xmlrpc.createClient(secureClientOptions);
+
+            const nameHash = Utils.SHA1String(params.firstName + params.lastName + viewerDigest);
+            const macAddress: string[] = [];
+            for (let i = 0; i < 12; i = i + 2)
+            {
+                macAddress.push(nameHash.substr(i, 2));
+            }
+
             client.methodCall('login_to_simulator',
                 [
                     {
@@ -74,8 +66,8 @@ export class LoginHandler
                         'patch': '1',
                         'build': '0',
                         'platform': 'win',
-                        'mac': LoginHandler.GenerateMAC(),
-                        'viewer_digest': uuid.v4(),
+                        'mac': macAddress.join(':'),
+                        'viewer_digest': viewerDigest,
                         'user_agent': 'node-metaverse',
                         'author': 'nmv@caspertech.co.uk',
                         'options': [
