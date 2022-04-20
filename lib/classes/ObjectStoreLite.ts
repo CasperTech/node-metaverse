@@ -41,7 +41,7 @@ import Timer = NodeJS.Timer;
 
 export class ObjectStoreLite implements IObjectStore
 {
-    protected circuit: Circuit;
+    protected circuit?: Circuit;
     protected agent: Agent;
     protected objects: { [key: number]: GameObject } = {};
     protected objectsByUUID: { [key: string]: number } = {};
@@ -141,6 +141,10 @@ export class ObjectStoreLite implements IObjectStore
 
         this.selectedChecker = setInterval(() =>
         {
+            if (this.circuit === undefined)
+            {
+                return;
+            }
             try
             {
                 let selectObjects = [];
@@ -251,6 +255,10 @@ export class ObjectStoreLite implements IObjectStore
         {
             return;
         }
+        if (this.circuit === undefined)
+        {
+            return;
+        }
         this.requestedObjects[localID] = true;
         const rmo = new RequestMultipleObjectsMessage();
         rmo.AgentData = {
@@ -300,23 +308,30 @@ export class ObjectStoreLite implements IObjectStore
             }
             else
             {
+                if (!this.circuit)
+                {
+                    return;
+                }
                 console.error('Error retrieving missing object after 5 attempts: ' + localID);
                 console.error(error);
             }
         }
         finally
         {
-            const deselectObject = new ObjectDeselectMessage();
-            deselectObject.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: this.circuit.sessionID
-            };
-            deselectObject.ObjectData = [
-                {
-                    'ObjectLocalID': localID
-                }
-            ];
-            this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+            if (this.circuit)
+            {
+                const deselectObject = new ObjectDeselectMessage();
+                deselectObject.AgentData = {
+                    AgentID: this.agent.agentID,
+                    SessionID: this.circuit.sessionID
+                };
+                deselectObject.ObjectData = [
+                    {
+                        'ObjectLocalID': localID
+                    }
+                ];
+                this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+            }
         }
     }
 
@@ -563,6 +578,10 @@ export class ObjectStoreLite implements IObjectStore
 
     protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage): void
     {
+        if (this.circuit === undefined)
+        {
+            return;
+        }
         const rmo = new RequestMultipleObjectsMessage();
         rmo.AgentData = {
             AgentID: this.agent.agentID,
@@ -894,6 +913,7 @@ export class ObjectStoreLite implements IObjectStore
         }
         this.objectsByUUID = {};
         this.objectsByParent = {};
+        delete this.circuit;
     }
 
     protected findParent(go: GameObject): GameObject
@@ -906,7 +926,10 @@ export class ObjectStoreLite implements IObjectStore
         {
             if (go.ParentID !== undefined && go.ParentID !== 0 && !this.objects[go.ParentID])
             {
-                this.requestMissingObject(go.ParentID);
+                this.requestMissingObject(go.ParentID).catch((e: unknown) =>
+                {
+                    Logger.Error(e);
+                });
             }
             return go;
         }

@@ -18,15 +18,20 @@ export class ObjectResolver
 
     private onObjectResolveRan: Subject<GameObject> = new Subject<GameObject>();
 
-    constructor(private region: Region)
+    constructor(private region?: Region)
     {
 
     }
 
     resolveObjects(objects: GameObject[], forceResolve: boolean = false, skipInventory = false, log = false): Promise<GameObject[]>
     {
-        return new Promise<GameObject[]>((resolve) =>
+        return new Promise<GameObject[]>((resolve, reject) =>
         {
+            if (!this.region)
+            {
+                reject(new Error('Region is going away'));
+                return;
+            }
             if (log)
             {
                 // console.log('[RESOLVER] Scanning ' + objects.length + ' objects, skipInventory: ' + skipInventory);
@@ -265,6 +270,11 @@ export class ObjectResolver
 
     private async doResolve(jobs: IResolveJob[]): Promise<void>
     {
+        if (!this.region)
+        {
+            return;
+        }
+
         const resolveTime = new Date().getTime() / 1000;
         const objectList = [];
         let totalRemaining = 0;
@@ -296,6 +306,10 @@ export class ObjectResolver
 
             for (const job of jobs)
             {
+                if (!this.region)
+                {
+                    return;
+                }
                 if (!job.skipInventory)
                 {
                     const o = job.object;
@@ -363,6 +377,10 @@ export class ObjectResolver
             const that  = this;
             const getCosts = async function(objIDs: UUID[]): Promise<void>
             {
+                if (!that.region)
+                {
+                    return;
+                }
                 const result = await that.region.caps.capsPostXML('GetObjectCost', {
                     'object_ids': objIDs
                 });
@@ -425,5 +443,10 @@ export class ObjectResolver
                 this.onObjectResolveRan.next(job.object);
             }
         }
+    }
+
+    public shutdown(): void
+    {
+        delete this.region;
     }
 }
