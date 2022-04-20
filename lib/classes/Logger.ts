@@ -110,16 +110,16 @@ export class Logger
         }
         this.Log('warn', message);
     }
-    static Error(message: string | object): void
+    static Error(message: string | object | unknown): void
     {
-        if (typeof message === 'string')
+        if (typeof message !== 'object')
         {
-            message = this.prefix + message;
+            message = this.prefix + String(message);
         }
         this.Log('error', message);
     }
 
-    static Log(type: string, message: string | object): void
+    static Log(type: string, message: string | object | unknown): void
     {
         if (typeof message === 'object')
         {
