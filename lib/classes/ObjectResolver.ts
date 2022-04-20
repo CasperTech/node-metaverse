@@ -181,6 +181,10 @@ export class ObjectResolver
                 }
             });
 
+            if (!this.region)
+            {
+                return;
+            }
             objProps = this.region.clientEvents.onObjectResolvedEvent.subscribe((obj: ObjectResolvedEvent) =>
             {
                 if (objs[obj.object.ID] !== undefined)
@@ -292,8 +296,17 @@ export class ObjectResolver
             if (objectList.length > 0)
             {
                 // console.log('Selecting ' + objectList.length + ' objects');
+                if (!this.region)
+                {
+                    return;
+                }
                 await this.region.clientCommands.region.selectObjects(objectList);
                 // console.log('Deselecting ' + objectList.length + ' objects');
+
+                if (!this.region)
+                {
+                    return;
+                }
                 await this.region.clientCommands.region.deselectObjects(objectList);
                 for (const chk of objectList)
                 {
@@ -390,6 +403,10 @@ export class ObjectResolver
                     const costs = result[key];
                     try
                     {
+                        if (!that.region)
+                        {
+                            return;
+                        }
                         const obj: GameObject = that.region.objects.getObjectByUUID(new UUID(key));
                         obj.linkPhysicsImpact = parseFloat(costs['linked_set_physics_cost']);
                         obj.linkResourceImpact = parseFloat(costs['linked_set_resource_cost']);
