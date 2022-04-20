@@ -1412,7 +1412,7 @@ export class Region
         this.comms.shutdown();
         this.caps.shutdown();
         this.objects.shutdown();
+        this.resolver.shutdown();
         this.circuit.shutdown();
-
     }
 }

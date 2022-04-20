@@ -212,6 +212,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
 
     protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage): void
     {
+        if (!this.circuit)
+        {
+            return;
+        }
         const rmo = new RequestMultipleObjectsMessage();
         rmo.AgentData = {
             AgentID: this.agent.agentID,
@@ -230,6 +234,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         }
         if (rmo.ObjectData.length > 0)
         {
+            if (!this.circuit)
+            {
+                return;
+            }
             this.circuit.sendMessage(rmo, 0);
         }
     }
