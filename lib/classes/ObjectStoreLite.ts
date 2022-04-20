@@ -1,4 +1,5 @@
 import { Circuit } from './Circuit';
+import { Logger } from './Logger';
 import { Packet } from './Packet';
 import { Message } from '../enums/Message';
 import { ObjectUpdateMessage } from './messages/ObjectUpdate';
@@ -36,6 +37,8 @@ import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 import { Avatar } from './public/Avatar';
 
+import Timer = NodeJS.Timer;
+
 export class ObjectStoreLite implements IObjectStore
 {
     protected circuit: Circuit;
@@ -51,6 +54,7 @@ export class ObjectStoreLite implements IObjectStore
     protected pendingObjectProperties: { [key: string]: any } = {};
     private physicsSubscription: Subscription;
     private selectedPrimsWithoutUpdate: { [key: number]: boolean } = {};
+    private selectedChecker?: Timer;
 
     rtree?: RBush3D;
 
@@ -135,45 +139,54 @@ export class ObjectStoreLite implements IObjectStore
             }
         });
 
-        setInterval(() =>
+        this.selectedChecker = setInterval(() =>
         {
-            let selectObjects = [];
-            for (const key of Object.keys(this.selectedPrimsWithoutUpdate))
+            try
             {
-                selectObjects.push(key);
-            }
-            function shuffle(a: string[]): string[]
-            {
-                let j, x, i;
-                for (i = a.length - 1; i > 0; i--)
+                let selectObjects = [];
+                for (const key of Object.keys(this.selectedPrimsWithoutUpdate))
                 {
-                    j = Math.floor(Math.random() * (i + 1));
-                    x = a[i];
-                    a[i] = a[j];
-                    a[j] = x;
+                    selectObjects.push(key);
                 }
-                return a;
-            }
-            selectObjects = shuffle(selectObjects);
-            if (selectObjects.length > 10)
-            {
-                selectObjects = selectObjects.slice(0, 20);
-            }
-            if (selectObjects.length > 0)
-            {
-                const selectObject = new ObjectSelectMessage();
-                selectObject.AgentData = {
-                    AgentID: this.agent.agentID,
-                    SessionID: this.circuit.sessionID
-                };
-                selectObject.ObjectData = [];
-                for (const id of selectObjects)
+
+                function shuffle(a: string[]): string[]
                 {
-                    selectObject.ObjectData.push({
-                        ObjectLocalID: parseInt(id, 10)
-                    });
+                    let j, x, i;
+                    for (i = a.length - 1; i > 0; i--)
+                    {
+                        j = Math.floor(Math.random() * (i + 1));
+                        x = a[i];
+                        a[i] = a[j];
+                        a[j] = x;
+                    }
+                    return a;
                 }
-                this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+
+                selectObjects = shuffle(selectObjects);
+                if (selectObjects.length > 10)
+                {
+                    selectObjects = selectObjects.slice(0, 20);
+                }
+                if (selectObjects.length > 0)
+                {
+                    const selectObject = new ObjectSelectMessage();
+                    selectObject.AgentData = {
+                        AgentID: this.agent.agentID,
+                        SessionID: this.circuit.sessionID
+                    };
+                    selectObject.ObjectData = [];
+                    for (const id of selectObjects)
+                    {
+                        selectObject.ObjectData.push({
+                            ObjectLocalID: parseInt(id, 10)
+                        });
+                    }
+                    this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+                }
+            }
+            catch (e: unknown)
+            {
+                Logger.Error(e);
             }
         }, 1000)
     }
@@ -868,6 +881,11 @@ export class ObjectStoreLite implements IObjectStore
 
     shutdown(): void
     {
+        if (this.selectedChecker !== undefined)
+        {
+            clearInterval(this.selectedChecker);
+            delete this.selectedChecker;
+        }
         this.physicsSubscription.unsubscribe();
         this.objects = {};
         if (this.rtree)
