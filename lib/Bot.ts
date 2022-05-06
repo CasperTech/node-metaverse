@@ -79,6 +79,11 @@ export class Bot
         return this._clientCommands;
     }
 
+    get loginParameters(): LoginParameters
+    {
+        return this.loginParams;
+    }
+
     constructor(login: LoginParameters, options: BotOptionFlags)
     {
         this.clientEvents = new ClientEvents();

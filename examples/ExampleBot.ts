@@ -14,21 +14,23 @@ export class ExampleBot
     protected masterAvatar = 'd1cd5b71-6209-4595-9bf0-771bf689ce00';
     protected isConnected = false;
     protected isConnecting = false;
+    protected loginParamsJsonFile: string;
     protected loginResponse?: LoginResponse;
     protected bot: Bot;
     private reconnectTimer?: Timeout;
+    protected loginParameters: LoginParameters;
 
     protected stayRegion?: string;
     protected stayPosition?: Vector3;
+    protected firstName?: string;
+    protected lastName?: string;
 
     constructor()
     {
-        const loginParameters = new LoginParameters();
-        const parameters = require(path.join(__dirname, '..', '..', 'examples', 'loginParameters.json'));
-        loginParameters.firstName = parameters.firstName;
-        loginParameters.lastName = parameters.lastName;
-        loginParameters.password = parameters.password;
-        loginParameters.start = parameters.start;
+        this.loginParamsJsonFile = path.join(__dirname, '..', '..', 'examples', 'loginParameters.json');
+        this.loginParameters = require(this.loginParamsJsonFile);
+        this.firstName = this.loginParameters.firstName;
+        this.lastName = this.loginParameters.lastName;
 
         // If you don't intend to use the object store (i.e you have no interest in inworld objects, textures, etc,
         // using nmv.BotOptionFlags.LiteObjectStore will drastically reduce the footprint and CPU usage.
@@ -41,7 +43,7 @@ export class ExampleBot
 
         const options = BotOptionFlags.None;
 
-        this.bot = new Bot(loginParameters, options);
+        this.bot = new Bot(this.loginParameters, options);
     }
 
     public async run(): Promise<void>
@@ -103,7 +105,7 @@ export class ExampleBot
 
     }
 
-    private async login(): Promise<void>
+    protected async login(): Promise<void>
     {
         if (this.isConnecting)
         {

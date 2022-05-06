@@ -37,6 +37,7 @@ export class LoginResponse
         'moonTextureID'?: UUID,
     } = {};
     searchToken: string;
+    mfaHash?: string;
     clientEvents: ClientEvents;
 
     private static toRegionHandle(x_global: number, y_global: number): Long
@@ -121,7 +122,6 @@ export class LoginResponse
         this.clientEvents = clientEvents;
         this.agent = new Agent(this.clientEvents);
         this.region = new Region(this.agent, this.clientEvents, options);
-
         if (json['agent_id'])
         {
             this.agent.agentID = new UUID(json['agent_id']);
@@ -217,6 +217,9 @@ export class LoginResponse
                             this.textures.moonTextureID = obj['moon_texture_id'];
                         }
                     }
+                    break;
+                case 'mfa_hash':
+                    this.mfaHash = String(val);
                     break;
                 case 'search_token':
                     this.searchToken = String(val);
