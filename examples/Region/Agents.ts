@@ -4,14 +4,14 @@ import { Subscription } from 'rxjs';
 
 class Region extends ExampleBot
 {
-    private subscriptions: {[key: string]: {
+    private subscriptions: { [key: string]: {
         onMovedSubscription: Subscription;
         onTitleSubscription: Subscription;
         onLeftRegionSubscription: Subscription;
         onVisibleSubscription: Subscription;
-    }};
+    } } = {};
 
-    async onConnected()
+    public async onConnected(): Promise<void>
     {
         this.bot.clientEvents.onAvatarEnteredRegion.subscribe(this.onAvatarEntered.bind(this));
 
@@ -22,7 +22,7 @@ class Region extends ExampleBot
         }
     }
 
-    onAvatarEntered(av: Avatar)
+    private onAvatarEntered(av: Avatar): void
     {
         console.log(av.getName() + ' entered the region (' + ((av.isVisible) ? 'visible' : 'invisible') + ')');
         const avatarKey = av.getKey().toString();
@@ -35,7 +35,7 @@ class Region extends ExampleBot
         }
     }
 
-    private unsubscribe(key: string)
+    private unsubscribe(key: string): void
     {
         const sub = this.subscriptions[key];
         if (sub === undefined)
@@ -50,26 +50,32 @@ class Region extends ExampleBot
         sub.onLeftRegionSubscription.unsubscribe();
     }
 
-    onAvatarLeft(av: Avatar)
+    private onAvatarLeft(av: Avatar): void
     {
         console.log(av.getName() + ' left the region');
         this.unsubscribe(av.getKey().toString());
     }
 
-    onAvatarMoved(av: Avatar)
+    private onAvatarMoved(av: Avatar): void
     {
         console.log(av.getName() + ' moved, position: ' + av.position.toString());
     }
 
-    onTitleChanged(av: Avatar)
+    private onTitleChanged(av: Avatar): void
     {
         console.log(av.getName() + ' changed their title to: ' + av.getTitle());
     }
 
-    onAvatarVisible(av: Avatar)
+    private onAvatarVisible(av: Avatar): void
     {
         console.log(av.getName() + ' is now ' + (av.isVisible ? 'visible' : 'invisible'));
     }
 }
 
-new Region().run().then(() => {}).catch((err) => { console.error(err) });
+new Region().run().then(() =>
+{
+
+}).catch((err) =>
+{
+    console.error(err);
+});
