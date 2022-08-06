@@ -81,9 +81,9 @@ fs.readFile('./msg_template.msg', (err, data) =>
         //Remove all comments
         const lines = msgTemplate.split('\n');
         let newLines = [];
-        for (const line of lines)
+        for (let line of lines)
         {
-            let pos = line.indexOf('//');
+            const pos = line.indexOf('//');
             if (pos !== -1)
             {
                 line = line.substr(0, pos-1);
@@ -94,7 +94,6 @@ fs.readFile('./msg_template.msg', (err, data) =>
 
 
         let messages = getBlocks(msgTemplate);
-        let done = false;
         let msgObjects = [];
         for (const message of messages)
         {

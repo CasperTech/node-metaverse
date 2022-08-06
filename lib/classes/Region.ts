@@ -98,6 +98,13 @@ export class Region
     cpuRatio: number;
     coloName: string;
 
+    chatWhisperRange: number;
+    chatNormalRange: number;
+    chatShoutRange: number;
+    chatWhisperOffset: number;
+    chatNormalOffset: number;
+    chatShoutOffset: number;
+
     terrainBase0: UUID;
     terrainBase1: UUID;
     terrainBase2: UUID;
@@ -1289,6 +1296,13 @@ export class Region
         this.maxAgents32 = regionInfo.RegionInfo2.MaxAgents32;
         this.hardMaxAgents = regionInfo.RegionInfo2.HardMaxAgents;
         this.hardMaxObjects = regionInfo.RegionInfo2.HardMaxObjects;
+
+        this.chatNormalOffset = regionInfo.RegionInfo5.ChatNormalOffset;
+        this.chatNormalRange = regionInfo.RegionInfo5.ChatNormalRange;
+        this.chatShoutOffset = regionInfo.RegionInfo5.ChatShoutOffset;
+        this.chatShoutRange = regionInfo.RegionInfo5.ChatShoutRange;
+        this.chatWhisperOffset = regionInfo.RegionInfo5.ChatWhisperOffset;
+        this.chatWhisperRange = regionInfo.RegionInfo5.ChatWhisperRange;
 
         const msg: MapNameRequestMessage = new MapNameRequestMessage();
         msg.AgentData = {

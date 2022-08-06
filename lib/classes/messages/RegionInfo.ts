@@ -44,10 +44,20 @@ export class RegionInfoMessage implements MessageBase
     RegionInfo3: {
         RegionFlagsExtended: Long;
     }[];
+    RegionInfo5: {
+        HasRegionInfo5: number;
+        ChatWhisperRange: number;
+        ChatNormalRange: number;
+        ChatShoutRange: number;
+        ChatWhisperOffset: number;
+        ChatNormalOffset: number;
+        ChatShoutOffset: number;
+        ChatFlags: number;
+    };
 
     getSize(): number
     {
-        return (this.RegionInfo['SimName'].length + 1) + (this.RegionInfo2['ProductSKU'].length + 1 + this.RegionInfo2['ProductName'].length + 1) + ((8) * this.RegionInfo3.length) + 96;
+        return (this.RegionInfo['SimName'].length + 1) + (this.RegionInfo2['ProductSKU'].length + 1 + this.RegionInfo2['ProductName'].length + 1) + ((8) * this.RegionInfo3.length) + 125;
     }
 
     // @ts-ignore
@@ -109,6 +119,21 @@ export class RegionInfoMessage implements MessageBase
             buf.writeInt32LE(this.RegionInfo3[i]['RegionFlagsExtended'].high, pos);
             pos += 4;
         }
+        buf.writeUInt8(this.RegionInfo5['HasRegionInfo5'], pos++);
+        buf.writeFloatLE(this.RegionInfo5['ChatWhisperRange'], pos);
+        pos += 4;
+        buf.writeFloatLE(this.RegionInfo5['ChatNormalRange'], pos);
+        pos += 4;
+        buf.writeFloatLE(this.RegionInfo5['ChatShoutRange'], pos);
+        pos += 4;
+        buf.writeFloatLE(this.RegionInfo5['ChatWhisperOffset'], pos);
+        pos += 4;
+        buf.writeFloatLE(this.RegionInfo5['ChatNormalOffset'], pos);
+        pos += 4;
+        buf.writeFloatLE(this.RegionInfo5['ChatShoutOffset'], pos);
+        pos += 4;
+        buf.writeUInt32LE(this.RegionInfo5['ChatFlags'], pos);
+        pos += 4;
         return pos - startPos;
     }
 
@@ -238,6 +263,41 @@ export class RegionInfoMessage implements MessageBase
             pos += 8;
             this.RegionInfo3.push(newObjRegionInfo3);
         }
+        const newObjRegionInfo5: {
+            HasRegionInfo5: number,
+            ChatWhisperRange: number,
+            ChatNormalRange: number,
+            ChatShoutRange: number,
+            ChatWhisperOffset: number,
+            ChatNormalOffset: number,
+            ChatShoutOffset: number,
+            ChatFlags: number
+        } = {
+            HasRegionInfo5: 0,
+            ChatWhisperRange: 0,
+            ChatNormalRange: 0,
+            ChatShoutRange: 0,
+            ChatWhisperOffset: 0,
+            ChatNormalOffset: 0,
+            ChatShoutOffset: 0,
+            ChatFlags: 0
+        };
+        newObjRegionInfo5['HasRegionInfo5'] = buf.readUInt8(pos++);
+        newObjRegionInfo5['ChatWhisperRange'] = buf.readFloatLE(pos);
+        pos += 4;
+        newObjRegionInfo5['ChatNormalRange'] = buf.readFloatLE(pos);
+        pos += 4;
+        newObjRegionInfo5['ChatShoutRange'] = buf.readFloatLE(pos);
+        pos += 4;
+        newObjRegionInfo5['ChatWhisperOffset'] = buf.readFloatLE(pos);
+        pos += 4;
+        newObjRegionInfo5['ChatNormalOffset'] = buf.readFloatLE(pos);
+        pos += 4;
+        newObjRegionInfo5['ChatShoutOffset'] = buf.readFloatLE(pos);
+        pos += 4;
+        newObjRegionInfo5['ChatFlags'] = buf.readUInt32LE(pos);
+        pos += 4;
+        this.RegionInfo5 = newObjRegionInfo5;
         return pos - startPos;
     }
 }

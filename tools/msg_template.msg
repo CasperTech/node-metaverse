@@ -3002,6 +3002,17 @@ version 2.0
 		RegionInfo3		Variable
 		{	RegionFlagsExtended	U64			}
 	}
+	{
+		RegionInfo5		Single
+		{	HasRegionInfo5		U8		}
+		{	ChatWhisperRange	F32		}
+		{	ChatNormalRange		F32		}
+		{	ChatShoutRange		F32		}
+		{	ChatWhisperOffset	F32		}
+		{	ChatNormalOffset	F32		}
+		{	ChatShoutOffset		F32		}
+		{	ChatFlags					U32		}
+	}
 }
 
 // GodUpdateRegionInfo

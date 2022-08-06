@@ -8403,6 +8403,53 @@
                         "size": 1
                     }
                 ]
+            },
+            {
+                "name": "RegionInfo5",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "HasRegionInfo5",
+                        "type": "U8",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatWhisperRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatNormalRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatShoutRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatWhisperOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatNormalOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatShoutOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatFlags",
+                        "type": "U32",
+                        "size": 1
+                    }
+                ]
             }
         ]
     },
