@@ -800,7 +800,7 @@ export class ObjectStoreLite implements IObjectStore
             {
                 if (this.objects[obj.ParentID] !== undefined && this.objects[obj.ParentID].PCode === PCode.Avatar)
                 {
-                    this.agent.currentRegion.agents[this.objects[obj.ParentID].FullID.toString()].removeAttachment(obj);
+                    this.agent.currentRegion.agents[this.objects[obj.ParentID].FullID.toString()]?.removeAttachment(obj);
                 }
             }
 
