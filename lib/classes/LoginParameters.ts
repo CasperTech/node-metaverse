@@ -7,4 +7,6 @@ export class LoginParameters
     url = 'https://login.agni.lindenlab.com/cgi-bin/login.cgi';
     token?: string;
     mfa_hash?: string;
+    agreeToTOS?: true;
+    readCritical?: true;
 }
