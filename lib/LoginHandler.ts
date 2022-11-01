@@ -101,6 +101,8 @@ export class LoginHandler
                         'viewer_digest': viewerDigest,
                         'user_agent': 'node-metaverse',
                         'author': 'nmv@caspertech.co.uk',
+                        'agree_to_tos': params.agreeToTOS,
+                        'read_critical': params.readCritical,
                         'options': [
                             'inventory-root',
                             'inventory-skeleton',
