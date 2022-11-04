@@ -316,9 +316,9 @@ export class GridCommands extends CommandsBase
         };
 
         this.circuit.sendMessage(aprm, PacketFlags.Reliable);
-        const apr: AvatarPickerReplyMessage = await this.circuit.waitForMessage<AvatarPickerReplyMessage>(Message.AvatarPickerReply, 10000, (apr: AvatarPickerReplyMessage): FilterResponse =>
+        const apr: AvatarPickerReplyMessage = await this.circuit.waitForMessage<AvatarPickerReplyMessage>(Message.AvatarPickerReply, 10000, (filterMsg: AvatarPickerReplyMessage): FilterResponse =>
         {
-            if (apr.AgentData.QueryID.toString() === queryID.toString())
+            if (filterMsg.AgentData.QueryID.toString() === queryID.toString())
             {
                 return FilterResponse.Finish;
             }

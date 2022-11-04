@@ -4,12 +4,15 @@ import { FriendResponseEvent } from '../../lib/events/FriendResponseEvent';
 
 class Friends extends ExampleBot
 {
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         this.bot.clientEvents.onFriendRequest.subscribe(this.onFriendRequest.bind(this));
         this.bot.clientEvents.onFriendResponse.subscribe(this.onFriendResponse.bind(this));
 
-        this.bot.clientCommands.friends.sendFriendRequest(this.masterAvatar, 'Be friends with me?').then(() => {});
+        this.bot.clientCommands.friends.sendFriendRequest(this.masterAvatar, 'Be friends with me?').then(() =>
+        {
+
+        });
 
         try
         {
@@ -23,7 +26,7 @@ class Friends extends ExampleBot
         }
     }
 
-    async onFriendRequest(event: FriendRequestEvent)
+    async onFriendRequest(event: FriendRequestEvent): Promise<void>
     {
         if (event.from.toString() === this.masterAvatar)
         {
@@ -41,7 +44,7 @@ class Friends extends ExampleBot
         }
     }
 
-    async onFriendResponse(response: FriendResponseEvent)
+    async onFriendResponse(response: FriendResponseEvent): Promise<void>
     {
         if (response.accepted)
         {
@@ -55,4 +58,10 @@ class Friends extends ExampleBot
 
 }
 
-new Friends().run().then(() => {}).catch((err) => { console.error(err) });
+new Friends().run().then(() =>
+{
+
+}).catch((err) =>
+{
+    console.error(err);
+});
