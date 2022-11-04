@@ -25,4 +25,10 @@ class Estate extends ExampleBot
     }
 }
 
-new Estate().run().then(() => {}).catch((err) => { console.error(err) });
+new Estate().run().then(() =>
+{
+
+}).catch((err) =>
+{
+    console.error(err);
+});

@@ -7,7 +7,7 @@ class Money extends ExampleBot
 {
     private balance = 0;
 
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         this.bot.clientEvents.onBalanceUpdated.subscribe(this.onBalanceUpdated.bind(this));
         try
@@ -23,7 +23,7 @@ class Money extends ExampleBot
         }
     }
 
-    async onBalanceUpdated(evt: BalanceUpdatedEvent)
+    async onBalanceUpdated(evt: BalanceUpdatedEvent): Promise<void>
     {
         this.balance = evt.balance;
         if (evt.transaction.from.equals(this.bot.agentID()))
@@ -35,7 +35,7 @@ class Money extends ExampleBot
             else
             {
                 const result = await this.bot.clientCommands.grid.avatarKey2Name(evt.transaction.to) as AvatarQueryResult;
-                console.log('You paid L$' + evt.transaction.amount + ' to ' + result.getName()+ ' "' + evt.transaction.description + '" (' + MoneyTransactionType[evt.transaction.type] + ')');
+                console.log('You paid L$' + evt.transaction.amount + ' to ' + result.getName() + ' "' + evt.transaction.description + '" (' + MoneyTransactionType[evt.transaction.type] + ')');
             }
         }
         else
@@ -54,4 +54,10 @@ class Money extends ExampleBot
     }
 }
 
-new Money().run().then(() => {}).catch((err) => { console.error(err) });
+new Money().run().then(() =>
+{
+
+}).catch((err) =>
+{
+    console.error(err);
+});

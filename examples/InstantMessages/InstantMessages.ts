@@ -11,12 +11,12 @@ class InstantMessages extends ExampleBot
         super();
     }
 
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         this.bot.clientEvents.onInstantMessage.subscribe(this.onInstantMessage.bind(this));
     }
 
-    async onInstantMessage(event: InstantMessageEvent)
+    async onInstantMessage(event: InstantMessageEvent): Promise<void>
     {
         if (event.source === ChatSourceType.Agent)
         {
@@ -32,4 +32,10 @@ class InstantMessages extends ExampleBot
     }
 }
 
-new InstantMessages().run().then(() => {}).catch((err: Error) => { console.error(err) });
+new InstantMessages().run().then(() =>
+{
+
+}).catch((err: Error) =>
+{
+    console.error(err);
+});

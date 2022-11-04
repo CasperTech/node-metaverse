@@ -3,7 +3,7 @@ import { Vector3 } from '../../lib/classes/Vector3';
 
 class Camera extends ExampleBot
 {
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         const height = 64;
         this.bot.clientCommands.agent.setCamera(
@@ -15,4 +15,10 @@ class Camera extends ExampleBot
     }
 }
 
-new Camera().run().then(() => {}).catch((err) => { console.error(err) });
+new Camera().run().then(() =>
+{
+
+}).catch((err) =>
+{
+    console.error(err)
+});

@@ -4,7 +4,7 @@ import { GroupNoticeEvent } from '../../lib/events/GroupNoticeEvent';
 
 class Group extends ExampleBot
 {
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         this.bot.clientEvents.onGroupNotice.subscribe(this.onGroupNotice.bind(this));
 
@@ -82,7 +82,7 @@ class Group extends ExampleBot
         }
     }
 
-    async onGroupNotice(event: GroupNoticeEvent)
+    async onGroupNotice(event: GroupNoticeEvent): Promise<void>
     {
         // Get group name
         const groupProfile = await this.bot.clientCommands.group.getGroupProfile(event.groupID);
@@ -93,4 +93,10 @@ class Group extends ExampleBot
     }
 }
 
-new Group().run().then(() => {}).catch((err: Error) => { console.error(err) });
+new Group().run().then(() =>
+{
+
+}).catch((err: Error) =>
+{
+    console.error(err);
+});
