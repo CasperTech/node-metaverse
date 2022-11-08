@@ -81,12 +81,17 @@ export class LoginHandler
 
         return new Promise<LoginResponse>((resolve, reject) =>
         {
+            let password = params.password;
+            if (params.getHashedPassword)
+            {
+                password = params.getHashedPassword();
+            }
             client.methodCall('login_to_simulator',
                 [
                     {
                         'first': params.firstName,
                         'last': params.lastName,
-                        'passwd': params.getHashedPassword(),
+                        'passwd': password,
                         'start': params.start,
                         'major': '0',
                         'minor': '0',
