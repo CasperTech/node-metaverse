@@ -228,7 +228,7 @@ export class Agent
     }
     sendAgentUpdate(): void
     {
-        if (!this.currentRegion)
+        if (!this.currentRegion || !this.currentRegion.circuit?.active)
         {
             return;
         }
