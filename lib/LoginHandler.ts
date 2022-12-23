@@ -1,6 +1,5 @@
 import validator from 'validator';
 import * as xmlrpc from 'xmlrpc';
-import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { LoginError } from './classes/LoginError';
@@ -82,12 +81,17 @@ export class LoginHandler
 
         return new Promise<LoginResponse>((resolve, reject) =>
         {
+            let password = params.password;
+            if (params.getHashedPassword)
+            {
+                password = params.getHashedPassword();
+            }
             client.methodCall('login_to_simulator',
                 [
                     {
                         'first': params.firstName,
                         'last': params.lastName,
-                        'passwd': '$1$' + crypto.createHash('md5').update(params.password.substr(0, 16)).digest('hex'),
+                        'passwd': password,
                         'start': params.start,
                         'major': '0',
                         'minor': '0',

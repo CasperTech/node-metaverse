@@ -147,4 +147,10 @@ class Inventory extends ExampleBot
     }
 }
 
-new Inventory().run().then(() => {}).catch((err) => { console.error(err) });
+new Inventory().run().then(() =>
+{
+
+}).catch((err) =>
+{
+    console.error(err);
+});

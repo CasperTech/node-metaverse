@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 export class LoginParameters
 {
     firstName: string;
@@ -9,4 +11,15 @@ export class LoginParameters
     mfa_hash?: string;
     agreeToTOS?: true;
     readCritical?: true;
+
+    passwordPrehashed = false;
+
+    getHashedPassword(): string
+    {
+        if (this.passwordPrehashed)
+        {
+            return this.password;
+        }
+        return '$1$' + crypto.createHash('md5').update(this.password.substr(0, 16)).digest('hex');
+    }
 }

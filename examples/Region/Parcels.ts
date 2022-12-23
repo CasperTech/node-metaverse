@@ -4,7 +4,7 @@ import { LandStatFlags } from '../../lib/enums/LandStatFlags';
 
 class Parcels extends ExampleBot
 {
-    async onConnected()
+    async onConnected(): Promise<void>
     {
         const parcelInMiddle = await this.bot.clientCommands.region.getParcelAt(128, 128);
         console.log('Parcel at 128x128 is ' + parcelInMiddle.Name);
@@ -22,4 +22,10 @@ class Parcels extends ExampleBot
     }
 }
 
-new Parcels().run().then(() => {}).catch((err) => { console.error(err) });
+new Parcels().run().then(() =>
+{
+
+}).catch((err) =>
+{
+    console.error(err);
+});
