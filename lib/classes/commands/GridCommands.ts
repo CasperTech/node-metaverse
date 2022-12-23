@@ -186,7 +186,7 @@ export class GridCommands extends CommandsBase
                 {
                     for (const data of responseMsg2.Data)
                     {
-                        for (let index = 0; index <= data.Extra; index++)
+                        for (let index = 0; index < data.Extra; index++)
                         {
                             response.avatars.push(new Vector2([
                                 data.X,
