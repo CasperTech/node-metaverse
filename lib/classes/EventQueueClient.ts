@@ -527,7 +527,7 @@ export class EventQueueClient
             {
                 this.Get();
             }
-        }).catch(() =>
+        }).catch((e) =>
         {
             const time = (new Date().getTime()) - startTime;
             if (time > 30000)
@@ -542,6 +542,14 @@ export class EventQueueClient
             {
                 if (!this.done)
                 {
+                    if (e.message.includes('inactive Caps instance'))
+                    {
+                        // waiting for event queue to start during a teleport to a new region.
+                    }
+                    else
+                    {
+                        console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds', this.agent.agentID.toString());
+                    }
                     console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds');
 
                     // Wait 5 seconds before retrying
