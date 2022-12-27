@@ -548,9 +548,8 @@ export class EventQueueClient
                     }
                     else
                     {
-                        console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds', this.agent.agentID.toString());
+                        console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds');
                     }
-                    console.error('Event queue aborted after ' + time + 'ms. Reconnecting in 5 seconds');
 
                     // Wait 5 seconds before retrying
                     setTimeout(() =>
