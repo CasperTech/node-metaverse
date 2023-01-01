@@ -347,15 +347,14 @@ export class Region
         }
         this.comms = new Comms(this.circuit, agent, clientEvents);
 
-        this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe(async(parcelProperties: ParcelPropertiesEvent) =>
-        {
-            try
+        this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe({
+            next: async(parcelProperties: ParcelPropertiesEvent) =>
             {
                 await this.resolveParcel(parcelProperties);
-            }
-            catch (e)
+            },
+            error: (error) =>
             {
-                console.error(e);
+                console.error(error);
             }
         });
 
@@ -1023,28 +1022,27 @@ export class Region
             let messageAwait: Subscription | undefined = undefined;
             let messageWaitTimer: number | undefined = undefined;
 
-            messageAwait = this.clientEvents.onParcelPropertiesEvent.subscribe(async(parcelProperties: ParcelPropertiesEvent) =>
-            {
-                if (Region.doesBitmapContainCoordinate(parcelProperties.Bitmap, x, y))
+            messageAwait = this.clientEvents.onParcelPropertiesEvent.subscribe({
+                next: async(parcelProperties: ParcelPropertiesEvent) =>
                 {
-                    if (messageAwait !== undefined)
+                    if (Region.doesBitmapContainCoordinate(parcelProperties.Bitmap, x, y))
                     {
-                        messageAwait.unsubscribe();
-                        messageAwait = undefined;
-                    }
-                    if (messageWaitTimer !== undefined)
-                    {
-                        clearTimeout(messageWaitTimer);
-                        messageWaitTimer = undefined;
-                    }
-                    try
-                    {
+                        if (messageAwait !== undefined)
+                        {
+                            messageAwait.unsubscribe();
+                            messageAwait = undefined;
+                        }
+                        if (messageWaitTimer !== undefined)
+                        {
+                            clearTimeout(messageWaitTimer);
+                            messageWaitTimer = undefined;
+                        }
                         resolve(await this.resolveParcel(parcelProperties));
                     }
-                    catch (e)
-                    {
-                        reject(e);
-                    }
+                },
+                error: (e) =>
+                {
+                    reject(e);
                 }
             });
 
