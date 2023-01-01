@@ -350,7 +350,14 @@ export class Region
         this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe({
             next: async(parcelProperties: ParcelPropertiesEvent) =>
             {
-                await this.resolveParcel(parcelProperties);
+                try
+                {
+                    await this.resolveParcel(parcelProperties);
+                }
+                catch (e)
+                {
+                    console.error(e);
+                }
             },
             error: (error) =>
             {
@@ -1037,7 +1044,14 @@ export class Region
                             clearTimeout(messageWaitTimer);
                             messageWaitTimer = undefined;
                         }
-                        resolve(await this.resolveParcel(parcelProperties));
+                        try
+                        {
+                            resolve(await this.resolveParcel(parcelProperties));
+                        }
+                        catch (e)
+                        {
+                            reject(e);
+                        }
                     }
                 },
                 error: (e) =>
