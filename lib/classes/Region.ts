@@ -349,7 +349,14 @@ export class Region
 
         this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe(async(parcelProperties: ParcelPropertiesEvent) =>
         {
-            await this.resolveParcel(parcelProperties);
+            try
+            {
+                await this.resolveParcel(parcelProperties);
+            }
+            catch (e)
+            {
+                console.error(e);
+            }
         });
 
         this.messageSubscription = this.circuit.subscribeToMessages([
@@ -1064,14 +1071,7 @@ export class Region
         const parcels: Parcel[] = [];
         for (const parcel of this.parcelCoordinates)
         {
-            try
-            {
-                parcels.push(await this.getParcelProperties(parcel.x * 4.0, parcel.y * 4.0));
-            }
-            catch (error)
-            {
-                console.error(error);
-            }
+            parcels.push(await this.getParcelProperties(parcel.x * 4.0, parcel.y * 4.0));
         }
         return parcels;
     }
