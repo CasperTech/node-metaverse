@@ -1030,7 +1030,14 @@ export class Region
                         clearTimeout(messageWaitTimer);
                         messageWaitTimer = undefined;
                     }
-                    resolve(await this.resolveParcel(parcelProperties));
+                    try
+                    {
+                        resolve(await this.resolveParcel(parcelProperties));
+                    }
+                    catch (e)
+                    {
+                        reject(e);
+                    }
                 }
             });
 
