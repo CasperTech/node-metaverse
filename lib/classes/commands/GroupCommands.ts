@@ -424,10 +424,10 @@ export class GroupCommands extends CommandsBase
             const replyMessage: GroupProfileReplyMessage = packet as GroupProfileReplyMessage;
             if (replyMessage.GroupData.GroupID.equals(groupID))
             {
-                console.log('groupProfileReply Finish');
+                // console.log('groupProfileReply Finish');
                 return FilterResponse.Finish;
             }
-            console.log('groupProfileReply NoMatch');
+            // console.log('groupProfileReply NoMatch');
             return FilterResponse.NoMatch;
         })) as GroupProfileReplyMessage;
 
