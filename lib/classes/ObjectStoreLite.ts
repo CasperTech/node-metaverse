@@ -330,7 +330,7 @@ export class ObjectStoreLite implements IObjectStore
                         'ObjectLocalID': localID
                     }
                 ];
-                this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+                this.circuit.sendMessage(deselectObject, PacketFlags.Reliable);
             }
         }
     }
