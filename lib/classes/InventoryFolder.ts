@@ -821,6 +821,10 @@ export class InventoryFolder
                                 reject(err);
                             });
                         }
+                        else
+                        {
+                            reject(responseUpload);
+                        }
                     }).catch((err) =>
                     {
                         reject(err);
