@@ -63,6 +63,8 @@ export class Agent
     uiFlags: {
         'allowFirstLife'?: boolean
     } = {};
+    headRotation = Quaternion.getIdentity();
+    bodyRotation = Quaternion.getIdentity();
     cameraLookAt: Vector3 = new Vector3([0.979546, 0.105575, -0.171303]);
     cameraCenter: Vector3 = new Vector3([199.58, 203.95, 24.304]);
     cameraLeftAxis: Vector3 = new Vector3([-1.0, 0.0, 0]);
@@ -237,8 +239,8 @@ export class Agent
         agentUpdate.AgentData = {
             AgentID: this.agentID,
             SessionID: circuit.sessionID,
-            HeadRotation: Quaternion.getIdentity(),
-            BodyRotation: Quaternion.getIdentity(),
+            HeadRotation: this.headRotation,
+            BodyRotation: this.bodyRotation,
             State: AgentState.None,
             CameraCenter: this.cameraCenter,
             CameraAtAxis: this.cameraLookAt,
