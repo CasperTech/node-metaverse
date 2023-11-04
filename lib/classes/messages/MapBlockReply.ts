@@ -25,10 +25,14 @@ export class MapBlockReplyMessage implements MessageBase
         Agents: number;
         MapImageID: UUID;
     }[];
+    Size: {
+        SizeX: number;
+        SizeY: number;
+    }[];
 
     getSize(): number
     {
-        return this.calculateVarVarSize(this.Data, 'Name', 1) + ((27) * this.Data.length) + 21;
+        return this.calculateVarVarSize(this.Data, 'Name', 1) + ((27) * this.Data.length) + ((4) * this.Size.length) + 22;
     }
 
     calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
@@ -49,7 +53,7 @@ export class MapBlockReplyMessage implements MessageBase
         pos += 16;
         buf.writeUInt32LE(this.AgentData['Flags'], pos);
         pos += 4;
-        const count = this.Data.length;
+        let count = this.Data.length;
         buf.writeUInt8(this.Data.length, pos++);
         for (let i = 0; i < count; i++)
         {
@@ -67,6 +71,15 @@ export class MapBlockReplyMessage implements MessageBase
             buf.writeUInt8(this.Data[i]['Agents'], pos++);
             this.Data[i]['MapImageID'].writeToBuffer(buf, pos);
             pos += 16;
+        }
+        count = this.Size.length;
+        buf.writeUInt8(this.Size.length, pos++);
+        for (let i = 0; i < count; i++)
+        {
+            buf.writeUInt16LE(this.Size[i]['SizeX'], pos);
+            pos += 2;
+            buf.writeUInt16LE(this.Size[i]['SizeY'], pos);
+            pos += 2;
         }
         return pos - startPos;
     }
@@ -92,7 +105,7 @@ export class MapBlockReplyMessage implements MessageBase
         {
             return pos - startPos;
         }
-        const count = buf.readUInt8(pos++);
+        let count = buf.readUInt8(pos++);
         this.Data = [];
         for (let i = 0; i < count; i++)
         {
@@ -130,6 +143,27 @@ export class MapBlockReplyMessage implements MessageBase
             newObjData['MapImageID'] = new UUID(buf, pos);
             pos += 16;
             this.Data.push(newObjData);
+        }
+        if (pos >= buf.length)
+        {
+            return pos - startPos;
+        }
+        count = buf.readUInt8(pos++);
+        this.Size = [];
+        for (let i = 0; i < count; i++)
+        {
+            const newObjSize: {
+                SizeX: number,
+                SizeY: number
+            } = {
+                SizeX: 0,
+                SizeY: 0
+            };
+            newObjSize['SizeX'] = buf.readUInt16LE(pos);
+            pos += 2;
+            newObjSize['SizeY'] = buf.readUInt16LE(pos);
+            pos += 2;
+            this.Size.push(newObjSize);
         }
         return pos - startPos;
     }

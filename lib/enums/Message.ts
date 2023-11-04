@@ -304,6 +304,8 @@ export enum Message
     GodlikeMessage = 4294902019,
     EstateOwnerMessage = 4294902020,
     GenericMessage = 4294902021,
+    GenericStreamingMessage = 31,
+    LargeGenericMessage = 4294902190,
     MuteListRequest = 4294902022,
     UpdateMuteListEntry = 4294902023,
     RemoveMuteListEntry = 4294902024,

@@ -8403,6 +8403,48 @@
                         "size": 1
                     }
                 ]
+            },
+            {
+                "name": "RegionInfo5",
+                "type": "Variable",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "ChatWhisperRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatNormalRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatShoutRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatWhisperOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatNormalOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatShoutOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatFlags",
+                        "type": "U32",
+                        "size": 1
+                    }
+                ]
             }
         ]
     },
@@ -12684,6 +12726,23 @@
                         "size": 1
                     }
                 ]
+            },
+            {
+                "name": "ParcelEnvironmentBlock",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "ParcelEnvironmentVersion",
+                        "type": "S32",
+                        "size": 1
+                    },
+                    {
+                        "name": "RegionAllowEnvironmentOverride",
+                        "type": "BOOL",
+                        "size": 1
+                    }
+                ]
             }
         ]
     },
@@ -16270,6 +16329,104 @@
                         "name": "Parameter",
                         "type": "Variable",
                         "size": "1"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "GenericStreamingMessage",
+        "frequency": "High",
+        "id": "31",
+        "flags": [
+            "Trusted",
+            "Unencoded"
+        ],
+        "blocks": [
+            {
+                "name": "MethodData",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "Method",
+                        "type": "U16",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "DataBlock",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "Data",
+                        "type": "Variable",
+                        "size": "2"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "LargeGenericMessage",
+        "frequency": "Low",
+        "id": "430",
+        "flags": [
+            "NotTrusted",
+            "Unencoded",
+            "UDPDeprecated"
+        ],
+        "blocks": [
+            {
+                "name": "AgentData",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "AgentID",
+                        "type": "LLUUID",
+                        "size": 1
+                    },
+                    {
+                        "name": "SessionID",
+                        "type": "LLUUID",
+                        "size": 1
+                    },
+                    {
+                        "name": "TransactionID",
+                        "type": "LLUUID",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "MethodData",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "Method",
+                        "type": "Variable",
+                        "size": "1"
+                    },
+                    {
+                        "name": "Invoice",
+                        "type": "LLUUID",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "ParamList",
+                "type": "Variable",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "Parameter",
+                        "type": "Variable",
+                        "size": "2"
                     }
                 ]
             }
@@ -25036,6 +25193,23 @@
                     {
                         "name": "MapImageID",
                         "type": "LLUUID",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "Size",
+                "type": "Variable",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "SizeX",
+                        "type": "U16",
+                        "size": 1
+                    },
+                    {
+                        "name": "SizeY",
+                        "type": "U16",
                         "size": 1
                     }
                 ]
