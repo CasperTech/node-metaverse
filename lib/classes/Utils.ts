@@ -957,7 +957,7 @@ export class Utils
     {
         return new Promise<any>((resolve, reject) =>
         {
-            xml2js.parseString(input, (err: Error, result: any) =>
+            xml2js.parseString(input, (err: Error | null, result: any) =>
             {
                 if (err)
                 {
