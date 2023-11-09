@@ -838,7 +838,7 @@ export class GameObject implements IGameObjectData
         return Utils.waitOrTimeOut<void>(this.onTextureUpdate, timeout);
     }
 
-    async rezScript(name: string, description: string, perms: PermissionMask = 532480): Promise<InventoryItem>
+    async rezScript(name: string, description: string, perms: PermissionMask = 532480 as PermissionMask): Promise<InventoryItem>
     {
         const rezScriptMsg = new RezScriptMessage();
         rezScriptMsg.AgentData = {

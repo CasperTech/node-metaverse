@@ -248,7 +248,7 @@ export class Agent
             ControlFlags: this.controlFlags,
             Flags: AgentFlags.None
         };
-        circuit.sendMessage(agentUpdate, 0);
+        circuit.sendMessage(agentUpdate, 0 as PacketFlags);
     }
     shutdown(): void
     {
