@@ -36,6 +36,7 @@ export class Caps
         req.push('AcceptFriendship');
         req.push('AcceptGroupInvite');
         req.push('AgentPreferences');
+        req.push('AgentProfile');
         req.push('AgentState');
         req.push('AttachmentResources');
         req.push('AvatarPickerSearch');
@@ -58,6 +59,7 @@ export class Caps
         req.push('FetchInventory2');
         req.push('FetchInventoryDescendents2');
         req.push('IncrementCOFVersion');
+        req.push('InterestList');
         req.push('GetDisplayNames');
         req.push('GetExperiences');
         req.push('AgentExperiences');
@@ -70,7 +72,6 @@ export class Caps
         req.push('UpdateExperience');
         req.push('IsExperienceAdmin');
         req.push('IsExperienceContributor');
-        req.push('InventoryAPIv3');
         req.push('RegionExperiences');
         req.push('ExperienceQuery');
         req.push('GetMetadata');
@@ -96,6 +97,7 @@ export class Caps
         req.push('ProductInfoRequest');
         req.push('ProvisionVoiceAccountRequest');
         req.push('ReadOfflineMsgs');
+        req.push('RegionObjects');
         req.push('RemoteParcelRequest');
         req.push('RenderMaterials');
         req.push('RequestTextureDownload');
@@ -125,6 +127,7 @@ export class Caps
         req.push('UpdateScriptTask');
         req.push('UpdateSettingsAgentInventory');
         req.push('UpdateSettingsTaskInventory');
+        req.push('UploadAgentProfileImage');
         req.push('UploadBakedTexture');
         req.push('UserInfo');
         req.push('ViewerAsset');
