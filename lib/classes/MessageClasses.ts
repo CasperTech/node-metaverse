@@ -478,9 +478,6 @@ export * from './messages/Error';
 export * from './messages/ObjectIncludeInSearch';
 export * from './messages/RezRestoreToWorld';
 export * from './messages/LinkInventoryItem';
-export * from './messages/RetrieveIMsExtended';
-export * from './messages/JoinGroupRequestExtended';
-export * from './messages/CreateGroupRequestExtended';
 import { Message } from '../enums/Message';
 
 const messages: { [index: number]: string } = {};
@@ -962,9 +959,6 @@ messages[<number>Message.Error] = 'ErrorMessage';
 messages[<number>Message.ObjectIncludeInSearch] = 'ObjectIncludeInSearchMessage';
 messages[<number>Message.RezRestoreToWorld] = 'RezRestoreToWorldMessage';
 messages[<number>Message.LinkInventoryItem] = 'LinkInventoryItemMessage';
-messages[<number>Message.RetrieveIMsExtended] = 'RetrieveIMsExtendedMessage';
-messages[<number>Message.JoinGroupRequestExtended] = 'JoinGroupRequestExtendedMessage';
-messages[<number>Message.CreateGroupRequestExtended] = 'CreateGroupRequestExtendedMessage';
 
 export function nameFromID(id: Message): string
 {

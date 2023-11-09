@@ -477,8 +477,5 @@ export enum Message
     Error = 4294902183,
     ObjectIncludeInSearch = 4294902184,
     RezRestoreToWorld = 4294902185,
-    LinkInventoryItem = 4294902186,
-    RetrieveIMsExtended = 4294902187,
-    JoinGroupRequestExtended = 4294902188,
-    CreateGroupRequestExtended = 4294902189
+    LinkInventoryItem = 4294902186
 }

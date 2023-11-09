@@ -50,9 +50,6 @@ export class GroupCommands extends CommandsBase
             Message: Utils.StringToBuffer(subject + '|' + message),
             BinaryBucket: Buffer.allocUnsafe(0)
         };
-        im.EstateBlock = {
-            EstateID: 0
-        };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         return await circuit.waitForAck(sequenceNo, 10000);
     }
@@ -140,9 +137,6 @@ export class GroupCommands extends CommandsBase
             Message: Utils.StringToBuffer(''),
             BinaryBucket: Buffer.allocUnsafe(0)
         };
-        im.EstateBlock = {
-            EstateID: 0
-        };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         return await circuit.waitForAck(sequenceNo, 10000);
     }
@@ -169,9 +163,6 @@ export class GroupCommands extends CommandsBase
             FromAgentName: Utils.StringToBuffer(agentName),
             Message: Utils.StringToBuffer(''),
             BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         return await circuit.waitForAck(sequenceNo, 10000);

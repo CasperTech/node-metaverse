@@ -30,13 +30,10 @@ export class ImprovedInstantMessageMessage implements MessageBase
         Message: Buffer;
         BinaryBucket: Buffer;
     };
-    EstateBlock: {
-        EstateID: number;
-    };
 
     getSize(): number
     {
-        return (this.MessageBlock['FromAgentName'].length + 1 + this.MessageBlock['Message'].length + 2 + this.MessageBlock['BinaryBucket'].length + 2) + 107;
+        return (this.MessageBlock['FromAgentName'].length + 1 + this.MessageBlock['Message'].length + 2 + this.MessageBlock['BinaryBucket'].length + 2) + 103;
     }
 
     // @ts-ignore
@@ -73,8 +70,6 @@ export class ImprovedInstantMessageMessage implements MessageBase
         pos += 2;
         this.MessageBlock['BinaryBucket'].copy(buf, pos);
         pos += this.MessageBlock['BinaryBucket'].length;
-        buf.writeUInt32LE(this.EstateBlock['EstateID'], pos);
-        pos += 4;
         return pos - startPos;
     }
 
@@ -149,14 +144,6 @@ export class ImprovedInstantMessageMessage implements MessageBase
         newObjMessageBlock['BinaryBucket'] = buf.slice(pos, pos + varLength);
         pos += varLength;
         this.MessageBlock = newObjMessageBlock;
-        const newObjEstateBlock: {
-            EstateID: number
-        } = {
-            EstateID: 0
-        };
-        newObjEstateBlock['EstateID'] = buf.readUInt32LE(pos);
-        pos += 4;
-        this.EstateBlock = newObjEstateBlock;
         return pos - startPos;
     }
 }

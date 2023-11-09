@@ -9,7 +9,7 @@ import { Message } from '../../enums/Message';
 export class RoutedMoneyBalanceReplyMessage implements MessageBase
 {
     name = 'RoutedMoneyBalanceReply';
-    messageFlags = MessageFlags.Trusted | MessageFlags.Zerocoded | MessageFlags.Deprecated | MessageFlags.FrequencyLow;
+    messageFlags = MessageFlags.Trusted | MessageFlags.Zerocoded | MessageFlags.FrequencyLow;
     id = Message.RoutedMoneyBalanceReply;
 
     TargetBlock: {
