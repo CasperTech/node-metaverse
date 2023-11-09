@@ -23,6 +23,7 @@ import { ExtraParams } from './public/ExtraParams';
 import { CompressedFlags } from '../enums/CompressedFlags';
 import { PCode } from '../enums/PCode';
 import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { PacketFlags } from '../enums/PacketFlags';
 
 export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
 {

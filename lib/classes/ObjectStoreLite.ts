@@ -36,8 +36,11 @@ import { Vector3 } from './Vector3';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 import { Avatar } from './public/Avatar';
-
 import Timer = NodeJS.Timer;
+import { GenericStreamingMessageMessage } from './messages/GenericStreamingMessage';
+import { PythonParser } from './python/PythonParser';
+import { PythonDict } from './python/PythonDict';
+import { PythonList } from './python/PythonList';
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -71,11 +74,35 @@ export class ObjectStoreLite implements IObjectStore
             Message.ObjectUpdateCompressed,
             Message.ImprovedTerseObjectUpdate,
             Message.ObjectProperties,
-            Message.KillObject
+            Message.KillObject,
+            Message.GenericStreamingMessage
         ], async(packet: Packet) =>
         {
             switch (packet.message.id)
             {
+                case Message.GenericStreamingMessage:
+                {
+                    const genMsg = packet.message as GenericStreamingMessageMessage;
+                    if (genMsg.MethodData.Method === 0x4175)
+                    {
+                        // Whoever decided to use python notation for this is a psychopath
+                        const result = PythonParser.parse(genMsg.DataBlock.Data.toString('utf-8'));
+                        if (result instanceof PythonDict)
+                        {
+                            const arr = result.get('te');
+                            if (arr instanceof PythonList)
+                            {
+                                if (arr.length === 0)
+                                {
+                                    return;
+                                }
+
+                                console.log(JSON.stringify(result, null, 4));
+                            }
+                        }
+                    }
+                    break;
+                }
                 case Message.ObjectProperties:
                 {
                     const objProp = packet.message as ObjectPropertiesMessage;
