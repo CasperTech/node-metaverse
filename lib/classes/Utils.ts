@@ -11,8 +11,8 @@ import { Logger } from './Logger';
 import { GlobalPosition } from './public/interfaces/GlobalPosition';
 import { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
-import Timeout = NodeJS.Timeout;
 import * as crypto from 'crypto';
+import Timeout = NodeJS.Timeout;
 
 export class Utils
 {
@@ -189,6 +189,8 @@ export class Utils
                 return 'person';
             case InventoryType.Settings:
                 return 'settings';
+            case InventoryType.Material:
+                return 'material';
             default:
                 console.error('Unknown inventory type: ' + InventoryType[type]);
                 return 'texture';
@@ -233,6 +235,8 @@ export class Utils
                 return AssetType.Widget;
             case HTTPAssets.ASSET_PERSON:
                 return AssetType.Person;
+            case HTTPAssets.ASSET_MATERIAL:
+                return AssetType.Material;
             default:
                 return 0;
         }
@@ -276,6 +280,8 @@ export class Utils
                 return HTTPAssets.ASSET_PERSON;
             case AssetType.Widget:
                 return HTTPAssets.ASSET_WIDGET;
+            case AssetType.Material:
+                return HTTPAssets.ASSET_MATERIAL;
             default:
                 return HTTPAssets.ASSET_TEXTURE;
         }
@@ -314,6 +320,8 @@ export class Utils
                 return InventoryType.Wearable;
             case HTTPAssets.ASSET_MESH:
                 return InventoryType.Mesh;
+            case HTTPAssets.ASSET_MATERIAL:
+                return InventoryType.Material;
             default:
                 return 0;
         }
