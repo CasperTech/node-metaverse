@@ -175,6 +175,21 @@ export class ExtraParams
             paramCount++;
             totalLength = totalLength + 2 + 4 + 17;
         }
+        if (this.extendedMeshData !== null)
+        {
+            paramCount++;
+            totalLength = totalLength + 2 + 4 + 4;
+        }
+        if (this.reflectionProbeData !== null)
+        {
+            paramCount++;
+            totalLength = totalLength + 2 + 4 + 9;
+        }
+        if (this.renderMaterialData !== null)
+        {
+            paramCount++;
+            totalLength = totalLength + 2 + 4 + 1 + (this.renderMaterialData.params.length * 17)
+        }
         const buf = Buffer.allocUnsafe(totalLength);
         let pos = 0;
         buf.writeUInt8(paramCount, pos++);
@@ -207,6 +222,24 @@ export class ExtraParams
             buf.writeUInt16LE(ExtraParamType.Sculpt, pos); pos = pos + 2;
             buf.writeUInt32LE(17, pos); pos = pos + 4;
             this.sculptData.writeToBuffer(buf, pos); pos = pos + 17;
+        }
+        if (this.extendedMeshData !== null)
+        {
+            buf.writeUInt16LE(ExtraParamType.ExtendedMesh, pos); pos = pos + 2;
+            buf.writeUInt32LE(4, pos); pos = pos + 4;
+            this.extendedMeshData.writeToBuffer(buf, pos); pos = pos + 4;
+        }
+        if (this.reflectionProbeData !== null)
+        {
+            buf.writeUInt16LE(ExtraParamType.ReflectionProbe, pos); pos = pos + 2;
+            buf.writeUInt32LE(9, pos); pos = pos + 4;
+            this.reflectionProbeData.writeToBuffer(buf, pos); pos = pos + 9;
+        }
+        if (this.renderMaterialData !== null)
+        {
+            buf.writeUInt16LE(ExtraParamType.RenderMaterial, pos); pos = pos + 2;
+            buf.writeUInt32LE(1 + (this.renderMaterialData.params.length * 17), pos); pos = pos + 4;
+            this.renderMaterialData.writeToBuffer(buf, pos); pos = pos + 1 + (this.renderMaterialData.params.length * 17);
         }
         return buf;
     }

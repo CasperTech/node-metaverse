@@ -44,7 +44,7 @@ export class RenderMaterialData
 
     getBuffer(): Buffer
     {
-        const buf = Buffer.allocUnsafe(8 + (this.params.length * 17));
+        const buf = Buffer.allocUnsafe(1 + (this.params.length * 17));
         this.writeToBuffer(buf, 0);
         return buf;
     }
