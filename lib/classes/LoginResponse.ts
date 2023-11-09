@@ -225,7 +225,7 @@ export class LoginResponse
                     this.searchToken = String(val);
                     break;
                 case 'login-flags':
-                    let flags: LoginFlags = 0;
+                    let flags: LoginFlags = 0 as LoginFlags;
                     for (const obj of val)
                     {
                         if (obj['ever_logged_in'] === 'Y')

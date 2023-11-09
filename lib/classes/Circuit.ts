@@ -529,7 +529,7 @@ export class Circuit
                 ID: sequenceNumber
             }
         ];
-        this.sendMessage(msg, 0);
+        this.sendMessage(msg, 0 as PacketFlags);
     }
 
     getOldestUnacked(): number
@@ -600,7 +600,7 @@ export class Circuit
             reply.PingID = {
                 PingID: msg.PingID.PingID
             };
-            this.sendMessage(reply, 0);
+            this.sendMessage(reply, 0 as PacketFlags);
         }
         this.onPacketReceived.next(packet);
     }

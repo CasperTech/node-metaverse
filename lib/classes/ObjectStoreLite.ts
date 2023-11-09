@@ -595,7 +595,7 @@ export class ObjectStoreLite implements IObjectStore
                 ID: obj.ID
             });
         }
-        this.circuit.sendMessage(rmo, 0);
+        this.circuit.sendMessage(rmo, 0 as PacketFlags);
     }
 
     protected objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage): void

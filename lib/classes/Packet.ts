@@ -8,7 +8,7 @@ import { DecodeFlags } from '../enums/DecodeFlags';
 
 export class Packet
 {
-    packetFlags: PacketFlags = 0;
+    packetFlags: PacketFlags = 0 as PacketFlags;
     sequenceNumber = 0;
     extraHeader: Buffer = Buffer.allocUnsafe(0);
     message: MessageBase;
@@ -31,9 +31,9 @@ export class Packet
     {
         if (options === undefined)
         {
-            options = 0;
+            options = 0 as DecodeFlags;
         }
-        if (this.message.messageFlags & MessageFlags.Zerocoded && !(options & 1))
+        if (this.message.messageFlags & MessageFlags.Zerocoded && !((options ?? 0) & 1))
         {
             this.packetFlags = this.packetFlags | PacketFlags.Zerocoded;
         }

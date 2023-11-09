@@ -238,7 +238,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             {
                 return;
             }
-            this.circuit.sendMessage(rmo, 0);
+            this.circuit.sendMessage(rmo, 0 as PacketFlags);
         }
     }
 
