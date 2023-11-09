@@ -97,7 +97,8 @@ export class ObjectStoreLite implements IObjectStore
                                     return;
                                 }
 
-                                console.log(JSON.stringify(result, null, 4));
+                                // TODO: figure out what to do with this..
+                                // console.log(JSON.stringify(result, null, 4));
                             }
                         }
                     }
