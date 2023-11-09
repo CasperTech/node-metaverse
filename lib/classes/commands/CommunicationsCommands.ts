@@ -68,9 +68,6 @@ export class CommunicationsCommands extends CommandsBase
             Message: Utils.StringToBuffer(itemOrFolder.name),
             BinaryBucket: bucket
         };
-        im.EstateBlock = {
-            EstateID: 0
-        };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         return await circuit.waitForAck(sequenceNo, 10000);
     }
@@ -101,9 +98,6 @@ export class CommunicationsCommands extends CommandsBase
             FromAgentName: Utils.StringToBuffer(agentName),
             Message: Utils.StringToBuffer(message),
             BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         return await circuit.waitForAck(sequenceNo, 10000);
@@ -229,9 +223,6 @@ export class CommunicationsCommands extends CommandsBase
             Message: Utils.StringToBuffer(''),
             BinaryBucket: Buffer.allocUnsafe(0)
         };
-        im.EstateBlock = {
-            EstateID: 0
-        };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         return await circuit.waitForAck(sequenceNo, 10000);
     }
@@ -262,9 +253,6 @@ export class CommunicationsCommands extends CommandsBase
             FromAgentName: Utils.StringToBuffer(agentName),
             Message: Utils.StringToBuffer(''),
             BinaryBucket: Buffer.allocUnsafe(0)
-        };
-        im.EstateBlock = {
-            EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         return await circuit.waitForAck(sequenceNo, 10000);
@@ -419,9 +407,6 @@ export class CommunicationsCommands extends CommandsBase
             Message: Buffer.allocUnsafe(0),
             BinaryBucket: Buffer.allocUnsafe(0)
         };
-        im.EstateBlock = {
-            EstateID: 0
-        };
         this.agent.deleteChatSession(groupID);
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
         return this.circuit.waitForAck(sequenceNo, 10000);
@@ -459,9 +444,6 @@ export class CommunicationsCommands extends CommandsBase
             FromAgentName: Utils.StringToBuffer(agentName),
             Message: Utils.StringToBuffer(message),
             BinaryBucket: Utils.StringToBuffer('')
-        };
-        im.EstateBlock = {
-            EstateID: 0
         };
         circuit.sendMessage(im, PacketFlags.Reliable);
         await Utils.waitOrTimeOut(this.currentRegion.clientEvents.onGroupChatSessionJoin, 10000, (event: GroupChatSessionJoinEvent) =>
@@ -531,9 +513,6 @@ export class CommunicationsCommands extends CommandsBase
             FromAgentName: Utils.StringToBuffer(agentName),
             Message: Utils.StringToBuffer(message),
             BinaryBucket: Utils.StringToBuffer('')
-        };
-        im.EstateBlock = {
-            EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
         await this.circuit.waitForAck(sequenceNo, 10000);

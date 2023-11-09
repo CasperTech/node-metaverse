@@ -67,13 +67,10 @@ export class ChildAgentUpdateMessage implements MessageBase
     AgentInfo: {
         Flags: number;
     }[];
-    AgentInventoryHost: {
-        InventoryHost: Buffer;
-    }[];
 
     getSize(): number
     {
-        return (this.AgentData['Throttles'].length + 1 + this.AgentData['AgentTextures'].length + 2) + ((25) * this.GroupData.length) + ((32) * this.AnimationData.length) + ((16) * this.GranterBlock.length) + this.calculateVarVarSize(this.NVPairData, 'NVPairs', 2) + ((1) * this.VisualParam.length) + ((2) * this.AgentAccess.length) + ((4) * this.AgentInfo.length) + this.calculateVarVarSize(this.AgentInventoryHost, 'InventoryHost', 1) + 216;
+        return (this.AgentData['Throttles'].length + 1 + this.AgentData['AgentTextures'].length + 2) + ((25) * this.GroupData.length) + ((32) * this.AnimationData.length) + ((16) * this.GranterBlock.length) + this.calculateVarVarSize(this.NVPairData, 'NVPairs', 2) + ((1) * this.VisualParam.length) + ((2) * this.AgentAccess.length) + ((4) * this.AgentInfo.length) + 215;
     }
 
     calculateVarVarSize(block: { [key: string]: any }[], paramName: string, extraPerVar: number): number
@@ -199,14 +196,6 @@ export class ChildAgentUpdateMessage implements MessageBase
         {
             buf.writeUInt32LE(this.AgentInfo[i]['Flags'], pos);
             pos += 4;
-        }
-        count = this.AgentInventoryHost.length;
-        buf.writeUInt8(this.AgentInventoryHost.length, pos++);
-        for (let i = 0; i < count; i++)
-        {
-            buf.writeUInt8(this.AgentInventoryHost[i]['InventoryHost'].length, pos++);
-            this.AgentInventoryHost[i]['InventoryHost'].copy(buf, pos);
-            pos += this.AgentInventoryHost[i]['InventoryHost'].length;
         }
         return pos - startPos;
     }
@@ -455,24 +444,6 @@ export class ChildAgentUpdateMessage implements MessageBase
             newObjAgentInfo['Flags'] = buf.readUInt32LE(pos);
             pos += 4;
             this.AgentInfo.push(newObjAgentInfo);
-        }
-        if (pos >= buf.length)
-        {
-            return pos - startPos;
-        }
-        count = buf.readUInt8(pos++);
-        this.AgentInventoryHost = [];
-        for (let i = 0; i < count; i++)
-        {
-            const newObjAgentInventoryHost: {
-                InventoryHost: Buffer
-            } = {
-                InventoryHost: Buffer.allocUnsafe(0)
-            };
-            varLength = buf.readUInt8(pos++);
-            newObjAgentInventoryHost['InventoryHost'] = buf.slice(pos, pos + varLength);
-            pos += varLength;
-            this.AgentInventoryHost.push(newObjAgentInventoryHost);
         }
         return pos - startPos;
     }

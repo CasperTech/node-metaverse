@@ -9,7 +9,7 @@ import { Message } from '../../enums/Message';
 export class ParcelPropertiesMessage implements MessageBase
 {
     name = 'ParcelProperties';
-    messageFlags = MessageFlags.Trusted | MessageFlags.Zerocoded | MessageFlags.Deprecated | MessageFlags.FrequencyHigh;
+    messageFlags = MessageFlags.Trusted | MessageFlags.Zerocoded | MessageFlags.FrequencyHigh;
     id = Message.ParcelProperties;
 
     ParcelData: {
