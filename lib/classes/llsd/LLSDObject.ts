@@ -1,4 +1,4 @@
-export abstract class PythonObject
+export abstract class LLSDObject
 {
     public toString(): string
     {
