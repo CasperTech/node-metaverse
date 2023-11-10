@@ -47,6 +47,11 @@ export class PythonList extends PythonObject
         throw new Error('Expected ] end bracket in list')
     }
 
+    public get(index: number): PythonType | undefined
+    {
+        return this.data[index];
+    }
+
     get length(): number
     {
         return this.data.length;

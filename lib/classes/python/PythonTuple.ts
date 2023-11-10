@@ -10,7 +10,7 @@ export class PythonTuple extends PythonObject
 
     public static parse(container: PythonTokenContainer): PythonTuple
     {
-        let expectingComma = true;
+        let expectingComma = false;
         const tuple = new PythonTuple();
         do
         {
@@ -46,6 +46,11 @@ export class PythonTuple extends PythonObject
         }
         while (container.index < container.tokens.length);
         throw new Error('Expected ) end bracket in tuple')
+    }
+
+    public get(index: number): PythonType | undefined
+    {
+        return this.data[index];
     }
 
     get length(): number
