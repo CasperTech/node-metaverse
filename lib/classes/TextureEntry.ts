@@ -2,12 +2,14 @@ import { TextureEntryFace } from './TextureEntryFace';
 import { UUID } from './UUID';
 import { Color4 } from './Color4';
 import { Utils } from './Utils';
+import { LLGLTFMaterialOverride } from './LLGLTFMaterialOverride';
 
 export class TextureEntry
 {
     static MAX_UINT32 = 4294967295;
-    defaultTexture: TextureEntryFace | null;
-    faces: TextureEntryFace[] = [];
+    public defaultTexture: TextureEntryFace | null;
+    public faces: TextureEntryFace[] = [];
+    public gltfMaterialOverrides = new Map<number, LLGLTFMaterialOverride>()
 
     static readFaceBitfield(buf: Buffer, pos: number): {
         result: boolean,

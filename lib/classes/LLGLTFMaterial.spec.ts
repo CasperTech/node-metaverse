@@ -13,25 +13,65 @@ describe('LLGLTFMaterial', () =>
             assert.equal(mat.version, '1.1');
             assert.equal(mat.type, 'GLTF 2.0');
             assert.ok(mat.data);
-            assert.equal(mat.data.asset.version, '2.0');
-            assert.equal(mat.data.images.length, 4);
-            assert.equal(mat.data.images[0].uri, '2c7e7332-3717-5f4e-8f22-6ee9da5275fb');
-            assert.equal(mat.data.images[1].uri, '1078f5ec-1c56-e73f-8f8f-be36c40e5121');
-            assert.equal(mat.data.images[2].uri, '230d2d2d-b092-9bf5-ba7e-b319566322a6');
-            assert.equal(mat.data.images[3].uri, '230d2d2d-b092-9bf5-ba7e-b319566322a6');
-            assert.equal(mat.data.materials.length, 1);
+            assert.equal(mat.data.asset?.version, '2.0');
+            assert.equal(mat.data.images?.length, 4);
+            let image = mat.data?.images?.[0];
+            if (image && 'uri' in image)
+            {
+                assert.equal(image.uri, '2c7e7332-3717-5f4e-8f22-6ee9da5275fb');
+            }
+            else
+            {
+                assert(false, 'Image missing');
+            }
+            image = mat.data?.images?.[1];
+            if (image && 'uri' in image)
+            {
+                assert.equal(image.uri, '1078f5ec-1c56-e73f-8f8f-be36c40e5121');
+            }
+            else
+            {
+                assert(false, 'Image missing');
+            }
+            image = mat.data?.images?.[2];
+            if (image && 'uri' in image)
+            {
+                assert.equal(image.uri, '230d2d2d-b092-9bf5-ba7e-b319566322a6');
+            }
+            else
+            {
+                assert(false, 'Image missing');
+            }
+            image = mat.data?.images?.[3];
+            if (image && 'uri' in image)
+            {
+                assert.equal(image.uri, '230d2d2d-b092-9bf5-ba7e-b319566322a6');
+            }
+            else
+            {
+                assert(false, 'Image missing');
+            }
 
-            const mat0 = mat.data.materials[0];
-            assert.equal(mat0.normalTexture.index, 1);
-            assert.equal(mat0.occlusionTexture.index, 3);
-            assert.equal(mat0.pbrMetallicRoughness.baseColorTexture.index, 0);
-            assert.equal(mat0.pbrMetallicRoughness.metallicRoughnessTexture.index, 2);
+            assert.equal(mat.data.materials?.length, 1);
 
-            assert.equal(mat.data.textures.length, 4);
-            assert.equal(mat.data.textures[0].source, 0);
-            assert.equal(mat.data.textures[1].source, 1);
-            assert.equal(mat.data.textures[2].source, 2);
-            assert.equal(mat.data.textures[3].source, 3);
+            const mat0 = mat.data.materials?.[0];
+            if (mat0)
+            {
+                assert.equal(mat0.normalTexture?.index, 1);
+                assert.equal(mat0.occlusionTexture?.index, 3);
+                assert.equal(mat0.pbrMetallicRoughness?.baseColorTexture?.index, 0);
+                assert.equal(mat0.pbrMetallicRoughness?.metallicRoughnessTexture?.index, 2);
+            }
+            else
+            {
+                assert(false, 'Material missing');
+            }
+
+            assert.equal(mat.data.textures?.length, 4);
+            assert.equal(mat.data.textures?.[0].source, 0);
+            assert.equal(mat.data.textures?.[1].source, 1);
+            assert.equal(mat.data.textures?.[2].source, 2);
+            assert.equal(mat.data.textures?.[3].source, 3);
         });
     });
 });
