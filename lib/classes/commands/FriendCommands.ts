@@ -307,6 +307,9 @@ export class FriendCommands extends CommandsBase
             Message: Utils.StringToBuffer(message),
             BinaryBucket: Utils.StringToBuffer('')
         };
+        im.EstateBlock = {
+            EstateID: 0
+        };
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
         return await this.circuit.waitForAck(sequenceNo, 10000);
     }
