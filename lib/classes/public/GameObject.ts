@@ -1502,7 +1502,7 @@ export class GameObject implements IGameObjectData
     {
         if ((this.resolvedAt === undefined || this.resolvedAt === 0 || !this.resolvedInventory) && this.region?.resolver)
         {
-            await this.region.resolver.resolveObjects([this], true, false, false);
+            await this.region.resolver.resolveObjects([this], { onlyUnresolved: false });
         }
         let root = xml;
         if (rootNode)
