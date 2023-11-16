@@ -328,6 +328,9 @@ export class InventoryItem
                         case 'person':
                             item.inventoryType = InventoryType.Person;
                             break;
+                        case 'material':
+                            item.inventoryType = InventoryType.Material;
+                            break;
                         default:
                             console.error('Unknown inventory type: ' + typeString);
                     }
