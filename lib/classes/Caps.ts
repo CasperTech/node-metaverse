@@ -60,6 +60,7 @@ export class Caps
         req.push('FetchInventoryDescendents2');
         req.push('IncrementCOFVersion');
         req.push('InterestList');
+        req.push('InventoryThumbnailUpload');
         req.push('GetDisplayNames');
         req.push('GetExperiences');
         req.push('AgentExperiences');
@@ -74,9 +75,12 @@ export class Caps
         req.push('IsExperienceContributor');
         req.push('RegionExperiences');
         req.push('ExperienceQuery');
+        req.push('GetMesh');
+        req.push('GetMesh2');
         req.push('GetMetadata');
         req.push('GetObjectCost');
         req.push('GetObjectPhysicsData');
+        req.push('GetTexture');
         req.push('GroupAPIv1');
         req.push('GroupMemberData');
         req.push('GroupProposalBallot');
@@ -86,6 +90,7 @@ export class Caps
         req.push('MapLayer');
         req.push('MapLayerGod');
         req.push('MeshUploadFlag');
+        req.push('ModifyMaterialParams');
         req.push('NavMeshGenerationStatus');
         req.push('NewFileAgentInventory');
         req.push('ObjectAnimation');
@@ -128,6 +133,8 @@ export class Caps
         req.push('UpdateSettingsAgentInventory');
         req.push('UpdateSettingsTaskInventory');
         req.push('UploadAgentProfileImage');
+        req.push('UpdateMaterialAgentInventory');
+        req.push('UpdateMaterialTaskInventory');
         req.push('UploadBakedTexture');
         req.push('UserInfo');
         req.push('ViewerAsset');

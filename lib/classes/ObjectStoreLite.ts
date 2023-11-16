@@ -192,7 +192,7 @@ export class ObjectStoreLite implements IObjectStore
 
                                     if (emissiveColor !== undefined && Array.isArray(emissiveColor) && emissiveColor.length === 3 && isNumberArray(emissiveColor))
                                     {
-                                        override.emissiveColor = emissiveColor;
+                                        override.emissiveFactor = emissiveColor;
                                     }
 
                                     if (metallicFactor !== undefined && typeof metallicFactor === 'number')
@@ -242,9 +242,17 @@ export class ObjectStoreLite implements IObjectStore
                                         override.textureTransforms = [];
                                         for (const transform of textureTransforms)
                                         {
-                                            if (isLLGLTFTextureTransformOverride(transform))
+                                            if (transform instanceof LLSDMap)
                                             {
-                                                override.textureTransforms.push(transform);
+                                                const tObj = {
+                                                    offset: transform.get('o'),
+                                                    scale: transform.get('s'),
+                                                    rotation: transform.get('r')
+                                                }
+                                                if (isLLGLTFTextureTransformOverride(tObj))
+                                                {
+                                                    override.textureTransforms.push(tObj);
+                                                }
                                             }
                                         }
                                     }

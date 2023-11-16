@@ -117,7 +117,6 @@ export class Circuit
             };
             pos.position += packetLength;
         }
-        console.log('Sent packet ' + packetID + ', ' + packetLength + ' bytes');
         this.sendMessage(sendXfer, PacketFlags.Reliable);
         if (final)
         {
@@ -148,7 +147,6 @@ export class Circuit
                         {
                             if (pos.position > -1)
                             {
-                                console.log('Packet confirmed, sending next. Position: ' + pos.position);
                                 packetID++;
                                 this.sendXferPacket(xferID, packetID, data, pos);
                             }
@@ -160,7 +158,6 @@ export class Circuit
                         const msg = packet.message as AbortXferMessage;
                         if (msg.XferID.ID.equals(xferID))
                         {
-                            console.log('Transfer aborted');
                             subs.unsubscribe();
                             reject(new Error('Transfer aborted'));
                         }
