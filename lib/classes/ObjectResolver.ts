@@ -6,6 +6,7 @@ import { Subject, Subscription } from 'rxjs';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 
 import * as LLSD from '@caspertech/llsd';
+import { GetObjectsOptions } from './commands/RegionCommands';
 
 export class ObjectResolver
 {
@@ -23,7 +24,7 @@ export class ObjectResolver
 
     }
 
-    resolveObjects(objects: GameObject[], forceResolve: boolean = false, skipInventory = false, log = false): Promise<GameObject[]>
+    resolveObjects(objects: GameObject[], options: GetObjectsOptions): Promise<GameObject[]>
     {
         return new Promise<GameObject[]>((resolve, reject) =>
         {
@@ -32,7 +33,7 @@ export class ObjectResolver
                 reject(new Error('Region is going away'));
                 return;
             }
-            if (log)
+            if (options.outputLog)
             {
                 // console.log('[RESOLVER] Scanning ' + objects.length + ' objects, skipInventory: ' + skipInventory);
             }
@@ -52,12 +53,12 @@ export class ObjectResolver
                 {
                     this.objectsInQueue[id] = {
                         object: objs[id],
-                        skipInventory: skipInventory,
-                        log
+                        skipInventory: options.skipInventory === true,
+                        log: options.outputLog === true
                     };
                     this.queue.push(id);
                 }
-                else if (this.objectsInQueue[id].skipInventory && !skipInventory)
+                else if (this.objectsInQueue[id].skipInventory && !options.skipInventory)
                 {
                     this.objectsInQueue[id].skipInventory = true
                 }
@@ -68,13 +69,13 @@ export class ObjectResolver
             {
                 const id = parseInt(obj, 10);
                 const gameObject = objs[id];
-                if (log)
+                if (options.outputLog === true)
                 {
                     // console.log('ResolvedInventory: ' + gameObject.resolvedInventory + ', skip: ' + skipInventory);
                 }
-                if (forceResolve || gameObject.resolvedAt === undefined || gameObject.resolvedAt === 0 || (!skipInventory && !gameObject.resolvedInventory))
+                if (!options.onlyUnresolved || gameObject.resolvedAt === undefined || gameObject.resolvedAt === 0 || (!options.skipInventory && !gameObject.resolvedInventory))
                 {
-                    if (forceResolve)
+                    if (!options.onlyUnresolved)
                     {
                         gameObject.resolvedAt = 0;
                         gameObject.resolveAttempts = 0;
@@ -89,7 +90,7 @@ export class ObjectResolver
             for (const id of skipped)
             {
                 delete objs[id];
-                if (log)
+                if (options.outputLog === true)
                 {
                     // console.log('[RESOLVER] Skipping already resolved object. ' + amountLeft + ' objects remaining to resolve (' + this.queue.length + ' in queue)');
                 }
@@ -109,9 +110,9 @@ export class ObjectResolver
                 let done = false;
                 if (obj.resolvedAt !== undefined && obj.resolvedAt > 0)
                 {
-                    if (skipInventory || obj.resolvedInventory)
+                    if (options.skipInventory === true || obj.resolvedInventory)
                     {
-                        if (log)
+                        if (options.outputLog === true)
                         {
                             // console.log('[RESOLVER] Resolved an object. ' + amountLeft + ' objects remaining to resolve (' + this.queue.length + ' in queue)');
                         }
@@ -148,13 +149,13 @@ export class ObjectResolver
             {
                 if (objs[obj.ID] !== undefined)
                 {
-                    if (log)
+                    if (options.outputLog === true)
                     {
                         // console.log('Got onObjectResolveRan for 1 object ...');
                     }
                     if (!checkObject(obj))
                     {
-                        if (log)
+                        if (options.outputLog === true)
                         {
                             // console.log(' .. Not resolved yet');
                         }
@@ -163,7 +164,7 @@ export class ObjectResolver
                             if (!checkObject(obj))
                             {
                                 // Requeue
-                                if (log)
+                                if (options.outputLog)
                                 {
                                     // console.log(' .. ' + obj.ID + ' still not resolved yet, requeuing');
                                 }
@@ -189,7 +190,7 @@ export class ObjectResolver
             {
                 if (objs[obj.object.ID] !== undefined)
                 {
-                    if (log)
+                    if (options.outputLog)
                     {
                         // console.log('Got object resolved event for ' + obj.object.ID);
                     }

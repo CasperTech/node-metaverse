@@ -36,6 +36,16 @@ import Timeout = NodeJS.Timeout;
 
 import Timer = NodeJS.Timer;
 
+export interface GetObjectsOptions
+{
+    resolve?: boolean;
+    onlyUnresolved?: boolean;
+    skipInventory?: boolean;
+    outputLog?: boolean;
+    includeTempObjects?: boolean;
+    includeAvatars?: boolean;
+}
+
 export class RegionCommands extends CommandsBase
 {
     async getRegionHandle(regionID: UUID): Promise<Long>
@@ -374,12 +384,12 @@ export class RegionCommands extends CommandsBase
 
     async resolveObject(object: GameObject, forceResolve = false, skipInventory = false): Promise<GameObject[]>
     {
-        return this.currentRegion.resolver.resolveObjects([object], forceResolve, skipInventory);
+        return this.currentRegion.resolver.resolveObjects([object], { onlyUnresolved: !forceResolve, skipInventory });
     }
 
-    async resolveObjects(objects: GameObject[], forceResolve = false, skipInventory = false, log = false): Promise<GameObject[]>
+    async resolveObjects(objects: GameObject[], forceResolve = false, skipInventory = false, outputLog = false): Promise<GameObject[]>
     {
-        return this.currentRegion.resolver.resolveObjects(objects, forceResolve, skipInventory, log);
+        return this.currentRegion.resolver.resolveObjects(objects, { onlyUnresolved: !forceResolve, skipInventory, outputLog });
     }
 
     private waitForObjectByLocalID(localID: number, timeout: number): Promise<GameObject>
@@ -1513,7 +1523,7 @@ export class RegionCommands extends CommandsBase
         }
         if (resolve)
         {
-            await this.currentRegion.resolver.resolveObjects([obj]);
+            await this.currentRegion.resolver.resolveObjects([obj], {});
         }
         return obj;
     }
@@ -1538,7 +1548,7 @@ export class RegionCommands extends CommandsBase
         }
         if (resolve)
         {
-            await this.currentRegion.resolver.resolveObjects([obj]);
+            await this.currentRegion.resolver.resolveObjects([obj], {});
         }
         return obj;
     }
@@ -1552,7 +1562,7 @@ export class RegionCommands extends CommandsBase
         }
         else
         {
-            objects = await this.getAllObjects(true);
+            objects = await this.getAllObjects({  resolve: true  });
         }
         const idCheck: { [key: string]: boolean } = {};
         const matches: GameObject[] = [];
@@ -1608,13 +1618,28 @@ export class RegionCommands extends CommandsBase
         return this.currentRegion.getParcels();
     }
 
-    async getAllObjects(resolve = false, onlyUnresolved = false, skipInventory = false, outputLog = false): Promise<GameObject[]>
+    async getAllObjects(options: GetObjectsOptions): Promise<GameObject[]>
     {
         const objs = await this.currentRegion.objects.getAllObjects();
-        if (resolve)
+        if (options.resolve)
         {
             const resolver = new ObjectResolver(this.currentRegion);
-            await resolver.resolveObjects(objs, !onlyUnresolved, skipInventory, outputLog);
+
+            const incl: GameObject[] = [];
+            for (const obj of objs)
+            {
+                if (!options.includeAvatars && obj.PCode === PCode.Avatar)
+                {
+                    continue;
+                }
+                if (!options.includeTempObjects && (((obj.Flags ?? 0) & PrimFlags.Temporary) === PrimFlags.Temporary))
+                {
+                    continue;
+                }
+                incl.push(obj);
+            }
+
+            await resolver.resolveObjects(incl, options);
         }
         return objs;
     }
@@ -1624,7 +1649,7 @@ export class RegionCommands extends CommandsBase
         const objs = await this.currentRegion.objects.getObjectsInArea(minX, maxX, minY, maxY, minZ, maxZ);
         if (resolve)
         {
-            await this.currentRegion.resolver.resolveObjects(objs);
+            await this.currentRegion.resolver.resolveObjects(objs, {});
         }
         return objs;
     }
