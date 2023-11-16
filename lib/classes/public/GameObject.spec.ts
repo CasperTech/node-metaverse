@@ -35,7 +35,7 @@ describe('GameObject', () =>
             '1e079cce-eeca-4e05-9a4f-e58d8398ecf1',
             '03573ae5-4c1a-44f7-9cd3-8b49028f9e48'
         ];
-        override.emissiveColor = [0.2, 0.5, 0.6];
+        override.emissiveFactor = [0.2, 0.5, 0.6];
         override.baseColor = [0.1, 0.2, 0.3, 0.4];
         override.textureTransforms = [
             {
@@ -94,12 +94,12 @@ describe('GameObject', () =>
                 {
                     assert(false, 'Textures is not an array');
                 }
-                if (Array.isArray(entry.emissiveColor))
+                if (Array.isArray(entry.emissiveFactor))
                 {
-                    assert.equal(entry.emissiveColor.length, 3);
-                    assert.equal(entry.emissiveColor[0], 0.2);
-                    assert.equal(entry.emissiveColor[1], 0.5);
-                    assert.equal(entry.emissiveColor[2], 0.6);
+                    assert.equal(entry.emissiveFactor.length, 3);
+                    assert.equal(entry.emissiveFactor[0], 0.2);
+                    assert.equal(entry.emissiveFactor[1], 0.5);
+                    assert.equal(entry.emissiveFactor[2], 0.6);
                 }
                 else
                 {
@@ -123,7 +123,7 @@ describe('GameObject', () =>
                     for (let x = 0; x < 4; x++)
                     {
                         const transform = entry.textureTransforms[x];
-                        if (Array.isArray(transform.scale))
+                        if (transform?.scale && Array.isArray(transform.scale))
                         {
                             assert.equal(transform.scale.length, 2);
                             assert.equal(transform.scale[0], 0.5);
@@ -133,7 +133,7 @@ describe('GameObject', () =>
                         {
                             assert(false, 'Scale is not an array');
                         }
-                        if (Array.isArray(transform.offset))
+                        if (transform?.offset && Array.isArray(transform.offset))
                         {
                             assert.equal(transform.offset.length, 2);
                             assert.equal(transform.offset[0], 0.1);

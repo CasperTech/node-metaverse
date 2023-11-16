@@ -55,7 +55,7 @@ import { Subject } from 'rxjs';
 import { RezScriptMessage } from '../messages/RezScript';
 import { PermissionMask } from '../../enums/PermissionMask';
 import { AssetType } from '../../enums/AssetType';
-import { LLGLTFMaterialOverride, LLGLTFTextureTransformOverride } from '../LLGLTFMaterialOverride';
+import { LLGLTFMaterialOverride } from '../LLGLTFMaterialOverride';
 
 import * as uuid from 'uuid';
 
@@ -381,123 +381,19 @@ export class GameObject implements IGameObjectData
                 const buf = Buffer.from(prop, 'base64');
                 go.TextureEntry = TextureEntry.from(buf);
             }
-            if (go.TextureEntry && shape['GLTFMaterialOverrides'] && Array.isArray(shape['GLTFMaterialOverrides']) && shape['GLTFMaterialOverrides'].length > 0)
+            if (go.TextureEntry && shape['MatOvrd'] && Array.isArray(shape['MatOvrd']) && shape['MatOvrd'].length > 0)
             {
-                const te = go.TextureEntry;
-                te.gltfMaterialOverrides = new Map<number, LLGLTFMaterialOverride>();
-                const children = shape['GLTFMaterialOverrides'][0];
-                const childObj = children['GLTFMaterialOverride'];
-                if (childObj)
+                const tex = Buffer.from(shape['MatOvrd'][0], 'base64');
+                let pos = 0;
+                const entryCount = tex.readUInt8(pos++);
+                for (let x = 0; x < entryCount; x++)
                 {
-                    for (const entry of childObj)
-                    {
-                        const override = new LLGLTFMaterialOverride();
-                        let textureEntry = 0;
-                        if ((prop = Utils.getFromXMLJS(entry, 'TextureEntry')) !== undefined)
-                        {
-                            textureEntry = prop;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                        if ((prop = Utils.getFromXMLJS(entry, 'DoubleSided')) !== undefined)
-                        {
-                            override.doubleSided = prop;
-                        }
-                        if ((prop = Utils.getFromXMLJS(entry, 'AlphaCutoff')) !== undefined)
-                        {
-                            override.alphaCutoff = parseFloat(prop);
-                        }
-                        if ((prop = Utils.getFromXMLJS(entry, 'RoughnessFactor')) !== undefined)
-                        {
-                            override.roughnessFactor = parseFloat(prop);
-                        }
-                        if ((prop = Utils.getFromXMLJS(entry, 'MetallicFactor')) !== undefined)
-                        {
-                            override.metallicFactor = parseFloat(prop);
-                        }
-                        if ((prop = Utils.getFromXMLJS(entry, 'AlphaMode')) !== undefined)
-                        {
-                            override.alphaMode = prop;
-                        }
-                        if (entry['Textures'] && Array.isArray(entry['Textures']) && entry['Textures'].length > 0)
-                        {
-                            override.textures = [];
-                            const childArr = entry['Textures'][0];
-                            for (const tex of childArr['UUID'])
-                            {
-                                override.textures.push(tex);
-                            }
-                        }
-                        if (entry['EmissiveColor'] && Array.isArray(entry['EmissiveColor']) && entry['EmissiveColor'].length > 0)
-                        {
-                            const childArr = entry['EmissiveColor'][0];
-                            const red = parseFloat(childArr['R'][0]);
-                            const green = parseFloat(childArr['G'][0]);
-                            const blue = parseFloat(childArr['B'][0]);
-                            override.emissiveColor = [
-                                red,
-                                green,
-                                blue
-                            ];
-                        }
-                        if (entry['BaseColor'] && Array.isArray(entry['BaseColor']) && entry['BaseColor'].length > 0)
-                        {
-                            const childArr = entry['BaseColor'][0];
-                            const red = parseFloat(childArr['R'][0]);
-                            const green = parseFloat(childArr['G'][0]);
-                            const blue = parseFloat(childArr['B'][0]);
-                            const alpha = parseFloat(childArr['A'][0]);
-                            override.baseColor = [
-                                red,
-                                green,
-                                blue,
-                                alpha
-                            ];
-                        }
-                        if (entry['TextureTransforms'] && Array.isArray(entry['TextureTransforms']) && entry['TextureTransforms'].length > 0)
-                        {
-                            const childArr = entry['TextureTransforms'][0];
-                            override.textureTransforms = [];
-                            for (const tex of childArr['Transform'])
-                            {
-                                const t: LLGLTFTextureTransformOverride = {
-                                    offset: [],
-                                    scale: [],
-                                    rotation: 0,
-                                };
-
-                                if ((prop = Utils.getFromXMLJS(tex, 'Rotation')) !== undefined)
-                                {
-                                    t.rotation = parseFloat(prop);
-                                }
-                                if (tex['Offsets'] && Array.isArray(tex['Offsets']) && tex['Offsets'].length > 0)
-                                {
-                                    const offsetArr = tex['Offsets'][0];
-                                    const xOffset = parseFloat(offsetArr['X'][0]);
-                                    const yOffset = parseFloat(offsetArr['Y'][0]);
-                                    t.offset = [
-                                        xOffset,
-                                        yOffset
-                                    ];
-                                }
-                                if (tex['Scale'] && Array.isArray(tex['Scale']) && tex['Scale'].length > 0)
-                                {
-                                    const offsetArr = tex['Scale'][0];
-                                    const xOffset = parseFloat(offsetArr['X'][0]);
-                                    const yOffset = parseFloat(offsetArr['Y'][0]);
-                                    t.scale = [
-                                        xOffset,
-                                        yOffset
-                                    ];
-                                }
-
-                                override.textureTransforms.push(t);
-                            }
-                        }
-                        te.gltfMaterialOverrides.set(textureEntry, override);
-                    }
+                    const te_index = tex.readUInt8(pos++);
+                    const len = tex.readUInt16LE(pos++);
+                    pos++;
+                    const json = tex.slice(pos, pos + len).toString('utf-8');
+                    pos = pos + len;
+                    go.TextureEntry.gltfMaterialOverrides.set(te_index, LLGLTFMaterialOverride.fromFullMaterialJSON(json));
                 }
             }
             if ((prop = Utils.getFromXMLJS(shape, 'PathBegin')) !== undefined)
@@ -1661,75 +1557,33 @@ export class GameObject implements IGameObjectData
 
                 if (this.TextureEntry.gltfMaterialOverrides)
                 {
-                    const overrides = shape.ele('GLTFMaterialOverrides');
-                    for (const te of this.TextureEntry.gltfMaterialOverrides.keys())
+                    const overrideKeys = Array.from(this.TextureEntry.gltfMaterialOverrides.keys());
+                    const numEntries = overrideKeys.length;
+
+                    if (numEntries > 0)
                     {
-                        const entry = overrides.ele('GLTFMaterialOverride');
-                        entry.ele('TextureEntry', te);
-                        const override = this.TextureEntry.gltfMaterialOverrides.get(te);
-                        if (override)
+                        const buf: Buffer[] = [];
+
+                        const num = Buffer.allocUnsafe(1);
+                        num.writeUInt8(numEntries, 0);
+                        buf.push(num)
+                        for (const overrideKey of overrideKeys)
                         {
-                            if (override.doubleSided !== undefined)
+                            const override = this.TextureEntry.gltfMaterialOverrides.get(overrideKey);
+                            if (override === undefined)
                             {
-                                entry.ele('DoubleSided', override.doubleSided);
+                                continue;
                             }
-                            if (override.alphaCutoff !== undefined)
-                            {
-                                entry.ele('AlphaCutoff', override.alphaCutoff);
-                            }
-                            if (override.roughnessFactor !== undefined)
-                            {
-                                entry.ele('RoughnessFactor', override.roughnessFactor);
-                            }
-                            if (override.metallicFactor !== undefined)
-                            {
-                                entry.ele('MetallicFactor', override.metallicFactor);
-                            }
-                            if (override.alphaMode !== undefined)
-                            {
-                                entry.ele('AlphaMode', override.alphaMode);
-                            }
-                            if (override.textures !== undefined)
-                            {
-                                const texs = entry.ele('Textures');
-                                for (const tex of override.textures)
-                                {
-                                    texs.ele('UUID', tex);
-                                }
-                            }
-                            if (override.emissiveColor !== undefined && override.emissiveColor.length === 3)
-                            {
-                                const emissive = entry.ele('EmissiveColor');
-                                emissive.ele('R', override.emissiveColor[0]);
-                                emissive.ele('G', override.emissiveColor[1]);
-                                emissive.ele('B', override.emissiveColor[2]);
-                            }
-                            if (override.baseColor !== undefined && override.baseColor.length === 4)
-                            {
-                                const base = entry.ele('BaseColor');
-                                base.ele('R', override.baseColor[0]);
-                                base.ele('G', override.baseColor[1]);
-                                base.ele('B', override.baseColor[2]);
-                                base.ele('A', override.baseColor[3]);
-                            }
-                            if (override.textureTransforms && override.textureTransforms.length === 4)
-                            {
-                                const transforms = entry.ele('TextureTransforms');
-                                for (const trans of override.textureTransforms)
-                                {
-                                    const tfm = transforms.ele('Transform');
-                                    tfm.ele('Rotation', trans.rotation);
 
-                                    const offsets = tfm.ele('Offsets');
-                                    offsets.ele('X', trans.offset[0]);
-                                    offsets.ele('Y', trans.offset[1]);
+                            const header = Buffer.allocUnsafe(3);
+                            header.writeUInt8(overrideKey, 0);
 
-                                    const scale = tfm.ele('Scale');
-                                    scale.ele('X', trans.scale[0]);
-                                    scale.ele('Y', trans.scale[1]);
-                                }
-                            }
+                            const json = override.getFullMaterialJSON();
+                            header.writeUInt16LE(json.length, 1);
+                            buf.push(header);
+                            buf.push(Buffer.from(json, 'utf-8'));
                         }
+                        shape.ele('MatOvrd', Buffer.concat(buf).toString('base64'));
                     }
                 }
             }

@@ -14,6 +14,43 @@ export interface LLGLTFTexture
 
 export type LLGLTFTextureInfo = LLGLTFTexture & LLGLTFExtensionsAndExtras;
 
+export interface LLGLTFMaterialEntry
+{
+    name?: string;
+    emissiveFactor?: number[];
+    alphaMode?: string;
+    alphaCutoff?: number;
+    doubleSided?: boolean;
+    pbrMetallicRoughness?: {
+        baseColorFactor?: number[];
+        baseColorTexture?: LLGLTFTextureInfo;
+        metallicRoughnessTexture?: LLGLTFTextureInfo;
+        metallicFactor?: number;
+        roughnessFactor?: number;
+    } & LLGLTFExtensionsAndExtras,
+    normalTexture?: {
+        index: number;
+        texCoord?: number;
+        scale?: number;
+    } & LLGLTFExtensionsAndExtras,
+    occlusionTexture?: {
+        index: number;
+        texCoord?: number;
+        strength?: number;
+    } & LLGLTFExtensionsAndExtras,
+    emissiveTexture?: {
+        extensions?: {
+            KHR_texture_transform?: {
+                offset: number[],
+                rotation: number,
+                scale: number[]
+            }
+        },
+        index: number
+        texCoord?: number;
+    }
+}
+
 export interface LLGLTFMaterialDataPart
 {
     asset?: {
@@ -95,41 +132,7 @@ export interface LLGLTFMaterialDataPart
         nodes?: number[];
     } & LLGLTFExtensionsAndExtras)[];
     scene?: number;
-    materials?: ({
-        name?: string;
-        emissiveFactor?: number[];
-        alphaMode?: string;
-        alphaCutoff?: number;
-        doubleSided?: boolean;
-        pbrMetallicRoughness?: {
-            baseColorFactor: number[];
-            baseColorTexture?: LLGLTFTextureInfo;
-            metallicRoughnessTexture?: LLGLTFTextureInfo;
-            metallicFactor: number;
-            roughnessFactor: number;
-        } & LLGLTFExtensionsAndExtras,
-        normalTexture?: {
-            index: number;
-            texCoord?: number;
-            scale?: number;
-        } & LLGLTFExtensionsAndExtras,
-        occlusionTexture?: {
-            index: number;
-            texCoord?: number;
-            strength?: number;
-        } & LLGLTFExtensionsAndExtras,
-        emissiveTexture?: {
-            extensions?: {
-                KHR_texture_transform?: {
-                    offset: number[],
-                    rotation: number,
-                    scale: number[]
-                }
-            },
-            index: number
-            texCoord?: number;
-        }
-    } & LLGLTFExtensionsAndExtras)[];
+    materials?: (LLGLTFMaterialEntry & LLGLTFExtensionsAndExtras)[];
     images?: (({
         bufferView: number;
         mimeType: string;
