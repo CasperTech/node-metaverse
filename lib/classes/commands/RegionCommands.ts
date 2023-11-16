@@ -1614,7 +1614,7 @@ export class RegionCommands extends CommandsBase
         if (resolve)
         {
             const resolver = new ObjectResolver(this.currentRegion);
-            await resolver.resolveObjects(objs, onlyUnresolved, skipInventory, outputLog);
+            await resolver.resolveObjects(objs, !onlyUnresolved, skipInventory, outputLog);
         }
         return objs;
     }

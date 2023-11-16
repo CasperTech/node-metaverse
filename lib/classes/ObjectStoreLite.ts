@@ -89,6 +89,7 @@ export class ObjectStoreLite implements IObjectStore
     private physicsSubscription: Subscription;
     private selectedPrimsWithoutUpdate = new Map<number, boolean>();
     private selectedChecker?: Timer;
+    private blacklist: Map<number, Date> = new Map<number, Date>();
 
     rtree?: RBush3D;
 
@@ -455,6 +456,19 @@ export class ObjectStoreLite implements IObjectStore
             return;
         }
         this.requestedObjects.add(localID);
+        const black = this.blacklist.get(localID);
+        if (black !== undefined)
+        {
+            const thirtyMinutesAgo = new Date(new Date().getTime() - 30 * 60000);
+            if (black >= thirtyMinutesAgo)
+            {
+                return;
+            }
+            else
+            {
+                this.blacklist.delete(localID);
+            }
+        }
         const rmo = new RequestMultipleObjectsMessage();
         rmo.AgentData = {
             AgentID: this.agent.agentID,
@@ -507,8 +521,8 @@ export class ObjectStoreLite implements IObjectStore
                 {
                     return;
                 }
+                this.blacklist.set(localID, new Date());
                 console.error('Error retrieving missing object after 5 attempts: ' + localID);
-                console.error(error);
             }
         }
         finally
