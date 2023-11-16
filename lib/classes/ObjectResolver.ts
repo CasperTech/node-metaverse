@@ -391,44 +391,51 @@ export class ObjectResolver
             const that  = this;
             const getCosts = async function(objIDs: UUID[]): Promise<void>
             {
-                if (!that.region)
+                try
                 {
-                    return;
-                }
-                const result = await that.region.caps.capsPostXML('GetObjectCost', {
-                    'object_ids': objIDs
-                });
-                const uuids = Object.keys(result);
-                for (const key of uuids)
-                {
-                    const costs = result[key];
-                    try
+                    if (!that.region)
                     {
-                        if (!that.region)
+                        return;
+                    }
+                    const result = await that.region.caps.capsPostXML('GetObjectCost', {
+                        'object_ids': objIDs
+                    });
+                    const uuids = Object.keys(result);
+                    for (const key of uuids)
+                    {
+                        const costs = result[key];
+                        try
                         {
-                            return;
-                        }
-                        const obj: GameObject = that.region.objects.getObjectByUUID(new UUID(key));
-                        obj.linkPhysicsImpact = parseFloat(costs['linked_set_physics_cost']);
-                        obj.linkResourceImpact = parseFloat(costs['linked_set_resource_cost']);
-                        obj.physicaImpact = parseFloat(costs['physics_cost']);
-                        obj.resourceImpact = parseFloat(costs['resource_cost']);
-                        obj.limitingType = costs['resource_limiting_type'];
+                            if (!that.region)
+                            {
+                                return;
+                            }
+                            const obj: GameObject = that.region.objects.getObjectByUUID(new UUID(key));
+                            obj.linkPhysicsImpact = parseFloat(costs['linked_set_physics_cost']);
+                            obj.linkResourceImpact = parseFloat(costs['linked_set_resource_cost']);
+                            obj.physicaImpact = parseFloat(costs['physics_cost']);
+                            obj.resourceImpact = parseFloat(costs['resource_cost']);
+                            obj.limitingType = costs['resource_limiting_type'];
 
 
-                        obj.landImpact = Math.round(obj.linkPhysicsImpact);
-                        if (obj.linkResourceImpact > obj.linkPhysicsImpact)
-                        {
-                            obj.landImpact = Math.round(obj.linkResourceImpact);
+                            obj.landImpact = Math.round(obj.linkPhysicsImpact);
+                            if (obj.linkResourceImpact > obj.linkPhysicsImpact)
+                            {
+                                obj.landImpact = Math.round(obj.linkResourceImpact);
+                            }
+                            obj.calculatedLandImpact = obj.landImpact;
+                            if (obj.Flags !== undefined && obj.Flags & PrimFlags.TemporaryOnRez && obj.limitingType === 'legacy')
+                            {
+                                obj.calculatedLandImpact = 0;
+                            }
                         }
-                        obj.calculatedLandImpact = obj.landImpact;
-                        if (obj.Flags !== undefined && obj.Flags & PrimFlags.TemporaryOnRez && obj.limitingType === 'legacy')
+                        catch (error)
                         {
-                            obj.calculatedLandImpact = 0;
                         }
                     }
-                    catch (error)
-                    {}
+                }
+                catch (error)
+                {
                 }
             };
 
