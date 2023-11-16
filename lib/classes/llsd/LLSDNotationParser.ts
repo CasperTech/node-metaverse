@@ -21,7 +21,7 @@ export class LLSDNotationParser
             { regex: /^]/, type: LLSDTokenType.ARRAY_END },
             { regex: /^(?:true|false|TRUE|FALSE|1|0|T|F|t|f)/, type: LLSDTokenType.BOOLEAN },
             { regex: /^i(-?[0-9]+)/, type: LLSDTokenType.INTEGER },
-            { regex: /^r(-?[0-9.]+)/, type: LLSDTokenType.REAL },
+            { regex: /^r(-?[0-9.]+(?:e-?[0-9]+)?)/, type: LLSDTokenType.REAL },
             { regex: /^u([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/, type: LLSDTokenType.UUID },
             { regex: /^'([^'\\]*(?:\\.[^'\\\n]*)*)'/, type: LLSDTokenType.STRING_FIXED_SINGLE },
             { regex: /^"([^"\\]*(?:\\.[^"\\\n]*)*)"/, type: LLSDTokenType.STRING_FIXED_DOUBLE },
