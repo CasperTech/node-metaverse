@@ -53,14 +53,13 @@ export class ObjectResolver
                 {
                     this.objectsInQueue[id] = {
                         object: objs[id],
-                        skipInventory: options.skipInventory === true,
-                        log: options.outputLog === true
+                        options
                     };
                     this.queue.push(id);
                 }
-                else if (this.objectsInQueue[id].skipInventory && !options.skipInventory)
+                else if (this.objectsInQueue[id].options.skipInventory && !options.skipInventory)
                 {
-                    this.objectsInQueue[id].skipInventory = true
+                    this.objectsInQueue[id].options.skipInventory = false;
                 }
             };
 
@@ -324,12 +323,12 @@ export class ObjectResolver
                 {
                     return;
                 }
-                if (!job.skipInventory)
+                if (!job.options.skipInventory && (job.options.includeTempObjects || ((job.object.Flags ?? 0) & PrimFlags.TemporaryOnRez) === 0))
                 {
                     const o = job.object;
                     if ((o.resolveAttempts === undefined || o.resolveAttempts < 3) && o.FullID !== undefined && o.name !== undefined && o.Flags !== undefined && !(o.Flags & PrimFlags.InventoryEmpty) && (!o.inventory || o.inventory.length === 0))
                     {
-                        if (job.log)
+                        if (job.options.outputLog)
                         {
                             // console.log('Processing inventory for ' + job.object.ID);
                         }
@@ -358,7 +357,7 @@ export class ObjectResolver
                     }
                     else
                     {
-                        if (job.log)
+                        if (job.options.outputLog)
                         {
                             // console.log('Skipping inventory for ' + job.object.ID);
                         }
@@ -461,7 +460,7 @@ export class ObjectResolver
             await Promise.all(promises);
             for (const job of jobs)
             {
-                if (job.log)
+                if (job.options.outputLog)
                 {
                     // console.log('Signalling resolve OK for ' + job.object.ID);
                 }
