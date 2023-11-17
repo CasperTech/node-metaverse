@@ -1632,7 +1632,7 @@ export class RegionCommands extends CommandsBase
                 {
                     continue;
                 }
-                if (!options.includeTempObjects && (((obj.Flags ?? 0) & PrimFlags.Temporary) === PrimFlags.Temporary))
+                if (!options.includeTempObjects && (((obj.Flags ?? 0) & (PrimFlags.Temporary | PrimFlags.TemporaryOnRez)) !== 0))
                 {
                     continue;
                 }
