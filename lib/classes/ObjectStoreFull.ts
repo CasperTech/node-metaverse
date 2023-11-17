@@ -102,6 +102,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             obj.ProfileBegin = Utils.unpackBeginCut(objData.ProfileBegin);
             obj.ProfileEnd = Utils.unpackEndCut(objData.ProfileEnd);
             obj.ProfileHollow = Utils.unpackProfileHollow(objData.ProfileHollow);
+            if (obj.TextureEntry?.gltfMaterialOverrides && !this.cachedMaterialOverrides.has(obj.ID))
+            {
+                this.cachedMaterialOverrides.set(obj.ID, obj.TextureEntry.gltfMaterialOverrides);
+            }
             obj.TextureEntry = TextureEntry.from(objData.TextureEntry);
             const override = this.cachedMaterialOverrides.get(obj.ID);
             if (override)
@@ -439,6 +443,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 pos = pos + 2;
                 const textureEntryLength = buf.readUInt32LE(pos);
                 pos = pos + 4;
+                if (o.TextureEntry?.gltfMaterialOverrides && !this.cachedMaterialOverrides.has(o.ID))
+                {
+                    this.cachedMaterialOverrides.set(o.ID, o.TextureEntry.gltfMaterialOverrides);
+                }
                 o.TextureEntry = TextureEntry.from(buf.slice(pos, pos + textureEntryLength));
                 const override = this.cachedMaterialOverrides.get(o.ID);
                 if (override)
@@ -523,6 +531,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     if (objectData.TextureEntry.length > 0)
                     {
                         // No idea why the first four bytes are skipped here.
+                        if (o.TextureEntry?.gltfMaterialOverrides && !this.cachedMaterialOverrides.has(o.ID))
+                        {
+                            this.cachedMaterialOverrides.set(o.ID, o.TextureEntry.gltfMaterialOverrides);
+                        }
                         o.TextureEntry = TextureEntry.from(objectData.TextureEntry.slice(4));
                         const override = this.cachedMaterialOverrides.get(o.ID);
                         if (override)
