@@ -21,6 +21,7 @@ import { BulkUpdateInventoryEvent } from '../../events/BulkUpdateInventoryEvent'
 import { FilterResponse } from '../../enums/FilterResponse';
 import { LLLindenText } from '../LLLindenText';
 import { Subscription } from 'rxjs';
+import { Logger } from '../Logger';
 
 export class AssetCommands extends CommandsBase
 {
@@ -30,26 +31,53 @@ export class AssetCommands extends CommandsBase
         {
             uuid = new UUID(uuid);
         }
+
         try
         {
-            const result = await this.currentRegion.caps.downloadAsset(uuid, type);
-            if (result.toString('utf-8').trim() === 'Not found!')
+            switch (type)
             {
-                throw new Error('Asset not found');
+                case HTTPAssets.ASSET_TEXTURE:
+                case HTTPAssets.ASSET_SOUND:
+                case HTTPAssets.ASSET_ANIMATION:
+                case HTTPAssets.ASSET_GESTURE:
+                case HTTPAssets.ASSET_LANDMARK:
+                case HTTPAssets.ASSET_CLOTHING:
+                case HTTPAssets.ASSET_MATERIAL:
+                case HTTPAssets.ASSET_BODYPART:
+                case HTTPAssets.ASSET_MESH:
+                    return this.currentRegion.caps.downloadAsset(uuid, type);
+                case HTTPAssets.ASSET_CALLINGCARD:
+                case HTTPAssets.ASSET_SCRIPT:
+                case HTTPAssets.ASSET_OBJECT:
+                case HTTPAssets.ASSET_NOTECARD:
+                case HTTPAssets.ASSET_CATEGORY:
+                case HTTPAssets.ASSET_LSL_TEXT:
+                case HTTPAssets.ASSET_LSL_BYTECODE:
+                case HTTPAssets.ASSET_SIMSTATE:
+                case HTTPAssets.ASSET_LINK:
+                case HTTPAssets.ASSET_LINK_FOLDER:
+                case HTTPAssets.ASSET_WIDGET:
+                case HTTPAssets.ASSET_PERSON:
+                case HTTPAssets.ASSET_SETTINGS:
+                {
+                    const transferParams = Buffer.allocUnsafe(20);
+                    uuid.writeToBuffer(transferParams, 0);
+                    transferParams.writeInt32LE(Utils.HTTPAssetTypeToAssetType(type), 16);
+                    return this.transfer(TransferChannelType.Asset, TransferSourceType.Asset, false, transferParams);
+                }
             }
-            else if (result.toString('utf-8').trim() === 'Incorrect Syntax')
-            {
-                throw new Error('Invalid Syntax');
-            }
-            return result;
         }
-        catch (error)
+        catch (e: unknown)
         {
-            // Fall back to old asset transfer
-            const transferParams = Buffer.allocUnsafe(20);
-            uuid.writeToBuffer(transferParams, 0);
-            transferParams.writeInt32LE(parseInt(type, 10), 16);
-            return this.transfer(TransferChannelType.Asset, TransferSourceType.Asset, false, transferParams);
+            if (e instanceof Error)
+            {
+                Logger.Error('Failed to download ' + type + ' asset ' + uuid.toString() + ' - ' + e.message)
+            }
+            else
+            {
+                Logger.Error('Failed to download ' + type + ' asset ' + uuid.toString() + ' - ' + String(e));
+            }
+            throw e;
         }
     }
 
