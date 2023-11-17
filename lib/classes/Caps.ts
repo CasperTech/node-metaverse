@@ -180,9 +180,13 @@ export class Caps
                     'rejectUnauthorized': false,
                     'method': 'GET',
                     'encoding': null
-                }, (err, _res, body) =>
+                }, (err, res, body) =>
                 {
-                    if (err)
+                    if (res.statusCode < 200 && res.statusCode > 299)
+                    {
+                        reject(new Error(body));
+                    }
+                    else if (err)
                     {
                         reject(err);
                     }
