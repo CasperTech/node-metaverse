@@ -304,6 +304,8 @@ export enum Message
     GodlikeMessage = 4294902019,
     EstateOwnerMessage = 4294902020,
     GenericMessage = 4294902021,
+    GenericStreamingMessage = 31,
+    LargeGenericMessage = 4294902190,
     MuteListRequest = 4294902022,
     UpdateMuteListEntry = 4294902023,
     RemoveMuteListEntry = 4294902024,
@@ -475,8 +477,5 @@ export enum Message
     Error = 4294902183,
     ObjectIncludeInSearch = 4294902184,
     RezRestoreToWorld = 4294902185,
-    LinkInventoryItem = 4294902186,
-    RetrieveIMsExtended = 4294902187,
-    JoinGroupRequestExtended = 4294902188,
-    CreateGroupRequestExtended = 4294902189
+    LinkInventoryItem = 4294902186
 }

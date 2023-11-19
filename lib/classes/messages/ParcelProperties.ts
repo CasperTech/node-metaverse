@@ -9,7 +9,7 @@ import { Message } from '../../enums/Message';
 export class ParcelPropertiesMessage implements MessageBase
 {
     name = 'ParcelProperties';
-    messageFlags = MessageFlags.Trusted | MessageFlags.Zerocoded | MessageFlags.Deprecated | MessageFlags.FrequencyHigh;
+    messageFlags = MessageFlags.Trusted | MessageFlags.Zerocoded | MessageFlags.FrequencyHigh;
     id = Message.ParcelProperties;
 
     ParcelData: {
@@ -69,10 +69,14 @@ export class ParcelPropertiesMessage implements MessageBase
     RegionAllowAccessBlock: {
         RegionAllowAccessOverride: boolean;
     };
+    ParcelEnvironmentBlock: {
+        ParcelEnvironmentVersion: number;
+        RegionAllowEnvironmentOverride: boolean;
+    };
 
     getSize(): number
     {
-        return (this.ParcelData['Bitmap'].length + 2 + this.ParcelData['Name'].length + 1 + this.ParcelData['Desc'].length + 1 + this.ParcelData['MusicURL'].length + 1 + this.ParcelData['MediaURL'].length + 1) + 240;
+        return (this.ParcelData['Bitmap'].length + 2 + this.ParcelData['Name'].length + 1 + this.ParcelData['Desc'].length + 1 + this.ParcelData['MusicURL'].length + 1 + this.ParcelData['MediaURL'].length + 1) + 245;
     }
 
     // @ts-ignore
@@ -175,6 +179,9 @@ export class ParcelPropertiesMessage implements MessageBase
         buf.writeUInt8((this.ParcelData['RegionDenyTransacted']) ? 1 : 0, pos++);
         buf.writeUInt8((this.AgeVerificationBlock['RegionDenyAgeUnverified']) ? 1 : 0, pos++);
         buf.writeUInt8((this.RegionAllowAccessBlock['RegionAllowAccessOverride']) ? 1 : 0, pos++);
+        buf.writeInt32LE(this.ParcelEnvironmentBlock['ParcelEnvironmentVersion'], pos);
+        pos += 4;
+        buf.writeUInt8((this.ParcelEnvironmentBlock['RegionAllowEnvironmentOverride']) ? 1 : 0, pos++);
         return pos - startPos;
     }
 
@@ -393,6 +400,17 @@ export class ParcelPropertiesMessage implements MessageBase
         };
         newObjRegionAllowAccessBlock['RegionAllowAccessOverride'] = (buf.readUInt8(pos++) === 1);
         this.RegionAllowAccessBlock = newObjRegionAllowAccessBlock;
+        const newObjParcelEnvironmentBlock: {
+            ParcelEnvironmentVersion: number,
+            RegionAllowEnvironmentOverride: boolean
+        } = {
+            ParcelEnvironmentVersion: 0,
+            RegionAllowEnvironmentOverride: false
+        };
+        newObjParcelEnvironmentBlock['ParcelEnvironmentVersion'] = buf.readInt32LE(pos);
+        pos += 4;
+        newObjParcelEnvironmentBlock['RegionAllowEnvironmentOverride'] = (buf.readUInt8(pos++) === 1);
+        this.ParcelEnvironmentBlock = newObjParcelEnvironmentBlock;
         return pos - startPos;
     }
 }

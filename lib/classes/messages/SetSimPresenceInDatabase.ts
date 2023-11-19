@@ -8,7 +8,7 @@ import { Message } from '../../enums/Message';
 export class SetSimPresenceInDatabaseMessage implements MessageBase
 {
     name = 'SetSimPresenceInDatabase';
-    messageFlags = MessageFlags.Trusted | MessageFlags.Deprecated | MessageFlags.FrequencyLow;
+    messageFlags = MessageFlags.Trusted | MessageFlags.FrequencyLow;
     id = Message.SetSimPresenceInDatabase;
 
     SimData: {

@@ -182,6 +182,30 @@ export class Bot
         });
     }
 
+    public async setInterestList(mode: '360' | 'default'): Promise<boolean>
+    {
+        const interestList = {
+            mode
+        };
+
+        try
+        {
+            const result = await this.currentRegion.caps.capsPostXML('InterestList', interestList);
+            if (typeof result !== 'object' || result === null)
+            {
+                throw new Error('Invalid response received');
+            }
+            const res = result as Record<string, unknown>;
+            return res.mode === mode;
+        }
+        catch (e)
+        {
+            console.error('Error when setting interest list:');
+            console.error(e);
+            return false;
+        }
+    }
+
     private closeCircuit(): void
     {
         this.currentRegion.shutdown();

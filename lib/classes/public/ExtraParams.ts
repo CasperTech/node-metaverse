@@ -7,6 +7,12 @@ import { SculptData } from './SculptData';
 import { UUID } from '../UUID';
 import { Vector3 } from '../Vector3';
 import { Color4 } from '../Color4';
+import { ExtendedMeshData } from './ExtendedMeshData';
+import { RenderMaterialData } from './RenderMaterialData';
+import { ReflectionProbeData } from './ReflectionProbeData';
+import { ExtendedMeshFlags } from './ExtendedMeshFlags';
+import { ReflectionProbeFlags } from './ReflectionProbeFlags';
+import { RenderMaterialParam } from './RenderMaterialParam';
 
 export class ExtraParams
 {
@@ -15,6 +21,9 @@ export class ExtraParams
     lightImageData: LightImageData | null = null;
     meshData: MeshData | null = null;
     sculptData: SculptData | null = null;
+    extendedMeshData: ExtendedMeshData | null = null;
+    renderMaterialData: RenderMaterialData | null = null;
+    reflectionProbeData: ReflectionProbeData | null = null;
 
     static getLengthOfParams(buf: Buffer, pos: number): number
     {
@@ -68,6 +77,15 @@ export class ExtraParams
                     case ExtraParamType.Sculpt:
                         ep.sculptData = new SculptData(buf, pos, paramLength);
                         break;
+                    case ExtraParamType.ExtendedMesh:
+                        ep.extendedMeshData = new ExtendedMeshData(buf, pos, paramLength);
+                        break;
+                    case ExtraParamType.RenderMaterial:
+                        ep.renderMaterialData = new RenderMaterialData(buf, pos, paramLength);
+                        break;
+                    case ExtraParamType.ReflectionProbe:
+                        ep.reflectionProbeData = new ReflectionProbeData(buf, pos, paramLength);
+                        break;
                 }
 
                 pos += paramLength;
@@ -76,19 +94,40 @@ export class ExtraParams
         }
         return ep;
     }
-    setMeshData(type: number, uuid: UUID): void
+    public setMeshData(type: number, uuid: UUID): void
     {
         this.meshData = new MeshData();
         this.meshData.type = type;
         this.meshData.meshData = uuid;
     }
-    setSculptData(type: number, uuid: UUID): void
+
+    public setExtendedMeshData(flags: ExtendedMeshFlags): void
+    {
+        this.extendedMeshData = new ExtendedMeshData();
+        this.extendedMeshData.flags = flags;
+    }
+
+    public setReflectionProbeData(ambiance: number, clipDistance: number, flags: ReflectionProbeFlags): void
+    {
+        this.reflectionProbeData = new ReflectionProbeData();
+        this.reflectionProbeData.ambiance = ambiance;
+        this.reflectionProbeData.clipDistance = clipDistance;
+        this.reflectionProbeData.flags = flags;
+    }
+
+    public setRenderMaterialData(params: RenderMaterialParam[]): void
+    {
+        this.renderMaterialData = new RenderMaterialData();
+        this.renderMaterialData.params = params;
+    }
+
+    public setSculptData(type: number, uuid: UUID): void
     {
         this.sculptData = new SculptData();
         this.sculptData.type = type;
         this.sculptData.texture = uuid;
     }
-    setFlexiData(softness: number, tension: number, drag: number, gravity: number, wind: number, force: Vector3): void
+    public setFlexiData(softness: number, tension: number, drag: number, gravity: number, wind: number, force: Vector3): void
     {
         this.flexibleData = new FlexibleData();
         this.flexibleData.Softness = softness;
@@ -98,7 +137,7 @@ export class ExtraParams
         this.flexibleData.Wind = wind;
         this.flexibleData.Force = force;
     }
-    setLightData(color: Color4, radius: number, cutoff: number, falloff: number, intensity: number): void
+    public setLightData(color: Color4, radius: number, cutoff: number, falloff: number, intensity: number): void
     {
         this.lightData = new LightData();
         this.lightData.Color = color;
@@ -107,7 +146,7 @@ export class ExtraParams
         this.lightData.Falloff = falloff;
         this.lightData.Intensity = intensity;
     }
-    toBuffer(): Buffer
+    public toBuffer(): Buffer
     {
         let totalLength = 1;
         let paramCount = 0;
@@ -135,6 +174,21 @@ export class ExtraParams
         {
             paramCount++;
             totalLength = totalLength + 2 + 4 + 17;
+        }
+        if (this.extendedMeshData !== null)
+        {
+            paramCount++;
+            totalLength = totalLength + 2 + 4 + 4;
+        }
+        if (this.reflectionProbeData !== null)
+        {
+            paramCount++;
+            totalLength = totalLength + 2 + 4 + 9;
+        }
+        if (this.renderMaterialData !== null)
+        {
+            paramCount++;
+            totalLength = totalLength + 2 + 4 + 1 + (this.renderMaterialData.params.length * 17)
         }
         const buf = Buffer.allocUnsafe(totalLength);
         let pos = 0;
@@ -169,9 +223,27 @@ export class ExtraParams
             buf.writeUInt32LE(17, pos); pos = pos + 4;
             this.sculptData.writeToBuffer(buf, pos); pos = pos + 17;
         }
+        if (this.extendedMeshData !== null)
+        {
+            buf.writeUInt16LE(ExtraParamType.ExtendedMesh, pos); pos = pos + 2;
+            buf.writeUInt32LE(4, pos); pos = pos + 4;
+            this.extendedMeshData.writeToBuffer(buf, pos); pos = pos + 4;
+        }
+        if (this.reflectionProbeData !== null)
+        {
+            buf.writeUInt16LE(ExtraParamType.ReflectionProbe, pos); pos = pos + 2;
+            buf.writeUInt32LE(9, pos); pos = pos + 4;
+            this.reflectionProbeData.writeToBuffer(buf, pos); pos = pos + 9;
+        }
+        if (this.renderMaterialData !== null)
+        {
+            buf.writeUInt16LE(ExtraParamType.RenderMaterial, pos); pos = pos + 2;
+            buf.writeUInt32LE(1 + (this.renderMaterialData.params.length * 17), pos); pos = pos + 4;
+            this.renderMaterialData.writeToBuffer(buf, pos); pos = pos + 1 + (this.renderMaterialData.params.length * 17);
+        }
         return buf;
     }
-    toBase64(): string
+    public toBase64(): string
     {
         return this.toBuffer().toString('base64');
     }

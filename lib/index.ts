@@ -105,6 +105,10 @@ import { LLGestureWaitStep } from './classes/LLGestureWaitStep';
 import { LLGestureChatStep } from './classes/LLGestureChatStep';
 import { LLGestureStepType } from './enums/LLGestureStepType';
 import { LLLindenText } from './classes/LLLindenText';
+import { LLGLTFMaterial } from './classes/LLGLTFMaterial';
+import { ExtendedMeshData } from './classes/public/ExtendedMeshData';
+import { ReflectionProbeData } from './classes/public/ReflectionProbeData';
+import { RenderMaterialData } from './classes/public/RenderMaterialData';
 
 export {
     Bot,
@@ -119,6 +123,7 @@ export {
     TextureEntry,
     LLWearable,
     LLLindenText,
+    LLGLTFMaterial,
     LLGesture,
     LLGestureAnimationStep,
     LLGestureSoundStep,
@@ -218,6 +223,9 @@ export {
     InventoryItem,
     TarReader,
     TarWriter,
+    ExtendedMeshData,
+    ReflectionProbeData,
+    RenderMaterialData,
 
     // Public Interfaces
     GlobalPosition,

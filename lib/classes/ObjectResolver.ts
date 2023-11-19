@@ -6,6 +6,7 @@ import { Subject, Subscription } from 'rxjs';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 
 import * as LLSD from '@caspertech/llsd';
+import { GetObjectsOptions } from './commands/RegionCommands';
 
 export class ObjectResolver
 {
@@ -23,7 +24,7 @@ export class ObjectResolver
 
     }
 
-    resolveObjects(objects: GameObject[], forceResolve: boolean = false, skipInventory = false, log = false): Promise<GameObject[]>
+    resolveObjects(objects: GameObject[], options: GetObjectsOptions): Promise<GameObject[]>
     {
         return new Promise<GameObject[]>((resolve, reject) =>
         {
@@ -32,7 +33,7 @@ export class ObjectResolver
                 reject(new Error('Region is going away'));
                 return;
             }
-            if (log)
+            if (options.outputLog)
             {
                 // console.log('[RESOLVER] Scanning ' + objects.length + ' objects, skipInventory: ' + skipInventory);
             }
@@ -52,14 +53,13 @@ export class ObjectResolver
                 {
                     this.objectsInQueue[id] = {
                         object: objs[id],
-                        skipInventory: skipInventory,
-                        log
+                        options
                     };
                     this.queue.push(id);
                 }
-                else if (this.objectsInQueue[id].skipInventory && !skipInventory)
+                else if (this.objectsInQueue[id].options.skipInventory && !options.skipInventory)
                 {
-                    this.objectsInQueue[id].skipInventory = true
+                    this.objectsInQueue[id].options.skipInventory = false;
                 }
             };
 
@@ -68,13 +68,13 @@ export class ObjectResolver
             {
                 const id = parseInt(obj, 10);
                 const gameObject = objs[id];
-                if (log)
+                if (options.outputLog === true)
                 {
                     // console.log('ResolvedInventory: ' + gameObject.resolvedInventory + ', skip: ' + skipInventory);
                 }
-                if (forceResolve || gameObject.resolvedAt === undefined || gameObject.resolvedAt === 0 || (!skipInventory && !gameObject.resolvedInventory))
+                if (!options.onlyUnresolved || gameObject.resolvedAt === undefined || gameObject.resolvedAt === 0 || (!options.skipInventory && !gameObject.resolvedInventory))
                 {
-                    if (forceResolve)
+                    if (!options.onlyUnresolved)
                     {
                         gameObject.resolvedAt = 0;
                         gameObject.resolveAttempts = 0;
@@ -89,7 +89,7 @@ export class ObjectResolver
             for (const id of skipped)
             {
                 delete objs[id];
-                if (log)
+                if (options.outputLog === true)
                 {
                     // console.log('[RESOLVER] Skipping already resolved object. ' + amountLeft + ' objects remaining to resolve (' + this.queue.length + ' in queue)');
                 }
@@ -109,9 +109,9 @@ export class ObjectResolver
                 let done = false;
                 if (obj.resolvedAt !== undefined && obj.resolvedAt > 0)
                 {
-                    if (skipInventory || obj.resolvedInventory)
+                    if (options.skipInventory === true || obj.resolvedInventory)
                     {
-                        if (log)
+                        if (options.outputLog === true)
                         {
                             // console.log('[RESOLVER] Resolved an object. ' + amountLeft + ' objects remaining to resolve (' + this.queue.length + ' in queue)');
                         }
@@ -148,13 +148,13 @@ export class ObjectResolver
             {
                 if (objs[obj.ID] !== undefined)
                 {
-                    if (log)
+                    if (options.outputLog === true)
                     {
                         // console.log('Got onObjectResolveRan for 1 object ...');
                     }
                     if (!checkObject(obj))
                     {
-                        if (log)
+                        if (options.outputLog === true)
                         {
                             // console.log(' .. Not resolved yet');
                         }
@@ -163,7 +163,7 @@ export class ObjectResolver
                             if (!checkObject(obj))
                             {
                                 // Requeue
-                                if (log)
+                                if (options.outputLog)
                                 {
                                     // console.log(' .. ' + obj.ID + ' still not resolved yet, requeuing');
                                 }
@@ -189,7 +189,7 @@ export class ObjectResolver
             {
                 if (objs[obj.object.ID] !== undefined)
                 {
-                    if (log)
+                    if (options.outputLog)
                     {
                         // console.log('Got object resolved event for ' + obj.object.ID);
                     }
@@ -323,12 +323,12 @@ export class ObjectResolver
                 {
                     return;
                 }
-                if (!job.skipInventory)
+                if (!job.options.skipInventory && (job.options.includeTempObjects || ((job.object.Flags ?? 0) & PrimFlags.TemporaryOnRez) === 0))
                 {
                     const o = job.object;
                     if ((o.resolveAttempts === undefined || o.resolveAttempts < 3) && o.FullID !== undefined && o.name !== undefined && o.Flags !== undefined && !(o.Flags & PrimFlags.InventoryEmpty) && (!o.inventory || o.inventory.length === 0))
                     {
-                        if (job.log)
+                        if (job.options.outputLog)
                         {
                             // console.log('Processing inventory for ' + job.object.ID);
                         }
@@ -357,7 +357,7 @@ export class ObjectResolver
                     }
                     else
                     {
-                        if (job.log)
+                        if (job.options.outputLog)
                         {
                             // console.log('Skipping inventory for ' + job.object.ID);
                         }
@@ -390,44 +390,51 @@ export class ObjectResolver
             const that  = this;
             const getCosts = async function(objIDs: UUID[]): Promise<void>
             {
-                if (!that.region)
+                try
                 {
-                    return;
-                }
-                const result = await that.region.caps.capsPostXML('GetObjectCost', {
-                    'object_ids': objIDs
-                });
-                const uuids = Object.keys(result);
-                for (const key of uuids)
-                {
-                    const costs = result[key];
-                    try
+                    if (!that.region)
                     {
-                        if (!that.region)
+                        return;
+                    }
+                    const result = await that.region.caps.capsPostXML('GetObjectCost', {
+                        'object_ids': objIDs
+                    });
+                    const uuids = Object.keys(result);
+                    for (const key of uuids)
+                    {
+                        const costs = result[key];
+                        try
                         {
-                            return;
-                        }
-                        const obj: GameObject = that.region.objects.getObjectByUUID(new UUID(key));
-                        obj.linkPhysicsImpact = parseFloat(costs['linked_set_physics_cost']);
-                        obj.linkResourceImpact = parseFloat(costs['linked_set_resource_cost']);
-                        obj.physicaImpact = parseFloat(costs['physics_cost']);
-                        obj.resourceImpact = parseFloat(costs['resource_cost']);
-                        obj.limitingType = costs['resource_limiting_type'];
+                            if (!that.region)
+                            {
+                                return;
+                            }
+                            const obj: GameObject = that.region.objects.getObjectByUUID(new UUID(key));
+                            obj.linkPhysicsImpact = parseFloat(costs['linked_set_physics_cost']);
+                            obj.linkResourceImpact = parseFloat(costs['linked_set_resource_cost']);
+                            obj.physicaImpact = parseFloat(costs['physics_cost']);
+                            obj.resourceImpact = parseFloat(costs['resource_cost']);
+                            obj.limitingType = costs['resource_limiting_type'];
 
 
-                        obj.landImpact = Math.round(obj.linkPhysicsImpact);
-                        if (obj.linkResourceImpact > obj.linkPhysicsImpact)
-                        {
-                            obj.landImpact = Math.round(obj.linkResourceImpact);
+                            obj.landImpact = Math.round(obj.linkPhysicsImpact);
+                            if (obj.linkResourceImpact > obj.linkPhysicsImpact)
+                            {
+                                obj.landImpact = Math.round(obj.linkResourceImpact);
+                            }
+                            obj.calculatedLandImpact = obj.landImpact;
+                            if (obj.Flags !== undefined && obj.Flags & PrimFlags.TemporaryOnRez && obj.limitingType === 'legacy')
+                            {
+                                obj.calculatedLandImpact = 0;
+                            }
                         }
-                        obj.calculatedLandImpact = obj.landImpact;
-                        if (obj.Flags !== undefined && obj.Flags & PrimFlags.TemporaryOnRez && obj.limitingType === 'legacy')
+                        catch (error)
                         {
-                            obj.calculatedLandImpact = 0;
                         }
                     }
-                    catch (error)
-                    {}
+                }
+                catch (error)
+                {
                 }
             };
 
@@ -453,7 +460,7 @@ export class ObjectResolver
             await Promise.all(promises);
             for (const job of jobs)
             {
-                if (job.log)
+                if (job.options.outputLog)
                 {
                     // console.log('Signalling resolve OK for ' + job.object.ID);
                 }

@@ -20,14 +20,10 @@ export class TransferInventoryMessage implements MessageBase
         InventoryID: UUID;
         Type: number;
     }[];
-    ValidationBlock: {
-        NeedsValidation: boolean;
-        EstateID: number;
-    };
 
     getSize(): number
     {
-        return ((17) * this.InventoryBlock.length) + 54;
+        return ((17) * this.InventoryBlock.length) + 49;
     }
 
     // @ts-ignore
@@ -48,9 +44,6 @@ export class TransferInventoryMessage implements MessageBase
             pos += 16;
             buf.writeInt8(this.InventoryBlock[i]['Type'], pos++);
         }
-        buf.writeUInt8((this.ValidationBlock['NeedsValidation']) ? 1 : 0, pos++);
-        buf.writeUInt32LE(this.ValidationBlock['EstateID'], pos);
-        pos += 4;
         return pos - startPos;
     }
 
@@ -94,17 +87,6 @@ export class TransferInventoryMessage implements MessageBase
             newObjInventoryBlock['Type'] = buf.readInt8(pos++);
             this.InventoryBlock.push(newObjInventoryBlock);
         }
-        const newObjValidationBlock: {
-            NeedsValidation: boolean,
-            EstateID: number
-        } = {
-            NeedsValidation: false,
-            EstateID: 0
-        };
-        newObjValidationBlock['NeedsValidation'] = (buf.readUInt8(pos++) === 1);
-        newObjValidationBlock['EstateID'] = buf.readUInt32LE(pos);
-        pos += 4;
-        this.ValidationBlock = newObjValidationBlock;
         return pos - startPos;
     }
 }

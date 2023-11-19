@@ -1,8 +1,8 @@
 import { GameObject } from '../..';
+import { GetObjectsOptions } from '../commands/RegionCommands';
 
 export interface IResolveJob
 {
     object: GameObject,
-    skipInventory: boolean,
-    log: boolean
+    options: GetObjectsOptions,
 }
