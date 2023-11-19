@@ -1171,8 +1171,7 @@
         "id": "23",
         "flags": [
             "Trusted",
-            "Unencoded",
-            "UDPDeprecated"
+            "Unencoded"
         ],
         "blocks": [
             {
@@ -7938,18 +7937,6 @@
                         "size": "1"
                     }
                 ]
-            },
-            {
-                "name": "AgentInfo",
-                "type": "Variable",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "AgentID",
-                        "type": "LLUUID",
-                        "size": 1
-                    }
-                ]
             }
         ]
     },
@@ -8400,6 +8387,48 @@
                     {
                         "name": "RegionFlagsExtended",
                         "type": "U64",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "RegionInfo5",
+                "type": "Variable",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "ChatWhisperRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatNormalRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatShoutRange",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatWhisperOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatNormalOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatShoutOffset",
+                        "type": "F32",
+                        "size": 1
+                    },
+                    {
+                        "name": "ChatFlags",
+                        "type": "U32",
                         "size": 1
                     }
                 ]
@@ -12405,8 +12434,7 @@
         "id": "23",
         "flags": [
             "Trusted",
-            "Zerocoded",
-            "UDPDeprecated"
+            "Zerocoded"
         ],
         "blocks": [
             {
@@ -12680,6 +12708,23 @@
                 "params": [
                     {
                         "name": "RegionAllowAccessOverride",
+                        "type": "BOOL",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "ParcelEnvironmentBlock",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "ParcelEnvironmentVersion",
+                        "type": "S32",
+                        "size": 1
+                    },
+                    {
+                        "name": "RegionAllowEnvironmentOverride",
                         "type": "BOOL",
                         "size": 1
                     }
@@ -14801,18 +14846,6 @@
                         "size": 1
                     }
                 ]
-            },
-            {
-                "name": "SimFlags",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "Flags",
-                        "type": "U64",
-                        "size": 1
-                    }
-                ]
             }
         ]
     },
@@ -15063,18 +15096,6 @@
                         "name": "Flags",
                         "type": "U32",
                         "size": 1
-                    }
-                ]
-            },
-            {
-                "name": "AgentInventoryHost",
-                "type": "Variable",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "InventoryHost",
-                        "type": "Variable",
-                        "size": "1"
                     }
                 ]
             }
@@ -15906,18 +15927,6 @@
                         "size": "2"
                     }
                 ]
-            },
-            {
-                "name": "EstateBlock",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "EstateID",
-                        "type": "U32",
-                        "size": 1
-                    }
-                ]
             }
         ]
     },
@@ -16270,6 +16279,104 @@
                         "name": "Parameter",
                         "type": "Variable",
                         "size": "1"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "GenericStreamingMessage",
+        "frequency": "High",
+        "id": "31",
+        "flags": [
+            "Trusted",
+            "Unencoded"
+        ],
+        "blocks": [
+            {
+                "name": "MethodData",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "Method",
+                        "type": "U16",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "DataBlock",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "Data",
+                        "type": "Variable",
+                        "size": "2"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "LargeGenericMessage",
+        "frequency": "Low",
+        "id": "430",
+        "flags": [
+            "NotTrusted",
+            "Unencoded",
+            "UDPDeprecated"
+        ],
+        "blocks": [
+            {
+                "name": "AgentData",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "AgentID",
+                        "type": "LLUUID",
+                        "size": 1
+                    },
+                    {
+                        "name": "SessionID",
+                        "type": "LLUUID",
+                        "size": 1
+                    },
+                    {
+                        "name": "TransactionID",
+                        "type": "LLUUID",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "MethodData",
+                "type": "Single",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "Method",
+                        "type": "Variable",
+                        "size": "1"
+                    },
+                    {
+                        "name": "Invoice",
+                        "type": "LLUUID",
+                        "size": 1
+                    }
+                ]
+            },
+            {
+                "name": "ParamList",
+                "type": "Variable",
+                "count": 1,
+                "params": [
+                    {
+                        "name": "Parameter",
+                        "type": "Variable",
+                        "size": "2"
                     }
                 ]
             }
@@ -18793,23 +18900,6 @@
                         "size": 1
                     }
                 ]
-            },
-            {
-                "name": "ValidationBlock",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "NeedsValidation",
-                        "type": "BOOL",
-                        "size": 1
-                    },
-                    {
-                        "name": "EstateID",
-                        "type": "U32",
-                        "size": 1
-                    }
-                ]
             }
         ]
     },
@@ -19867,8 +19957,7 @@
         "id": "315",
         "flags": [
             "Trusted",
-            "Zerocoded",
-            "UDPDeprecated"
+            "Zerocoded"
         ],
         "blocks": [
             {
@@ -21794,18 +21883,6 @@
                     },
                     {
                         "name": "MembershipFee",
-                        "type": "S32",
-                        "size": 1
-                    }
-                ]
-            },
-            {
-                "name": "GroupData",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "GroupLimit",
                         "type": "S32",
                         "size": 1
                     }
@@ -26068,164 +26145,6 @@
                         "name": "Description",
                         "type": "Variable",
                         "size": "1"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "RetrieveIMsExtended",
-        "frequency": "Low",
-        "id": "427",
-        "flags": [
-            "Trusted",
-            "Unencoded"
-        ],
-        "blocks": [
-            {
-                "name": "AgentData",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "AgentID",
-                        "type": "LLUUID",
-                        "size": 1
-                    },
-                    {
-                        "name": "SessionID",
-                        "type": "LLUUID",
-                        "size": 1
-                    },
-                    {
-                        "name": "IsPremium",
-                        "type": "BOOL",
-                        "size": 1
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "JoinGroupRequestExtended",
-        "frequency": "Low",
-        "id": "428",
-        "flags": [
-            "Trusted",
-            "Unencoded"
-        ],
-        "blocks": [
-            {
-                "name": "AgentData",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "AgentID",
-                        "type": "LLUUID",
-                        "size": 1
-                    },
-                    {
-                        "name": "SessionID",
-                        "type": "LLUUID",
-                        "size": 1
-                    },
-                    {
-                        "name": "GroupLimit",
-                        "type": "S32",
-                        "size": 1
-                    }
-                ]
-            },
-            {
-                "name": "GroupData",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "GroupID",
-                        "type": "LLUUID",
-                        "size": 1
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "CreateGroupRequestExtended",
-        "frequency": "Low",
-        "id": "429",
-        "flags": [
-            "Trusted",
-            "Unencoded"
-        ],
-        "blocks": [
-            {
-                "name": "AgentData",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "AgentID",
-                        "type": "LLUUID",
-                        "size": 1
-                    },
-                    {
-                        "name": "SessionID",
-                        "type": "LLUUID",
-                        "size": 1
-                    },
-                    {
-                        "name": "GroupLimit",
-                        "type": "S32",
-                        "size": 1
-                    }
-                ]
-            },
-            {
-                "name": "GroupData",
-                "type": "Single",
-                "count": 1,
-                "params": [
-                    {
-                        "name": "Name",
-                        "type": "Variable",
-                        "size": "1"
-                    },
-                    {
-                        "name": "Charter",
-                        "type": "Variable",
-                        "size": "2"
-                    },
-                    {
-                        "name": "ShowInList",
-                        "type": "BOOL",
-                        "size": 1
-                    },
-                    {
-                        "name": "InsigniaID",
-                        "type": "LLUUID",
-                        "size": 1
-                    },
-                    {
-                        "name": "MembershipFee",
-                        "type": "S32",
-                        "size": 1
-                    },
-                    {
-                        "name": "OpenEnrollment",
-                        "type": "BOOL",
-                        "size": 1
-                    },
-                    {
-                        "name": "AllowPublish",
-                        "type": "BOOL",
-                        "size": 1
-                    },
-                    {
-                        "name": "MaturePublish",
-                        "type": "BOOL",
-                        "size": 1
                     }
                 ]
             }

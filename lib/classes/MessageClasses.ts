@@ -304,6 +304,8 @@ export * from './messages/GrantGodlikePowers';
 export * from './messages/GodlikeMessage';
 export * from './messages/EstateOwnerMessage';
 export * from './messages/GenericMessage';
+export * from './messages/GenericStreamingMessage';
+export * from './messages/LargeGenericMessage';
 export * from './messages/MuteListRequest';
 export * from './messages/UpdateMuteListEntry';
 export * from './messages/RemoveMuteListEntry';
@@ -476,9 +478,6 @@ export * from './messages/Error';
 export * from './messages/ObjectIncludeInSearch';
 export * from './messages/RezRestoreToWorld';
 export * from './messages/LinkInventoryItem';
-export * from './messages/RetrieveIMsExtended';
-export * from './messages/JoinGroupRequestExtended';
-export * from './messages/CreateGroupRequestExtended';
 import { Message } from '../enums/Message';
 
 const messages: { [index: number]: string } = {};
@@ -786,6 +785,8 @@ messages[<number>Message.GrantGodlikePowers] = 'GrantGodlikePowersMessage';
 messages[<number>Message.GodlikeMessage] = 'GodlikeMessageMessage';
 messages[<number>Message.EstateOwnerMessage] = 'EstateOwnerMessageMessage';
 messages[<number>Message.GenericMessage] = 'GenericMessageMessage';
+messages[<number>Message.GenericStreamingMessage] = 'GenericStreamingMessageMessage';
+messages[<number>Message.LargeGenericMessage] = 'LargeGenericMessageMessage';
 messages[<number>Message.MuteListRequest] = 'MuteListRequestMessage';
 messages[<number>Message.UpdateMuteListEntry] = 'UpdateMuteListEntryMessage';
 messages[<number>Message.RemoveMuteListEntry] = 'RemoveMuteListEntryMessage';
@@ -958,9 +959,6 @@ messages[<number>Message.Error] = 'ErrorMessage';
 messages[<number>Message.ObjectIncludeInSearch] = 'ObjectIncludeInSearchMessage';
 messages[<number>Message.RezRestoreToWorld] = 'RezRestoreToWorldMessage';
 messages[<number>Message.LinkInventoryItem] = 'LinkInventoryItemMessage';
-messages[<number>Message.RetrieveIMsExtended] = 'RetrieveIMsExtendedMessage';
-messages[<number>Message.JoinGroupRequestExtended] = 'JoinGroupRequestExtendedMessage';
-messages[<number>Message.CreateGroupRequestExtended] = 'CreateGroupRequestExtendedMessage';
 
 export function nameFromID(id: Message): string
 {

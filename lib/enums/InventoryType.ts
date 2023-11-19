@@ -22,5 +22,6 @@ export enum InventoryType
     Mesh = 22,
     Widget = 23,
     Person = 24,
-    Settings = 25
+    Settings = 25,
+    Material = 26,
 }

@@ -54,6 +54,7 @@ import { CoarseLocationUpdateMessage } from './messages/CoarseLocationUpdate';
 import { Avatar } from './public/Avatar';
 import { MoneyBalanceReplyMessage } from './messages/MoneyBalanceReply';
 import { BalanceUpdatedEvent } from '../events/BalanceUpdatedEvent';
+import { Logger } from './Logger';
 
 export class Region
 {
@@ -608,7 +609,7 @@ export class Region
                             const block = data.readUInt8(x);
                             this.parcelOverlay.push({
                                 landType: block & 0xF,
-                                landFlags: block & ~ 0xF,
+                                landFlags: block & ~0xF,
                                 parcelID: -1
                             });
                         }
@@ -960,7 +961,7 @@ export class Region
 
     private fillParcel(parcelID: number, x: number, y: number): void
     {
-        if ( x < 0 || y < 0 || x > 63 || y > 63)
+        if (x < 0 || y < 0 || x > 63 || y > 63)
         {
             return;
         }
@@ -1232,6 +1233,7 @@ export class Region
         }
         this.caps = new Caps(this.agent, seedURL, this.clientEvents);
     }
+
     async handshake(handshake: RegionHandshakeMessage): Promise<void>
     {
         this.regionName = Utils.BufferToStringSimple(handshake.RegionInfo.SimName);
@@ -1264,7 +1266,6 @@ export class Region
         this.coloName = Utils.BufferToStringSimple(handshake.RegionInfo3.ColoName);
         this.productSKU = Utils.BufferToStringSimple(handshake.RegionInfo3.ProductSKU);
         this.productName = Utils.BufferToStringSimple(handshake.RegionInfo3.ProductName);
-
 
 
         const request: RequestRegionInfoMessage = new RequestRegionInfoMessage();
@@ -1339,67 +1340,75 @@ export class Region
         };
 
         await this.caps.waitForSeedCapability();
-        const response = await this.caps.capsGetXML('EnvironmentSettings');
-        if (response.length >= 4)
+
+        try
         {
-            if (Array.isArray(response[1]) && typeof response[2] === 'object' && typeof response[3] === 'object')
+            const response = await this.caps.capsGetXML('EnvironmentSettings');
+            if (response.length >= 4)
             {
-                for (const kf of response[1])
+                if (Array.isArray(response[1]) && typeof response[2] === 'object' && typeof response[3] === 'object')
                 {
-                    this.environment.dayCycleKeyframes.push({
-                        time: kf[0],
-                        preset: kf[1]
-                    });
-                }
-                for (const presetKey of Object.keys(response[2]))
-                {
-                    const preset = response[2][presetKey];
-                    this.environment.skyPresets[presetKey] = new class implements SkyPreset
+                    for (const kf of response[1])
                     {
-                        ambient = new Vector4(preset['ambient']);
-                        blueDensity = new Vector4(preset['blue_density']);
-                        blueHorizon = new Vector4(preset['blue_horizon']);
-                        cloudColor = new Color4(preset['cloud_color']);
-                        cloudPosDensity1 = new Vector4(preset['cloud_pos_density1']);
-                        cloudPosDensity2 = new Vector4(preset['cloud_pos_density2']);
-                        cloudScale = new Vector4(preset['cloud_scale']);
-                        cloudScrollRate = new Vector2(preset['cloud_scroll_rate']);
-                        cloudShadow = new Vector4(preset['cloud_shadow']);
-                        densityMultiplier = new Vector4(preset['density_multiplier']);
-                        distanceMultiplier = new Vector4(preset['distance_multiplier']);
-                        eastAngle = preset['east_angle'];
-                        enableCloudScroll = {
-                            x: preset['enable_cloud_scroll'][0],
-                            y: preset['enable_cloud_scroll'][1]
+                        this.environment.dayCycleKeyframes.push({
+                            time: kf[0],
+                            preset: kf[1]
+                        });
+                    }
+                    for (const presetKey of Object.keys(response[2]))
+                    {
+                        const preset = response[2][presetKey];
+                        this.environment.skyPresets[presetKey] = new class implements SkyPreset
+                        {
+                            ambient = new Vector4(preset['ambient']);
+                            blueDensity = new Vector4(preset['blue_density']);
+                            blueHorizon = new Vector4(preset['blue_horizon']);
+                            cloudColor = new Color4(preset['cloud_color']);
+                            cloudPosDensity1 = new Vector4(preset['cloud_pos_density1']);
+                            cloudPosDensity2 = new Vector4(preset['cloud_pos_density2']);
+                            cloudScale = new Vector4(preset['cloud_scale']);
+                            cloudScrollRate = new Vector2(preset['cloud_scroll_rate']);
+                            cloudShadow = new Vector4(preset['cloud_shadow']);
+                            densityMultiplier = new Vector4(preset['density_multiplier']);
+                            distanceMultiplier = new Vector4(preset['distance_multiplier']);
+                            eastAngle = preset['east_angle'];
+                            enableCloudScroll = {
+                                x: preset['enable_cloud_scroll'][0],
+                                y: preset['enable_cloud_scroll'][1]
+                            };
+                            gamma = new Vector4(preset['gamma']);
+                            glow = new Vector4(preset['glow']);
+                            hazeDensity = new Vector4(preset['haze_density']);
+                            hazeHorizon = new Vector4(preset['haze_horizon']);
+                            lightNormal = new Vector4(preset['lightnorm']);
+                            maxY = new Vector4(preset['max_y']);
+                            starBrightness = preset['start_brightness'];
+                            sunAngle = preset['sun_angle'];
+                            sunlightColor = new Color4(preset['sunlight_color']);
                         };
-                        gamma = new Vector4(preset['gamma']);
-                        glow = new Vector4(preset['glow']);
-                        hazeDensity = new Vector4(preset['haze_density']);
-                        hazeHorizon = new Vector4(preset['haze_horizon']);
-                        lightNormal = new Vector4(preset['lightnorm']);
-                        maxY = new Vector4(preset['max_y']);
-                        starBrightness = preset['start_brightness'];
-                        sunAngle = preset['sun_angle'];
-                        sunlightColor = new Color4(preset['sunlight_color']);
+                    }
+                    const wat = response[3];
+                    this.environment.water = new class implements WaterPreset
+                    {
+                        blurMultiplier = wat['blurMultiplier'];
+                        fresnelOffset = wat['fresnelOffset'];
+                        fresnelScale = wat['fresnelScale'];
+                        normalScale = new Vector3(wat['normScale']);
+                        normalMap = new UUID(wat['normalMap'].toString());
+                        scaleAbove = wat['scaleAbove'];
+                        scaleBelow = wat['scaleBelow'];
+                        underWaterFogMod = wat['underWaterFogMod'];
+                        waterFogColor = new Color4(wat['waterFogColor']);
+                        waterFogDensity = wat['waterFogDensity'];
+                        wave1Dir = new Vector2(wat['wave1Dir']);
+                        wave2Dir = new Vector2(wat['wave2Dir']);
                     };
                 }
-                const wat = response[3];
-                this.environment.water = new class implements WaterPreset
-                {
-                    blurMultiplier = wat['blurMultiplier'];
-                    fresnelOffset = wat['fresnelOffset'];
-                    fresnelScale = wat['fresnelScale'];
-                    normalScale = new Vector3(wat['normScale']);
-                    normalMap = new UUID(wat['normalMap'].toString());
-                    scaleAbove = wat['scaleAbove'];
-                    scaleBelow = wat['scaleBelow'];
-                    underWaterFogMod = wat['underWaterFogMod'];
-                    waterFogColor = new Color4(wat['waterFogColor']);
-                    waterFogDensity = wat['waterFogDensity'];
-                    wave1Dir = new Vector2(wat['wave1Dir']);
-                    wave2Dir = new Vector2(wat['wave2Dir']);
-                };
             }
+        }
+        catch (e)
+        {
+            Logger.Warn('Unable to get environment settings from region');
         }
         this.handshakeComplete = true;
         this.handshakeCompleteEvent.next();

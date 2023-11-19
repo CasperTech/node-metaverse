@@ -23,6 +23,7 @@ import { ExtraParams } from './public/ExtraParams';
 import { CompressedFlags } from '../enums/CompressedFlags';
 import { PCode } from '../enums/PCode';
 import { BotOptionFlags } from '../enums/BotOptionFlags';
+import { PacketFlags } from '../enums/PacketFlags';
 
 export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
 {
@@ -32,6 +33,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
     {
         super(circuit, agent, clientEvents, options);
         this.rtree = new RBush3D();
+        this.fullStore = true;
     }
 
     protected objectUpdate(objectUpdate: ObjectUpdateMessage): void
@@ -42,17 +44,19 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             const parentID = objData.ParentID;
             let addToParentList = true;
             let newObject = false;
-            if (this.objects[localID])
+            let obj = this.objects.get(localID);
+            if (obj)
             {
-                if (this.objects[localID].ParentID !== parentID && this.objectsByParent[parentID])
+                const objsByParent = this.objectsByParent.get(parentID ?? 0);
+                if (obj.ParentID !== parentID && objsByParent)
                 {
-                    const ind = this.objectsByParent[parentID].indexOf(localID);
+                    const ind = objsByParent.indexOf(localID);
                     if (ind !== -1)
                     {
-                        this.objectsByParent[parentID].splice(ind, 1);
+                        objsByParent.splice(ind, 1);
                     }
                 }
-                else if (this.objectsByParent[parentID])
+                else if (objsByParent)
                 {
                     addToParentList = false;
                 }
@@ -60,12 +64,12 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             else
             {
                 newObject = true;
-                this.objects[localID] = new GameObject();
-                this.objects[localID].region = this.agent.currentRegion;
+                obj = new GameObject();
+                obj.region = this.agent.currentRegion;
+                this.objects.set(localID, obj);
             }
-            this.objects[localID].deleted = false;
+            obj.deleted = false;
 
-            const obj = this.objects[localID];
             obj.ID = objData.ID;
             obj.State = objData.State;
             obj.FullID = objData.FullID;
@@ -98,7 +102,17 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             obj.ProfileBegin = Utils.unpackBeginCut(objData.ProfileBegin);
             obj.ProfileEnd = Utils.unpackEndCut(objData.ProfileEnd);
             obj.ProfileHollow = Utils.unpackProfileHollow(objData.ProfileHollow);
+            if (obj.TextureEntry?.gltfMaterialOverrides && !this.cachedMaterialOverrides.has(obj.ID))
+            {
+                this.cachedMaterialOverrides.set(obj.ID, obj.TextureEntry.gltfMaterialOverrides);
+            }
             obj.TextureEntry = TextureEntry.from(objData.TextureEntry);
+            const override = this.cachedMaterialOverrides.get(obj.ID);
+            if (override)
+            {
+                obj.TextureEntry.gltfMaterialOverrides = override;
+                this.cachedMaterialOverrides.delete(obj.ID);
+            }
             obj.textureAnim = TextureAnim.from(objData.TextureAnim);
 
             const pcodeData = objData.Data;
@@ -130,7 +144,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     break;
             }
 
-            if (this.objects[localID].PCode === PCode.Avatar && this.objects[localID].FullID.toString() === this.agent.agentID.toString())
+            if (obj.PCode === PCode.Avatar && obj.FullID.toString() === this.agent.agentID.toString())
             {
                 this.agent.localID = localID;
 
@@ -142,50 +156,53 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                         if (parent !== this.agent.localID)
                         {
                             let foundAvatars = false;
-                            for (const objID of this.objectsByParent[parent])
+                            const objsByParent = this.objectsByParent.get(parent);
+                            if (objsByParent)
                             {
-                                if (this.objects[objID])
+                                for (const objID of objsByParent)
                                 {
-                                    const o = this.objects[objID];
-                                    if (o.PCode === PCode.Avatar)
+                                    const ob = this.objects.get(objID);
+                                    if (ob && ob.PCode === PCode.Avatar)
                                     {
                                         foundAvatars = true;
                                     }
                                 }
-                            }
-                            if (this.objects[parent])
-                            {
-                                const o = this.objects[parent];
-                                if (o.PCode === PCode.Avatar)
+
+                                const o = this.objects.get(parent);
+                                if (o && o.PCode === PCode.Avatar)
                                 {
                                     foundAvatars = true;
                                 }
-                            }
-                            if (!foundAvatars)
-                            {
-                                this.deleteObject(parent);
+                                if (!foundAvatars)
+                                {
+                                    this.deleteObject(parent);
+                                }
                             }
                         }
                     }
                 }
             }
-            this.objects[localID].extraParams = ExtraParams.from(objData.ExtraParams);
-            this.objects[localID].NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
-            this.objects[localID].IsAttachment = this.objects[localID].NameValue['AttachItemID'] !== undefined;
+            obj.extraParams = ExtraParams.from(objData.ExtraParams);
+            obj.NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
+
+            obj.IsAttachment = obj.NameValue['AttachItemID'] !== undefined;
             if (obj.IsAttachment && obj.State !== undefined)
             {
-                this.objects[localID].attachmentPoint = this.decodeAttachPoint(obj.State);
+                obj.attachmentPoint = this.decodeAttachPoint(obj.State);
             }
 
-            this.objectsByUUID[objData.FullID.toString()] = localID;
-            if (!this.objectsByParent[parentID])
+            this.objectsByUUID.set(objData.FullID.toString(), localID);
+
+            let objByParent = this.objectsByParent.get(parentID);
+            if (!objByParent)
             {
-                this.objectsByParent[parentID] = [];
+                objByParent = [];
+                this.objectsByParent.set(parentID, objByParent);
             }
             if (addToParentList)
             {
-                this.objectsByParent[parentID].push(localID);
+                objByParent.push(localID);
             }
 
             if (objData.PCode !== PCode.Avatar && this.options & BotOptionFlags.StoreMyAttachmentsOnly && (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID))
@@ -196,7 +213,8 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             else
             {
                 this.insertIntoRtree(obj);
-                if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects[objData.ParentID])
+                const parentObj = this.objects.get(objData.ParentID ?? 0);
+                if (objData.ParentID !== undefined && objData.ParentID !== 0 && !parentObj)
                 {
                     this.requestMissingObject(objData.ParentID).then(() =>
                     {
@@ -224,7 +242,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         rmo.ObjectData = [];
         for (const obj of objectUpdateCached.ObjectData)
         {
-            if (!this.objects[obj.ID])
+            if (!this.objects.has(obj.ID))
             {
                 rmo.ObjectData.push({
                     CacheMissType: 0,
@@ -238,7 +256,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             {
                 return;
             }
-            this.circuit.sendMessage(rmo, 0);
+            this.circuit.sendMessage(rmo, 0 as PacketFlags);
         }
     }
 
@@ -256,15 +274,16 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             pos += 4;
             const pcode = buf.readUInt8(pos++);
             let newObj = false;
-            if (!this.objects[localID])
+            let o = this.objects.get(localID);
+            if (!o)
             {
                 newObj = true;
-                this.objects[localID] = new GameObject();
-                this.objects[localID].region = this.agent.currentRegion;
+                o = new GameObject();
+                o.region = this.agent.currentRegion;
+                this.objects.set(localID, o);
             }
-            const o = this.objects[localID];
             o.ID = localID;
-            this.objectsByUUID[fullID.toString()] = localID;
+            this.objectsByUUID.set(fullID.toString(), localID);
             o.FullID = fullID;
             o.Flags = flags;
             o.PCode = pcode;
@@ -300,26 +319,29 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             let add = true;
             if (!newObj && o.ParentID !== undefined)
             {
-                if (newParentID !== o.ParentID)
+                const obsByParent = this.objectsByParent.get(o.ParentID);
+                if (newParentID !== o.ParentID && obsByParent)
                 {
-                    const index = this.objectsByParent[o.ParentID].indexOf(localID);
+                    const index = obsByParent.indexOf(localID);
                     if (index !== -1)
                     {
-                        this.objectsByParent[o.ParentID].splice(index, 1);
+                        obsByParent.splice(index, 1);
                     }
                 }
-                else if (this.objectsByParent[o.ParentID])
+                else if (obsByParent)
                 {
                     add = false;
                 }
             }
             if (add)
             {
-                if (!this.objectsByParent[newParentID])
+                let objsByNewParent = this.objectsByParent.get(newParentID);
+                if (!objsByNewParent)
                 {
-                    this.objectsByParent[newParentID] = [];
+                    objsByNewParent = [];
+                    this.objectsByParent.set(newParentID, objsByNewParent);
                 }
-                this.objectsByParent[newParentID].push(localID);
+                objsByNewParent.push(localID);
             }
 
             if (pcode !== PCode.Avatar && newObj && this.options & BotOptionFlags.StoreMyAttachmentsOnly && (this.agent.localID !== 0 && o.ParentID !== this.agent.localID))
@@ -330,9 +352,12 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             }
             else
             {
-                if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects[o.ParentID])
+                if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects.has(o.ParentID))
                 {
-                    this.requestMissingObject(o.ParentID);
+                    this.requestMissingObject(o.ParentID).catch((e) =>
+                    {
+                        console.error(e);
+                    });
                 }
                 if (compressedflags & CompressedFlags.Tree)
                 {
@@ -418,7 +443,17 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 pos = pos + 2;
                 const textureEntryLength = buf.readUInt32LE(pos);
                 pos = pos + 4;
+                if (o.TextureEntry?.gltfMaterialOverrides && !this.cachedMaterialOverrides.has(o.ID))
+                {
+                    this.cachedMaterialOverrides.set(o.ID, o.TextureEntry.gltfMaterialOverrides);
+                }
                 o.TextureEntry = TextureEntry.from(buf.slice(pos, pos + textureEntryLength));
+                const override = this.cachedMaterialOverrides.get(o.ID);
+                if (override)
+                {
+                    o.TextureEntry.gltfMaterialOverrides = override;
+                    this.cachedMaterialOverrides.delete(o.ID);
+                }
                 pos = pos + textureEntryLength;
 
                 if (compressedflags & CompressedFlags.TextureAnimation)
@@ -431,7 +466,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
                 if (o.IsAttachment && o.State !== undefined)
                 {
-                    this.objects[localID].attachmentPoint = this.decodeAttachPoint(o.State);
+                    o.attachmentPoint = this.decodeAttachPoint(o.State);
                 }
 
                 this.insertIntoRtree(o);
@@ -455,37 +490,38 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 let pos = 0;
                 const localID = objectData.Data.readUInt32LE(pos);
                 pos = pos + 4;
-                if (this.objects[localID])
+                const o = this.objects.get(localID);
+                if (o)
                 {
-                    this.objects[localID].State = objectData.Data.readUInt8(pos++);
+                    o.State = objectData.Data.readUInt8(pos++);
                     const avatar: boolean = (objectData.Data.readUInt8(pos++) !== 0);
                     if (avatar)
                     {
-                        this.objects[localID].CollisionPlane = new Vector4(objectData.Data, pos);
+                        o.CollisionPlane = new Vector4(objectData.Data, pos);
                         pos += 16;
                     }
-                    this.objects[localID].Position = new Vector3(objectData.Data, pos);
+                    o.Position = new Vector3(objectData.Data, pos);
                     pos += 12;
-                    this.objects[localID].Velocity = new Vector3([
+                    o.Velocity = new Vector3([
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos), -128.0, 128.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 2), -128.0, 128.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 4), -128.0, 128.0)
                     ]);
                     pos += 6;
-                    this.objects[localID].Acceleration = new Vector3([
+                    o.Acceleration = new Vector3([
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos), -64.0, 64.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 2), -64.0, 64.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 4), -64.0, 64.0)
                     ]);
                     pos += 6;
-                    this.objects[localID].Rotation = new Quaternion([
+                    o.Rotation = new Quaternion([
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos), -1.0, 1.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 2), -1.0, 1.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 4), -1.0, 1.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 6), -1.0, 1.0)
                     ]);
                     pos += 8;
-                    this.objects[localID].AngularVelocity = new Vector3([
+                    o.AngularVelocity = new Vector3([
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos), -64.0, 64.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 2), -64.0, 64.0),
                         Utils.UInt16ToFloat(objectData.Data.readUInt16LE(pos + 4), -64.0, 64.0)
@@ -495,11 +531,21 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     if (objectData.TextureEntry.length > 0)
                     {
                         // No idea why the first four bytes are skipped here.
-                        this.objects[localID].TextureEntry = TextureEntry.from(objectData.TextureEntry.slice(4));
-                        this.objects[localID].onTextureUpdate.next();
+                        if (o.TextureEntry?.gltfMaterialOverrides && !this.cachedMaterialOverrides.has(o.ID))
+                        {
+                            this.cachedMaterialOverrides.set(o.ID, o.TextureEntry.gltfMaterialOverrides);
+                        }
+                        o.TextureEntry = TextureEntry.from(objectData.TextureEntry.slice(4));
+                        const override = this.cachedMaterialOverrides.get(o.ID);
+                        if (override)
+                        {
+                            o.TextureEntry.gltfMaterialOverrides = override;
+                            this.cachedMaterialOverrides.delete(o.ID);
+                        }
+                        o.onTextureUpdate.next();
                     }
-                    this.insertIntoRtree(this.objects[localID]);
-                    this.notifyTerseUpdate(this.objects[localID]);
+                    this.insertIntoRtree(o);
+                    this.notifyTerseUpdate(o);
 
                 }
                 else

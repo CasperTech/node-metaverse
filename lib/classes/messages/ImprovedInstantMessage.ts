@@ -160,4 +160,3 @@ export class ImprovedInstantMessageMessage implements MessageBase
         return pos - startPos;
     }
 }
-

@@ -55,6 +55,7 @@ import { Subject } from 'rxjs';
 import { RezScriptMessage } from '../messages/RezScript';
 import { PermissionMask } from '../../enums/PermissionMask';
 import { AssetType } from '../../enums/AssetType';
+import { LLGLTFMaterialOverride } from '../LLGLTFMaterialOverride';
 
 import * as uuid from 'uuid';
 
@@ -379,6 +380,21 @@ export class GameObject implements IGameObjectData
             {
                 const buf = Buffer.from(prop, 'base64');
                 go.TextureEntry = TextureEntry.from(buf);
+            }
+            if (go.TextureEntry && shape['MatOvrd'] && Array.isArray(shape['MatOvrd']) && shape['MatOvrd'].length > 0)
+            {
+                const tex = Buffer.from(shape['MatOvrd'][0], 'base64');
+                let pos = 0;
+                const entryCount = tex.readUInt8(pos++);
+                for (let x = 0; x < entryCount; x++)
+                {
+                    const te_index = tex.readUInt8(pos++);
+                    const len = tex.readUInt16LE(pos++);
+                    pos++;
+                    const json = tex.slice(pos, pos + len).toString('utf-8');
+                    pos = pos + len;
+                    go.TextureEntry.gltfMaterialOverrides.set(te_index, LLGLTFMaterialOverride.fromFullMaterialJSON(json));
+                }
             }
             if ((prop = Utils.getFromXMLJS(shape, 'PathBegin')) !== undefined)
             {
@@ -838,7 +854,7 @@ export class GameObject implements IGameObjectData
         return Utils.waitOrTimeOut<void>(this.onTextureUpdate, timeout);
     }
 
-    async rezScript(name: string, description: string, perms: PermissionMask = 532480): Promise<InventoryItem>
+    async rezScript(name: string, description: string, perms: PermissionMask = 532480 as PermissionMask): Promise<InventoryItem>
     {
         const rezScriptMsg = new RezScriptMessage();
         rezScriptMsg.AgentData = {
@@ -1484,9 +1500,9 @@ export class GameObject implements IGameObjectData
 
     private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string): Promise<void>
     {
-        if (this.resolvedAt === undefined || this.resolvedAt === 0 || this.resolvedInventory === false)
+        if ((this.resolvedAt === undefined || this.resolvedAt === 0 || !this.resolvedInventory) && this.region?.resolver)
         {
-            await this.region.resolver.resolveObjects([this], true, false, false);
+            await this.region.resolver.resolveObjects([this], { onlyUnresolved: false });
         }
         let root = xml;
         if (rootNode)
@@ -1502,7 +1518,10 @@ export class GameObject implements IGameObjectData
         sceneObjectPart.ele('LocalId', this.ID);
         sceneObjectPart.ele('Name', this.name);
         sceneObjectPart.ele('Material', this.Material);
-        sceneObjectPart.ele('RegionHandle', this.region.regionHandle.toString());
+        if (this.region)
+        {
+            sceneObjectPart.ele('RegionHandle', this.region.regionHandle.toString());
+        }
         Vector3.getXML(sceneObjectPart.ele('GroupPosition'), rootPrim.Position);
         if (rootPrim === this)
         {
@@ -1535,6 +1554,38 @@ export class GameObject implements IGameObjectData
             if (this.TextureEntry)
             {
                 shape.ele('TextureEntry', this.TextureEntry.toBase64());
+
+                if (this.TextureEntry.gltfMaterialOverrides)
+                {
+                    const overrideKeys = Array.from(this.TextureEntry.gltfMaterialOverrides.keys());
+                    const numEntries = overrideKeys.length;
+
+                    if (numEntries > 0)
+                    {
+                        const buf: Buffer[] = [];
+
+                        const num = Buffer.allocUnsafe(1);
+                        num.writeUInt8(numEntries, 0);
+                        buf.push(num)
+                        for (const overrideKey of overrideKeys)
+                        {
+                            const override = this.TextureEntry.gltfMaterialOverrides.get(overrideKey);
+                            if (override === undefined)
+                            {
+                                continue;
+                            }
+
+                            const header = Buffer.allocUnsafe(3);
+                            header.writeUInt8(overrideKey, 0);
+
+                            const json = override.getFullMaterialJSON();
+                            header.writeUInt16LE(json.length, 1);
+                            buf.push(header);
+                            buf.push(Buffer.from(json, 'utf-8'));
+                        }
+                        shape.ele('MatOvrd', Buffer.concat(buf).toString('base64'));
+                    }
+                }
             }
             if (this.extraParams)
             {

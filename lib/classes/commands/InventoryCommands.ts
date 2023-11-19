@@ -48,9 +48,6 @@ export class InventoryCommands extends CommandsBase
             Message: Utils.StringToBuffer(''),
             BinaryBucket: binary
         };
-        im.EstateBlock = {
-            EstateID: 0
-        };
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
         return await this.circuit.waitForAck(sequenceNo, 10000);
     }

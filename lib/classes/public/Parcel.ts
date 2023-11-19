@@ -100,7 +100,7 @@ export class Parcel
     {
         const document = builder.create('LandData');
         document.ele('Area', this.Area);
-        document.ele('AuctionID', this.AuctionID);
+        document.ele('AuctionID', this.AuctionID ?? 0);
         document.ele('AuthBuyerID', this.AuthBuyerID.toString());
         document.ele('Category', this.Category);
         document.ele('ClaimDate', this.ClaimDate);

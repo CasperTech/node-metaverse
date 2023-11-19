@@ -34,6 +34,7 @@ export class InventoryItem
     assetID: UUID = UUID.zero();
     inventoryType: InventoryType;
     name: string;
+    metadata: string;
     salePrice: number;
     saleType: number;
     created: Date;
@@ -73,9 +74,71 @@ export class InventoryItem
     static fromAsset(lineObj: { lines: string[], lineNum: number }, container?: GameObject | InventoryFolder, agent?: Agent): InventoryItem
     {
         const item: InventoryItem = new InventoryItem(container, agent);
+        let contMetadata = false;
+        let contName = false;
+        let contDesc = false;
         while (lineObj.lineNum < lineObj.lines.length)
         {
-            const line = lineObj.lines[lineObj.lineNum++];
+            let line = lineObj.lines[lineObj.lineNum++];
+
+            if (contMetadata)
+            {
+                const idx = line.indexOf('|');
+                if (idx !== -1)
+                {
+                    item.metadata += '\n' + line.substring(0, idx);
+                    line = line.substring(idx + 1);
+                    contMetadata = false;
+                    if (line.length === 0)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    item.metadata += line;
+                    continue;
+                }
+            }
+            if (contName)
+            {
+                const idx = line.indexOf('|');
+                if (idx !== -1)
+                {
+                    item.name +=  '\n' + line.substring(0, idx);
+                    line = line.substring(idx + 1);
+                    contName = false;
+                    if (line.length === 0)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    item.name += line;
+                    continue;
+                }
+            }
+            if (contDesc)
+            {
+                const idx = line.indexOf('|');
+                if (idx !== -1)
+                {
+                    item.description +=  '\n' + line.substring(0, idx);
+                    line = line.substring(idx + 1);
+                    contDesc = false;
+                    if (line.length === 0)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    item.description += line;
+                    continue;
+                }
+            }
+
             let result = Utils.parseLine(line);
             if (result.key !== null)
             {
@@ -265,6 +328,9 @@ export class InventoryItem
                         case 'person':
                             item.inventoryType = InventoryType.Person;
                             break;
+                        case 'material':
+                            item.inventoryType = InventoryType.Material;
+                            break;
                         default:
                             console.error('Unknown inventory type: ' + typeString);
                     }
@@ -275,15 +341,43 @@ export class InventoryItem
                 }
                 else if (result.key === 'name')
                 {
-                    item.name = result.value.substr(0, result.value.indexOf('|'));
+                    if (result.value.indexOf('|') !== -1)
+                    {
+                        item.name = result.value.substr(0, result.value.indexOf('|'));
+                    }
+                    else
+                    {
+                        contName = true;
+                        item.name = result.value;
+                    }
                 }
                 else if (result.key === 'desc')
                 {
-                    item.description = result.value.substr(0, result.value.indexOf('|'));
+                    if (result.value.indexOf('|') !== -1)
+                    {
+                        item.description = result.value.substr(0, result.value.indexOf('|'));
+                    }
+                    else
+                    {
+                        contDesc = true;
+                        item.description = result.value;
+                    }
                 }
                 else if (result.key === 'creation_date')
                 {
                     item.created = new Date(parseInt(result.value, 10) * 1000);
+                }
+                else if (result.key === 'metadata')
+                {
+                    if (result.value.indexOf('|') !== -1)
+                    {
+                        item.metadata = result.value.substr(0, result.value.indexOf('|'));
+                    }
+                    else
+                    {
+                        contMetadata = true;
+                        item.metadata = result.value;
+                    }
                 }
                 else
                 {

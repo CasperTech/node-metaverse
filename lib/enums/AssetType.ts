@@ -28,5 +28,6 @@ export enum AssetType
     Widget = 40,
     Person = 46,
     Mesh = 49,
-    Settings = 56
+    Settings = 56,
+    Material = 57
 }

@@ -68,7 +68,7 @@ function getBlocks(str)
     return block;
 }
 
-fs.readFile('./msg_template.msg', (err, data) =>
+fs.readFile('./message_template.msg', (err, data) =>
 {
     if (err)
     {
@@ -81,7 +81,7 @@ fs.readFile('./msg_template.msg', (err, data) =>
         //Remove all comments
         const lines = msgTemplate.split('\n');
         let newLines = [];
-        for (const line of lines)
+        for (let line of lines)
         {
             let pos = line.indexOf('//');
             if (pos !== -1)
