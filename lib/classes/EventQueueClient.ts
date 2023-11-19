@@ -20,7 +20,7 @@ import { InventoryLibrary } from '../enums/InventoryLibrary';
 import { LandStatsEvent } from '../events/LandStatsEvent';
 
 import * as LLSD from '@caspertech/llsd';
-import * as request from 'request';
+import got, { CancelableRequest, Response } from 'got';
 import * as Long from 'long';
 
 export class EventQueueClient
@@ -28,7 +28,7 @@ export class EventQueueClient
     caps: Caps;
     ack?: number;
     done = false;
-    currentRequest: request.Request | null = null;
+    private currentRequest?: CancelableRequest<Response<string>> = undefined;
     private clientEvents: ClientEvents;
     private agent: Agent;
 
@@ -47,9 +47,10 @@ export class EventQueueClient
     {
         // We must ACK any outstanding events
         this.done = true;
-        if (this.currentRequest !== null)
+        if (this.currentRequest)
         {
-            this.currentRequest.abort();
+            this.currentRequest.cancel();
+            delete this.currentRequest;
         }
         const req = {
             'ack': this.ack,
@@ -556,33 +557,33 @@ export class EventQueueClient
             }
         });
     }
-    request(url: string, data: string, contentType: string): Promise<string>
+    public async request(url: string, data: string, contentType: string): Promise<string>
     {
-        return new Promise<string>((resolve, reject) =>
+        let req: CancelableRequest<Response<string>> | undefined = undefined;
+        try
         {
-            this.currentRequest = request({
-                'headers': {
-                    'Content-Length': data.length,
+            req = got.post(url, {
+                headers: {
+                    'Content-Length': Buffer.byteLength(data).toString(),
                     'Content-Type': contentType
                 },
-                'uri': url,
-                'body': data,
-                'rejectUnauthorized': false,
-                'method': 'POST',
-                'timeout': 1800000 // Super long timeout
-            }, (err, _res, body) =>
-            {
-                this.currentRequest = null;
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(body);
-                }
+                body: data,
+                rejectUnauthorized: false,
+                timeout: 1800000 // Super long timeout
             });
-        });
+
+            this.currentRequest = req;
+
+            const response = await this.currentRequest;
+            return response.body;
+        }
+        finally
+        {
+            if (this.currentRequest === req)
+            {
+                delete this.currentRequest;
+            }
+        }
     }
 
     capsPostXML(capability: string, data: any, attempt: number = 0): Promise<any>
