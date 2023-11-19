@@ -8,8 +8,8 @@ import { ICapResponse } from './interfaces/ICapResponse';
 import { HTTPAssets } from '../enums/HTTPAssets';
 
 import * as LLSD from '@caspertech/llsd';
-import * as request from 'request';
 import * as url from 'url';
+import got from 'got';
 
 export class Caps
 {
@@ -144,7 +144,7 @@ export class Caps
         req.push('ViewerStats');
 
         this.active = true;
-        this.request(seedURL, LLSD.LLSD.formatXML(req), 'application/llsd+xml').then((resp: ICapResponse) =>
+        this.requestPost(seedURL, LLSD.LLSD.formatXML(req), 'application/llsd+xml').then((resp: ICapResponse) =>
         {
             this.capabilities = LLSD.LLSD.parseXML(resp.body);
             this.gotSeedCap = true;
@@ -164,140 +164,73 @@ export class Caps
         });
     }
 
-    async downloadAsset(uuid: UUID, type: HTTPAssets): Promise<Buffer>
+    public async downloadAsset(uuid: UUID, type: HTTPAssets): Promise<Buffer>
     {
-        return new Promise<Buffer>((resolve, reject) =>
+        if (type === HTTPAssets.ASSET_LSL_TEXT || type === HTTPAssets.ASSET_NOTECARD)
         {
-            if (type === HTTPAssets.ASSET_LSL_TEXT || type === HTTPAssets.ASSET_NOTECARD)
-            {
-                throw new Error('Invalid Syntax');
-            }
-            this.getCapability('ViewerAsset').then((capURL) =>
-            {
-                const assetURL = capURL + '/?' + type + '_id=' + uuid.toString();
-                request({
-                    'uri': assetURL,
-                    'rejectUnauthorized': false,
-                    'method': 'GET',
-                    'encoding': null
-                }, (err, res, body) =>
-                {
-                    if (res.statusCode < 200 && res.statusCode > 299)
-                    {
-                        reject(new Error(body));
-                    }
-                    else if (err)
-                    {
-                        reject(err);
-                    }
-                    else
-                    {
-                        resolve(body);
-                    }
-                });
-            }).catch((err) =>
-            {
-                reject(err);
-            });
+            throw new Error('Invalid Syntax');
+        }
+        const capURL = await this.getCapability('ViewerAsset');
+        const assetURL = capURL + '/?' + type + '_id=' + uuid.toString();
+
+        const response = await got.get(assetURL, {
+            rejectUnauthorized: false,
+            method: 'GET',
+            responseType: 'buffer'
         });
+
+        if (response.statusCode < 200 || response.statusCode > 299)
+        {
+            throw new Error(response.body.toString('utf-8'));
+        }
+
+        return response.body;
     }
 
-    request(capURL: string, data: string | Buffer, contentType: string): Promise<ICapResponse>
+    public async requestPost(capURL: string, data: string | Buffer, contentType: string)
     {
-        return new Promise<ICapResponse>((resolve, reject) =>
-        {
-            request({
-                'headers': {
-                    'Content-Length': data.length,
-                    'Content-Type': contentType
-                },
-                'uri': capURL,
-                'body': data,
-                'rejectUnauthorized': false,
-                'method': 'POST'
-            }, (err, res, body) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve({ status: res.statusCode, body: body });
-                }
-            });
+        const response = await got.post(capURL, {
+            headers: {
+                'Content-Length': String(Buffer.byteLength(data)),
+                'Content-Type': contentType
+            },
+            body: data,
+            rejectUnauthorized: false
         });
+
+        return { status: response.statusCode, body: response.body };
     }
 
-    requestPut(capURL: string, data: string | Buffer, contentType: string): Promise<ICapResponse>
+    public async requestPut(capURL: string, data: string | Buffer, contentType: string): Promise<ICapResponse>
     {
-        return new Promise<ICapResponse>((resolve, reject) =>
-        {
-            request({
-                'headers': {
-                    'Content-Length': data.length,
-                    'Content-Type': contentType
-                },
-                'uri': capURL,
-                'body': data,
-                'rejectUnauthorized': false,
-                'method': 'PUT'
-            }, (err, res, body) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve({ status: res.statusCode, body: body });
-                }
-            });
+        const response = await got.put(capURL, {
+            headers: {
+                'Content-Length': String(Buffer.byteLength(data)),
+                'Content-Type': contentType
+            },
+            body: data,
+            rejectUnauthorized: false
         });
+
+        return { status: response.statusCode, body: response.body };
     }
 
-    requestGet(requestURL: string): Promise<ICapResponse>
+    public async requestGet(requestURL: string): Promise<ICapResponse>
     {
-        return new Promise<ICapResponse>((resolve, reject) =>
-        {
-            request({
-                'uri': requestURL,
-                'rejectUnauthorized': false,
-                'method': 'GET'
-            }, (err, res, body) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve({ status: res.statusCode, body: body });
-                }
-            });
+        const response = await got.get(requestURL, {
+            rejectUnauthorized: false
         });
+
+        return { status: response.statusCode, body: response.body };
     }
 
-    requestDelete(requestURL: string): Promise<ICapResponse>
+    public async requestDelete(requestURL: string): Promise<ICapResponse>
     {
-        return new Promise<ICapResponse>((resolve, reject) =>
-        {
-            request({
-                'uri': requestURL,
-                'rejectUnauthorized': false,
-                'method': 'DELETE'
-            }, (err, res, body) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve({ status: res.statusCode, body: body });
-                }
-            });
+        const response = await got.delete(requestURL, {
+            rejectUnauthorized: false
         });
+
+        return { status: response.statusCode, body: response.body };
     }
 
     waitForSeedCapability(): Promise<void>
@@ -348,11 +281,11 @@ export class Caps
         });
     }
 
-    capsRequestUpload(capURL: string, data: Buffer): Promise<any>
+    public capsRequestUpload(capURL: string, data: Buffer): Promise<any>
     {
         return new Promise<any>((resolve, reject) =>
         {
-            this.request(capURL, data, 'application/octet-stream').then((resp: ICapResponse) =>
+            this.requestPost(capURL, data, 'application/octet-stream').then((resp: ICapResponse) =>
             {
                 try
                 {
@@ -415,12 +348,12 @@ export class Caps
         });
     }
 
-    capsPerformXMLPost(capURL: string, data: any): Promise<any>
+    public capsPerformXMLPost(capURL: string, data: any): Promise<any>
     {
         return new Promise<any>(async(resolve, reject) =>
         {
             const xml = LLSD.LLSD.formatXML(data);
-            this.request(capURL, xml, 'application/llsd+xml').then(async(resp: ICapResponse) =>
+            this.requestPost(capURL, xml, 'application/llsd+xml').then(async(resp: ICapResponse) =>
             {
                 let result: any = null;
                 try
