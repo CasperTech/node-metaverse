@@ -978,4 +978,15 @@ export class Utils
             });
         });
     }
+
+    public static getNotecardLine(lineObj: {
+        lines: string[],
+        lineNum: number,
+        pos: number
+    }): string
+    {
+        const line = lineObj.lines[lineObj.lineNum++];
+        lineObj.pos += Buffer.byteLength(line) + 1;
+        return line.replace(/\r/, '').trim().replace(/[\t ]+/g, ' ');
+    }
 }

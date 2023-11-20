@@ -1,4 +1,5 @@
 import { InventoryItem } from './InventoryItem';
+import { Utils } from './Utils';
 
 export class LLLindenText
 {
@@ -6,13 +7,13 @@ export class LLLindenText
 
     private lineObj: {
         lines: string[],
-        lineNum: number
+        lineNum: number,
+        pos: number
     } = {
         lines: [],
-        lineNum: 0
+        lineNum: 0,
+        pos: 0
     };
-
-    private pos = 0;
 
     body = '';
     embeddedItems: { [key: number]: InventoryItem } = {};
@@ -23,9 +24,9 @@ export class LLLindenText
         {
             const initial = data.toString('ascii');
             this.lineObj.lines = initial.split('\n');
-            this.pos = 0;
+            this.lineObj.pos = 0;
 
-            let line = this.getLine();
+            let line = Utils.getNotecardLine(this.lineObj);
             if (!line.startsWith('Linden text version'))
             {
                 throw new Error('Invalid Linden Text header');
@@ -40,28 +41,28 @@ export class LLLindenText
                 const v2 = data.toString('utf-8');
                 this.lineObj.lines = v2.replace(/\r\n/g, '\n').split('\n');
             }
-            line = this.getLine();
+            line = Utils.getNotecardLine(this.lineObj);
             if (line !== '{')
             {
                 throw new Error('Error parsing Linden Text file');
             }
-            line = this.getLine();
+            line = Utils.getNotecardLine(this.lineObj);
             if (line.startsWith('LLEmbeddedItems'))
             {
                 this.parseEmbeddedItems();
-                line = this.getLine();
+                line = Utils.getNotecardLine(this.lineObj);
             }
             if (!line.startsWith('Text length'))
             {
                 throw new Error('Error parsing Linden Text file: ' + line);
             }
             const textLength = parseInt(this.getLastToken(line), 10);
-            this.body = data.slice(this.pos, this.pos + textLength).toString();
-            const remainingBuffer = data.slice(this.pos + textLength).toString('ascii');
+            this.body = data.slice(this.lineObj.pos, this.lineObj.pos + textLength).toString();
+            const remainingBuffer = data.slice(this.lineObj.pos + textLength).toString('ascii');
             this.lineObj.lines = remainingBuffer.split('\n');
             this.lineObj.lineNum = 0;
 
-            line = this.getLine();
+            line = Utils.getNotecardLine(this.lineObj);
             if (line !== '}')
             {
                 throw new Error('Error parsing Linden Text file');
@@ -93,17 +94,17 @@ export class LLLindenText
         {
             return Buffer.from(lines.join('\n') + '\n', 'ascii');
         }
-        return Buffer.from(lines.join('\n') + '\n', 'utf-8');
+        return Buffer.from(lines.join('\n') + '\n\0', 'utf-8');
     }
 
     private parseEmbeddedItems(): void
     {
-        let line = this.getLine();
+        let line = Utils.getNotecardLine(this.lineObj);
         if (line !== '{')
         {
             throw new Error('Invalid LLEmbeddedItems format (no opening brace)');
         }
-        line = this.getLine();
+        line = Utils.getNotecardLine(this.lineObj);
         if (!line.startsWith('count'))
         {
             throw new Error('Invalid LLEmbeddedItems format (no count)');
@@ -111,31 +112,31 @@ export class LLLindenText
         const itemCount = parseInt(this.getLastToken(line), 10);
         for (let x = 0; x < itemCount; x++)
         {
-            line = this.getLine();
+            line = Utils.getNotecardLine(this.lineObj);
             if (line !== '{')
             {
                 throw new Error('Invalid LLEmbeddedItems format (no item opening brace)');
             }
-            line = this.getLine();
+            line = Utils.getNotecardLine(this.lineObj);
             if (!line.startsWith('ext char index'))
             {
                 throw new Error('Invalid LLEmbeddedItems format (no ext char index)');
             }
             const index = parseInt(this.getLastToken(line), 10);
-            line = this.getLine();
+            line = Utils.getNotecardLine(this.lineObj);
             if (!line.startsWith('inv_item'))
             {
                 throw new Error('Invalid LLEmbeddedItems format (no inv_item)');
             }
-            const item = InventoryItem.fromAsset(this.lineObj);
+            const item = InventoryItem.fromEmbeddedAsset(this.lineObj);
             this.embeddedItems[index] = item;
-            line = this.getLine();
+            line = Utils.getNotecardLine(this.lineObj);
             if (line !== '}')
             {
                 throw new Error('Invalid LLEmbeddedItems format (no closing brace)');
             }
         }
-        line = this.getLine();
+        line = Utils.getNotecardLine(this.lineObj);
         if (line !== '}')
         {
             throw new Error('Error parsing Linden Text file');
@@ -154,12 +155,4 @@ export class LLLindenText
             return input.substr(index + 1);
         }
     }
-
-    private getLine(): string
-    {
-        const line = this.lineObj.lines[this.lineObj.lineNum++];
-        this.pos += Buffer.byteLength(line) + 1;
-        return line.replace(/\r/, '').trim().replace(/[\t ]+/g, ' ');
-    }
-
 }

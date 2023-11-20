@@ -71,7 +71,7 @@ export class InventoryItem
         groupOwned: false
     };
 
-    static fromAsset(lineObj: { lines: string[], lineNum: number }, container?: GameObject | InventoryFolder, agent?: Agent): InventoryItem
+    static fromEmbeddedAsset(lineObj: { lines: string[], lineNum: number, pos: number }, container?: GameObject | InventoryFolder, agent?: Agent): InventoryItem
     {
         const item: InventoryItem = new InventoryItem(container, agent);
         let contMetadata = false;
@@ -79,7 +79,7 @@ export class InventoryItem
         let contDesc = false;
         while (lineObj.lineNum < lineObj.lines.length)
         {
-            let line = lineObj.lines[lineObj.lineNum++];
+            let line = Utils.getNotecardLine(lineObj);
 
             if (contMetadata)
             {
@@ -162,7 +162,7 @@ export class InventoryItem
                 {
                     while (lineObj.lineNum < lineObj.lines.length)
                     {
-                        result = Utils.parseLine(lineObj.lines[lineObj.lineNum++]);
+                        result = Utils.parseLine(Utils.getNotecardLine(lineObj));
                         if (result.key !== null)
                         {
                             if (result.key === '{')
@@ -229,7 +229,7 @@ export class InventoryItem
                 {
                     while (lineObj.lineNum < lineObj.lines.length)
                     {
-                        result = Utils.parseLine(lineObj.lines[lineObj.lineNum++]);
+                        result = Utils.parseLine(Utils.getNotecardLine(lineObj));
                         if (result.key !== null)
                         {
                             if (result.key === '{')
