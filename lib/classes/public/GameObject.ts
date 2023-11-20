@@ -990,11 +990,12 @@ export class GameObject implements IGameObjectData
             const str = file.toString('utf-8');
             const lineObj =  {
                 lines: str.replace(/\r\n/g, '\n').split('\n'),
-                lineNum: 0
+                lineNum: 0,
+                pos: 0
             };
             while (lineObj.lineNum < lineObj.lines.length)
             {
-                const line = lineObj.lines[lineObj.lineNum++];
+                const line = Utils.getNotecardLine(lineObj);
                 const result = Utils.parseLine(line);
                 if (result.key !== null)
                 {
@@ -1047,7 +1048,7 @@ export class GameObject implements IGameObjectData
                             */
                             break;
                         case 'inv_item':
-                            this.inventory.push(InventoryItem.fromAsset(lineObj, this, this.region.agent));
+                            this.inventory.push(InventoryItem.fromEmbeddedAsset(lineObj, this, this.region.agent));
                             break;
                     }
                 }
