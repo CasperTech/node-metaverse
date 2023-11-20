@@ -12,6 +12,8 @@ export class LLLindenText
         lineNum: 0
     };
 
+    private pos = 0;
+
     body = '';
     embeddedItems: { [key: number]: InventoryItem } = {};
 
@@ -20,7 +22,8 @@ export class LLLindenText
         if (data !== undefined)
         {
             const initial = data.toString('ascii');
-            this.lineObj.lines = initial.replace(/\r\n/g, '\n').split('\n');
+            this.lineObj.lines = initial.split('\n');
+            this.pos = 0;
 
             let line = this.getLine();
             if (!line.startsWith('Linden text version'))
@@ -52,31 +55,12 @@ export class LLLindenText
             {
                 throw new Error('Error parsing Linden Text file: ' + line);
             }
-            let textLength = parseInt(this.getLastToken(line), 10);
-            do
-            {
-                line = this.getLine();
-                textLength -= Buffer.byteLength(line);
-                if (textLength < 0)
-                {
-                    const extraChars = 0 - textLength;
-                    const rest = line.substr(line.length - extraChars);
-                    line = line.substr(0, line.length - extraChars);
-                    this.lineObj.lines.splice(this.lineObj.lineNum, 0, rest);
-                    textLength = 0;
-                    this.body += line;
-                }
-                else
-                {
-                    this.body += line;
-                    if (textLength > 0)
-                    {
-                        this.body += '\n';
-                        textLength--;
-                    }
-                }
-            }
-            while (textLength > 0);
+            const textLength = parseInt(this.getLastToken(line), 10);
+            this.body = data.slice(this.pos, this.pos + textLength).toString();
+            const remainingBuffer = data.slice(this.pos + textLength).toString('ascii');
+            this.lineObj.lines = remainingBuffer.split('\n');
+            this.lineObj.lineNum = 0;
+
             line = this.getLine();
             if (line !== '}')
             {
@@ -173,7 +157,9 @@ export class LLLindenText
 
     private getLine(): string
     {
-        return this.lineObj.lines[this.lineObj.lineNum++].trim().replace(/[\t ]+/g, ' ');
+        const line = this.lineObj.lines[this.lineObj.lineNum++];
+        this.pos += Buffer.byteLength(line) + 1;
+        return line.replace(/\r/, '').trim().replace(/[\t ]+/g, ' ');
     }
 
 }
