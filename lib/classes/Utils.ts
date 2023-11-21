@@ -989,4 +989,15 @@ export class Utils
         lineObj.pos += Buffer.byteLength(line) + 1;
         return line.replace(/\r/, '').trim().replace(/[\t ]+/g, ' ');
     }
+
+    public static sleep(ms: number): Promise<void>
+    {
+        return new Promise((resolve) =>
+        {
+            setTimeout(() =>
+            {
+                resolve();
+            }, ms)
+        });
+    }
 }

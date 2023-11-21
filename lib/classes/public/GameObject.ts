@@ -946,8 +946,13 @@ export class GameObject implements IGameObjectData
         throw new Error('Failed to add script to object');
     }
 
-    updateInventory(): Promise<void>
+    public async updateInventory(): Promise<void>
     {
+        if (this.PCode === PCode.Avatar)
+        {
+            return;
+        }
+
         const req = new RequestTaskInventoryMessage();
         req.AgentData = {
             AgentID: this.region.agent.agentID,
@@ -1501,10 +1506,14 @@ export class GameObject implements IGameObjectData
 
     private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string): Promise<void>
     {
-        if ((this.resolvedAt === undefined || this.resolvedAt === 0 || !this.resolvedInventory) && this.region?.resolver)
+        const resolver = this.region?.resolver;
+        if (resolver)
         {
-            await this.region.resolver.resolveObjects([this], { onlyUnresolved: false });
+            await resolver.resolveObjects([this], { includeTempObjects: true });
+            await resolver.getInventory(this);
+            await resolver.getCosts([this]);
         }
+
         let root = xml;
         if (rootNode)
         {
