@@ -982,6 +982,7 @@ export class GameObject implements IGameObjectData
         {
             // Inventory is empty
             this.inventory = [];
+            this.resolvedInventory = true;
             return;
         }
 
@@ -1064,6 +1065,7 @@ export class GameObject implements IGameObjectData
                     }
                 }
             }
+            this.resolvedInventory = true;
         }
     }
 
