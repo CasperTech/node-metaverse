@@ -437,7 +437,7 @@ export class ObjectStoreLite implements IObjectStore
         {
             // tslint:disable-next-line:no-bitwise
             // noinspection JSBitwiseOperatorUsage
-            if (o.Flags & PrimFlags.CreateSelected)
+            if ((o.Flags & PrimFlags.CreateSelected) === PrimFlags.CreateSelected)
             {
                 const evt = new SelectedObjectEvent();
                 evt.object = o;
@@ -770,7 +770,7 @@ export class ObjectStoreLite implements IObjectStore
                 newObj.localID = obj.ID;
                 newObj.objectID = obj.FullID;
                 newObj.object = obj;
-                newObj.createSelected = obj.Flags !== undefined && (obj.Flags & PrimFlags.CreateSelected) !== 0;
+                newObj.createSelected = obj.Flags !== undefined && (obj.Flags & PrimFlags.CreateSelected) === PrimFlags.CreateSelected;
                 obj.createdSelected = newObj.createSelected;
                 // tslint:disable-next-line:no-bitwise
                 // noinspection JSBitwiseOperatorUsage
