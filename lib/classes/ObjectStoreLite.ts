@@ -36,12 +36,12 @@ import { Vector3 } from './Vector3';
 import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 import { Avatar } from './public/Avatar';
-import Timer = NodeJS.Timer;
 import { GenericStreamingMessageMessage } from './messages/GenericStreamingMessage';
 import { LLSDNotationParser } from './llsd/LLSDNotationParser';
 import { LLSDMap } from './llsd/LLSDMap';
 import { LLGLTFMaterialOverride, LLGLTFTextureTransformOverride } from './LLGLTFMaterialOverride';
 import * as Long from 'long';
+import Timer = NodeJS.Timer;
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -90,6 +90,7 @@ export class ObjectStoreLite implements IObjectStore
     private selectedPrimsWithoutUpdate = new Map<number, boolean>();
     private selectedChecker?: Timer;
     private blacklist: Map<number, Date> = new Map<number, Date>();
+    private pendingResolves: Set<number> = new Set<number>();
 
     rtree?: RBush3D;
 
@@ -739,7 +740,7 @@ export class ObjectStoreLite implements IObjectStore
                             invItemID = new UUID(obj.NameValue['AttachItemID'].value);
                         }
 
-                        this.agent.currentRegion.clientCommands.region.resolveObject(obj, true, false).then(() =>
+                        this.agent.currentRegion.clientCommands.region.resolveObject(obj, {}).then(() =>
                         {
                             try
                             {
@@ -794,6 +795,11 @@ export class ObjectStoreLite implements IObjectStore
                 this.pendingObjectProperties.delete(obj.FullID.toString());
             }
         }
+    }
+
+    public pendingResolve(id: number): void
+    {
+        this.pendingResolves.add(id);
     }
 
     protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage): void

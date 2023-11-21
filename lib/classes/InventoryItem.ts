@@ -917,7 +917,7 @@ export class InventoryItem
                 if (evt.createSelected && !evt.object.resolvedAt)
                 {
                     // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
-                    await agent.currentRegion.clientCommands.region.resolveObject(evt.object, false, true);
+                    await agent.currentRegion.clientCommands.region.resolveObject(evt.object, {});
                 }
                 if (evt.createSelected && !evt.object.claimedForBuild)
                 {
@@ -1031,7 +1031,7 @@ export class InventoryItem
                 if (evt.createSelected && !evt.object.resolvedAt)
                 {
                     // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
-                    await agent.currentRegion.clientCommands.region.resolveObject(evt.object, false, true);
+                    await agent.currentRegion.clientCommands.region.resolveObject(evt.object, {});
                 }
                 if (evt.createSelected && !evt.object.claimedForBuild && !claimedPrim)
                 {

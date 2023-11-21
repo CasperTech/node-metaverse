@@ -66,7 +66,7 @@ export class Avatar extends AvatarQueryResult
             const objs: GameObject[] = this._gameObject.region.objects.getObjectsByParent(this._gameObject.ID);
             for (const attachment of objs)
             {
-                this._gameObject.region.clientCommands.region.resolveObject(attachment, true, false).then(() =>
+                this._gameObject.region.clientCommands.region.resolveObject(attachment, {}).then(() =>
                 {
                     this.addAttachment(attachment);
                 }).catch(() =>
@@ -238,8 +238,11 @@ export class Avatar extends AvatarQueryResult
     {
         if (obj.itemID !== undefined)
         {
-            this.attachments[obj.itemID.toString()] = obj;
-            this.onAttachmentAdded.next(obj);
+            if (this.attachments[obj.itemID.toString()] === undefined)
+            {
+                this.attachments[obj.itemID.toString()] = obj;
+                this.onAttachmentAdded.next(obj);
+            }
         }
     }
 

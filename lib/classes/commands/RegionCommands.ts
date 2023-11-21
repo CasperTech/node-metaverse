@@ -23,7 +23,6 @@ import { ObjectPropertiesMessage } from '../messages/ObjectProperties';
 import { ObjectSelectMessage } from '../messages/ObjectSelect';
 import { RegionHandleRequestMessage } from '../messages/RegionHandleRequest';
 import { RegionIDAndHandleReplyMessage } from '../messages/RegionIDAndHandleReply';
-import { ObjectResolver } from '../ObjectResolver';
 import { Avatar } from '../public/Avatar';
 import { GameObject } from '../public/GameObject';
 import { Parcel } from '../public/Parcel';
@@ -39,9 +38,6 @@ import Timer = NodeJS.Timer;
 export interface GetObjectsOptions
 {
     resolve?: boolean;
-    onlyUnresolved?: boolean;
-    skipInventory?: boolean;
-    outputLog?: boolean;
     includeTempObjects?: boolean;
     includeAvatars?: boolean;
 }
@@ -382,14 +378,24 @@ export class RegionCommands extends CommandsBase
         return this.currentRegion.regionName;
     }
 
-    async resolveObject(object: GameObject, forceResolve = false, skipInventory = false): Promise<GameObject[]>
+    async resolveObject(object: GameObject, options: GetObjectsOptions): Promise<GameObject[]>
     {
-        return this.currentRegion.resolver.resolveObjects([object], { onlyUnresolved: !forceResolve, skipInventory });
+        return this.currentRegion.resolver.resolveObjects([object], options);
     }
 
-    async resolveObjects(objects: GameObject[], forceResolve = false, skipInventory = false, outputLog = false): Promise<GameObject[]>
+    async resolveObjects(objects: GameObject[], options: GetObjectsOptions): Promise<GameObject[]>
     {
-        return this.currentRegion.resolver.resolveObjects(objects, { onlyUnresolved: !forceResolve, skipInventory, outputLog });
+        return this.currentRegion.resolver.resolveObjects(objects, options);
+    }
+
+    public async fetchObjectInventory(object: GameObject): Promise<void>
+    {
+        return this.currentRegion.resolver.getInventory(object);
+    }
+
+    public async fetchObjectInventories(objects: GameObject[]): Promise<void>
+    {
+        return this.currentRegion.resolver.getInventories(objects);
     }
 
     private waitForObjectByLocalID(localID: number, timeout: number): Promise<GameObject>
@@ -1410,7 +1416,7 @@ export class RegionCommands extends CommandsBase
                 if (!evt.object.resolvedAt)
                 {
                     // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
-                    await this.resolveObject(evt.object, false, true);
+                    await this.resolveObject(evt.object, {});
                 }
                 if (evt.createSelected && !evt.object.claimedForBuild)
                 {
@@ -1623,23 +1629,7 @@ export class RegionCommands extends CommandsBase
         const objs = await this.currentRegion.objects.getAllObjects();
         if (options.resolve)
         {
-            const resolver = new ObjectResolver(this.currentRegion);
-
-            const incl: GameObject[] = [];
-            for (const obj of objs)
-            {
-                if (!options.includeAvatars && obj.PCode === PCode.Avatar)
-                {
-                    continue;
-                }
-                if (!options.includeTempObjects && (((obj.Flags ?? 0) & (PrimFlags.Temporary | PrimFlags.TemporaryOnRez)) !== 0))
-                {
-                    continue;
-                }
-                incl.push(obj);
-            }
-
-            await resolver.resolveObjects(incl, options);
+            await this.currentRegion.resolver.resolveObjects(objs, options);
         }
         return objs;
     }
