@@ -29,7 +29,7 @@ export class ObjectResolver
         const failed: GameObject[] = [];
         for (const obj of objects)
         {
-            if (!options.includeTempObjects && ((obj.Flags ?? 0) & PrimFlags.TemporaryOnRez))
+            if (!obj.IsAttachment && !options.includeTempObjects && ((obj.Flags ?? 0) & PrimFlags.TemporaryOnRez) === PrimFlags.TemporaryOnRez)
             {
                 continue;
             }
@@ -46,7 +46,7 @@ export class ObjectResolver
             return failed;
         }
 
-        return this.resolveQueue.add(Array.from(objs.values()));
+        return await this.resolveQueue.add(Array.from(objs.values()));
     }
 
     public async getInventory(object: GameObject): Promise<void>
@@ -183,7 +183,7 @@ export class ObjectResolver
                         obj.landImpact = Math.round(obj.linkResourceImpact);
                     }
                     obj.calculatedLandImpact = obj.landImpact;
-                    if (obj.Flags !== undefined && obj.Flags & PrimFlags.TemporaryOnRez && obj.limitingType === 'legacy')
+                    if (obj.Flags !== undefined && ((obj.Flags & PrimFlags.TemporaryOnRez) === PrimFlags.TemporaryOnRez) && obj.limitingType === 'legacy')
                     {
                         obj.calculatedLandImpact = 0;
                     }

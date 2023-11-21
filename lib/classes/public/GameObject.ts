@@ -1520,7 +1520,7 @@ export class GameObject implements IGameObjectData
             root = xml.ele(rootNode);
         }
         const sceneObjectPart = root.ele('SceneObjectPart').att('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance').att('xmlns:xsd', 'http://www.w3.org/2001/XMLSchema');
-        sceneObjectPart.ele('AllowedDrop', (this.Flags !== undefined && (this.Flags & PrimFlags.AllowInventoryDrop) !== 0) ? 'true' : 'false');
+        sceneObjectPart.ele('AllowedDrop', (this.Flags !== undefined && (this.Flags & PrimFlags.AllowInventoryDrop) === PrimFlags.AllowInventoryDrop) ? 'true' : 'false');
         UUID.getXML(sceneObjectPart.ele('CreatorID'), this.creatorID);
         UUID.getXML(sceneObjectPart.ele('FolderID'), this.folderID);
         sceneObjectPart.ele('InventorySerial', this.inventorySerial);
