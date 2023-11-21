@@ -978,8 +978,14 @@ export class GameObject implements IGameObjectData
                 return FilterResponse.Match;
             }
         });
-        const fileName = Utils.BufferToStringSimple(inventory.InventoryData.Filename);
+        if (inventory.InventoryData.Filename.length === 0)
+        {
+            // Inventory is empty
+            this.inventory = [];
+            return;
+        }
 
+        const fileName = Utils.BufferToStringSimple(inventory.InventoryData.Filename);
         const file = await this.region.circuit.XferFileDown(fileName, true, false, UUID.zero(), AssetType.Unknown, true);
         this.inventory = [];
         if (file.length === 0)
