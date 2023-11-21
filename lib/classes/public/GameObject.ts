@@ -1515,9 +1515,18 @@ export class GameObject implements IGameObjectData
         const resolver = this.region?.resolver;
         if (resolver)
         {
-            await resolver.resolveObjects([this], { includeTempObjects: true });
-            await resolver.getInventory(this);
-            await resolver.getCosts([this]);
+            if (this.resolvedAt === undefined)
+            {
+                await resolver.resolveObjects([this], { includeTempObjects: true });
+            }
+            if (!this.resolvedInventory)
+            {
+                await resolver.getInventory(this);
+            }
+            if (this.calculatedLandImpact === undefined)
+            {
+                await resolver.getCosts([this]);
+            }
         }
 
         let root = xml;

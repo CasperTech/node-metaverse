@@ -398,6 +398,17 @@ export class RegionCommands extends CommandsBase
         return this.currentRegion.resolver.getInventories(objects);
     }
 
+    public async fetchObjectCost(object: GameObject): Promise<void>
+    {
+        return this.currentRegion.resolver.getCosts([object]);
+    }
+
+    public async fetchObjectCosts(objects: GameObject[]): Promise<void>
+    {
+        return this.currentRegion.resolver.getCosts(objects);
+    }
+
+
     private waitForObjectByLocalID(localID: number, timeout: number): Promise<GameObject>
     {
         return new Promise<GameObject>((resolve, reject) =>
