@@ -845,7 +845,7 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.clothing[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item);
+                                await object.dropInventoryIntoContents(item, invItem.name);
                             }
                         }
                         break;
@@ -857,7 +857,7 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.settings[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item);
+                                await object.dropInventoryIntoContents(item, invItem.name);
                             }
                         }
                         break;
@@ -870,7 +870,7 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.bodyparts[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item);
+                                await object.dropInventoryIntoContents(item, invItem.name);
                             }
                         }
                         break;
@@ -882,7 +882,7 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.notecards[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item);
+                                await object.dropInventoryIntoContents(item, invItem.name);
                             }
                         }
                         break;
@@ -894,7 +894,7 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.sounds[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item);
+                                await object.dropInventoryIntoContents(item, invItem.name);
                             }
                         }
                         break;
@@ -906,7 +906,7 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.gestures[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item);
+                                await object.dropInventoryIntoContents(item, invItem.name);
                             }
                         }
                         break;
@@ -919,7 +919,7 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.scripts[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item);
+                                await object.dropInventoryIntoContents(item, invItem.name);
                             }
                         }
                         break;
@@ -931,7 +931,7 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.animations[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item);
+                                await object.dropInventoryIntoContents(item, invItem.name);
                             }
                         }
                         break;
@@ -943,7 +943,7 @@ export class RegionCommands extends CommandsBase
                             const inventoryItem = buildMap.assetMap.objects[invItem.itemID.toString()];
                             if (inventoryItem !== null)
                             {
-                                await object.dropInventoryIntoContents(inventoryItem);
+                                await object.dropInventoryIntoContents(inventoryItem, invItem.name);
                             }
                             else
                             {
@@ -960,7 +960,7 @@ export class RegionCommands extends CommandsBase
                             const texItem = buildMap.assetMap.textures[invItem.assetID.toString()];
                             if (texItem.item !== null)
                             {
-                                await object.dropInventoryIntoContents(texItem.item);
+                                await object.dropInventoryIntoContents(texItem.item, invItem.name);
                             }
                             else
                             {
@@ -1268,34 +1268,6 @@ export class RegionCommands extends CommandsBase
             buildMap.primReservoir = await this.createPrims(buildMap.primsNeeded, agentPos);
         }
 
-        /*
-        const parts = [];
-        parts.push(this.buildPart(obj, Vector3.getZero(), Quaternion.getIdentity(), buildMap, skipMove));
-
-        if (obj.children)
-        {
-            if (obj.Position === undefined)
-            {
-                obj.Position = Vector3.getZero();
-            }
-            if (obj.Rotation === undefined)
-            {
-                obj.Rotation = Quaternion.getIdentity();
-            }
-            let childNumber = 0;
-            for (const child of obj.children)
-            {
-                if (child.Position !== undefined && child.Rotation !== undefined)
-                {
-                    const objPos = new Vector3(obj.Position);
-                    const objRot = new Quaternion(obj.Rotation);
-                    parts.push(this.buildPart(child, objPos, objRot, buildMap, skipMove));
-                    console.log(' ... Building child ' + String(++childNumber));
-                }
-            }
-        }
-        const results: GameObject[] = await Promise.all(parts);
-         */
         let storedPosition: Vector3 | undefined = undefined;
         if (skipMove)
         {
