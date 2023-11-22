@@ -2000,7 +2000,7 @@ export class GameObject implements IGameObjectData
         return GameObject.takeManyToInventory(this.region, [this], folder);
     }
 
-    async dropInventoryIntoContents(inventoryItem: InventoryItem | UUID, newName?: string): Promise<void>
+    async dropInventoryIntoContents(inventoryItem: InventoryItem | UUID): Promise<void>
     {
         const transactionID = UUID.zero();
 
@@ -2043,7 +2043,7 @@ export class GameObject implements IGameObjectData
             Flags: inventoryItem.flags,
             SaleType: inventoryItem.saleType,
             SalePrice: inventoryItem.salePrice,
-            Name: Utils.StringToBuffer(newName ?? inventoryItem.name),
+            Name: Utils.StringToBuffer(inventoryItem.name),
             Description: Utils.StringToBuffer(inventoryItem.description),
             CreationDate: inventoryItem.created.getTime() / 1000,
             CRC: inventoryItem.getCRC()

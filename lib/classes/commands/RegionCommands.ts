@@ -845,7 +845,18 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.clothing[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item, invItem.name);
+                                await object.dropInventoryIntoContents(item);
+                                if (invItem.name !== item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -857,7 +868,18 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.settings[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item, invItem.name);
+                                await object.dropInventoryIntoContents(item);
+                                if (invItem.name !== item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -870,7 +892,18 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.bodyparts[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item, invItem.name);
+                                await object.dropInventoryIntoContents(item);
+                                if (invItem.name !== item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -882,7 +915,18 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.notecards[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item, invItem.name);
+                                await object.dropInventoryIntoContents(item);
+                                if (invItem.name !== item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -894,7 +938,18 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.sounds[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item, invItem.name);
+                                await object.dropInventoryIntoContents(item);
+                                if (invItem.name !== item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -906,7 +961,18 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.gestures[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item, invItem.name);
+                                await object.dropInventoryIntoContents(item);
+                                if (invItem.name !== item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -919,7 +985,18 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.scripts[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item, invItem.name);
+                                await object.dropInventoryIntoContents(item);
+                                if (invItem.name !== item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -931,7 +1008,18 @@ export class RegionCommands extends CommandsBase
                             const item = buildMap.assetMap.animations[invItem.assetID.toString()].item;
                             if (item !== null)
                             {
-                                await object.dropInventoryIntoContents(item, invItem.name);
+                                await object.dropInventoryIntoContents(item);
+                                if (invItem.name !== item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -943,7 +1031,18 @@ export class RegionCommands extends CommandsBase
                             const inventoryItem = buildMap.assetMap.objects[invItem.itemID.toString()];
                             if (inventoryItem !== null)
                             {
-                                await object.dropInventoryIntoContents(inventoryItem, invItem.name);
+                                await object.dropInventoryIntoContents(inventoryItem);
+                                if (invItem.name !== inventoryItem.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === inventoryItem.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
@@ -960,7 +1059,18 @@ export class RegionCommands extends CommandsBase
                             const texItem = buildMap.assetMap.textures[invItem.assetID.toString()];
                             if (texItem.item !== null)
                             {
-                                await object.dropInventoryIntoContents(texItem.item, invItem.name);
+                                await object.dropInventoryIntoContents(texItem.item);
+                                if (invItem.name !== texItem.item.name)
+                                {
+                                    await object.updateInventory();
+                                    for (const taskItem of object.inventory)
+                                    {
+                                        if (taskItem.name === texItem.item.name)
+                                        {
+                                            await taskItem.renameInTask(object, invItem.name);
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
