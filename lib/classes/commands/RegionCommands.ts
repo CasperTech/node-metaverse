@@ -201,13 +201,13 @@ export class RegionCommands extends CommandsBase
                 SessionID: this.circuit.sessionID
             };
             deselectObject.ObjectData = [];
-            const uuidMap: { [key: string]: GameObject } = {};
+            const idMap: { [key: number]: GameObject } = {};
             for (const obj of objects)
             {
-                const uuidStr = obj.FullID.toString();
-                if (!uuidMap[uuidStr])
+                const localID = obj.ID;
+                if (!idMap[localID])
                 {
-                    uuidMap[uuidStr] = obj;
+                    idMap[localID] = obj;
                     deselectObject.ObjectData.push({
                         ObjectLocalID: obj.ID
                     });
