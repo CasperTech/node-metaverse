@@ -184,7 +184,7 @@ export class RegionCommands extends CommandsBase
                 const selectList: GameObject[] = [];
                 for (let y = 0; y < selectLimit; y++)
                 {
-                    if (y < objects.length)
+                    if (x + y < objects.length)
                     {
                         selectList.push(objects[x + y]);
                     }
@@ -276,7 +276,7 @@ export class RegionCommands extends CommandsBase
                 const selectList: GameObject[] = [];
                 for (let y = 0; y < selectLimit; y++)
                 {
-                    if (y < objects.length)
+                    if (x + y < objects.length)
                     {
                         selectList.push(objects[x + y]);
                     }
@@ -382,10 +382,14 @@ export class RegionCommands extends CommandsBase
 
                 for (const obj of objects)
                 {
-                   if (obj.resolvedAt === undefined || obj.name === undefined)
-                   {
-                       obj.resolveAttempts++;
-                   }
+                    if (!(obj instanceof GameObject))
+                    {
+                        continue;
+                    }
+                    if (obj.resolvedAt === undefined || obj.name === undefined)
+                    {
+                        obj.resolveAttempts++;
+                    }
                 }
             }
         }
