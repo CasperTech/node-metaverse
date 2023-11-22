@@ -568,7 +568,9 @@ export class EventQueueClient
                     'Content-Type': contentType
                 },
                 body: data,
-                rejectUnauthorized: false,
+                https: {
+                    rejectUnauthorized: false,
+                },
                 timeout: 1800000 // Super long timeout
             });
 

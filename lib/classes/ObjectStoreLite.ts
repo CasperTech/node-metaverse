@@ -663,7 +663,7 @@ export class ObjectStoreLite implements IObjectStore
 
             this.notifyObjectUpdate(newObject, obj!);
 
-            if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects.get(objData.ParentID))
+            if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects.get(objData.ParentID) && !obj?.IsAttachment)
             {
                 this.requestMissingObject(objData.ParentID);
             }
@@ -907,7 +907,7 @@ export class ObjectStoreLite implements IObjectStore
                     return;
                 }
             }
-            if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects.has(o.ParentID))
+            if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects.has(o.ParentID) && !o.IsAttachment)
             {
                 this.requestMissingObject(o.ParentID).catch((e) =>
                 {
@@ -1160,7 +1160,7 @@ export class ObjectStoreLite implements IObjectStore
         }
         else
         {
-            if (go.ParentID !== undefined && go.ParentID !== 0 && !parentObj)
+            if (go.ParentID !== undefined && go.ParentID !== 0 && !parentObj && !go.IsAttachment)
             {
                 this.requestMissingObject(go.ParentID).catch((e: unknown) =>
                 {
