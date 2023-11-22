@@ -214,7 +214,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             {
                 this.insertIntoRtree(obj);
                 const parentObj = this.objects.get(objData.ParentID ?? 0);
-                if (objData.ParentID !== undefined && objData.ParentID !== 0 && !parentObj)
+                if (objData.ParentID !== undefined && objData.ParentID !== 0 && !parentObj && !obj.IsAttachment)
                 {
                     this.requestMissingObject(objData.ParentID).then(() =>
                     {
@@ -352,7 +352,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             }
             else
             {
-                if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects.has(o.ParentID))
+                if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects.has(o.ParentID) && !o.IsAttachment)
                 {
                     this.requestMissingObject(o.ParentID).catch((e) =>
                     {

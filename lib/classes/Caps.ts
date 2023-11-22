@@ -174,7 +174,9 @@ export class Caps
         const assetURL = capURL + '/?' + type + '_id=' + uuid.toString();
 
         const response = await got.get(assetURL, {
-            rejectUnauthorized: false,
+            https: {
+                rejectUnauthorized: false,
+            },
             method: 'GET',
             responseType: 'buffer'
         });
@@ -195,7 +197,9 @@ export class Caps
                 'Content-Type': contentType
             },
             body: data,
-            rejectUnauthorized: false
+            https: {
+                rejectUnauthorized: false,
+            },
         });
 
         return { status: response.statusCode, body: response.body };
@@ -209,7 +213,9 @@ export class Caps
                 'Content-Type': contentType
             },
             body: data,
-            rejectUnauthorized: false
+            https: {
+                rejectUnauthorized: false,
+            },
         });
 
         return { status: response.statusCode, body: response.body };
@@ -218,7 +224,9 @@ export class Caps
     public async requestGet(requestURL: string): Promise<ICapResponse>
     {
         const response = await got.get(requestURL, {
-            rejectUnauthorized: false
+            https: {
+                rejectUnauthorized: false,
+            },
         });
 
         return { status: response.statusCode, body: response.body };
@@ -227,7 +235,9 @@ export class Caps
     public async requestDelete(requestURL: string): Promise<ICapResponse>
     {
         const response = await got.delete(requestURL, {
-            rejectUnauthorized: false
+            https: {
+                rejectUnauthorized: false,
+            },
         });
 
         return { status: response.statusCode, body: response.body };

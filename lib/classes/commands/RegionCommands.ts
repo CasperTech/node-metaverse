@@ -201,20 +201,28 @@ export class RegionCommands extends CommandsBase
                 SessionID: this.circuit.sessionID
             };
             deselectObject.ObjectData = [];
-            const idMap: { [key: number]: GameObject } = {};
+            const uuidMap: { [key: string]: GameObject } = {};
+            let skipped = 0;
             for (const obj of objects)
             {
-                const localID = obj.ID;
-                if (!idMap[localID])
+                if (!(obj instanceof GameObject))
                 {
-                    idMap[localID] = obj;
+                    skipped++;
+                    continue;
+                }
+                const uuidStr = obj.FullID.toString();
+                if (!uuidMap[uuidStr])
+                {
+                    uuidMap[uuidStr] = obj;
                     deselectObject.ObjectData.push({
                         ObjectLocalID: obj.ID
                     });
                 }
             }
-
-            // Create a map of our expected UUIDs
+            if (skipped > 0)
+            {
+                console.log('Skipped ' + String(skipped) + ' bad objects during deselection');
+            }
 
             const sequenceID = this.circuit.sendMessage(deselectObject, PacketFlags.Reliable);
             return this.circuit.waitForAck(sequenceID, 10000);
@@ -286,8 +294,14 @@ export class RegionCommands extends CommandsBase
             };
             selectObject.ObjectData = [];
             const uuidMap: { [key: string]: GameObject } = {};
+            let skipped = 0;
             for (const obj of objects)
             {
+                if (!(obj instanceof GameObject))
+                {
+                    skipped++;
+                    continue;
+                }
                 const uuidStr = obj.FullID.toString();
                 if (!uuidMap[uuidStr])
                 {
@@ -296,6 +310,10 @@ export class RegionCommands extends CommandsBase
                         ObjectLocalID: obj.ID
                     });
                 }
+            }
+            if (skipped > 0)
+            {
+                console.log('Skipped ' + String(skipped) + ' bad objects during deselection');
             }
 
             // Create a map of our expected UUIDs
