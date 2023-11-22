@@ -73,6 +73,19 @@ class Inventory extends ExampleBot
         // Delete the copy
         await copy.delete();
 
+        // Let's set some perms
+        const copyOnly = await exampleNotecard.copyTo(exampleFolder, exampleNotecard.name + ' - Copy Only ' + UUID.random().toString().substring(0, 8));
+        copyOnly.permissions.nextOwnerMask = PermissionMask.Copy;
+        await copyOnly.update();
+
+        const modOnly = await exampleNotecard.copyTo(exampleFolder, exampleNotecard.name + ' - Mod Only ' + UUID.random().toString().substring(0, 8));
+        modOnly.permissions.nextOwnerMask = PermissionMask.Modify;
+        await modOnly.update();
+
+        const transOnly = await exampleNotecard.copyTo(exampleFolder, exampleNotecard.name + ' - Trans Only ' + UUID.random().toString().substring(0, 8));
+        transOnly.permissions.nextOwnerMask = PermissionMask.Transfer;
+        await transOnly.update();
+
         let exampleScript = exampleFolder.items.find(f => f.name === exampleScriptName);
         if (exampleScript === undefined)
         {
