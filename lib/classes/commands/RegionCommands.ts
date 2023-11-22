@@ -846,15 +846,13 @@ export class RegionCommands extends CommandsBase
                             if (item !== null)
                             {
                                 await object.dropInventoryIntoContents(item);
-                                if (invItem.name !== item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === item.name)
                                     {
-                                        if (taskItem.name === item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -869,15 +867,13 @@ export class RegionCommands extends CommandsBase
                             if (item !== null)
                             {
                                 await object.dropInventoryIntoContents(item);
-                                if (invItem.name !== item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === item.name)
                                     {
-                                        if (taskItem.name === item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -893,15 +889,13 @@ export class RegionCommands extends CommandsBase
                             if (item !== null)
                             {
                                 await object.dropInventoryIntoContents(item);
-                                if (invItem.name !== item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === item.name)
                                     {
-                                        if (taskItem.name === item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -916,15 +910,13 @@ export class RegionCommands extends CommandsBase
                             if (item !== null)
                             {
                                 await object.dropInventoryIntoContents(item);
-                                if (invItem.name !== item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === item.name)
                                     {
-                                        if (taskItem.name === item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -939,15 +931,13 @@ export class RegionCommands extends CommandsBase
                             if (item !== null)
                             {
                                 await object.dropInventoryIntoContents(item);
-                                if (invItem.name !== item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === item.name)
                                     {
-                                        if (taskItem.name === item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -962,15 +952,13 @@ export class RegionCommands extends CommandsBase
                             if (item !== null)
                             {
                                 await object.dropInventoryIntoContents(item);
-                                if (invItem.name !== item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === item.name)
                                     {
-                                        if (taskItem.name === item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -986,15 +974,13 @@ export class RegionCommands extends CommandsBase
                             if (item !== null)
                             {
                                 await object.dropInventoryIntoContents(item);
-                                if (invItem.name !== item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === item.name)
                                     {
-                                        if (taskItem.name === item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -1009,15 +995,13 @@ export class RegionCommands extends CommandsBase
                             if (item !== null)
                             {
                                 await object.dropInventoryIntoContents(item);
-                                if (invItem.name !== item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === item.name)
                                     {
-                                        if (taskItem.name === item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -1032,15 +1016,13 @@ export class RegionCommands extends CommandsBase
                             if (inventoryItem !== null)
                             {
                                 await object.dropInventoryIntoContents(inventoryItem);
-                                if (invItem.name !== inventoryItem.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === inventoryItem.name)
                                     {
-                                        if (taskItem.name === inventoryItem.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
@@ -1060,15 +1042,13 @@ export class RegionCommands extends CommandsBase
                             if (texItem.item !== null)
                             {
                                 await object.dropInventoryIntoContents(texItem.item);
-                                if (invItem.name !== texItem.item.name)
+                                await object.updateInventory();
+                                for (const taskItem of object.inventory)
                                 {
-                                    await object.updateInventory();
-                                    for (const taskItem of object.inventory)
+                                    if (taskItem.name === texItem.item.name)
                                     {
-                                        if (taskItem.name === texItem.item.name)
-                                        {
-                                            await taskItem.renameInTask(object, invItem.name);
-                                        }
+                                        taskItem.permissions = invItem.permissions;
+                                        await taskItem.renameInTask(object, invItem.name);
                                     }
                                 }
                             }
