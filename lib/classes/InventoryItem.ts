@@ -1,6 +1,7 @@
 import * as LLSD from '@caspertech/llsd';
 import { Subscription } from 'rxjs';
 import * as builder from 'xmlbuilder';
+import * as crypto from 'crypto';
 import { GameObject } from '..';
 import { AssetType } from '../enums/AssetType';
 import { AssetTypeLL } from '../enums/AssetTypeLL';
@@ -28,6 +29,8 @@ import { Utils } from './Utils';
 import { UUID } from './UUID';
 import { Vector3 } from './Vector3';
 import Timeout = NodeJS.Timeout;
+import { CopyInventoryItemMessage } from './messages/CopyInventoryItem';
+import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
 
 export class InventoryItem
 {
@@ -1107,6 +1110,64 @@ export class InventoryItem
             CRC: this.getCRC()
         };
         return this.agent.currentRegion.circuit.waitForAck(this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    private async waitForCallbackID(callbackID: number): Promise<BulkUpdateInventoryEvent>
+    {
+        if (!this.agent)
+        {
+            throw new Error('No active agent');
+        }
+        return Utils.waitOrTimeOut<BulkUpdateInventoryEvent>(this.agent.currentRegion.clientEvents.onBulkUpdateInventoryEvent, 10000, (event: BulkUpdateInventoryEvent) =>
+        {
+            for (const item of event.itemData)
+            {
+                if (item.callbackID === callbackID)
+                {
+                    return FilterResponse.Finish;
+                }
+            }
+            return FilterResponse.NoMatch;
+        });
+    }
+
+    public async copyTo(target: InventoryFolder, name: string): Promise<InventoryItem>
+    {
+        const msg = new CopyInventoryItemMessage();
+        if (this.agent === undefined)
+        {
+            throw new Error('No active agent');
+        }
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.agent.currentRegion.circuit.sessionID
+        };
+
+        const bytes = crypto.randomBytes(4);
+        const callbackID = bytes.readUInt32LE(0);
+        msg.InventoryData = [{
+            CallbackID: callbackID,
+            OldAgentID: this.agent.agentID,
+            OldItemID: this.itemID,
+            NewFolderID: target.folderID,
+            NewName: Utils.StringToBuffer(name)
+        }];
+        this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
+        const cbMsg = await this.waitForCallbackID(callbackID);
+
+        for (const cbItem of cbMsg.itemData)
+        {
+            if (cbItem.callbackID === callbackID)
+            {
+                const item = await this.agent.inventory.fetchInventoryItem(cbItem.itemID);
+                if (item !== null)
+                {
+                    return item;
+                }
+            }
+        }
+
+        throw new Error('Unable to locate inventory item after copy');
     }
 
     async updateScript(scriptAsset: Buffer): Promise<UUID>
