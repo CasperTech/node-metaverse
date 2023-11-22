@@ -8,6 +8,7 @@ import { InventoryType } from '../../lib/enums/InventoryType';
 import { PermissionMask } from '../../lib/enums/PermissionMask';
 import { InventoryResponseEvent } from '../../lib/events/InventoryResponseEvent';
 import { InventoryOfferedEvent } from '../../lib/events/InventoryOfferedEvent';
+import { UUID } from '../../lib';
 
 class Inventory extends ExampleBot
 {
@@ -63,9 +64,14 @@ class Inventory extends ExampleBot
         }
 
         // Set notecard to transfer only
-
         exampleNotecard.permissions.nextOwnerMask = PermissionMask.Transfer | PermissionMask.Modify;
         await exampleNotecard.update();
+
+        // Make a copy of the notecard
+        const copy = await exampleNotecard.copyTo(exampleFolder, exampleNotecard.name + ' - The comeback ' + UUID.random().toString().substring(0, 8));
+
+        // Delete the copy
+        await copy.delete();
 
         let exampleScript = exampleFolder.items.find(f => f.name === exampleScriptName);
         if (exampleScript === undefined)
