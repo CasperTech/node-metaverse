@@ -348,6 +348,7 @@ export class RegionCommands extends CommandsBase
                             obj.folderID = objData.FolderID;
                             obj.fromTaskID = objData.FromTaskID;
                             obj.groupID = objData.GroupID;
+                            obj.OwnerID = objData.OwnerID;
                             obj.lastOwnerID = objData.LastOwnerID;
                             obj.name = Utils.BufferToStringSimple(objData.Name);
                             obj.description = Utils.BufferToStringSimple(objData.Description);
