@@ -4,8 +4,6 @@ tslint.json
 lib/
 .idea/
 tools/
-example/
-exampleMine/
 docs/
 dist/tests/
 testing/
@@ -15,4 +13,5 @@ localDeploy.js
 caspertech-node-metaverse-*.tgz
 dist/classes/cache
 examples/loginParameters.json
+examples/loginParameters.json.*
 dist/lib/classes/cache
