@@ -10,7 +10,7 @@ import { BatchQueue } from './BatchQueue';
 export class ObjectResolver
 {
     private resolveQueue = new BatchQueue<GameObject>(256, this.resolveInternal.bind(this));
-    private getCostsQueue = new BatchQueue<GameObject>(256, this.getCostsInternal.bind(this));
+    private getCostsQueue = new BatchQueue<GameObject>(64, this.getCostsInternal.bind(this));
 
     constructor(private region?: Region)
     {
