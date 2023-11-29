@@ -1048,7 +1048,7 @@ export class GameObject implements IGameObjectData
                                     }
                                     else if (result.key === 'name')
                                     {
-                                        name = result.value.substr(0, result.value.indexOf('|'));
+                                        name = result.value.substring(0, result.value.indexOf('|'));
                                     }
                                 }
                             }

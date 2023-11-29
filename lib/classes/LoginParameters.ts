@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { Utils } from './Utils';
 
 export class LoginParameters
 {
@@ -20,6 +20,6 @@ export class LoginParameters
         {
             return this.password;
         }
-        return '$1$' + crypto.createHash('md5').update(this.password.substr(0, 16)).digest('hex');
+        return '$1$' + Utils.MD5String(this.password.substring(0, 16));
     }
 }

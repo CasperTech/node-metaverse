@@ -1,27 +1,30 @@
 {
-  "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "declaration": true,
-    "outDir": "dist",
-    "sourceMap": true,
-    "strict": true,
-    "noImplicitReturns": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": false,
-    "strictNullChecks": true,
-    "noFallthroughCasesInSwitch": true,
-    "types": ["node"]
-  },
-  "include": [
-    "lib/**/*.ts",
-    "examples/**/*.ts",
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "declaration": true,
+        "outDir": "dist",
+        "sourceMap": true,
+        "strict": true,
+        "noImplicitReturns": true,
+        "noImplicitAny": true,
+        "resolveJsonModule": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": false,
+        "strictNullChecks": true,
+        "noFallthroughCasesInSwitch": true,
+        "types": [
+            "node"
+        ]
+    },
+    "include": [
+        "lib/**/*.ts",
+        "examples/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
 }
