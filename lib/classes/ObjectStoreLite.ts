@@ -1215,6 +1215,19 @@ export class ObjectStoreLite implements IObjectStore
                             results.push(parent);
                         }
                     }
+                    if (go.ParentID)
+                    {
+                        let objects = this.objectsByParent.get(go.ParentID)
+                        if (!objects?.includes(localID))
+                        {
+                            if (objects === undefined)
+                            {
+                                objects = [];
+                            }
+                            objects.push(localID);
+                            this.objectsByParent.set(go.ParentID, objects);
+                        }
+                    }
                 }
                 catch (error)
                 {
