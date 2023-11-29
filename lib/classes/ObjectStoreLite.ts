@@ -166,7 +166,7 @@ export class ObjectStoreLite implements IObjectStore
                                     const override = new LLGLTFMaterialOverride();
                                     overrides.set(te, override);
 
-                                    if (textureIDs !== undefined && Array.isArray(textureIDs) && textureIDs.length === 4)
+                                    if (textureIDs !== undefined && Array.isArray(textureIDs))
                                     {
                                         override.textures = [];
                                         for (const tex of textureIDs)
@@ -239,7 +239,7 @@ export class ObjectStoreLite implements IObjectStore
                                         );
                                     }
 
-                                    if (textureTransforms !== undefined && Array.isArray(textureTransforms) && textureTransforms.length === 4)
+                                    if (textureTransforms !== undefined && Array.isArray(textureTransforms))
                                     {
                                         override.textureTransforms = [];
                                         for (const transform of textureTransforms)
