@@ -121,7 +121,7 @@ export class TarWriter extends Transform
 
     private chopString(str: string, maxLength: number): string
     {
-        return str.substr(0, maxLength - 1);
+        return str.substring(0, maxLength - 1);
     }
 
     private octalBuf(num: number, length: number): Buffer

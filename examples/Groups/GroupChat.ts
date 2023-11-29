@@ -88,9 +88,9 @@ class GroupChat extends ExampleBot
         }
         else if (event.from.toString() === this.bot.agentID().toString())
         {
-            if (event.message.substr(0, 5) === 'ping ')
+            if (event.message.substring(0, 5) === 'ping ')
             {
-                const pingID = event.message.substr(5);
+                const pingID = event.message.substring(5);
                 if (this.pings[pingID])
                 {
                     const time = (new Date().getTime()) - this.pings[pingID];

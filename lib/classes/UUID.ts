@@ -7,17 +7,17 @@ export class UUID
 {
     private mUUID = '00000000-0000-0000-0000-000000000000';
 
-    static zero(): UUID
+    public static zero(): UUID
     {
         return new UUID();
     }
-    static random(): UUID
+    public static random(): UUID
     {
         const newUUID = uuid.v4();
         return new UUID(newUUID);
     }
 
-    static getString(u?: UUID): string
+    public static getString(u?: UUID): string
     {
         if (u === undefined)
         {
@@ -29,13 +29,13 @@ export class UUID
         }
     }
 
-    static getXML(doc: XMLNode, u?: UUID): void
+    public static getXML(doc: XMLNode, u?: UUID): void
     {
         const str = UUID.getString(u);
         doc.ele('UUID', str);
     }
 
-    static fromXMLJS(obj: any, param: string): false | UUID
+    public static fromXMLJS(obj: any, param: string): false | UUID
     {
         if (obj[param] === undefined)
         {
@@ -73,7 +73,7 @@ export class UUID
         return false;
     }
 
-    constructor(buf?: Buffer | string, pos?: number)
+    public constructor(buf?: Buffer | string, pos?: number)
     {
         if (buf !== undefined)
         {
@@ -85,11 +85,11 @@ export class UUID
             {
                 const uuidBuf: Buffer = buf.slice(pos, pos + 16);
                 const hexString = uuidBuf.toString('hex');
-                this.setUUID(hexString.substr(0, 8) + '-'
-                    + hexString.substr(8, 4) + '-'
-                    + hexString.substr(12, 4) + '-'
-                    + hexString.substr(16, 4) + '-'
-                    + hexString.substr(20, 12));
+                this.setUUID(hexString.substring(0, 8) + '-'
+                    + hexString.substring(8, 12) + '-'
+                    + hexString.substring(12, 16) + '-'
+                    + hexString.substring(16, 20) + '-'
+                    + hexString.substring(20, 32));
             }
             else if (typeof buf === 'object' && buf.toString !== undefined)
             {
@@ -122,9 +122,9 @@ export class UUID
         return this.mUUID;
     };
 
-    writeToBuffer(buf: Buffer, pos: number): void
+    public writeToBuffer(buf: Buffer, pos: number): void
     {
-        const shortened = this.mUUID.substr(0, 8) + this.mUUID.substr(9, 4) + this.mUUID.substr(14, 4) + this.mUUID.substr(19, 4) + this.mUUID.substr(24, 12);
+        const shortened = this.mUUID.substring(0, 8) + this.mUUID.substring(9, 13) + this.mUUID.substring(14, 18) + this.mUUID.substring(19, 23) + this.mUUID.substring(24, 36);
         const binary = Buffer.from(shortened, 'hex');
         binary.copy(buf, pos, 0);
     }

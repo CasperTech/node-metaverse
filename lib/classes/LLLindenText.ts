@@ -152,7 +152,7 @@ export class LLLindenText
         }
         else
         {
-            return input.substr(index + 1);
+            return input.substring(index + 1);
         }
     }
 }

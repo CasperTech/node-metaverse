@@ -346,7 +346,7 @@ export class InventoryItem
                 {
                     if (result.value.indexOf('|') !== -1)
                     {
-                        item.name = result.value.substr(0, result.value.indexOf('|'));
+                        item.name = result.value.substring(0, result.value.indexOf('|'));
                     }
                     else
                     {
@@ -358,7 +358,7 @@ export class InventoryItem
                 {
                     if (result.value.indexOf('|') !== -1)
                     {
-                        item.description = result.value.substr(0, result.value.indexOf('|'));
+                        item.description = result.value.substring(0, result.value.indexOf('|'));
                     }
                     else
                     {
@@ -374,7 +374,7 @@ export class InventoryItem
                 {
                     if (result.value.indexOf('|') !== -1)
                     {
-                        item.metadata = result.value.substr(0, result.value.indexOf('|'));
+                        item.metadata = result.value.substring(0, result.value.indexOf('|'));
                     }
                     else
                     {

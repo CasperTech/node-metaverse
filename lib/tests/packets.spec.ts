@@ -28,7 +28,7 @@ describe('Packets', () =>
     const files = fs.readdirSync(p);
     for (const file of files)
     {
-        if (file.substr(file.length - 7) === '.packet')
+        if (file.substring(file.length - 7) === '.packet')
         {
             const fullPath = p + '/' + file;
             const stats = fs.statSync(fullPath);

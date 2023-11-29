@@ -10,6 +10,12 @@ import { Utils } from './classes/Utils';
 import { UUID } from './classes/UUID';
 import { BotOptionFlags } from './enums/BotOptionFlags';
 import { URL } from 'url';
+import * as os from 'os';
+
+const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
+const packageJson = require(packageJsonPath);
+const version = packageJson.version;
+
 
 export class LoginHandler
 {
@@ -53,7 +59,7 @@ export class LoginHandler
         const macAddress: string[] = [];
         for (let i = 0; i < 12; i = i + 2)
         {
-            macAddress.push(nameHash.substr(i, 2));
+            macAddress.push(nameHash.substring(i, i + 2));
         }
 
         let hardwareID: string | null = null;
@@ -86,28 +92,50 @@ export class LoginHandler
             {
                 password = params.getHashedPassword();
             }
+
+            let platform = '???'
+            switch (os.platform())
+            {
+                case 'darwin':
+                    platform = 'mac';
+                    break;
+                case 'linux':
+                    platform = 'lnx';
+                    break;
+                case 'win32':
+                    platform = 'win';
+                    break;
+            }
+
+            const versions = version.split('.');
+            const major = versions.length > 0 ? versions[0] : '0';
+            const minor = versions.length > 1 ? versions[1] : '0';
+            const patch = versions.length > 2 ? versions[2] : '0';
+            let build = major.padStart(2, '0') + minor.padStart(2, '0') + patch.padStart(2, '0');
+            build = build.replace(/^0+/, '');
+
             client.methodCall('login_to_simulator',
                 [
                     {
-                        'first': params.firstName,
-                        'last': params.lastName,
-                        'passwd': password,
-                        'start': params.start,
-                        'major': '0',
-                        'minor': '0',
-                        'patch': '1',
-                        'build': '0',
-                        'platform': 'win',
-                        'token': mfaToken,
-                        'mfa_hash': mfaHash,
-                        'id0': hardwareID,
-                        'mac': macAddress.join(':'),
-                        'viewer_digest': viewerDigest,
-                        'user_agent': 'node-metaverse',
-                        'author': 'nmv@caspertech.co.uk',
-                        'agree_to_tos': params.agreeToTOS,
-                        'read_critical': params.readCritical,
-                        'options': [
+                        first: params.firstName,
+                        last: params.lastName,
+                        passwd: password,
+                        start: params.start,
+                        channel: 'libnmv',
+                        major,
+                        minor,
+                        patch,
+                        build,
+                        platform,
+                        version: version + '.' + build,
+                        token: mfaToken,
+                        mfa_hash: mfaHash,
+                        id0: Utils.MD5String(String(hardwareID)),
+                        mac: macAddress.join(':'),
+                        viewer_digest: viewerDigest,
+                        agree_to_tos: params.agreeToTOS,
+                        read_critical: params.readCritical,
+                        options: [
                             'inventory-root',
                             'inventory-skeleton',
                             'inventory-lib-root',

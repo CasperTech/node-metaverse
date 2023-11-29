@@ -34,6 +34,11 @@ export class Utils
         return crypto.createHash('sha1').update(str).digest('hex');
     }
 
+    static MD5String(str: string): string
+    {
+        return crypto.createHash('md5').update(str).digest('hex');
+    }
+
     static BufferToStringSimple(buf: Buffer): string
     {
         if (buf.length === 0)
@@ -425,7 +430,7 @@ export class Utils
         {
             hex = '0' + hex;
         }
-        return new Long(parseInt(hex.substr(8), 16), parseInt(hex.substr(0, 8), 16));
+        return new Long(parseInt(hex.substring(8), 16), parseInt(hex.substring(0, 8), 16));
     }
 
     static ReadRotationFloat(buf: Buffer, pos: number): number
@@ -690,7 +695,7 @@ export class Utils
         }
         else
         {
-            return str.substr(0, index - 1);
+            return str.substring(0, index - 1);
         }
     }
 
@@ -931,8 +936,8 @@ export class Utils
             const sep = line.indexOf(' ');
             if (sep > 0)
             {
-                key = line.substr(0, sep);
-                value = line.substr(sep + 1);
+                key = line.substring(0, sep);
+                value = line.substring(sep + 1);
             }
         }
         else if (line.length === 1)
