@@ -58,6 +58,7 @@ import { AssetType } from '../../enums/AssetType';
 import { LLGLTFMaterialOverride } from '../LLGLTFMaterialOverride';
 
 import * as uuid from 'uuid';
+import { Logger } from '../Logger';
 
 export class GameObject implements IGameObjectData
 {
@@ -1519,15 +1520,36 @@ export class GameObject implements IGameObjectData
         {
             if (this.resolvedAt === undefined)
             {
-                await resolver.resolveObjects([this], { includeTempObjects: true });
+                try
+                {
+                    await resolver.resolveObjects([this], { includeTempObjects: true });
+                }
+                catch (e: unknown)
+                {
+                    Logger.Error(e);
+                }
             }
             if (!this.resolvedInventory)
             {
-                await resolver.getInventory(this);
+                try
+                {
+                    await resolver.getInventory(this);
+                }
+                catch (e: unknown)
+                {
+                    Logger.Error(e);
+                }
             }
             if (this.calculatedLandImpact === undefined)
             {
-                await resolver.getCosts([this]);
+                try
+                {
+                    await resolver.getCosts([this]);
+                }
+                catch (e: unknown)
+                {
+                    Logger.Error(e);
+                }
             }
         }
 
