@@ -954,6 +954,94 @@ export class GameObject implements IGameObjectData
             return;
         }
 
+        try
+        {
+            const capURL = await this.region.caps.getCapability('RequestTaskInventory');
+            const result = await this.region.caps.capsPerformXMLGet(capURL + '?task_id=' + this.FullID) as {
+                contents?: {
+                    asset_id?: string,
+                    created_at?: number,
+                    desc?: string,
+                    flags?: number,
+                    inv_type?: string,
+                    item_id?: string,
+                    metadata?: Record<string, unknown>,
+                    name?: string,
+                    parent_id?: string;
+                    permissions?: {
+                        base_mask?: number;
+                        creator_id?: string;
+                        everyone_mask?: number;
+                        group_id?: string;
+                        group_mask?: number;
+                        is_owner_group?: boolean;
+                        last_owner_id?: string;
+                        next_owner_mask?: number;
+                        owner_id?: string;
+                        owner_mask?: number;
+                    }
+                    sale_info?: {
+                        sale_price?: number;
+                        sale_type?: string;
+                    }
+                    type?: string
+                }[]
+            };
+
+            if (result.contents)
+            {
+                this.inventory = [];
+                for(const item of result.contents)
+                {
+                    const invItem =  new InventoryItem(this, this.region.agent);
+                    invItem.assetID = new UUID(item.asset_id);
+                    invItem.created = new Date((item.created_at ?? 0) * 1000);
+                    invItem.description = item.desc ?? '';
+                    invItem.flags = item.flags ?? 0;
+                    invItem.inventoryType = Utils.HTTPAssetTypeToInventoryType(item.inv_type ?? '');
+                    invItem.itemID = new UUID(item.item_id);
+                    invItem.name = item.name ?? '';
+                    invItem.parentID = new UUID(item.parent_id);
+                    invItem.permissions = {
+                        baseMask: item.permissions?.base_mask ?? 0,
+                        creator: new UUID(item.permissions?.creator_id),
+                        everyoneMask: item.permissions?.everyone_mask ?? 0,
+                        group: new UUID(item.permissions?.group_id),
+                        groupMask: item.permissions?.group_mask ?? 0,
+                        groupOwned: item.permissions?.is_owner_group ?? false,
+                        lastOwner: new UUID(item.permissions?.last_owner_id),
+                        nextOwnerMask: item.permissions?.next_owner_mask ?? 0,
+                        owner: new UUID(item.permissions?.owner_id),
+                        ownerMask: item.permissions?.owner_mask ?? 0
+                    }
+                    invItem.salePrice = item.sale_info?.sale_price ?? 0;
+                    switch (item.sale_info?.sale_type)
+                    {
+                        case 'not':
+                            invItem.saleType = 0;
+                            break;
+                        case 'orig':
+                            invItem.saleType = 1;
+                            break;
+                        case 'copy':
+                            invItem.saleType = 2;
+                            break;
+                        case 'cntn':
+                            invItem.saleType = 3;
+                            break;
+                    }
+                    invItem.type = Utils.capInventoryTypeToAssetType(item.inv_type ?? '');
+                    this.inventory.push(invItem);
+                }
+                return;
+            }
+        }
+        catch(e)
+        {
+            // ignore
+        }
+
+
         const req = new RequestTaskInventoryMessage();
         req.AgentData = {
             AgentID: this.region.agent.agentID,

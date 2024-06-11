@@ -106,6 +106,7 @@ export class Caps
         req.push('RemoteParcelRequest');
         req.push('RenderMaterials');
         req.push('RequestTextureDownload');
+        req.push('RequestTaskInventory');
         req.push('ResourceCostSelected');
         req.push('RetrieveNavMeshSrc');
         req.push('SearchStatRequest');

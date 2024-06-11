@@ -331,6 +331,40 @@ export class Utils
                 return 0;
         }
     }
+    static capInventoryTypeToAssetType(capInventoryType: string): AssetType
+    {
+        switch (capInventoryType)
+        {
+            case 'texture':
+                return AssetType.Texture;
+            case 'sound':
+                return AssetType.Sound;
+            case 'animation':
+                return AssetType.Animation;
+            case 'gesture':
+                return AssetType.Gesture;
+            case 'landmark':
+                return AssetType.Landmark;
+            case 'callcard':
+                return AssetType.CallingCard;
+            case 'script':
+                return AssetType.LSLText;
+            case 'wearable':
+                return AssetType.Bodypart;
+            case 'object':
+                return AssetType.Object;
+            case 'notecard':
+                return AssetType.Notecard;
+            case 'category':
+                return AssetType.Category;
+            case 'mesh':
+                return AssetType.Mesh;
+
+            default:
+                return AssetType.Unknown
+        }
+    }
+
 
     static HTTPAssetTypeToCapInventoryType(HTTPAssetType: string): String
     {
