@@ -41,7 +41,6 @@ import { LLSDNotationParser } from './llsd/LLSDNotationParser';
 import { LLSDMap } from './llsd/LLSDMap';
 import { LLGLTFMaterialOverride, LLGLTFTextureTransformOverride } from './LLGLTFMaterialOverride';
 import * as Long from 'long';
-import Timer = NodeJS.Timer;
 
 export class ObjectStoreLite implements IObjectStore
 {
@@ -88,7 +87,7 @@ export class ObjectStoreLite implements IObjectStore
     }>;
     private physicsSubscription: Subscription;
     private selectedPrimsWithoutUpdate = new Map<number, boolean>();
-    private selectedChecker?: Timer;
+    private selectedChecker?: NodeJS.Timeout;
     private blacklist: Map<number, Date> = new Map<number, Date>();
     private pendingResolves: Set<number> = new Set<number>();
 

@@ -36,7 +36,7 @@ import Timer = NodeJS.Timer;
 export class Bot
 {
     private loginParams: LoginParameters;
-    private ping: Timer | null = null;
+    private ping: NodeJS.Timeout | null = null;
     private pingNumber = 0;
     private lastSuccessfulPing = 0;
     private circuitSubscription: Subscription | null = null;

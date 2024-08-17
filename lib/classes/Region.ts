@@ -38,7 +38,6 @@ import { ParcelOverlayMessage } from './messages/ParcelOverlay';
 import { ILandBlock } from './interfaces/ILandBlock';
 import { LandFlags } from '../enums/LandFlags';
 import { ParcelPropertiesRequestMessage } from './messages/ParcelPropertiesRequest';
-import Timer = NodeJS.Timer;
 import { UUID } from './UUID';
 import { RegionFlags } from '../enums/RegionFlags';
 import { BotOptionFlags } from '../enums/BotOptionFlags';
@@ -1089,7 +1088,7 @@ export class Region
             }
             else
             {
-                let timeout: Timer | null = null;
+                let timeout: NodeJS.Timeout | null = null;
                 const subscription = this.parcelOverlayCompleteEvent.subscribe(() =>
                 {
                     if (timeout !== null)
@@ -1118,7 +1117,7 @@ export class Region
             }
             else
             {
-                let timeout: Timer | null = null;
+                let timeout: NodeJS.Timeout | null = null;
                 const subscription = this.parcelsCompleteEvent.subscribe(() =>
                 {
                     if (timeout !== null)
@@ -1147,7 +1146,7 @@ export class Region
             }
             else
             {
-                let timeout: Timer | null = null;
+                let timeout: NodeJS.Timeout | null = null;
                 const subscription = this.terrainCompleteEvent.subscribe(() =>
                 {
                     if (timeout !== null)
