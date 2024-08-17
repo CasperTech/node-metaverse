@@ -33,8 +33,6 @@ import { Vector3 } from '../Vector3';
 import { CommandsBase } from './CommandsBase';
 import Timeout = NodeJS.Timeout;
 
-import Timer = NodeJS.Timer;
-
 export interface GetObjectsOptions
 {
     resolve?: boolean;
@@ -436,7 +434,7 @@ export class RegionCommands extends CommandsBase
     {
         return new Promise<GameObject>((resolve, reject) =>
         {
-            let tmr: Timer | null = null;
+            let tmr: NodeJS.Timeout | null = null;
             const subscription = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(event: NewObjectEvent) =>
             {
                 if (event.localID === localID)
@@ -461,7 +459,7 @@ export class RegionCommands extends CommandsBase
     {
         return new Promise<GameObject>((resolve, reject) =>
         {
-            let tmr: Timer | null = null;
+            let tmr: NodeJS.Timeout | null = null;
             const subscription = this.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(event: NewObjectEvent) =>
             {
                 if (event.objectID.equals(objectID))

@@ -22,8 +22,6 @@ import { Utils } from './Utils';
 
 import * as Long from 'long';
 
-import Timer = NodeJS.Timer;
-
 export class Circuit
 {
     secureSessionID: UUID;
@@ -39,12 +37,12 @@ export class Circuit
     awaitingAck: {
         [key: number]: {
             packet: Packet,
-            timeout: Timer,
+            timeout: NodeJS.Timeout,
             sent: number
         }
     } = {};
     receivedPackets: {
-        [key: number]: Timer
+        [key: number]: NodeJS.Timeout
     } = {};
     active = false;
 
@@ -179,7 +177,7 @@ export class Circuit
         return new Promise<Buffer>((resolve, reject) =>
         {
             let subscription: null | Subscription = null;
-            let timeout: Timer | null = null;
+            let timeout: NodeJS.Timeout | null = null;
             const receivedChunks: { [key: number]: Buffer } = {};
             const resetTimeout = function(): void
             {
@@ -326,7 +324,7 @@ export class Circuit
         return new Promise<void>((resolve, reject) =>
         {
             const handleObj: {
-                timeout: Timer | null,
+                timeout: NodeJS.Timeout | null,
                 subscription: Subscription | null
             } = {
                 timeout: null,
@@ -416,7 +414,7 @@ export class Circuit
         return new Promise<T>((resolve, reject) =>
         {
             const handleObj: {
-                timeout: Timer | null,
+                timeout: NodeJS.Timeout | null,
                 subscription: Subscription | null
             } = {
                 timeout: null,

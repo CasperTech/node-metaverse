@@ -17,7 +17,6 @@ import { Utils } from '../Utils';
 import { UUID } from '../UUID';
 import { Vector3 } from '../Vector3';
 import { CommandsBase } from './CommandsBase';
-import Timer = NodeJS.Timer;
 
 export class CommunicationsCommands extends CommandsBase
 {
@@ -284,7 +283,7 @@ export class CommunicationsCommands extends CommandsBase
                 {
                     to = new UUID(to);
                 }
-                let typeTimer: Timer | null = null;
+                let typeTimer: NodeJS.Timeout | null = null;
                 this.startTypingIM(to).then(() =>
                 {
                     typeTimer = setInterval(() =>
