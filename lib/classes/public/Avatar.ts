@@ -4,8 +4,6 @@ import { Vector3 } from '../Vector3';
 import { Quaternion } from '../Quaternion';
 import { Subject, Subscription } from 'rxjs';
 import { UUID } from '../UUID';
-import Timer = NodeJS.Timer;
-
 export class Avatar extends AvatarQueryResult
 {
     private rotation: Quaternion = Quaternion.getIdentity();
@@ -198,7 +196,7 @@ export class Avatar extends AvatarQueryResult
             catch (ignore)
             {
                 let subs: Subscription | undefined = undefined;
-                let timr: Timer | undefined = undefined;
+                let timr: NodeJS.Timeout | undefined = undefined;
                 subs = this.onAttachmentAdded.subscribe((obj: GameObject) =>
                 {
                     if (obj.itemID.equals(itemID))

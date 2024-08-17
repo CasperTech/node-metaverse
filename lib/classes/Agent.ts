@@ -29,7 +29,6 @@ import { BulkUpdateInventoryMessage } from './messages/BulkUpdateInventory';
 import { InventoryItem } from './InventoryItem';
 import { AgentDataUpdateMessage } from './messages/AgentDataUpdate';
 import { InventoryLibrary } from '../enums/InventoryLibrary';
-import Timer = NodeJS.Timer;
 
 export class Agent
 {
@@ -47,7 +46,7 @@ export class Agent
             hasVoice: boolean;
             isModerator: boolean
         }>,
-        timeout?: Timer
+        timeout?: NodeJS.Timeout
     }>();
     controlFlags: ControlFlags = 0;
     openID: {
@@ -90,7 +89,7 @@ export class Agent
         attachments: Wearable[];
         serialNumber: number
     };
-    agentUpdateTimer: Timer | null = null;
+    agentUpdateTimer: NodeJS.Timeout | null = null;
     estateManager = false;
 
     appearanceComplete = false;

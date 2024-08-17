@@ -1,6 +1,6 @@
 {
   "name": "@caspertech/node-metaverse",
-  "version": "0.7.22",
+  "version": "0.7.24",
   "description": "A node.js interface for Second Life.",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@angular-eslint/eslint-plugin": "^12.7.0",
     "@types/micromatch": "^4.0.4",
-    "@types/node": "^16.18.60",
+    "@types/node": "^22.4.0",
     "@types/tiny-async-pool": "^2.0.2",
     "@types/uuid": "^8.3.4",
     "@types/xml2js": "^0.4.14",
@@ -37,7 +37,7 @@
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.1",
     "tslint": "^6.1.3",
-    "typescript": "^4.9.5"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "@caspertech/llsd": "^1.0.5",
