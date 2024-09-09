@@ -421,6 +421,10 @@ export class InventoryItem
         {
             inventoryItem.inventoryType = parseInt(prop, 10);
         }
+        if ((prop = Utils.getFromXMLJS(result, 'Type')) !== undefined)
+        {
+            inventoryItem.type = parseInt(prop, 10);
+        }
         if ((prop = Utils.getFromXMLJS(result, 'CreatorUUID')) !== undefined)
         {
             try

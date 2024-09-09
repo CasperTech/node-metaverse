@@ -234,7 +234,6 @@ export class ParticleSystem
         }
         const systemBlock = Buffer.allocUnsafe(68);
         let pos = 0;
-        console.log('FLAGS: ' + this.flags);
         systemBlock.writeUInt32LE(this.crc, pos); pos = pos + 4;
         systemBlock.writeUInt32LE(this.flags, pos); pos = pos + 4; // Flags is zero
         systemBlock.writeUInt8(this.pattern, pos++);

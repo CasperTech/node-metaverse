@@ -376,21 +376,6 @@ export class RegionCommands extends CommandsBase
             {
 
             }
-            finally
-            {
-
-                for (const obj of objects)
-                {
-                    if (!(obj instanceof GameObject))
-                    {
-                        continue;
-                    }
-                    if (obj.resolvedAt === undefined || obj.name === undefined)
-                    {
-                        obj.resolveAttempts++;
-                    }
-                }
-            }
         }
     }
 
