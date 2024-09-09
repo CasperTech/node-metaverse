@@ -170,6 +170,7 @@ export class GameObject implements IGameObjectData
     inventory: InventoryItem[] = [];
 
     resolveAttempts = 0;
+    childrenPopulated = false;
 
     claimedForBuild = false;
     createdSelected = false;

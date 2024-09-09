@@ -1189,6 +1189,7 @@ export class ObjectStoreLite implements IObjectStore
                     obj.children.push(child);
                 }
             }
+            obj.childrenPopulated = true;
         }
     }
 
