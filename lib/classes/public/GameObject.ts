@@ -1601,7 +1601,7 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string): Promise<void>
+    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string, skipInventory = false): Promise<void>
     {
         const resolver = this.region?.resolver;
         if (resolver)
@@ -1617,7 +1617,7 @@ export class GameObject implements IGameObjectData
                     Logger.Error(e);
                 }
             }
-            if (!this.resolvedInventory)
+            if (!this.resolvedInventory && !skipInventory)
             {
                 try
                 {
@@ -1889,25 +1889,25 @@ export class GameObject implements IGameObjectData
         this.region.objects.populateChildren(this);
     }
 
-    async exportXMLElement(rootNode?: string): Promise<XMLElement>
+    async exportXMLElement(rootNode?: string, skipInventory = false): Promise<XMLElement>
     {
         const document = builder.create('SceneObjectGroup');
         let linkNum = 1;
-        await this.getXML(document, this, linkNum, rootNode);
+        await this.getXML(document, this, linkNum, rootNode, skipInventory);
         if (this.children && this.children.length > 0)
         {
             const otherParts = document.ele('OtherParts');
             for (const child of this.children)
             {
-                await child.getXML(otherParts, this, ++linkNum, (rootNode !== undefined) ? 'Part' : undefined);
+                await child.getXML(otherParts, this, ++linkNum, (rootNode !== undefined) ? 'Part' : undefined, skipInventory);
             }
         }
         return document;
     }
 
-    async exportXML(rootNode?: string): Promise<string>
+    async exportXML(rootNode?: string, skipInventory = false): Promise<string>
     {
-        return (await this.exportXMLElement(rootNode)).end({ pretty: true, allowEmpty: true });
+        return (await this.exportXMLElement(rootNode, skipInventory)).end({ pretty: true, allowEmpty: true });
     }
 
     public toJSON(): IGameObjectData

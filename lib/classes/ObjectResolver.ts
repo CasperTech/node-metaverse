@@ -99,6 +99,10 @@ export class ObjectResolver
         }
 
         const objArray = Array.from(objs.values());
+        for (const obj of objArray)
+        {
+            obj.resolveAttempts = (obj.resolveAttempts ?? 0) + 1;
+        }
         try
         {
             await this.region.clientCommands.region.selectObjects(objArray);
