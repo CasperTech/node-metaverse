@@ -364,6 +364,18 @@ export class Bot
 
         this.ping = setInterval(async() =>
         {
+            const now = new Date().getTime();
+            if (now - this.lastSuccessfulPing > 120 * 1000)
+            {
+                if (this.ping !== null)
+                {
+                    clearInterval(this.ping);
+                    this.ping = null;
+                    this.disconnected(false, 'Disconnected from the simulator');
+                }
+                return;
+            }
+
             this.pingNumber++;
             if (this.pingNumber % 12 === 0 && this.stay)
             {
@@ -418,7 +430,6 @@ export class Bot
                 // No action needed
             }).catch(() =>
             {
-                console.error('Timeout waiting for ping from the simulator - possible disconnection')
             });
 
 
