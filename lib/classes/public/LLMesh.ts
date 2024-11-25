@@ -32,21 +32,18 @@ export class LLMesh
         }
         const startPos = parseInt(obj['position'], 10);
         obj = obj['result'];
-        if (!obj['version'])
+        if (obj['creator'])
         {
-            throw new Error('No version found');
+            llmesh.creatorID = new UUID(obj['creator'].toString());
         }
-        if (!obj['creator'])
+        if (obj['date'])
         {
-            throw new Error('Creator UUID not found');
+            llmesh.date = obj['date'];
         }
-        if (obj['date'] === undefined)
+        if (obj['version'])
         {
-            throw new Error('Date not found');
+            llmesh.version = parseInt(obj['version'], 10);
         }
-        llmesh.creatorID = new UUID(obj['creator'].toString());
-        llmesh.date = obj['date'];
-        llmesh.version = parseInt(obj['version'], 10);
         for (const key of Object.keys(obj))
         {
             const o = obj[key];

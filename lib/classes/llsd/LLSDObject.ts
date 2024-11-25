@@ -6,4 +6,6 @@ export abstract class LLSDObject
     }
 
     public abstract toJSON(): unknown;
+
+    [key: string]: unknown;
 }

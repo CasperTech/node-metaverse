@@ -716,131 +716,95 @@ export class InventoryFolder
         });
     }
 
-    uploadAsset(type: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string, flags: InventoryItemFlags = InventoryItemFlags.None): Promise<InventoryItem>
+    public async uploadAsset(type: AssetType, inventoryType: InventoryType, data: Buffer, name: string, description: string, flags: InventoryItemFlags = InventoryItemFlags.None): Promise<InventoryItem>
     {
-        return new Promise<InventoryItem>((resolve, reject) =>
+        switch (inventoryType)
         {
-            switch (inventoryType)
+            case InventoryType.Wearable:
+            case InventoryType.Bodypart:
             {
-                case InventoryType.Wearable:
-                case InventoryType.Bodypart:
                 // Wearables have to be uploaded using the legacy method and then created
-                    this.uploadInventoryAssetLegacy(type, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
-                    {
-                        this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>
-                        {
-                            if (item === null)
-                            {
-                                reject(new Error('Unable to get inventory item'));
-                            }
-                            else
-                            {
-                                this.addItem(item, false).then(() =>
-                                {
-                                    resolve(item);
-                                });
-                            }
-                        }).catch((err) =>
-                        {
-                            reject(err);
-                        });
-                    }).catch((err) =>
-                    {
-                        reject(err);
-                    });
-                    return;
-                case InventoryType.Landmark:
-                case InventoryType.Notecard:
-                case InventoryType.Gesture:
-                case InventoryType.Script:
-                case InventoryType.LSL:
-                case InventoryType.Settings:
-                // These types must be created first and then modified
-                    this.uploadInventoryItem(type, inventoryType, data, name, description, flags).then((invItemID: UUID) =>
-                    {
-                        this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>
-                        {
-                            if (item === null)
-                            {
-                                reject(new Error('Unable to get inventory item'));
-                            }
-                            else
-                            {
-                                this.addItem(item, false).then(() =>
-                                {
-                                    resolve(item);
-                                });
-                            }
-                        }).catch((err) =>
-                        {
-                            reject(err);
-                        });
-                    }).catch((err) =>
-                    {
-                        reject(err);
-                    });
-                    return;
-            }
-            Logger.Info('[' + name + ']');
-            const httpType = Utils.AssetTypeToHTTPAssetType(type);
-            this.agent.currentRegion.caps.capsPostXML('NewFileAgentInventory', {
-                'folder_id': new LLSD.UUID(this.folderID.toString()),
-                'asset_type': httpType,
-                'inventory_type': Utils.HTTPAssetTypeToCapInventoryType(httpType),
-                'name': name,
-                'description': description,
-                'everyone_mask': PermissionMask.All,
-                'group_mask': PermissionMask.All,
-                'next_owner_mask': PermissionMask.All,
-                'expected_upload_cost': 0
-            }).then((response: any) =>
-            {
-                if (response['state'] === 'upload')
+                const invItemID = await this.uploadInventoryAssetLegacy(type, inventoryType, data, name, description, flags);
+                const uploadedItem: InventoryItem | null = await this.agent.inventory.fetchInventoryItem(invItemID)
+                if (uploadedItem === null)
                 {
-                    const uploadURL = response['uploader'];
-                    this.agent.currentRegion.caps.capsRequestUpload(uploadURL, data).then((responseUpload: any) =>
-                    {
-                        if (responseUpload['new_inventory_item'] !== undefined)
-                        {
-                            const invItemID = new UUID(responseUpload['new_inventory_item'].toString());
-                            this.agent.inventory.fetchInventoryItem(invItemID).then((item: InventoryItem | null) =>
-                            {
-                                if (item === null)
-                                {
-                                    reject(new Error('Unable to get inventory item'));
-                                }
-                                else
-                                {
-                                    this.addItem(item, false).then(() =>
-                                    {
-                                        resolve(item);
-                                    });
-                                }
-                            }).catch((err) =>
-                            {
-                                reject(err);
-                            });
-                        }
-                    }).catch((err) =>
-                    {
-                        reject(err);
-                    });
-                }
-                else if (response['error'])
-                {
-                    reject(response['error']['message']);
+                    throw new Error('Unable to get inventory item');
                 }
                 else
                 {
-                    reject('Unable to upload asset');
+                    await this.addItem(uploadedItem, false);
                 }
-            }).catch((err) =>
+                return uploadedItem;
+            }
+            case InventoryType.Landmark:
+            case InventoryType.Notecard:
+            case InventoryType.Gesture:
+            case InventoryType.Script:
+            case InventoryType.LSL:
+            case InventoryType.Settings:
             {
-                console.log('Got err');
-                console.log(err);
-                reject(err);
-            })
+                // These types must be created first and then modified
+                const invItemID: UUID = await this.uploadInventoryItem(type, inventoryType, data, name, description, flags);
+                const item: InventoryItem | null = await this.agent.inventory.fetchInventoryItem(invItemID)
+                if (item === null)
+                {
+                    throw new Error('Unable to get inventory item');
+                }
+                else
+                {
+                    await this.addItem(item, false);
+                }
+                return item;
+            }
+        }
+
+        const uploadCost = await this.agent.currentRegion.getUploadCost();
+
+        Logger.Info('[' + name + ']');
+        const httpType = Utils.AssetTypeToHTTPAssetType(type);
+        const response = await this.agent.currentRegion.caps.capsPostXML('NewFileAgentInventory', {
+            'folder_id': new LLSD.UUID(this.folderID.toString()),
+            'asset_type': httpType,
+            'inventory_type': Utils.HTTPAssetTypeToCapInventoryType(httpType),
+            'name': name,
+            'description': description,
+            'everyone_mask': PermissionMask.All,
+            'group_mask': PermissionMask.All,
+            'next_owner_mask': PermissionMask.All,
+            'expected_upload_cost': uploadCost
         });
+
+        if (response['state'] === 'upload')
+        {
+            const uploadURL = response['uploader'];
+            const responseUpload = await this.agent.currentRegion.caps.capsRequestUpload(uploadURL, data);
+            if (responseUpload['new_inventory_item'] !== undefined)
+            {
+                const invItemID = new UUID(responseUpload['new_inventory_item'].toString());
+                const item: InventoryItem | null = await this.agent.inventory.fetchInventoryItem(invItemID);
+                if (item === null)
+                {
+                    throw new Error('Unable to get inventory item');
+                }
+                else
+                {
+                    await this.addItem(item, false);
+                }
+                return item;
+            }
+            else
+            {
+                throw new Error('Unable to upload asset');
+            }
+        }
+        else if (response['error'])
+        {
+            throw new Error(response['error']['message']);
+        }
+        else
+        {
+            throw new Error('Unable to upload asset');
+        }
     }
 
     checkCopyright(creatorID: UUID): void

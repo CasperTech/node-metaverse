@@ -109,6 +109,7 @@ import { LLGLTFMaterial } from './classes/LLGLTFMaterial';
 import { ExtendedMeshData } from './classes/public/ExtendedMeshData';
 import { ReflectionProbeData } from './classes/public/ReflectionProbeData';
 import { RenderMaterialData } from './classes/public/RenderMaterialData';
+import { LLSettings, LLSettingsHazeConfig, LLSettingsTermConfig } from './classes/LLSettings';
 
 export {
     Bot,
@@ -129,6 +130,9 @@ export {
     LLGestureSoundStep,
     LLGestureChatStep,
     LLGestureWaitStep,
+    LLSettings,
+    LLSettingsTermConfig,
+    LLSettingsHazeConfig,
     ParticleSystem,
     ExtraParams,
 

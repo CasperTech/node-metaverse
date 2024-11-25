@@ -19,11 +19,10 @@ import * as Long from 'long';
 import { Packet } from './Packet';
 import { LayerDataMessage } from './messages/LayerData';
 import { LayerType } from '../enums/LayerType';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { BitPack } from './BitPack';
 import * as builder from 'xmlbuilder';
 import { SimAccessFlags } from '../enums/SimAccessFlags';
-import { Subject } from 'rxjs';
 import { ParcelDwellRequestMessage } from './messages/ParcelDwellRequest';
 import { ParcelDwellReplyMessage } from './messages/ParcelDwellReply';
 import { Parcel } from './public/Parcel';
@@ -54,6 +53,8 @@ import { Avatar } from './public/Avatar';
 import { MoneyBalanceReplyMessage } from './messages/MoneyBalanceReply';
 import { BalanceUpdatedEvent } from '../events/BalanceUpdatedEvent';
 import { Logger } from './Logger';
+import { EconomyDataRequestMessage } from './messages/EconomyDataRequest';
+import { EconomyDataMessage } from './messages/EconomyData';
 
 export class Region
 {
@@ -155,6 +156,8 @@ export class Region
     resolver: ObjectResolver = new ObjectResolver(this);
 
     agents: { [key: string]: Avatar } = {};
+
+    private uploadCost: number;
 
     private parcelOverlayReceived: { [key: number]: Buffer } = {};
 
@@ -986,6 +989,24 @@ export class Region
         {
             this.fillParcel(parcelID, x, y + 1);
         }
+    }
+
+    public async getUploadCost(): Promise<number>
+    {
+        if (this.uploadCost !== undefined)
+        {
+            return this.uploadCost;
+        }
+
+        const msg = new EconomyDataRequestMessage();
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        const economyReply = await this.circuit.waitForMessage<EconomyDataMessage>(Message.EconomyData, 10000, (_message: EconomyDataMessage): FilterResponse =>
+        {
+            return FilterResponse.Finish;
+        });
+
+        this.uploadCost = economyReply.Info.PriceUpload;
+        return this.uploadCost;
     }
 
     public getParcelProperties(x: number, y: number): Promise<Parcel>

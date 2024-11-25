@@ -191,6 +191,10 @@ export class LLSDNotationParser
 
     public static parse(input: string): LLSDType
     {
+        if (input.startsWith('<? llsd/notation ?>'))
+        {
+            input = input.substring(20);
+        }
         const generator = this.tokenize(input);
         const getToken: LLSDTokenGenerator = (): LLSDToken | undefined =>
         {

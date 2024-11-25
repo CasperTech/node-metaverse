@@ -359,8 +359,12 @@ export class Utils
                 return AssetType.Category;
             case 'mesh':
                 return AssetType.Mesh;
-
+            case 'settings':
+                return AssetType.Settings;
+            case 'material':
+                return AssetType.Material;
             default:
+                console.error('Unrecognised cap inventory type: ' + capInventoryType);
                 return AssetType.Unknown
         }
     }

@@ -1602,42 +1602,45 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string, skipInventory = false): Promise<void>
+    private async getXML(xml: XMLNode, rootPrim: GameObject, linkNum: number, rootNode?: string, skipInventory = false, skipResolve = false): Promise<void>
     {
-        const resolver = this.region?.resolver;
-        if (resolver)
+        if (!skipResolve)
         {
-            if (this.resolvedAt === undefined)
+            const resolver = this.region?.resolver;
+            if (resolver)
             {
-                try
+                if (this.resolvedAt === undefined)
                 {
-                    await resolver.resolveObjects([this], { includeTempObjects: true });
+                    try
+                    {
+                        await resolver.resolveObjects([this], { includeTempObjects: true });
+                    }
+                    catch (e: unknown)
+                    {
+                        Logger.Error(e);
+                    }
                 }
-                catch (e: unknown)
+                if (!this.resolvedInventory && !skipInventory)
                 {
-                    Logger.Error(e);
+                    try
+                    {
+                        await resolver.getInventory(this);
+                    }
+                    catch (e: unknown)
+                    {
+                        Logger.Error(e);
+                    }
                 }
-            }
-            if (!this.resolvedInventory && !skipInventory)
-            {
-                try
+                if (this.calculatedLandImpact === undefined)
                 {
-                    await resolver.getInventory(this);
-                }
-                catch (e: unknown)
-                {
-                    Logger.Error(e);
-                }
-            }
-            if (this.calculatedLandImpact === undefined)
-            {
-                try
-                {
-                    await resolver.getCosts([this]);
-                }
-                catch (e: unknown)
-                {
-                    Logger.Error(e);
+                    try
+                    {
+                        await resolver.getCosts([this]);
+                    }
+                    catch (e: unknown)
+                    {
+                        Logger.Error(e);
+                    }
                 }
             }
         }
@@ -1890,25 +1893,25 @@ export class GameObject implements IGameObjectData
         this.region.objects.populateChildren(this);
     }
 
-    async exportXMLElement(rootNode?: string, skipInventory = false): Promise<XMLElement>
+    async exportXMLElement(rootNode?: string, skipInventory = false, skipResolve = false): Promise<XMLElement>
     {
         const document = builder.create('SceneObjectGroup');
         let linkNum = 1;
-        await this.getXML(document, this, linkNum, rootNode, skipInventory);
+        await this.getXML(document, this, linkNum, rootNode, skipInventory, skipResolve);
         if (this.children && this.children.length > 0)
         {
             const otherParts = document.ele('OtherParts');
             for (const child of this.children)
             {
-                await child.getXML(otherParts, this, ++linkNum, (rootNode !== undefined) ? 'Part' : undefined, skipInventory);
+                await child.getXML(otherParts, this, ++linkNum, (rootNode !== undefined) ? 'Part' : undefined, skipInventory, skipResolve);
             }
         }
         return document;
     }
 
-    async exportXML(rootNode?: string, skipInventory = false): Promise<string>
+    async exportXML(rootNode?: string, skipInventory = false, skipResolve = false): Promise<string>
     {
-        return (await this.exportXMLElement(rootNode, skipInventory)).end({ pretty: true, allowEmpty: true });
+        return (await this.exportXMLElement(rootNode, skipInventory, skipResolve)).end({ pretty: true, allowEmpty: true });
     }
 
     public toJSON(): IGameObjectData

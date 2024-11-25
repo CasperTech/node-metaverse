@@ -8,6 +8,7 @@ import { Utils } from './Utils';
 export class CoalescedGameObject
 {
     itemID: UUID;
+    assetID: UUID;
     size: Vector3;
     objects: {
         offset: Vector3,
@@ -40,7 +41,7 @@ export class CoalescedGameObject
         return obj;
     }
 
-    async exportXMLElement(rootNode?: string): Promise<XMLElement>
+    async exportXMLElement(rootNode?: string, skipResolve?: Set<string>): Promise<XMLElement>
     {
         const document = builder.create('CoalescedObject');
         document.att('x', this.size.x);
@@ -53,14 +54,14 @@ export class CoalescedGameObject
             ele.att('offsetx', obj.offset.x);
             ele.att('offsety', obj.offset.y);
             ele.att('offsetz', obj.offset.z);
-            const child = await obj.object.exportXMLElement(rootNode);
+            const child = await obj.object.exportXMLElement(rootNode, false, skipResolve?.has(obj.object.FullID.toString()));
             ele.children.push(child);
         }
         return document;
     }
 
-    async exportXML(rootNode?: string): Promise<string>
+    async exportXML(rootNode?: string, skipResolve?: Set<string>): Promise<string>
     {
-        return (await this.exportXMLElement(rootNode)).end({ pretty: true, allowEmpty: true });
+        return (await this.exportXMLElement(rootNode, skipResolve)).end({ pretty: true, allowEmpty: true });
     }
 }

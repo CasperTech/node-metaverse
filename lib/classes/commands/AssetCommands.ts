@@ -45,6 +45,7 @@ export class AssetCommands extends CommandsBase
                 case HTTPAssets.ASSET_MATERIAL:
                 case HTTPAssets.ASSET_BODYPART:
                 case HTTPAssets.ASSET_MESH:
+                case HTTPAssets.ASSET_SETTINGS:
                     return this.currentRegion.caps.downloadAsset(uuid, type);
                 case HTTPAssets.ASSET_CALLINGCARD:
                 case HTTPAssets.ASSET_SCRIPT:
@@ -58,7 +59,6 @@ export class AssetCommands extends CommandsBase
                 case HTTPAssets.ASSET_LINK_FOLDER:
                 case HTTPAssets.ASSET_WIDGET:
                 case HTTPAssets.ASSET_PERSON:
-                case HTTPAssets.ASSET_SETTINGS:
                 {
                     const transferParams = Buffer.allocUnsafe(20);
                     uuid.writeToBuffer(transferParams, 0);
