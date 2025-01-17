@@ -1,4 +1,4 @@
-import { LLGestureStep } from './LLGestureStep';
+import type { LLGestureStep } from './LLGestureStep';
 import { LLGestureStepType } from '../enums/LLGestureStepType';
 import { LLGestureAnimationStep } from './LLGestureAnimationStep';
 import { UUID } from './UUID';
@@ -8,14 +8,14 @@ import { LLGestureChatStep } from './LLGestureChatStep';
 
 export class LLGesture
 {
-    version: number;
-    key: number;
-    mask: number;
-    trigger: string;
-    replace: string;
-    steps: LLGestureStep[] = [];
+    public version: number;
+    public key: number;
+    public mask: number;
+    public trigger: string;
+    public replace: string;
+    public steps: LLGestureStep[] = [];
 
-    constructor(data?: string)
+    public constructor(data?: string)
     {
         if (data !== undefined)
         {
@@ -91,7 +91,7 @@ export class LLGesture
                             break;
                         }
                         default:
-                            throw new Error('Unknown gesture step type: ' + stepType);
+                            throw new Error('Unknown gesture step type: ' + String(stepType));
                     }
                     if (gestureStep !== undefined)
                     {
@@ -106,7 +106,7 @@ export class LLGesture
         }
     }
 
-    toAsset(): string
+    public toAsset(): string
     {
         const lines: string[] = [
             String(this.version),

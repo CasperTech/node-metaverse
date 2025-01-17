@@ -124,9 +124,9 @@ export interface LLGLTFMaterialDataPart
             scale?: number[];
             translaction?: number[]
         } | {
-            matrix?: number[]
-        }
-    )) & LLGLTFExtensionsAndExtras[],
+        matrix?: number[]
+    }
+        )) & LLGLTFExtensionsAndExtras[],
     scenes?: ({
         name?: string;
         nodes?: number[];

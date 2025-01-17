@@ -3,8 +3,7 @@ import { LoginParameters } from './classes/LoginParameters';
 import { ClientEvents } from './classes/ClientEvents';
 import { BVH } from './classes/BVH';
 
-import { AssetType } from './enums/AssetType';
-import { HTTPAssets } from './enums/HTTPAssets';
+import { AssetType } from './enums/AssetType';;
 import { InstantMessageEventFlags } from './enums/InstantMessageEventFlags';
 import { InstantMessageEvent } from './events/InstantMessageEvent';
 import { ChatSourceType } from './enums/ChatSourceType';
@@ -48,8 +47,8 @@ import { Avatar } from './classes/public/Avatar';
 import { RightsFlags } from './enums/RightsFlags';
 import { FriendRightsEvent } from './events/FriendRightsEvent';
 import { FriendRemovedEvent } from './events/FriendRemovedEvent';
-import { GlobalPosition } from './classes/public/interfaces/GlobalPosition';
-import { MapLocation } from './classes/public/interfaces/MapLocation';
+import type { GlobalPosition } from './classes/public/interfaces/GlobalPosition';
+import type { MapLocation } from './classes/public/interfaces/MapLocation';
 import { Vector2 } from './classes/Vector2';
 import { ParticleDataFlags } from './enums/ParticleDataFlags';
 import { TextureFlags } from './enums/TextureFlags';
@@ -61,7 +60,6 @@ import { ObjectPhysicsDataEvent } from './events/ObjectPhysicsDataEvent';
 import { ParcelPropertiesEvent } from './events/ParcelPropertiesEvent';
 import { PrimFlags } from './enums/PrimFlags';
 import { TextureEntry } from './classes/TextureEntry';
-import { RegionEnvironment } from './classes/public/RegionEnvironment';
 import { Parcel } from './classes/public/Parcel';
 import { Material } from './classes/public/Material';
 import { GameObject } from './classes/public/GameObject';
@@ -70,8 +68,6 @@ import { LightData } from './classes/public/LightData';
 import { FlexibleData } from './classes/public/FlexibleData';
 import { MeshData } from './classes/public/MeshData';
 import { SculptData } from './classes/public/SculptData';
-import { SkyPreset } from './classes/public/interfaces/SkyPreset';
-import { WaterPreset } from './classes/public/interfaces/WaterPreset';
 import { NewObjectEvent } from './events/NewObjectEvent';
 import { ObjectKilledEvent } from './events/ObjectKilledEvent';
 import { ObjectUpdatedEvent } from './events/ObjectUpdatedEvent';
@@ -109,131 +105,8 @@ import { LLGLTFMaterial } from './classes/LLGLTFMaterial';
 import { ExtendedMeshData } from './classes/public/ExtendedMeshData';
 import { ReflectionProbeData } from './classes/public/ReflectionProbeData';
 import { RenderMaterialData } from './classes/public/RenderMaterialData';
-import { LLSettings, LLSettingsHazeConfig, LLSettingsTermConfig } from './classes/LLSettings';
+import type { LLSettingsHazeConfig, LLSettingsTermConfig } from './classes/LLSettings';
+import { LLSettings } from './classes/LLSettings';
 
-export {
-    Bot,
-    LoginParameters,
-    ClientEvents,
-    BVH,
-    ChatSourceType,
-    UUID,
-    Vector3,
-    Vector2,
-    Utils,
-    TextureEntry,
-    LLWearable,
-    LLLindenText,
-    LLGLTFMaterial,
-    LLGesture,
-    LLGestureAnimationStep,
-    LLGestureSoundStep,
-    LLGestureChatStep,
-    LLGestureWaitStep,
-    LLSettings,
-    LLSettingsTermConfig,
-    LLSettingsHazeConfig,
-    ParticleSystem,
-    ExtraParams,
-
-    // Flags
-    AgentFlags,
-    BotOptionFlags,
-    CompressedFlags,
-    ControlFlags,
-    DecodeFlags,
-    InstantMessageEventFlags,
-    InventoryItemFlags,
-    LoginFlags,
-    MessageFlags,
-    ParcelInfoFlags,
-    PacketFlags,
-    RegionProtocolFlags,
-    SoundFlags,
-    TeleportFlags,
-    RegionFlags,
-    RightsFlags,
-    ParticleDataFlags,
-    TextureFlags,
-    PrimFlags,
-    ParcelFlags,
-    SimAccessFlags,
-    TextureAnimFlags,
-
-    // Enums
-    InventoryType,
-    AssetType,
-    HTTPAssets,
-    FolderType,
-    TransferStatus,
-    SourcePattern,
-    BlendFunc,
-    PCode,
-    Bumpiness,
-    HoleType,
-    LayerType,
-    MappingType,
-    PhysicsShapeType,
-    ProfileShape,
-    SculptType,
-    Shininess,
-    LLGestureStepType,
-
-
-    // Events
-    ChatEvent,
-    DisconnectEvent,
-    FriendRequestEvent,
-    FriendResponseEvent,
-    GroupChatEvent,
-    GroupChatSessionAgentListEvent,
-    GroupChatSessionJoinEvent,
-    GroupNoticeEvent,
-    GroupInviteEvent,
-    InstantMessageEvent,
-    InventoryOfferedEvent,
-    LureEvent,
-    MapInfoRangeReplyEvent,
-    MapInfoReplyEvent,
-    ParcelInfoReplyEvent,
-    RegionInfoReplyEvent,
-    TeleportEvent,
-    ScriptDialogEvent,
-    EventQueueStateChangeEvent,
-    FriendOnlineEvent,
-    FriendRightsEvent,
-    FriendRemovedEvent,
-    ObjectPhysicsDataEvent,
-    ParcelPropertiesEvent,
-    NewObjectEvent,
-    ObjectKilledEvent,
-    ObjectUpdatedEvent,
-    GroupProfileReplyEvent,
-    AvatarPropertiesReplyEvent,
-
-    // Public Classes
-    Avatar,
-    Friend,
-    FlexibleData,
-    LightData,
-    LightImageData,
-    GameObject,
-    Material,
-    Parcel,
-    RegionEnvironment,
-    SculptData,
-    MeshData,
-    LLMesh,
-    InventoryItem,
-    TarReader,
-    TarWriter,
-    ExtendedMeshData,
-    ReflectionProbeData,
-    RenderMaterialData,
-
-    // Public Interfaces
-    GlobalPosition,
-    MapLocation,
-    SkyPreset,
-    WaterPreset
-};
+export type { LLSettingsTermConfig, LLSettingsHazeConfig, GlobalPosition, MapLocation };
+export { Bot, LoginParameters, ClientEvents, BVH, ChatSourceType, UUID, Vector3, Vector2, Utils, TextureEntry, LLWearable, LLLindenText, LLGLTFMaterial, LLGesture, LLGestureAnimationStep, LLGestureSoundStep, LLGestureChatStep, LLGestureWaitStep, LLSettings, ParticleSystem, ExtraParams, AgentFlags, BotOptionFlags, CompressedFlags, ControlFlags, DecodeFlags, InstantMessageEventFlags, InventoryItemFlags, LoginFlags, MessageFlags, ParcelInfoFlags, PacketFlags, RegionProtocolFlags, SoundFlags, TeleportFlags, RegionFlags, RightsFlags, ParticleDataFlags, TextureFlags, PrimFlags, ParcelFlags, SimAccessFlags, TextureAnimFlags, InventoryType, AssetType, FolderType, TransferStatus, SourcePattern, BlendFunc, PCode, Bumpiness, HoleType, LayerType, MappingType, PhysicsShapeType, ProfileShape, SculptType, Shininess, LLGestureStepType, ChatEvent, DisconnectEvent, FriendRequestEvent, FriendResponseEvent, GroupChatEvent, GroupChatSessionAgentListEvent, GroupChatSessionJoinEvent, GroupNoticeEvent, GroupInviteEvent, InstantMessageEvent, InventoryOfferedEvent, LureEvent, MapInfoRangeReplyEvent, MapInfoReplyEvent, ParcelInfoReplyEvent, RegionInfoReplyEvent, TeleportEvent, ScriptDialogEvent, EventQueueStateChangeEvent, FriendOnlineEvent, FriendRightsEvent, FriendRemovedEvent, ObjectPhysicsDataEvent, ParcelPropertiesEvent, NewObjectEvent, ObjectKilledEvent, ObjectUpdatedEvent, GroupProfileReplyEvent, AvatarPropertiesReplyEvent, Avatar, Friend, FlexibleData, LightData, LightImageData, GameObject, Material, Parcel, SculptData, MeshData, LLMesh, InventoryItem, TarReader, TarWriter, ExtendedMeshData, ReflectionProbeData, RenderMaterialData };

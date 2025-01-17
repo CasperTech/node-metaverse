@@ -3,16 +3,17 @@ import * as xmlrpc from 'xmlrpc';
 import * as fs from 'fs';
 import * as path from 'path';
 import { LoginError } from './classes/LoginError';
-import { LoginParameters } from './classes/LoginParameters';
+import type { LoginParameters } from './classes/LoginParameters';
 import { LoginResponse } from './classes/LoginResponse';
-import { ClientEvents } from './classes/ClientEvents';
+import type { ClientEvents } from './classes/ClientEvents';
 import { Utils } from './classes/Utils';
 import { UUID } from './classes/UUID';
-import { BotOptionFlags } from './enums/BotOptionFlags';
+import type { BotOptionFlags } from './enums/BotOptionFlags';
 import { URL } from 'url';
 import * as os from 'os';
 
 const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJson = require(packageJsonPath);
 const version = packageJson.version;
 
@@ -22,7 +23,7 @@ export class LoginHandler
     private readonly clientEvents: ClientEvents;
     private readonly options: BotOptionFlags;
 
-    constructor(ce: ClientEvents, options: BotOptionFlags)
+    public constructor(ce: ClientEvents, options: BotOptionFlags)
     {
         this.clientEvents = ce;
         this.options = options;
@@ -71,7 +72,7 @@ export class LoginHandler
             const data = JSON.parse(hwID.toString('utf-8'));
             hardwareID = data.id0;
         }
-        catch (e: unknown)
+        catch (_e: unknown)
         {
             // Ignore any error
         }
@@ -105,6 +106,8 @@ export class LoginHandler
                 case 'win32':
                     platform = 'win';
                     break;
+                default:
+                    throw new Error('Unsupported platform');
             }
 
             const versions = version.split('.');
@@ -151,15 +154,16 @@ export class LoginHandler
                             'global-textures'
                         ]
                     }
-                ], (error: Object, value: any) =>
+                ], (error: object, value: any) =>
                 {
                     if (error)
                     {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject(error);
                     }
                     else
                     {
-                        if (!value['login'] || value['login'] === 'false')
+                        if (!value.login || value.login === 'false')
                         {
                             reject(new LoginError(value));
                         }

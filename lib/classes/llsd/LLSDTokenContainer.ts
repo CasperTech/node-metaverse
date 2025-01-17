@@ -1,5 +1,5 @@
-import { LLSDToken } from './LLSDToken';
-import { LLSDTokenGenerator } from './LLSDTokenGenerator';
+import type { LLSDToken } from './LLSDToken';
+import type { LLSDTokenGenerator } from './LLSDTokenGenerator';
 
 export interface LLSDTokenContainer
 {

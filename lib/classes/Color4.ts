@@ -1,66 +1,13 @@
 import { Utils } from './Utils';
-import { XMLNode } from 'xmlbuilder';
+import type { XMLNode } from 'xmlbuilder';
 
 export class Color4
 {
-    static black: Color4 = new Color4(0.0, 0.0, 0.0, 1.0);
-    static white: Color4 = new Color4(1.0, 1.0, 1.0, 1.0);
+    public static black: Color4 = new Color4(0.0, 0.0, 0.0, 1.0);
+    public static white: Color4 = new Color4(1.0, 1.0, 1.0, 1.0);
 
-    static getXML(doc: XMLNode, c?: Color4): void
-    {
-        if (c === undefined)
-        {
-            c = Color4.white;
-        }
-        doc.ele('R', c.red);
-        doc.ele('G', c.green);
-        doc.ele('B', c.blue);
-        doc.ele('A', c.alpha);
-    }
-
-    static fromXMLJS(obj: any, param: string): Color4 | false
-    {
-        if (!obj[param])
-        {
-            return false;
-        }
-        let value = obj[param];
-        if (Array.isArray(value) && value.length > 0)
-        {
-            value = value[0];
-        }
-        if (typeof value === 'object')
-        {
-            if (value['R'] !== undefined && value['G'] !== undefined && value['B'] !== undefined && value['A'] !== undefined)
-            {
-                let red = value['R'];
-                let green = value['G'];
-                let blue = value['B'];
-                let alpha = value['A'];
-                if (Array.isArray(red) && red.length > 0)
-                {
-                    red = red[0];
-                }
-                if (Array.isArray(green) && green.length > 0)
-                {
-                    green = green[0];
-                }
-                if (Array.isArray(blue) && blue.length > 0)
-                {
-                    blue = blue[0];
-                }
-                if (Array.isArray(alpha) && alpha.length > 0)
-                {
-                    alpha = alpha[0];
-                }
-                return new Color4(red, green, blue, alpha);
-            }
-            return false;
-        }
-        return false;
-    }
-
-    constructor(public red: number | Buffer | number[], public green: number = 0, public blue: number | boolean = 0, public alpha: number | boolean = 0)
+    // eslint-disable-next-line @typescript-eslint/parameter-properties
+    public constructor(public red: number | Buffer | number[], public green = 0, public blue: number | boolean = 0, public alpha: number | boolean = 0)
     {
         if (red instanceof Buffer && typeof blue === 'boolean')
         {
@@ -68,7 +15,7 @@ export class Color4
             const pos = green;
             const inverted = blue;
             let alphaInverted = false;
-            if (typeof alpha === 'boolean' && alpha === true)
+            if (typeof alpha === 'boolean' && alpha)
             {
                 alphaInverted = true;
             }
@@ -106,7 +53,62 @@ export class Color4
             this.red = red[0];
         }
     }
-    getRed(): number
+
+    public static getXML(doc: XMLNode, c?: Color4): void
+    {
+        if (c === undefined)
+        {
+            c = Color4.white;
+        }
+        doc.ele('R', c.red);
+        doc.ele('G', c.green);
+        doc.ele('B', c.blue);
+        doc.ele('A', c.alpha);
+    }
+
+    public static fromXMLJS(obj: any, param: string): Color4 | false
+    {
+        if (!obj[param])
+        {
+            return false;
+        }
+        let value = obj[param];
+        if (Array.isArray(value) && value.length > 0)
+        {
+            value = value[0];
+        }
+        if (typeof value === 'object')
+        {
+            if (value.R !== undefined && value.G !== undefined && value.B !== undefined && value.A !== undefined)
+            {
+                let red = value.R;
+                let green = value.G;
+                let blue = value.B;
+                let alpha = value.A;
+                if (Array.isArray(red) && red.length > 0)
+                {
+                    red = red[0];
+                }
+                if (Array.isArray(green) && green.length > 0)
+                {
+                    green = green[0];
+                }
+                if (Array.isArray(blue) && blue.length > 0)
+                {
+                    blue = blue[0];
+                }
+                if (Array.isArray(alpha) && alpha.length > 0)
+                {
+                    alpha = alpha[0];
+                }
+                return new Color4(Number(red), Number(green), Number(blue), Number(alpha));
+            }
+            return false;
+        }
+        return false;
+    }
+
+    public getRed(): number
     {
         if (typeof this.red === 'number')
         {
@@ -114,7 +116,7 @@ export class Color4
         }
         return 0;
     }
-    getGreen(): number
+    public getGreen(): number
     {
         if (typeof this.green === 'number')
         {
@@ -122,7 +124,7 @@ export class Color4
         }
         return 0;
     }
-    getBlue(): number
+    public getBlue(): number
     {
         if (typeof this.blue === 'number')
         {
@@ -130,7 +132,7 @@ export class Color4
         }
         return 0;
     }
-    getAlpha(): number
+    public getAlpha(): number
     {
         if (typeof this.alpha === 'number')
         {
@@ -139,7 +141,7 @@ export class Color4
         return 0;
     }
 
-    writeToBuffer(buf: Buffer, pos: number, inverted: boolean = false): void
+    public writeToBuffer(buf: Buffer, pos: number, inverted = false): void
     {
         buf.writeUInt8(Utils.FloatToByte(this.getRed(), 0, 1.0), pos);
         buf.writeUInt8(Utils.FloatToByte(this.getGreen(), 0, 1.0), pos + 1);
@@ -155,14 +157,14 @@ export class Color4
         }
     }
 
-    getBuffer(inverted: boolean = false): Buffer
+    public getBuffer(inverted = false): Buffer
     {
         const buf = Buffer.allocUnsafe(4);
         this.writeToBuffer(buf, 0, inverted);
         return buf;
     }
 
-    equals(other: Color4): boolean
+    public equals(other: Color4): boolean
     {
         return (this.red === other.red && this.green === other.green && this.blue === other.blue && this.alpha === other.alpha);
     }

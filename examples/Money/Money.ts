@@ -1,13 +1,13 @@
 import { ExampleBot } from '../ExampleBot';
-import { BalanceUpdatedEvent } from '../../lib/events/BalanceUpdatedEvent';
-import { AvatarQueryResult } from '../../lib/classes/public/AvatarQueryResult';
+import type { BalanceUpdatedEvent } from '../../lib/events/BalanceUpdatedEvent';
+import type { AvatarQueryResult } from '../../lib/classes/public/AvatarQueryResult';
 import { MoneyTransactionType } from '../../lib/enums/MoneyTransactionType';
 
 class Money extends ExampleBot
 {
     private balance = 0;
 
-    async onConnected(): Promise<void>
+    public async onConnected(): Promise<void>
     {
         this.bot.clientEvents.onBalanceUpdated.subscribe(this.onBalanceUpdated.bind(this));
         try
@@ -17,13 +17,13 @@ class Money extends ExampleBot
             await this.bot.clientCommands.grid.payAvatar('d1cd5b71-6209-4595-9bf0-771bf689ce00', 1, 'This is a gift for being so awesome!');
             console.log('Payment success');
         }
-        catch (error)
+        catch (_error: unknown)
         {
             console.log('Payment failed');
         }
     }
 
-    async onBalanceUpdated(evt: BalanceUpdatedEvent): Promise<void>
+    public async onBalanceUpdated(evt: BalanceUpdatedEvent): Promise<void>
     {
         this.balance = evt.balance;
         if (evt.transaction.from.equals(this.bot.agentID()))
@@ -57,7 +57,7 @@ class Money extends ExampleBot
 new Money().run().then(() =>
 {
 
-}).catch((err) =>
+}).catch((err: unknown) =>
 {
     console.error(err);
 });

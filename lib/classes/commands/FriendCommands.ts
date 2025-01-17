@@ -1,19 +1,19 @@
 import { CommandsBase } from './CommandsBase';
-import { Region } from '../Region';
-import { Agent } from '../Agent';
-import { Bot } from '../../Bot';
-import { Subscription } from 'rxjs';
+import type { Region } from '../Region';
+import type { Agent } from '../Agent';
+import type { Bot } from '../../Bot';
+import type { Subscription } from 'rxjs';
 import { Message } from '../../enums/Message';
-import { Packet } from '../Packet';
-import { OnlineNotificationMessage } from '../messages/OnlineNotification';
-import { OfflineNotificationMessage } from '../messages/OfflineNotification';
-import { TerminateFriendshipMessage } from '../messages/TerminateFriendship';
+import type { Packet } from '../Packet';
+import type { OnlineNotificationMessage } from '../messages/OnlineNotification';
+import type { OfflineNotificationMessage } from '../messages/OfflineNotification';
+import type { TerminateFriendshipMessage } from '../messages/TerminateFriendship';
 import { AcceptFriendshipMessage } from '../messages/AcceptFriendship';
 import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
 import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
 import { Utils } from '../Utils';
 import { DeclineFriendshipMessage } from '../messages/DeclineFriendship';
-import { ChangeUserRightsMessage } from '../messages/ChangeUserRights';
+import type { ChangeUserRightsMessage } from '../messages/ChangeUserRights';
 import { FindAgentMessage } from '../messages/FindAgent';
 import { IPAddress } from '../IPAddress';
 import { FilterResponse } from '../../enums/FilterResponse';
@@ -25,19 +25,17 @@ import { FriendRemovedEvent } from '../../events/FriendRemovedEvent';
 import { FriendRightsEvent } from '../../events/FriendRightsEvent';
 import { UUID } from '../UUID';
 import { PacketFlags } from '../../enums/PacketFlags';
-import { MapLocation } from '../public/interfaces/MapLocation';
-import { FriendRequestEvent } from '../../events/FriendRequestEvent';
+import type { MapLocation } from '../public/interfaces/MapLocation';
+import type { FriendRequestEvent } from '../../events/FriendRequestEvent';
 import { FolderType } from '../../enums/FolderType';
 import { Vector3 } from '../Vector3';
 
 export class FriendCommands extends CommandsBase
 {
-    friendMessages: Subscription;
-    friendsList: {
-        [key: string]: Friend
-    } = {};
+    private friendMessages?: Subscription;
+    private readonly friendsList = new Map<string, Friend>();
 
-    constructor(region: Region, agent: Agent, bot: Bot)
+    public constructor(region: Region, agent: Agent, bot: Bot)
     {
         super(region, agent, bot);
 
@@ -49,116 +47,14 @@ export class FriendCommands extends CommandsBase
             Message.OfflineNotification,
             Message.TerminateFriendship,
             Message.ChangeUserRights
-        ], async(packet: Packet) =>
+        ], (packet: Packet) =>
         {
-            switch (packet.message.id)
-            {
-                case Message.OnlineNotification:
-                {
-                    const msg = packet.message as OnlineNotificationMessage;
-                    for (const agentEntry of msg.AgentBlock)
-                    {
-                        const uuidStr = agentEntry.AgentID.toString();
-                        if (this.friendsList[uuidStr] === undefined)
-                        {
-                            this.friendsList[uuidStr] = await this.bot.clientCommands.grid.avatarKey2Name(agentEntry.AgentID) as Friend;
-                            this.friendsList[uuidStr].online = false;
-                            this.friendsList[uuidStr].myRights = RightsFlags.None;
-                            this.friendsList[uuidStr].theirRights = RightsFlags.None;
-                        }
-                        if (this.friendsList[uuidStr].online !== true)
-                        {
-                            this.friendsList[uuidStr].online = true;
-                            const friendOnlineEvent = new FriendOnlineEvent();
-                            friendOnlineEvent.friend = this.friendsList[uuidStr];
-                            friendOnlineEvent.online = true;
-                            this.bot.clientEvents.onFriendOnline.next(friendOnlineEvent);
-                        }
-                    }
-                    break;
-                }
-                case Message.OfflineNotification:
-                {
-                    const msg = packet.message as OfflineNotificationMessage;
-                    for (const agentEntry of msg.AgentBlock)
-                    {
-                        const uuidStr = agentEntry.AgentID.toString();
-                        if (this.friendsList[uuidStr] === undefined)
-                        {
-                            this.friendsList[uuidStr] = await this.bot.clientCommands.grid.avatarKey2Name(agentEntry.AgentID) as Friend;
-                            this.friendsList[uuidStr].online = false;
-                            this.friendsList[uuidStr].myRights = RightsFlags.None;
-                            this.friendsList[uuidStr].theirRights = RightsFlags.None;
-                        }
-                        if (this.friendsList[uuidStr].online !== false)
-                        {
-                            this.friendsList[uuidStr].online = false;
-                            const friendOnlineEvent = new FriendOnlineEvent();
-                            friendOnlineEvent.friend = this.friendsList[uuidStr];
-                            friendOnlineEvent.online = false;
-                            this.bot.clientEvents.onFriendOnline.next(friendOnlineEvent);
-                        }
-                    }
-                    break;
-                }
-                case Message.TerminateFriendship:
-                {
-                    const msg = packet.message as TerminateFriendshipMessage;
-                    const friendID = msg.ExBlock.OtherID;
-                    const uuidStr = friendID.toString();
-                    if (this.friendsList[uuidStr] !== undefined)
-                    {
-                        const event = new FriendRemovedEvent();
-                        event.friend = this.friendsList[uuidStr];
-                        this.bot.clientEvents.onFriendRemoved.next(event);
-                        delete this.friendsList[uuidStr];
-                    }
-                    break;
-                }
-                case Message.ChangeUserRights:
-                {
-                    const msg = packet.message as ChangeUserRightsMessage;
-                    for (const rightsEntry of msg.Rights)
-                    {
-                        let uuidStr = '';
-                        if (rightsEntry.AgentRelated.equals(this.agent.agentID))
-                        {
-                            // My rights
-                            uuidStr = msg.AgentData.AgentID.toString();
-                            if (this.friendsList[uuidStr] === undefined)
-                            {
-                                this.friendsList[uuidStr] = await this.bot.clientCommands.grid.avatarKey2Name(rightsEntry.AgentRelated) as Friend;
-                                this.friendsList[uuidStr].online = false;
-                                this.friendsList[uuidStr].myRights = RightsFlags.None;
-                                this.friendsList[uuidStr].theirRights = RightsFlags.None;
-                            }
-                            this.friendsList[uuidStr].myRights = rightsEntry.RelatedRights;
-                        }
-                        else
-                        {
-                            uuidStr = rightsEntry.AgentRelated.toString();
-                            if (this.friendsList[uuidStr] === undefined)
-                            {
-                                this.friendsList[uuidStr] = await this.bot.clientCommands.grid.avatarKey2Name(rightsEntry.AgentRelated) as Friend;
-                                this.friendsList[uuidStr].online = false;
-                                this.friendsList[uuidStr].myRights = RightsFlags.None;
-                                this.friendsList[uuidStr].theirRights = RightsFlags.None;
-                            }
-                            this.friendsList[uuidStr].theirRights = rightsEntry.RelatedRights;
-                        }
-                        const friendRightsEvent = new FriendRightsEvent();
-                        friendRightsEvent.friend = this.friendsList[uuidStr];
-                        friendRightsEvent.theirRights = this.friendsList[uuidStr].theirRights;
-                        friendRightsEvent.myRights = this.friendsList[uuidStr].myRights;
-                        this.bot.clientEvents.onFriendRights.next(friendRightsEvent);
-                    }
-                    break;
-                }
-            }
+           void this.processPacket(packet);
         });
     }
 
-    async grantFriendRights(friend: Friend | UUID | string, rights: RightsFlags): Promise<void>
+    // noinspection JSUnusedGlobalSymbols
+    public async grantFriendRights(friend: Friend | UUID | string, rights: RightsFlags): Promise<void>
     {
         let friendKey = UUID.zero();
         if (friend instanceof UUID)
@@ -169,13 +65,9 @@ export class FriendCommands extends CommandsBase
         {
             friendKey = friend.getKey();
         }
-        else if (typeof friend === 'string')
-        {
-            friendKey = new UUID(friend);
-        }
         else
         {
-            throw new Error('"Friend" parameter must be Friend, UUID or string');
+            friendKey = new UUID(friend);
         }
         const request: GrantUserRightsMessage = new GrantUserRightsMessage();
         request.AgentData = {
@@ -189,10 +81,10 @@ export class FriendCommands extends CommandsBase
             }
         ];
         const sequenceNo = this.circuit.sendMessage(request, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async getFriendMapLocation(friend: Friend | UUID | string): Promise<MapLocation>
+    public async getFriendMapLocation(friend: Friend | UUID | string): Promise<MapLocation>
     {
         let friendKey = UUID.zero();
         if (friend instanceof UUID)
@@ -203,13 +95,9 @@ export class FriendCommands extends CommandsBase
         {
             friendKey = friend.getKey();
         }
-        else if (typeof friend === 'string')
-        {
-            friendKey = new UUID(friend);
-        }
         else
         {
-            throw new Error('"Friend" parameter must be Friend, UUID or string');
+            friendKey = new UUID(friend);
         }
         const request: FindAgentMessage = new FindAgentMessage();
         request.AgentBlock = {
@@ -246,7 +134,13 @@ export class FriendCommands extends CommandsBase
         };
     }
 
-    async acceptFriendRequest(event: FriendRequestEvent): Promise<void>
+    // noinspection JSUnusedGlobalSymbols
+    public getFriend(key: UUID): Friend | undefined
+    {
+        return this.friendsList.get(key.toString());
+    }
+
+    public async acceptFriendRequest(event: FriendRequestEvent): Promise<void>
     {
         const accept: AcceptFriendshipMessage = new AcceptFriendshipMessage();
         accept.AgentData = {
@@ -263,10 +157,10 @@ export class FriendCommands extends CommandsBase
             }
         );
         const sequenceNo = this.circuit.sendMessage(accept, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async rejectFriendRequest(event: FriendRequestEvent): Promise<void>
+    public async rejectFriendRequest(event: FriendRequestEvent): Promise<void>
     {
         const reject: DeclineFriendshipMessage = new DeclineFriendshipMessage();
         reject.AgentData = {
@@ -277,10 +171,10 @@ export class FriendCommands extends CommandsBase
             TransactionID: event.requestID
         };
         const sequenceNo = this.circuit.sendMessage(reject, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async sendFriendRequest(to: UUID | string, message: string): Promise<void>
+    public async sendFriendRequest(to: UUID | string, message: string): Promise<void>
     {
         if (typeof to === 'string')
         {
@@ -311,11 +205,145 @@ export class FriendCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    shutdown(): void
+    public override shutdown(): void
     {
-        this.friendMessages.unsubscribe();
+        if (this.friendMessages)
+        {
+            this.friendMessages.unsubscribe();
+            delete this.friendMessages;
+        }
+    }
+
+    private async processPacket(packet: Packet): Promise<void>
+    {
+        switch (packet.message.id)
+        {
+            case Message.OnlineNotification:
+            {
+                const msg = packet.message as OnlineNotificationMessage;
+                for (const agentEntry of msg.AgentBlock)
+                {
+                    const uuidStr = agentEntry.AgentID.toString();
+                    if (this.friendsList.has(uuidStr) === undefined)
+                    {
+                        const friend = await this.bot.clientCommands.grid.avatarKey2Name(agentEntry.AgentID) as Friend;
+                        friend.online = false;
+                        friend.myRights = RightsFlags.None;
+                        friend.theirRights = RightsFlags.None;
+                        this.friendsList.set(uuidStr, friend);
+                    }
+                    const friend = this.friendsList.get(uuidStr);
+                    if (friend && !friend.online)
+                    {
+                        friend.online = true;
+                        const friendOnlineEvent = new FriendOnlineEvent();
+                        friendOnlineEvent.friend = friend;
+                        friendOnlineEvent.online = true;
+                        this.bot.clientEvents.onFriendOnline.next(friendOnlineEvent);
+                    }
+                }
+                break;
+            }
+            case Message.OfflineNotification:
+            {
+                const msg = packet.message as OfflineNotificationMessage;
+                for (const agentEntry of msg.AgentBlock)
+                {
+                    const uuidStr = agentEntry.AgentID.toString();
+                    if (this.friendsList.has(uuidStr) === undefined)
+                    {
+                        const friend = await this.bot.clientCommands.grid.avatarKey2Name(agentEntry.AgentID) as Friend;
+                        friend.online = false;
+                        friend.myRights = RightsFlags.None;
+                        friend.theirRights = RightsFlags.None;
+                        this.friendsList.set(uuidStr, friend);
+                    }
+                    const friend = this.friendsList.get(uuidStr);
+                    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+                    if (friend !== undefined && friend.online)
+                    {
+                        friend.online = false;
+                        const friendOnlineEvent = new FriendOnlineEvent();
+                        friendOnlineEvent.friend = friend;
+                        friendOnlineEvent.online = false;
+                        this.bot.clientEvents.onFriendOnline.next(friendOnlineEvent);
+                    }
+                }
+                break;
+            }
+            case Message.TerminateFriendship:
+            {
+                const msg = packet.message as TerminateFriendshipMessage;
+                const friendID = msg.ExBlock.OtherID;
+                const uuidStr = friendID.toString();
+                const friend = this.friendsList.get(uuidStr);
+                if (friend !== undefined)
+                {
+                    const event = new FriendRemovedEvent();
+                    event.friend = friend;
+                    this.bot.clientEvents.onFriendRemoved.next(event);
+                    this.friendsList.delete(uuidStr);
+                }
+                break;
+            }
+            case Message.ChangeUserRights:
+            {
+                const msg = packet.message as ChangeUserRightsMessage;
+                for (const rightsEntry of msg.Rights)
+                {
+                    let uuidStr = '';
+                    if (rightsEntry.AgentRelated.equals(this.agent.agentID))
+                    {
+                        // My rights
+                        uuidStr = msg.AgentData.AgentID.toString();
+                        if (!this.friendsList.has(uuidStr))
+                        {
+                            const friend = await this.bot.clientCommands.grid.avatarKey2Name(rightsEntry.AgentRelated) as Friend;
+                            friend.online = false;
+                            friend.myRights = RightsFlags.None;
+                            friend.theirRights = RightsFlags.None;
+                            this.friendsList.set(uuidStr, friend);
+                        }
+                        const friend = this.friendsList.get(uuidStr);
+                        if (friend !== undefined)
+                        {
+                            friend.myRights = rightsEntry.RelatedRights;
+                        }
+                    }
+                    else
+                    {
+                        uuidStr = rightsEntry.AgentRelated.toString();
+                        if (!this.friendsList.has(uuidStr))
+                        {
+                            const friend = await this.bot.clientCommands.grid.avatarKey2Name(rightsEntry.AgentRelated) as Friend;
+                            friend.online = false;
+                            friend.myRights = RightsFlags.None;
+                            friend.theirRights = RightsFlags.None;
+                            this.friendsList.set(uuidStr, friend);
+                        }
+                        const friend = this.friendsList.get(uuidStr);
+                        if (friend !== undefined)
+                        {
+                            friend.theirRights = rightsEntry.RelatedRights;
+                        }
+                    }
+                    const friend = this.friendsList.get(uuidStr);
+                    if (friend)
+                    {
+                        const friendRightsEvent = new FriendRightsEvent();
+                        friendRightsEvent.friend = friend;
+                        friendRightsEvent.theirRights = friend.theirRights;
+                        friendRightsEvent.myRights = friend.myRights;
+                        this.bot.clientEvents.onFriendRights.next(friendRightsEvent);
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
     }
 }

@@ -2,51 +2,31 @@ import { AvatarQueryResult } from './AvatarQueryResult';
 import { GameObject } from './GameObject';
 import { Vector3 } from '../Vector3';
 import { Quaternion } from '../Quaternion';
-import { Subject, Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 import { UUID } from '../UUID';
+
 export class Avatar extends AvatarQueryResult
 {
-    private rotation: Quaternion = Quaternion.getIdentity();
-    private title = '';
-
     public onMoved: Subject<Avatar> = new Subject<Avatar>();
     public onTitleChanged: Subject<Avatar> = new Subject<Avatar>();
     public onLeftRegion: Subject<Avatar> = new Subject<Avatar>();
     public onAttachmentAdded: Subject<GameObject> = new Subject<GameObject>();
     public onAttachmentRemoved: Subject<GameObject> = new Subject<GameObject>();
     public onVisibleChanged: Subject<Avatar> = new Subject<Avatar>();
+
+    private rotation: Quaternion = Quaternion.getIdentity();
+    private title = '';
+
     private _isVisible = false;
     private _gameObject?: GameObject;
     private _position: Vector3 = Vector3.getZero();
     private _coarsePosition: Vector3 = Vector3.getZero();
 
-    private attachments: { [key: string]: GameObject } = {};
+    private readonly attachments = new Map<string, GameObject>();
 
 
-    static fromGameObject(obj: GameObject): Avatar
-    {
-        let firstName = 'Unknown';
-        let lastName = 'Avatar';
-
-        if (obj.NameValue['FirstName'] !== undefined)
-        {
-            firstName = obj.NameValue['FirstName'].value;
-        }
-        if (obj.NameValue['LastName'] !== undefined)
-        {
-            lastName = obj.NameValue['LastName'].value;
-        }
-
-        const av = new Avatar(obj, firstName , lastName);
-        if (obj.NameValue['Title'] !== undefined)
-        {
-            av.setTitle(obj.NameValue['Title'].value);
-        }
-        av.processObjectUpdate(obj);
-        return av;
-    }
-
-    constructor(gameObjectOrID: GameObject | UUID, firstName: string, lastName: string)
+    public constructor(gameObjectOrID: GameObject | UUID, firstName: string, lastName: string)
     {
         super((gameObjectOrID instanceof UUID) ? gameObjectOrID : gameObjectOrID.FullID, firstName, lastName);
 
@@ -56,7 +36,33 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    set gameObject(obj: GameObject)
+    public static fromGameObject(obj: GameObject): Avatar
+    {
+        let firstName = 'Unknown';
+        let lastName = 'Avatar';
+
+        const fnValue = obj.NameValue.get('FirstName');
+        if (fnValue !== undefined)
+        {
+            firstName = fnValue.value;
+        }
+        const lnValue = obj.NameValue.get('LastName');
+        if (lnValue !== undefined)
+        {
+            lastName = lnValue.value;
+        }
+
+        const av = new Avatar(obj, firstName , lastName);
+        const titleValue = obj.NameValue.get('Title');
+        if (titleValue !== undefined)
+        {
+            av.setTitle(titleValue.value);
+        }
+        av.processObjectUpdate(obj);
+        return av;
+    }
+
+    public set gameObject(obj: GameObject)
     {
         if (this._gameObject !== obj)
         {
@@ -75,12 +81,12 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    get isVisible(): boolean
+    public get isVisible(): boolean
     {
         return this._isVisible;
     }
 
-    set isVisible(value: boolean)
+    public set isVisible(value: boolean)
     {
         if (this._isVisible !== value)
         {
@@ -89,7 +95,7 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    setTitle(newTitle: string): void
+    public setTitle(newTitle: string): void
     {
         if (newTitle !== this.title)
         {
@@ -98,12 +104,12 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    getTitle(): string
+    public getTitle(): string
     {
         return this.title;
     }
 
-    get position(): Vector3
+    public get position(): Vector3
     {
         if (this._isVisible)
         {
@@ -120,25 +126,25 @@ export class Avatar extends AvatarQueryResult
         }
     }
 
-    set coarsePosition(pos: Vector3)
+    public set coarsePosition(pos: Vector3)
     {
         const oldPos = this._coarsePosition;
         this._coarsePosition = pos;
         if (!this._isVisible)
         {
-            if (Vector3.distance(pos, oldPos) > 0.0001)
+            if (pos.distance(oldPos) > 0.0001)
             {
                 this.onMoved.next(this);
             }
         }
     }
 
-    getRotation(): Quaternion
+    public getRotation(): Quaternion
     {
         return new Quaternion(this.rotation);
     }
 
-    processObjectUpdate(obj: GameObject): void
+    public processObjectUpdate(obj: GameObject): void
     {
         if (obj !== this._gameObject)
         {
@@ -148,14 +154,15 @@ export class Avatar extends AvatarQueryResult
         {
             this.setGeometry(obj.Position, obj.Rotation);
         }
-        if (obj.NameValue['Title'] !== undefined)
+        const lnTitle = obj.NameValue.get('Title');
+        if (lnTitle !== undefined)
         {
-           this.setTitle(obj.NameValue['Title'].value);
+           this.setTitle(lnTitle.value);
         }
         this.isVisible = true;
     }
 
-    setGeometry(position: Vector3, rotation: Quaternion): void
+    public setGeometry(position: Vector3, rotation: Quaternion): void
     {
         const oldPosition = this._position;
         const oldRotation = this.rotation;
@@ -165,22 +172,28 @@ export class Avatar extends AvatarQueryResult
         this.rotation = new Quaternion(rotation);
 
         const rotDist = new Quaternion(this.rotation).angleBetween(oldRotation);
-        if (Vector3.distance(position, oldPosition) > 0.0001 || rotDist > 0.0001)
+        if (position.distance(oldPosition) > 0.0001 || rotDist > 0.0001)
         {
             this.onMoved.next(this);
         }
     }
 
-    getAttachment(itemID: UUID): GameObject
+    public getAttachment(itemID: UUID): GameObject
     {
-        if (this.attachments[itemID.toString()] !== undefined)
+        const attachment = this.attachments.get(itemID.toString());
+        if (attachment)
         {
-            return this.attachments[itemID.toString()];
+            return attachment;
         }
         throw new Error('Attachment not found');
     }
 
-    waitForAttachment(itemID: UUID | string, timeout: number = 30000): Promise<GameObject>
+    public getAttachments(): Map<string, GameObject>
+    {
+        return this.attachments;
+    }
+
+    public async waitForAttachment(itemID: UUID | string, timeout = 30000): Promise<GameObject>
     {
         return new Promise<GameObject>((resolve, reject) =>
         {
@@ -193,7 +206,7 @@ export class Avatar extends AvatarQueryResult
                 const attach = this.getAttachment(itemID);
                 resolve(attach);
             }
-            catch (ignore)
+            catch (_ignore: unknown)
             {
                 let subs: Subscription | undefined = undefined;
                 let timr: NodeJS.Timeout | undefined = undefined;
@@ -232,32 +245,33 @@ export class Avatar extends AvatarQueryResult
         });
     }
 
-    addAttachment(obj: GameObject): void
+    public addAttachment(obj: GameObject): void
     {
         if (obj.itemID !== undefined)
         {
-            if (this.attachments[obj.itemID.toString()] === undefined)
+            if (!this.attachments.has(obj.itemID.toString()))
             {
-                this.attachments[obj.itemID.toString()] = obj;
+                this.attachments.set(obj.itemID.toString(), obj);
                 this.onAttachmentAdded.next(obj);
             }
         }
     }
 
-    removeAttachment(obj: GameObject): void
+    public removeAttachment(obj: GameObject): void
     {
-        if (obj.NameValue['AttachItemID'])
+        const attachItemID = obj.NameValue.get('AttachItemID');
+        if (attachItemID !== undefined)
         {
-            const itemID = new UUID(obj.NameValue['AttachItemID'].value);
-            if (this.attachments[itemID.toString()] !== undefined)
+            const itemID = new UUID(attachItemID.value);
+            if (this.attachments.has(itemID.toString()))
             {
                 this.onAttachmentRemoved.next(obj);
-                delete this.attachments[itemID.toString()];
+                this.attachments.delete(itemID.toString());
             }
         }
     }
 
-    coarseLeftRegion(): void
+    public coarseLeftRegion(): void
     {
         this.onLeftRegion.next(this);
     }

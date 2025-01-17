@@ -1,29 +1,29 @@
-import { Circuit } from './Circuit';
+import type { Circuit } from './Circuit';
 import { Logger } from './Logger';
-import { Packet } from './Packet';
+import type { Packet } from './Packet';
 import { Message } from '../enums/Message';
-import { ObjectUpdateMessage } from './messages/ObjectUpdate';
-import { ObjectUpdateCachedMessage } from './messages/ObjectUpdateCached';
-import { ObjectUpdateCompressedMessage } from './messages/ObjectUpdateCompressed';
-import { ImprovedTerseObjectUpdateMessage } from './messages/ImprovedTerseObjectUpdate';
+import type { ObjectUpdateMessage } from './messages/ObjectUpdate';
+import type { ObjectUpdateCachedMessage } from './messages/ObjectUpdateCached';
+import type { ObjectUpdateCompressedMessage } from './messages/ObjectUpdateCompressed';
+import type { ImprovedTerseObjectUpdateMessage } from './messages/ImprovedTerseObjectUpdate';
 import { RequestMultipleObjectsMessage } from './messages/RequestMultipleObjects';
-import { Agent } from './Agent';
+import type { Agent } from './Agent';
 import { UUID } from './UUID';
 import { Utils } from './Utils';
-import { ClientEvents } from './ClientEvents';
-import { KillObjectMessage } from './messages/KillObject';
-import { IObjectStore } from './interfaces/IObjectStore';
+import type { ClientEvents } from './ClientEvents';
+import type { KillObjectMessage } from './messages/KillObject';
+import type { IObjectStore } from './interfaces/IObjectStore';
 import { NameValue } from './NameValue';
 import { GameObject } from './public/GameObject';
-import { RBush3D } from 'rbush-3d/dist';
-import { ITreeBoundingBox } from './interfaces/ITreeBoundingBox';
+import type { RBush3D } from 'rbush-3d/dist';
+import type { ITreeBoundingBox } from './interfaces/ITreeBoundingBox';
 import { FilterResponse } from '../enums/FilterResponse';
 import { ObjectSelectMessage } from './messages/ObjectSelect';
 import { ObjectDeselectMessage } from './messages/ObjectDeselect';
 import { Quaternion } from './Quaternion';
-import { Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
 import { ExtraParams } from './public/ExtraParams';
-import { ObjectPropertiesMessage } from './messages/ObjectProperties';
+import type { ObjectPropertiesMessage } from './messages/ObjectProperties';
 import { SelectedObjectEvent } from '../events/SelectedObjectEvent';
 import { PrimFlags } from '../enums/PrimFlags';
 import { PacketFlags } from '../enums/PacketFlags';
@@ -33,17 +33,23 @@ import { NewObjectEvent } from '../events/NewObjectEvent';
 import { ObjectUpdatedEvent } from '../events/ObjectUpdatedEvent';
 import { CompressedFlags } from '../enums/CompressedFlags';
 import { Vector3 } from './Vector3';
-import { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
+import type { ObjectPhysicsDataEvent } from '../events/ObjectPhysicsDataEvent';
 import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 import { Avatar } from './public/Avatar';
-import { GenericStreamingMessageMessage } from './messages/GenericStreamingMessage';
-import { LLSDNotationParser } from './llsd/LLSDNotationParser';
+import type { GenericStreamingMessageMessage } from './messages/GenericStreamingMessage';
+import { LLGLTFMaterialOverride } from './LLGLTFMaterialOverride';
+import type * as Long from 'long';
+import { LLSD } from './llsd/LLSD';
 import { LLSDMap } from './llsd/LLSDMap';
-import { LLGLTFMaterialOverride, LLGLTFTextureTransformOverride } from './LLGLTFMaterialOverride';
-import * as Long from 'long';
+import { LLSDInteger } from './llsd/LLSDInteger';
+import type { LLSDReal } from './llsd/LLSDReal';
+import { LLSDArray } from './llsd/LLSDArray';
+import type { GetObjectsOptions } from './commands/RegionCommands';
 
 export class ObjectStoreLite implements IObjectStore
 {
+    public rtree?: RBush3D;
+
     protected circuit?: Circuit;
     protected agent: Agent;
     protected objects = new Map<number, GameObject>();
@@ -85,15 +91,13 @@ export class ObjectStoreLite implements IObjectStore
         SitName: Buffer;
         TextureID: Buffer;
     }>;
-    private physicsSubscription: Subscription;
-    private selectedPrimsWithoutUpdate = new Map<number, boolean>();
+    private readonly physicsSubscription: Subscription;
+    private readonly selectedPrimsWithoutUpdate = new Map<number, boolean>();
     private selectedChecker?: NodeJS.Timeout;
-    private blacklist: Map<number, Date> = new Map<number, Date>();
-    private pendingResolves: Set<number> = new Set<number>();
+    private readonly blacklist: Map<number, Date> = new Map<number, Date>();
+    private readonly pendingResolves: Set<number> = new Set<number>();
 
-    rtree?: RBush3D;
-
-    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
+    public constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
         agent.localID = 0;
         this.options = options;
@@ -105,11 +109,12 @@ export class ObjectStoreLite implements IObjectStore
             Message.ObjectUpdate,
             Message.ObjectUpdateCached,
             Message.ObjectUpdateCompressed,
+            Message.MultipleObjectUpdate,
             Message.ImprovedTerseObjectUpdate,
             Message.ObjectProperties,
             Message.KillObject,
             Message.GenericStreamingMessage
-        ], async(packet: Packet) =>
+        ], (packet: Packet): void =>
         {
             switch (packet.message.id)
             {
@@ -123,11 +128,11 @@ export class ObjectStoreLite implements IObjectStore
                     if (genMsg.MethodData.Method === 0x4175)
                     {
                         // LLSD Notation format
-                        const result = LLSDNotationParser.parse(genMsg.DataBlock.Data.toString('utf-8'));
+                        const result = LLSD.parseNotation(genMsg.DataBlock.Data.toString('utf-8'));
                         if (result instanceof LLSDMap)
                         {
                             const localID = result.get('id');
-                            if (typeof localID !== 'number')
+                            if (!(localID instanceof LLSDInteger))
                             {
                                 return;
                             }
@@ -141,7 +146,7 @@ export class ObjectStoreLite implements IObjectStore
                                 for (let x = 0; x < tes.length; x++)
                                 {
                                     const te = tes[x];
-                                    if (typeof te !== 'number')
+                                    if (!(te instanceof LLSDInteger))
                                     {
                                         continue;
                                     }
@@ -152,90 +157,72 @@ export class ObjectStoreLite implements IObjectStore
                                         continue;
                                     }
 
-                                    const textureIDs = params.get('tex');
-                                    const baseColor = params.get('bc');
-                                    const emissiveColor = params.get('ec');
-                                    const metallicFactor = params.get('mf');
-                                    const roughnessFactor = params.get('rf');
-                                    const alphaMode = params.get('am');
-                                    const alphaCutoff = params.get('ac');
-                                    const doubleSided = params.get('ds');
-                                    const textureTransforms = params.get('ti');
+                                    const textureIDs = params.get('tex') as (UUID | null)[] | undefined;
+                                    const baseColor = params.get('bc') as [LLSDReal, LLSDReal, LLSDReal, LLSDReal] | undefined;
+                                    const emissiveColor = params.get('ec') as LLSDReal | undefined;
+                                    const metallicFactor = params.get('mf') as LLSDReal | undefined;
+                                    const roughnessFactor = params.get('rf') as LLSDReal | undefined;
+                                    const alphaMode = params.get('am') as LLSDInteger | undefined;
+                                    const alphaCutoff = params.get('ac') as LLSDReal | undefined;
+                                    const doubleSided = params.get('ds') as boolean | undefined;
+                                    const textureTransforms = params.get('ti') as (LLSDMap &{
+                                        o: LLSDReal[]
+                                        s: LLSDReal[],
+                                        r: LLSDReal
+                                    })[] | undefined;
 
                                     const override = new LLGLTFMaterialOverride();
-                                    overrides.set(te, override);
+                                    overrides.set(te.valueOf(), override);
 
                                     if (textureIDs !== undefined && Array.isArray(textureIDs))
                                     {
                                         override.textures = [];
                                         for (const tex of textureIDs)
                                         {
-                                            if (typeof tex === 'string')
-                                            {
-                                                override.textures.push(tex);
-                                            }
-                                            else if (tex instanceof UUID)
+                                            if (tex instanceof UUID)
                                             {
                                                 override.textures.push(tex.toString());
+                                            }
+                                            else
+                                            {
+                                                override.textures.push(null);
                                             }
                                         }
                                     }
 
-                                    function isNumberArray(array: unknown[]): array is number[]
+                                    if (baseColor !== undefined && Array.isArray(baseColor) && baseColor.length === 4)
                                     {
-                                        return array.every(element => typeof element === 'number');
+                                        override.baseColor = LLSDArray.toNumberArray(baseColor);
                                     }
 
-                                    if (baseColor !== undefined && Array.isArray(baseColor) && baseColor.length === 4 && isNumberArray(baseColor))
+                                    if (emissiveColor !== undefined && Array.isArray(emissiveColor) && emissiveColor.length === 3)
                                     {
-                                        override.baseColor = baseColor;
+                                        override.emissiveFactor = LLSDArray.toNumberArray(emissiveColor);
                                     }
 
-                                    if (emissiveColor !== undefined && Array.isArray(emissiveColor) && emissiveColor.length === 3 && isNumberArray(emissiveColor))
+                                    if (metallicFactor !== undefined)
                                     {
-                                        override.emissiveFactor = emissiveColor;
+                                        override.metallicFactor = metallicFactor.valueOf();
                                     }
 
-                                    if (metallicFactor !== undefined && typeof metallicFactor === 'number')
+                                    if (roughnessFactor !== undefined)
                                     {
-                                        override.metallicFactor = metallicFactor;
+                                        override.roughnessFactor = roughnessFactor.valueOf();
                                     }
 
-                                    if (roughnessFactor !== undefined && typeof roughnessFactor === 'number')
+                                    if (alphaMode !== undefined)
                                     {
-                                        override.roughnessFactor = roughnessFactor;
+                                        override.alphaMode = alphaMode.valueOf();
                                     }
 
-                                    if (alphaMode !== undefined && typeof alphaMode === 'number')
+                                    if (alphaCutoff !== undefined)
                                     {
-                                        override.alphaMode = alphaMode;
+                                        override.alphaCutoff = alphaCutoff.valueOf();
                                     }
 
-                                    if (alphaCutoff !== undefined && typeof alphaCutoff === 'number')
-                                    {
-                                        override.alphaCutoff = alphaCutoff;
-                                    }
-
-                                    if (doubleSided !== undefined && typeof doubleSided === 'boolean')
+                                    if (doubleSided !== undefined)
                                     {
                                         override.doubleSided = doubleSided;
-                                    }
-
-                                    function isLLGLTFTextureTransformOverride(objToCheck: unknown): objToCheck is LLGLTFTextureTransformOverride
-                                    {
-                                        const isArrayOfNumbers = (value: unknown): value is number[] =>
-                                        {
-                                            return Array.isArray(value) && value.every(item => typeof item === 'number');
-                                        };
-
-                                        // Validate the object structure and types
-                                        return (
-                                            typeof objToCheck === 'object' &&
-                                            objToCheck !== null &&
-                                            'offset' in objToCheck && isArrayOfNumbers((objToCheck as LLGLTFTextureTransformOverride).offset) &&
-                                            'scale' in objToCheck && isArrayOfNumbers((objToCheck as LLGLTFTextureTransformOverride).scale) &&
-                                            'rotation' in objToCheck && typeof (objToCheck as LLGLTFTextureTransformOverride).rotation === 'number'
-                                        );
                                     }
 
                                     if (textureTransforms !== undefined && Array.isArray(textureTransforms))
@@ -243,23 +230,20 @@ export class ObjectStoreLite implements IObjectStore
                                         override.textureTransforms = [];
                                         for (const transform of textureTransforms)
                                         {
-                                            if (transform instanceof LLSDMap)
-                                            {
-                                                const tObj = {
-                                                    offset: transform.get('o'),
-                                                    scale: transform.get('s'),
-                                                    rotation: transform.get('r')
-                                                }
-                                                if (isLLGLTFTextureTransformOverride(tObj))
-                                                {
-                                                    override.textureTransforms.push(tObj);
-                                                }
+                                            const o = transform.get('o') as LLSDReal[] | undefined;
+                                            const s = transform.get('s') as LLSDReal[] | undefined;
+                                            const r = transform.get('r') as LLSDReal | undefined;
+                                            const tObj = {
+                                                offset: o !== undefined ? LLSDArray.toNumberArray(o) : undefined,
+                                                scale: s !== undefined ? LLSDArray.toNumberArray(s) : undefined,
+                                                rotation: r !== undefined ? r.valueOf() : undefined
                                             }
+                                            override.textureTransforms.push(tObj);
                                         }
                                     }
 
                                 }
-                                const obj = this.objects.get(localID);
+                                const obj = this.objects.get(localID.valueOf());
                                 const textureEntry = obj?.TextureEntry;
                                 if (textureEntry)
                                 {
@@ -267,7 +251,7 @@ export class ObjectStoreLite implements IObjectStore
                                 }
                                 else
                                 {
-                                    this.cachedMaterialOverrides.set(localID, overrides);
+                                    this.cachedMaterialOverrides.set(localID.valueOf(), overrides);
                                 }
                             }
                         }
@@ -307,7 +291,7 @@ export class ObjectStoreLite implements IObjectStore
                 case Message.ObjectUpdateCompressed:
                 {
                     const objectUpdateCompressed = packet.message as ObjectUpdateCompressedMessage;
-                    await this.objectUpdateCompressed(objectUpdateCompressed);
+                    this.objectUpdateCompressed(objectUpdateCompressed);
                     break;
                 }
                 case Message.ImprovedTerseObjectUpdate:
@@ -322,6 +306,8 @@ export class ObjectStoreLite implements IObjectStore
                     this.killObject(killObj);
                     break;
                 }
+                default:
+                    break;
             }
         });
 
@@ -338,60 +324,421 @@ export class ObjectStoreLite implements IObjectStore
             }
         });
 
-        this.selectedChecker = setInterval(() =>
+        if (!(this.options & BotOptionFlags.LiteObjectStore))
         {
-            if (this.circuit === undefined)
+            this.selectedChecker = setInterval(() =>
             {
+                if (this.circuit === undefined)
+                {
+                    return;
+                }
+                try
+                {
+                    let selectObjects = [];
+                    for (const key of this.selectedPrimsWithoutUpdate.keys())
+                    {
+                        selectObjects.push(key);
+                    }
+
+                    function shuffle(a: string[]): string[]
+                    {
+                        let j = 0, x = '', i = 0;
+                        for (i = a.length - 1; i > 0; i--)
+                        {
+                            j = Math.floor(Math.random() * (i + 1));
+                            x = a[i];
+                            a[i] = a[j];
+                            a[j] = x;
+                        }
+                        return a;
+                    }
+
+                    selectObjects = shuffle(selectObjects as unknown[] as string[]);
+                    if (selectObjects.length > 10)
+                    {
+                        selectObjects = selectObjects.slice(0, 20);
+                    }
+                    if (selectObjects.length > 0)
+                    {
+                        const selectObject = new ObjectSelectMessage();
+                        selectObject.AgentData = {
+                            AgentID: this.agent.agentID,
+                            SessionID: this.circuit.sessionID
+                        };
+                        selectObject.ObjectData = [];
+                        for (const id of selectObjects)
+                        {
+                            selectObject.ObjectData.push({
+                                ObjectLocalID: parseInt(id, 10)
+                            });
+                        }
+                        this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+                    }
+                }
+                catch (e: unknown)
+                {
+                    Logger.Error(e);
+                }
+            }, 1000)
+        }
+    }
+
+    public setPersist(persist: boolean): void
+    {
+        this.persist = persist;
+        if (!this.persist)
+        {
+            for (const d of this.deadObjects)
+            {
+                this.deleteObject(d);
+            }
+            this.deadObjects = [];
+        }
+    }
+
+    public deleteObject(objectID: number): void
+    {
+        const obj = this.objects.get(objectID);
+        if (obj)
+        {
+            const objectUUID = obj.FullID;
+            obj.deleted = true;
+
+            if (this.persist)
+            {
+                this.deadObjects.push(objectID);
                 return;
+            }
+
+            if (obj.IsAttachment && obj.ParentID !== undefined)
+            {
+                const parent = this.objects.get(obj.ParentID);
+                if (parent !== undefined && parent.PCode === PCode.Avatar)
+                {
+                    const agent = this.agent.currentRegion.agents.get(parent.FullID.toString());
+                    if (agent !== undefined)
+                    {
+                        agent.removeAttachment(obj);
+                    }
+                }
+            }
+
+            const foundAgent = this.agent.currentRegion.agents.get(objectUUID.toString());
+            if (foundAgent !== undefined)
+            {
+                foundAgent.isVisible = false;
+            }
+
+            // First, kill all children (not the people kind)
+            const objsByParent = this.objectsByParent.get(objectID);
+            if (objsByParent)
+            {
+                for (const childObjID of objsByParent)
+                {
+                    this.deleteObject(childObjID);
+                }
+            }
+            this.objectsByParent.delete(objectID);
+
+            // Now delete this object
+            const uuid = obj.FullID.toString();
+
+            this.objectsByUUID.delete(uuid);
+
+            if (obj.ParentID !== undefined)
+            {
+                const parentID = obj.ParentID;
+                const objsByParentParent = this.objectsByParent.get(parentID);
+                if (objsByParentParent)
+                {
+                    const ind = objsByParentParent.indexOf(objectID);
+                    if (ind !== -1)
+                    {
+                        objsByParentParent.splice(ind, 1);
+                    }
+                }
+            }
+            if (this.rtree && obj.rtreeEntry !== undefined)
+            {
+                this.rtree.remove(obj.rtreeEntry);
+            }
+            this.objects.delete(objectID);
+            this.cachedMaterialOverrides.delete(objectID);
+        }
+    }
+
+    public getObjectsByParent(parentID: number): GameObject[]
+    {
+        const list = this.objectsByParent.get(parentID);
+        if (list === undefined)
+        {
+            return [];
+        }
+        const result: GameObject[] = [];
+        for (const localID of list)
+        {
+            const obj = this.objects.get(localID);
+            if (obj)
+            {
+                result.push(obj);
+            }
+        }
+        return result;
+    }
+
+    public parseNameValues(str: string): Map<string, NameValue>
+    {
+        const nv = new Map<string, NameValue>();
+        const lines = str.split('\n');
+        for (const line of lines)
+        {
+            if (line.length > 0)
+            {
+                let kv = line.split(/[\t ]/);
+                if (kv.length > 5)
+                {
+                    for (let x = 5; x < kv.length; x++)
+                    {
+                        kv[4] += ' ' + kv[x];
+                    }
+                    kv = kv.slice(0, 5);
+                }
+                if (kv.length === 5)
+                {
+                    const namevalue = new NameValue();
+                    namevalue.type = kv[1];
+                    namevalue.class = kv[2];
+                    namevalue.sendTo = kv[3];
+                    namevalue.value = kv[4];
+                    nv.set(kv[0], namevalue);
+                }
+            }
+        }
+        return nv;
+    }
+
+    public shutdown(): void
+    {
+        if (this.selectedChecker !== undefined)
+        {
+            clearInterval(this.selectedChecker);
+            delete this.selectedChecker;
+        }
+        this.physicsSubscription.unsubscribe();
+        this.objects.clear();
+        if (this.rtree)
+        {
+            this.rtree.clear();
+        }
+        this.objectsByUUID.clear();
+        this.objectsByParent.clear()
+        delete this.circuit;
+    }
+
+    public populateChildren(obj: GameObject, _resolve = false): void
+    {
+        if (obj !== undefined)
+        {
+            obj.children = [];
+            obj.totalChildren = 0;
+            for (const child of this.getObjectsByParent(obj.ID))
+            {
+                if (child.PCode !== PCode.Avatar)
+                {
+                    obj.totalChildren++;
+                    this.populateChildren(child);
+                    if (child.totalChildren !== undefined)
+                    {
+                        obj.totalChildren += child.totalChildren;
+                    }
+                    obj.children.push(child);
+                }
+            }
+            obj.childrenPopulated = true;
+        }
+    }
+
+    public getAllObjects(options: GetObjectsOptions): GameObject[]
+    {
+        const results = [];
+        const found: Record<string, GameObject> = {};
+        for (const localID of this.objects.keys())
+        {
+            const go = this.objects.get(localID);
+            if (!go)
+            {
+                continue;
+            }
+            if (!options.includeAvatars && go.PCode === PCode.Avatar)
+            {
+                continue;
+            }
+            if (!options.includeAttachments && go.IsAttachment)
+            {
+                continue;
             }
             try
             {
-                let selectObjects = [];
-                for (const key of Object.keys(this.selectedPrimsWithoutUpdate))
+                const parent = this.findParent(go);
+                if (parent.ParentID === 0)
                 {
-                    selectObjects.push(key);
-                }
+                    const uuid = parent.FullID.toString();
 
-                function shuffle(a: string[]): string[]
-                {
-                    let j, x, i;
-                    for (i = a.length - 1; i > 0; i--)
+                    if (found[uuid] === undefined)
                     {
-                        j = Math.floor(Math.random() * (i + 1));
-                        x = a[i];
-                        a[i] = a[j];
-                        a[j] = x;
+                        found[uuid] = parent;
+                        results.push(parent);
                     }
-                    return a;
                 }
-
-                selectObjects = shuffle(selectObjects);
-                if (selectObjects.length > 10)
+                if (go.ParentID)
                 {
-                    selectObjects = selectObjects.slice(0, 20);
-                }
-                if (selectObjects.length > 0)
-                {
-                    const selectObject = new ObjectSelectMessage();
-                    selectObject.AgentData = {
-                        AgentID: this.agent.agentID,
-                        SessionID: this.circuit.sessionID
-                    };
-                    selectObject.ObjectData = [];
-                    for (const id of selectObjects)
+                    let objects = this.objectsByParent.get(go.ParentID)
+                    if (!objects?.includes(localID))
                     {
-                        selectObject.ObjectData.push({
-                            ObjectLocalID: parseInt(id, 10)
-                        });
+                        if (objects === undefined)
+                        {
+                            objects = [];
+                        }
+                        objects.push(localID);
+                        this.objectsByParent.set(go.ParentID, objects);
                     }
-                    this.circuit.sendMessage(selectObject, PacketFlags.Reliable);
                 }
             }
-            catch (e: unknown)
+            catch (error)
             {
-                Logger.Error(e);
+                console.log('Failed to find parent for ' + go.FullID.toString());
+                console.error(error);
+                // Unable to find parent, full object probably not fully loaded yet
             }
-        }, 1000)
+        }
+
+        // Now populate children of each found object
+        for (const obj of results)
+        {
+            this.populateChildren(obj);
+        }
+
+        return results;
+    }
+
+
+    public getNumberOfObjects(): number
+    {
+        return this.objects.size;
+    }
+
+    public getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): GameObject[]
+    {
+        if (!this.rtree)
+        {
+            throw new Error('GetObjectsInArea not available with the Lite object store');
+        }
+        const result = this.rtree.search({
+            minX: minX,
+            maxX: maxX,
+            minY: minY,
+            maxY: maxY,
+            minZ: minZ,
+            maxZ: maxZ
+        });
+        const found: Record<string, GameObject> = {};
+        const objs: GameObject[] = [];
+        for (const obj of result)
+        {
+            const o = obj as ITreeBoundingBox;
+            const go = o.gameObject;
+            if (go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || !go.IsAttachment))
+            {
+                try
+                {
+                    const parent = this.findParent(go);
+                    if (parent.PCode !== PCode.Avatar && (parent.IsAttachment === undefined || !parent.IsAttachment) && parent.ParentID === 0)
+                    {
+                        const uuid = parent.FullID.toString();
+
+                        if (found[uuid] === undefined)
+                        {
+                            found[uuid] = parent;
+                            objs.push(parent);
+                        }
+                    }
+                }
+                catch (error)
+                {
+                    console.log('Failed to find parent for ' + go.FullID.toString());
+                    console.error(error);
+                    // Unable to find parent, full object probably not fully loaded yet
+                }
+            }
+        }
+
+        // Now populate children of each found object
+        for (const obj of objs)
+        {
+            this.populateChildren(obj);
+        }
+
+        return objs;
+    }
+
+    public getObjectByUUID(fullID: UUID | string): GameObject
+    {
+        if (fullID instanceof UUID)
+        {
+            fullID = fullID.toString();
+        }
+        const localID = this.objectsByUUID.get(fullID);
+        const go = this.objects.get(localID ?? 0);
+        if (localID === undefined || go === undefined)
+        {
+            throw new Error('No object found with that UUID');
+        }
+        return go;
+    }
+
+    public getObjectByLocalID(localID: number): GameObject
+    {
+        const go = this.objects.get(localID);
+        if (!go)
+        {
+            throw new Error('No object found with that UUID');
+        }
+        return go;
+    }
+
+    public insertIntoRtree(obj: GameObject): void
+    {
+        if (!this.rtree)
+        {
+            return;
+        }
+        if (obj.rtreeEntry !== undefined)
+        {
+            this.rtree.remove(obj.rtreeEntry);
+        }
+        if (!obj.Scale || !obj.Position || !obj.Rotation)
+        {
+            return;
+        }
+        const normalizedScale = new Vector3(obj.Scale).multiplyQuaternion(new Quaternion(obj.Rotation));
+
+        const bounds: ITreeBoundingBox = {
+            minX: obj.Position.x - (normalizedScale.x / 2),
+            maxX: obj.Position.x + (normalizedScale.x / 2),
+            minY: obj.Position.y - (normalizedScale.y / 2),
+            maxY: obj.Position.y + (normalizedScale.y / 2),
+            minZ: obj.Position.z - (normalizedScale.z / 2),
+            maxZ: obj.Position.z + (normalizedScale.z / 2),
+            gameObject: obj
+        };
+
+        obj.rtreeEntry = bounds;
+        this.rtree.insert(bounds);
+    }
+
+    public pendingResolve(id: number): void
+    {
+        this.pendingResolves.add(id);
     }
 
     private applyObjectProperties(o: GameObject, obj: any): void
@@ -418,6 +765,7 @@ export class ObjectStoreLite implements IObjectStore
         o.fromTaskID = obj.FromTaskID;
         o.groupID = obj.GroupID;
         o.lastOwnerID = obj.LastOwnerID;
+        o.OwnerID = obj.OwnerID;
         o.name = Utils.BufferToStringSimple(obj.Name);
         o.description = Utils.BufferToStringSimple(obj.Description);
         o.touchName = Utils.BufferToStringSimple(obj.TouchName);
@@ -434,8 +782,7 @@ export class ObjectStoreLite implements IObjectStore
         }
         if (o.Flags !== undefined)
         {
-            // tslint:disable-next-line:no-bitwise
-            // noinspection JSBitwiseOperatorUsage
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
             if ((o.Flags & PrimFlags.CreateSelected) === PrimFlags.CreateSelected)
             {
                 const evt = new SelectedObjectEvent();
@@ -508,7 +855,7 @@ export class ObjectStoreLite implements IObjectStore
             });
             this.requestedObjects.delete(localID);
         }
-        catch (error)
+        catch (_error: unknown)
         {
             this.requestedObjects.delete(localID);
             if (attempt < 5)
@@ -579,92 +926,98 @@ export class ObjectStoreLite implements IObjectStore
             }
 
             obj = this.objects.get(localID);
-            obj!.deleted = false;
-            obj!.ID = objData.ID;
-            obj!.FullID = objData.FullID;
-            obj!.ParentID = objData.ParentID;
-            obj!.OwnerID = objData.OwnerID;
-            obj!.PCode = objData.PCode;
-
-            obj!.NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
-
-            obj!.IsAttachment = obj!.NameValue.AttachItemID !== undefined;
-            if (obj!.IsAttachment && obj!.State !== undefined)
+            if (obj)
             {
-                obj!.attachmentPoint = this.decodeAttachPoint(obj!.State);
-            }
+                obj.deleted = false;
+                obj.ID = objData.ID;
+                obj.FullID = objData.FullID;
+                obj.ParentID = objData.ParentID;
+                obj.OwnerID = objData.OwnerID;
+                obj.PCode = objData.PCode;
 
-            if (objData.PCode === PCode.Avatar && obj!.FullID.toString() === this.agent.agentID.toString())
-            {
-                this.agent.localID = localID;
+                obj.NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
-                if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                obj.IsAttachment = obj.NameValue.get('AttachItemID') !== undefined;
+                if (obj.IsAttachment && obj.State !== undefined)
                 {
-                    for (const objParentID of Object.keys(this.objectsByParent))
+                    obj.attachmentPoint = this.decodeAttachPoint(obj.State);
+                }
+
+                if (objData.PCode === PCode.Avatar && obj.FullID.toString() === this.agent.agentID.toString())
+                {
+                    this.agent.localID = localID;
+
+                    if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
                     {
-                        const parent = parseInt(objParentID, 10);
-                        if (parent !== this.agent.localID)
+                        for (const objParentID of this.objectsByParent.keys())
                         {
-                            let foundAvatars = false;
-                            const p = this.objectsByParent.get(parent);
-                            if (p !== undefined)
+                            const parent = objParentID;
+                            if (parent !== this.agent.localID)
                             {
-                                for (const objID of p)
+                                let foundAvatars = false;
+                                const p = this.objectsByParent.get(parent);
+                                if (p !== undefined)
                                 {
-                                    const childObj = this.objects.get(objID);
-                                    if (childObj)
+                                    for (const objID of p)
                                     {
-                                        if (childObj.PCode === PCode.Avatar)
+                                        const childObj = this.objects.get(objID);
+                                        if (childObj)
                                         {
-                                            foundAvatars = true;
+                                            if (childObj.PCode === PCode.Avatar)
+                                            {
+                                                foundAvatars = true;
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            const parentObj = this.objects.get(parent);
-                            if (parentObj)
-                            {
-                                if (parentObj.PCode === PCode.Avatar)
+                                const parentObj = this.objects.get(parent);
+                                if (parentObj)
                                 {
-                                    foundAvatars = true;
+                                    if (parentObj.PCode === PCode.Avatar)
+                                    {
+                                        foundAvatars = true;
+                                    }
                                 }
-                            }
-                            if (!foundAvatars)
-                            {
-                                this.deleteObject(parent);
+                                if (!foundAvatars)
+                                {
+                                    this.deleteObject(parent);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            this.objectsByUUID.set(objData.FullID.toString(), localID);
-            let objByParent = this.objectsByParent.get(parentID);
-            if (!objByParent)
-            {
-                objByParent = [];
-                this.objectsByParent.set(parentID, objByParent);
-            }
-            if (addToParentList)
-            {
-                objByParent.push(localID);
-            }
-
-            if (objData.PCode !== PCode.Avatar && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
-            {
-                if (this.agent.localID !== 0 && obj!.ParentID !== this.agent.localID)
+                this.objectsByUUID.set(objData.FullID.toString(), localID);
+                let objByParent = this.objectsByParent.get(parentID);
+                if (!objByParent)
                 {
-                    // Drop object
-                    this.deleteObject(localID);
-                    return;
+                    objByParent = [];
+                    this.objectsByParent.set(parentID, objByParent);
                 }
-            }
+                if (addToParentList)
+                {
+                    objByParent.push(localID);
+                }
 
-            this.notifyObjectUpdate(newObject, obj!);
+                if (objData.PCode !== PCode.Avatar && this.options & BotOptionFlags.StoreMyAttachmentsOnly)
+                {
+                    if (this.agent.localID !== 0 && obj.ParentID !== this.agent.localID)
+                    {
+                        // Drop object
+                        this.deleteObject(localID);
+                        return;
+                    }
+                }
 
-            if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects.get(objData.ParentID) && !obj?.IsAttachment)
-            {
-                this.requestMissingObject(objData.ParentID);
+                this.notifyObjectUpdate(newObject, obj);
+
+                if (objData.ParentID !== undefined && objData.ParentID !== 0 && !this.objects.get(objData.ParentID) && !obj?.IsAttachment)
+                {
+                    if (this.fullStore)
+                    {
+                        void this.requestMissingObject(objData.ParentID);
+                    }
+                }
             }
         }
     }
@@ -675,9 +1028,10 @@ export class ObjectStoreLite implements IObjectStore
         {
             if (obj.PCode === PCode.Avatar)
             {
-                if (this.agent.currentRegion.agents[obj.FullID.toString()] !== undefined)
+                const agent = this.agent.currentRegion.agents.get(obj.FullID.toString());
+                if (agent !== undefined)
                 {
-                    this.agent.currentRegion.agents[obj.FullID.toString()].processObjectUpdate(obj);
+                    agent.processObjectUpdate(obj);
                 }
                 else
                 {
@@ -699,22 +1053,24 @@ export class ObjectStoreLite implements IObjectStore
             const avatarID = obj.FullID.toString();
             if (newObject)
             {
-                if (this.agent.currentRegion.agents[avatarID] === undefined)
+                const agent = this.agent.currentRegion.agents.get(avatarID);
+                if (agent === undefined)
                 {
                     const av = Avatar.fromGameObject(obj);
-                    this.agent.currentRegion.agents[avatarID] = av;
+                    this.agent.currentRegion.agents.set(avatarID, av);
                     this.clientEvents.onAvatarEnteredRegion.next(av)
                 }
                 else
                 {
-                    this.agent.currentRegion.agents[avatarID].processObjectUpdate(obj);
+                    agent.processObjectUpdate(obj);
                 }
             }
             else
             {
-                if (this.agent.currentRegion.agents[avatarID] !== undefined)
+                const agent = this.agent.currentRegion.agents.get(avatarID);
+                if (agent !== undefined)
                 {
-                    this.agent.currentRegion.agents[avatarID].processObjectUpdate(obj);
+                    agent.processObjectUpdate(obj);
                 }
                 else
                 {
@@ -731,12 +1087,13 @@ export class ObjectStoreLite implements IObjectStore
                 {
                     if (parentObj !== undefined && parentObj.PCode === PCode.Avatar)
                     {
-                        const avatar = this.agent.currentRegion.agents[parentObj.FullID.toString()];
+                        const avatar = this.agent.currentRegion.agents.get(parentObj.FullID.toString());
 
                         let invItemID = UUID.zero();
-                        if (obj.NameValue['AttachItemID'])
+                        const attach = obj.NameValue.get('AttachItemID');
+                        if (attach)
                         {
-                            invItemID = new UUID(obj.NameValue['AttachItemID'].value);
+                            invItemID = new UUID(attach.value);
                         }
 
                         this.agent.currentRegion.clientCommands.region.resolveObject(obj, {}).then(() =>
@@ -769,10 +1126,10 @@ export class ObjectStoreLite implements IObjectStore
                 newObj.localID = obj.ID;
                 newObj.objectID = obj.FullID;
                 newObj.object = obj;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
                 newObj.createSelected = obj.Flags !== undefined && (obj.Flags & PrimFlags.CreateSelected) === PrimFlags.CreateSelected;
                 obj.createdSelected = newObj.createSelected;
-                // tslint:disable-next-line:no-bitwise
-                // noinspection JSBitwiseOperatorUsage
+                               // noinspection JSBitwiseOperatorUsage
                 if (obj.Flags !== undefined && obj.Flags & PrimFlags.CreateSelected && !this.pendingObjectProperties.get(obj.FullID.toString()))
                 {
                     this.selectedPrimsWithoutUpdate.set(obj.ID, true);
@@ -794,11 +1151,6 @@ export class ObjectStoreLite implements IObjectStore
                 this.pendingObjectProperties.delete(obj.FullID.toString());
             }
         }
-    }
-
-    public pendingResolve(id: number): void
-    {
-        this.pendingResolves.add(id);
     }
 
     protected objectUpdateCached(objectUpdateCached: ObjectUpdateCachedMessage): void
@@ -834,7 +1186,7 @@ export class ObjectStoreLite implements IObjectStore
             pos += 16;
             const localID = buf.readUInt32LE(pos);
             pos += 4;
-            const pcode = buf.readUInt8(pos++);
+            const pcode: PCode = buf.readUInt8(pos++);
             const newObj = false;
             let o = this.objects.get(localID);
             if (!o)
@@ -908,10 +1260,13 @@ export class ObjectStoreLite implements IObjectStore
             }
             if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects.has(o.ParentID) && !o.IsAttachment)
             {
-                this.requestMissingObject(o.ParentID).catch((e) =>
+                if (this.fullStore)
                 {
-                    console.error(e);
-                });
+                    this.requestMissingObject(o.ParentID).catch((e: unknown) =>
+                    {
+                        console.error(e);
+                    });
+                }
             }
             if (compressedflags & CompressedFlags.Tree)
             {
@@ -944,7 +1299,7 @@ export class ObjectStoreLite implements IObjectStore
 
             // Extra params
             const extraParamsLength = ExtraParams.getLengthOfParams(buf, pos);
-            o.extraParams = ExtraParams.from(buf.slice(pos, pos + extraParamsLength));
+            o.extraParams = ExtraParams.from(buf.subarray(pos, pos + extraParamsLength));
             pos = pos + extraParamsLength;
 
             if (compressedflags & CompressedFlags.HasSound)
@@ -985,7 +1340,7 @@ export class ObjectStoreLite implements IObjectStore
 
     protected objectUpdateTerse(_objectUpdateTerse: ImprovedTerseObjectUpdateMessage): void
     {
-
+        // Not implemented
     }
 
     protected killObject(killObj: KillObjectMessage): void
@@ -1000,160 +1355,10 @@ export class ObjectStoreLite implements IObjectStore
         }
     }
 
-    setPersist(persist: boolean): void
-    {
-        this.persist = persist;
-        if (!this.persist)
-        {
-            for (const d of this.deadObjects)
-            {
-                this.deleteObject(d);
-            }
-            this.deadObjects = [];
-        }
-    }
-
-    deleteObject(objectID: number): void
-    {
-        const obj = this.objects.get(objectID);
-        if (obj)
-        {
-            const objectUUID = obj.FullID;
-            obj.deleted = true;
-
-            if (this.persist)
-            {
-                this.deadObjects.push(objectID);
-                return;
-            }
-
-            if (obj.IsAttachment && obj.ParentID !== undefined)
-            {
-                const parent = this.objects.get(obj.ParentID);
-                if (parent !== undefined && parent.PCode === PCode.Avatar)
-                {
-                    this.agent.currentRegion.agents[parent.FullID.toString()]?.removeAttachment(obj);
-                }
-            }
-
-            if (this.agent.currentRegion.agents[objectUUID.toString()] !== undefined)
-            {
-                this.agent.currentRegion.agents[objectUUID.toString()].isVisible = false;
-            }
-
-            // First, kill all children (not the people kind)
-            const objsByParent = this.objectsByParent.get(objectID);
-            if (objsByParent)
-            {
-                for (const childObjID of objsByParent)
-                {
-                    this.deleteObject(childObjID);
-                }
-            }
-            this.objectsByParent.delete(objectID);
-
-            // Now delete this object
-            const uuid = obj.FullID.toString();
-
-            this.objectsByUUID.delete(uuid);
-
-            if (obj.ParentID !== undefined)
-            {
-                const parentID = obj.ParentID;
-                const objsByParentParent = this.objectsByParent.get(parentID);
-                if (objsByParentParent)
-                {
-                    const ind = objsByParentParent.indexOf(objectID);
-                    if (ind !== -1)
-                    {
-                        objsByParentParent.splice(ind, 1);
-                    }
-                }
-            }
-            if (this.rtree && obj.rtreeEntry !== undefined)
-            {
-                this.rtree.remove(obj.rtreeEntry);
-            }
-            this.objects.delete(objectID);
-            this.cachedMaterialOverrides.delete(objectID);
-        }
-    }
-    getObjectsByParent(parentID: number): GameObject[]
-    {
-        const list = this.objectsByParent.get(parentID);
-        if (list === undefined)
-        {
-            return [];
-        }
-        const result: GameObject[] = [];
-        for (const localID of list)
-        {
-            const obj = this.objects.get(localID);
-            if (obj)
-            {
-                result.push(obj);
-            }
-        }
-        result.sort((a: GameObject, b: GameObject) =>
-        {
-            return a.ID - b.ID;
-        });
-        return result;
-    }
-
-    parseNameValues(str: string): { [key: string]: NameValue }
-    {
-        const nv: { [key: string]: NameValue } = {};
-        const lines = str.split('\n');
-        for (const line of lines)
-        {
-            if (line.length > 0)
-            {
-                let kv = line.split(/[\t ]/);
-                if (kv.length > 5)
-                {
-                    for (let x = 5; x < kv.length; x++)
-                    {
-                        kv[4] += ' ' + kv[x];
-                    }
-                    kv = kv.slice(0, 5);
-                }
-                if (kv.length === 5)
-                {
-                    const namevalue = new NameValue();
-                    namevalue.type = kv[1];
-                    namevalue.class = kv[2];
-                    namevalue.sendTo = kv[3];
-                    namevalue.value = kv[4];
-                    nv[kv[0]] = namevalue;
-                }
-            }
-        }
-        return nv;
-    }
-
-    shutdown(): void
-    {
-        if (this.selectedChecker !== undefined)
-        {
-            clearInterval(this.selectedChecker);
-            delete this.selectedChecker;
-        }
-        this.physicsSubscription.unsubscribe();
-        this.objects.clear();
-        if (this.rtree)
-        {
-            this.rtree.clear();
-        }
-        this.objectsByUUID.clear();
-        this.objectsByParent.clear()
-        delete this.circuit;
-    }
-
     protected findParent(go: GameObject): GameObject
     {
         const parentObj = this.objects.get(go.ParentID ?? 0);
-        if (go.ParentID !== undefined && go.ParentID !== 0  && parentObj)
+        if (go.ParentID !== undefined && go.ParentID !== 0 && parentObj)
         {
             return this.findParent(parentObj);
         }
@@ -1161,204 +1366,15 @@ export class ObjectStoreLite implements IObjectStore
         {
             if (go.ParentID !== undefined && go.ParentID !== 0 && !parentObj && !go.IsAttachment)
             {
-                this.requestMissingObject(go.ParentID).catch((e: unknown) =>
+                if (this.fullStore)
                 {
-                    Logger.Error(e);
-                });
+                    this.requestMissingObject(go.ParentID).catch((e: unknown) =>
+                    {
+                        Logger.Error(e);
+                    });
+                }
             }
             return go;
         }
-    }
-
-    populateChildren(obj: GameObject, _resolve = false): void
-    {
-        if (obj !== undefined)
-        {
-            obj.children = [];
-            obj.totalChildren = 0;
-            for (const child of this.getObjectsByParent(obj.ID))
-            {
-                if (child.PCode !== PCode.Avatar)
-                {
-                    obj.totalChildren++;
-                    this.populateChildren(child);
-                    if (child.totalChildren !== undefined)
-                    {
-                        obj.totalChildren += child.totalChildren;
-                    }
-                    obj.children.push(child);
-                }
-            }
-            obj.childrenPopulated = true;
-        }
-    }
-
-    async getAllObjects(): Promise<GameObject[]>
-    {
-        const results = [];
-        const found: { [key: string]: GameObject } = {};
-        for (const localID of this.objects.keys())
-        {
-            const go = this.objects.get(localID);
-            if (go && go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || !go.IsAttachment))
-            {
-                try
-                {
-                    const parent = this.findParent(go);
-                    if (parent.ParentID === 0)
-                    {
-                        const uuid = parent.FullID.toString();
-
-                        if (found[uuid] === undefined)
-                        {
-                            found[uuid] = parent;
-                            results.push(parent);
-                        }
-                    }
-                    if (go.ParentID)
-                    {
-                        let objects = this.objectsByParent.get(go.ParentID)
-                        if (!objects?.includes(localID))
-                        {
-                            if (objects === undefined)
-                            {
-                                objects = [];
-                            }
-                            objects.push(localID);
-                            this.objectsByParent.set(go.ParentID, objects);
-                        }
-                    }
-                }
-                catch (error)
-                {
-                    console.log('Failed to find parent for ' + go.FullID.toString());
-                    console.error(error);
-                    // Unable to find parent, full object probably not fully loaded yet
-                }
-            }
-        }
-
-        // Now populate children of each found object
-        for (const obj of results)
-        {
-            this.populateChildren(obj);
-        }
-
-        return results;
-    }
-
-
-    getNumberOfObjects(): number
-    {
-        return Object.keys(this.objects).length;
-    }
-
-    async getObjectsInArea(minX: number, maxX: number, minY: number, maxY: number, minZ: number, maxZ: number): Promise<GameObject[]>
-    {
-        if (!this.rtree)
-        {
-            throw new Error('GetObjectsInArea not available with the Lite object store');
-        }
-        const result = this.rtree.search({
-            minX: minX,
-            maxX: maxX,
-            minY: minY,
-            maxY: maxY,
-            minZ: minZ,
-            maxZ: maxZ
-        });
-        const found: { [key: string]: GameObject } = {};
-        const objs: GameObject[] = [];
-        for (const obj of result)
-        {
-            const o = obj as ITreeBoundingBox;
-            const go = o.gameObject as GameObject;
-            if (go.PCode !== PCode.Avatar && (go.IsAttachment === undefined || !go.IsAttachment))
-            {
-                try
-                {
-                    const parent = this.findParent(go);
-                    if (parent.PCode !== PCode.Avatar && (parent.IsAttachment === undefined || !parent.IsAttachment) && parent.ParentID === 0)
-                    {
-                        const uuid = parent.FullID.toString();
-
-                        if (found[uuid] === undefined)
-                        {
-                            found[uuid] = parent;
-                            objs.push(parent);
-                        }
-                    }
-                }
-                catch (error)
-                {
-                    console.log('Failed to find parent for ' + go.FullID.toString());
-                    console.error(error);
-                    // Unable to find parent, full object probably not fully loaded yet
-                }
-            }
-        }
-
-        // Now populate children of each found object
-        for (const obj of objs)
-        {
-            this.populateChildren(obj);
-        }
-
-        return objs;
-    }
-
-    getObjectByUUID(fullID: UUID | string): GameObject
-    {
-        if (fullID instanceof UUID)
-        {
-            fullID = fullID.toString();
-        }
-        const localID = this.objectsByUUID.get(fullID);
-        const go = this.objects.get(localID ?? 0);
-        if (localID === undefined || go === undefined)
-        {
-            throw new Error('No object found with that UUID');
-        }
-        return go;
-    }
-
-    getObjectByLocalID(localID: number): GameObject
-    {
-        const go = this.objects.get(localID);
-        if (!go)
-        {
-            throw new Error('No object found with that UUID');
-        }
-        return go;
-    }
-
-    insertIntoRtree(obj: GameObject): void
-    {
-        if (!this.rtree)
-        {
-            return;
-        }
-        if (obj.rtreeEntry !== undefined)
-        {
-            this.rtree.remove(obj.rtreeEntry);
-        }
-        if (!obj.Scale || !obj.Position || !obj.Rotation)
-        {
-            return;
-        }
-        const normalizedScale = new Vector3(obj.Scale).multiplyByTSMQuat(new Quaternion(obj.Rotation));
-
-        const bounds: ITreeBoundingBox = {
-            minX: obj.Position.x - (normalizedScale.x / 2),
-            maxX: obj.Position.x + (normalizedScale.x / 2),
-            minY: obj.Position.y - (normalizedScale.y / 2),
-            maxY: obj.Position.y + (normalizedScale.y / 2),
-            minZ: obj.Position.z - (normalizedScale.z / 2),
-            maxZ: obj.Position.z + (normalizedScale.z / 2),
-            gameObject: obj
-        };
-
-        obj.rtreeEntry = bounds;
-        this.rtree.insert(bounds);
     }
 }

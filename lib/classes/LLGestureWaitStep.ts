@@ -4,7 +4,7 @@ import { LLGestureWaitFlags } from '../enums/LLGestureWaitFlags';
 
 export class LLGestureWaitStep extends LLGestureStep
 {
-    stepType: LLGestureStepType = LLGestureStepType.Wait;
-    waitTime: number;
-    flags: LLGestureWaitFlags = LLGestureWaitFlags.None;
+    public stepType: LLGestureStepType = LLGestureStepType.Wait;
+    public waitTime: number;
+    public flags: LLGestureWaitFlags = LLGestureWaitFlags.None;
 }

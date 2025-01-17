@@ -1,19 +1,19 @@
-import { MessageBase } from './MessageBase';
+import type { MessageBase } from './MessageBase';
 import { Zerocoder } from './Zerocoder';
 import * as MessageClass from './MessageClasses';
 import { nameFromID } from './MessageClasses';
 import { MessageFlags } from '../enums/MessageFlags';
 import { PacketFlags } from '../enums/PacketFlags';
-import { DecodeFlags } from '../enums/DecodeFlags';
+import type { DecodeFlags } from '../enums/DecodeFlags';
 
 export class Packet
 {
-    packetFlags: PacketFlags = 0 as PacketFlags;
-    sequenceNumber = 0;
-    extraHeader: Buffer = Buffer.allocUnsafe(0);
-    message: MessageBase;
+    public packetFlags: PacketFlags = 0 as PacketFlags;
+    public sequenceNumber = 0;
+    public extraHeader: Buffer = Buffer.allocUnsafe(0);
+    public message: MessageBase;
 
-    getSize(): number
+    public getSize(): number
     {
         let idSize = 4;
         if (this.message.messageFlags & MessageFlags.FrequencyHigh)
@@ -27,7 +27,7 @@ export class Packet
         return 1 + 4 + 1 + this.extraHeader.length + idSize + this.message.getSize();
     }
 
-    writeToBuffer(buf: Buffer, pos: number, options?: DecodeFlags): Buffer
+    public writeToBuffer(buf: Buffer, pos: number, options?: DecodeFlags): Buffer
     {
         if (options === undefined)
         {
@@ -81,7 +81,7 @@ export class Packet
         return buf;
     }
 
-    readFromBuffer(buf: Buffer, pos: number, ackReceived: (sequenceID: number) => void, sendAck: (sequenceID: number) => void):  number
+    public readFromBuffer(buf: Buffer, pos: number, ackReceived: (sequenceID: number) => void, sendAck: (sequenceID: number) => void):  number
     {
         this.packetFlags = buf.readUInt8(pos++);
         this.sequenceNumber = buf.readUInt32BE(pos);
@@ -93,7 +93,7 @@ export class Packet
         const extraBytes = buf.readUInt8(pos++);
         if (extraBytes > 0)
         {
-            this.extraHeader = buf.slice(pos, pos + extraBytes);
+            this.extraHeader = buf.subarray(pos, pos + extraBytes);
             pos += extraBytes;
         }
         else
@@ -140,7 +140,7 @@ export class Packet
             pos++;
         }
 
-        this.message = new (<any>MessageClass)[nameFromID(messageID)]() as MessageBase;
+        this.message = new (MessageClass as any)[nameFromID(messageID)]() as MessageBase;
 
         pos += this.message.readFromBuffer(buf, pos);
 

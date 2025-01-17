@@ -1,6 +1,6 @@
 import * as LLSD from '@caspertech/llsd';
-import { LLGLTFMaterialData } from './LLGLTFMaterialData';
-
+import type { LLGLTFMaterialData } from './LLGLTFMaterialData';
+ 
 export class LLGLTFMaterial
 {
     public type?: string;
@@ -11,13 +11,13 @@ export class LLGLTFMaterial
     {
         if (data !== undefined)
         {
-            const header = data.slice(0, 18).toString('utf-8');
+            const header = data.subarray(0, 18).toString('utf-8');
             if (header.length !== 18 || header !== '<? LLSD/Binary ?>\n')
             {
                 throw new Error('Failed to parse LLGLTFMaterial');
             }
 
-            const body = new LLSD.Binary(Array.from(data.slice(18)), 'BINARY');
+            const body = new LLSD.Binary(Array.from(data.subarray(18)), 'BINARY');
             const llsd = LLSD.LLSD.parseBinary(body);
             if (!llsd.result)
             {

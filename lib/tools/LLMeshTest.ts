@@ -6,5 +6,8 @@ const buf = fs.readFileSync(fileName);
 LLMesh.from(buf).then((mesh: LLMesh) =>
 {
     console.log(mesh);
+}).catch((e: unknown) =>
+{
+    console.error(e);
 });
 

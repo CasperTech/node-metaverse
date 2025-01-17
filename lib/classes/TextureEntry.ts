@@ -2,16 +2,16 @@ import { TextureEntryFace } from './TextureEntryFace';
 import { UUID } from './UUID';
 import { Color4 } from './Color4';
 import { Utils } from './Utils';
-import { LLGLTFMaterialOverride } from './LLGLTFMaterialOverride';
+import type { LLGLTFMaterialOverride } from './LLGLTFMaterialOverride';
 
 export class TextureEntry
 {
-    static MAX_UINT32 = 4294967295;
+    public static MAX_UINT32 = 4294967295;
     public defaultTexture: TextureEntryFace | null;
     public faces: TextureEntryFace[] = [];
     public gltfMaterialOverrides = new Map<number, LLGLTFMaterialOverride>()
 
-    static readFaceBitfield(buf: Buffer, pos: number): {
+    public static readFaceBitfield(buf: Buffer, pos: number): {
         result: boolean,
         pos: number,
         faceBits: number,
@@ -41,7 +41,7 @@ export class TextureEntry
         return result;
     }
 
-    static getFaceBitfieldBuffer(bitfield: number): Buffer
+    public static getFaceBitfieldBuffer(bitfield: number): Buffer
     {
         let byteLength = 0;
         let tmpBitfield = bitfield;
@@ -70,7 +70,7 @@ export class TextureEntry
         return bytes;
     }
 
-    static from(buf: Buffer): TextureEntry
+    public static from(buf: Buffer): TextureEntry
     {
         const te = new TextureEntry();
         if (buf.length < 16)
@@ -380,24 +380,17 @@ export class TextureEntry
         return te;
     }
 
-    constructor()
+    public getEffectiveEntryForFace(face: number): TextureEntryFace
     {
-
+        const def = new TextureEntryFace(this.defaultTexture);
+        if (this.faces.length > face)
+        {
+            return this.faces[face];
+        }
+        return def;
     }
 
-    private createFace(face: number): void
-    {
-        if (face > 32)
-        {
-            console.error('Warning: Face number exceeds maximum number of faces: 32');
-        }
-        while (this.faces.length <= face)
-        {
-            this.faces.push(new TextureEntryFace(this.defaultTexture));
-        }
-    }
-
-    toBuffer(): Buffer
+    public toBuffer(): Buffer
     {
         if (this.defaultTexture === null)
         {
@@ -573,7 +566,7 @@ export class TextureEntry
         return Buffer.concat(chunks);
     }
 
-    getChunks(chunks: Buffer[], items: number[], func: (item: TextureEntryFace) => Buffer): void
+    public getChunks(chunks: Buffer[], items: number[], func: (item: TextureEntryFace) => Buffer): void
     {
         if (this.defaultTexture !== null)
         {
@@ -623,8 +616,20 @@ export class TextureEntry
         }
     }
 
-    toBase64(): string
+    public toBase64(): string
     {
         return this.toBuffer().toString('base64');
+    }
+
+    private createFace(face: number): void
+    {
+        if (face > 32)
+        {
+            console.error('Warning: Face number exceeds maximum number of faces: 32');
+        }
+        while (this.faces.length <= face)
+        {
+            this.faces.push(new TextureEntryFace(this.defaultTexture));
+        }
     }
 }

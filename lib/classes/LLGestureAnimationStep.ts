@@ -1,12 +1,12 @@
 import { LLGestureStep } from './LLGestureStep';
 import { LLGestureStepType } from '../enums/LLGestureStepType';
-import { UUID } from './UUID';
+import type { UUID } from './UUID';
 import { LLGestureAnimationFlags } from '../enums/LLGestureAnimationFlags';
 
 export class LLGestureAnimationStep extends LLGestureStep
 {
-    stepType: LLGestureStepType = LLGestureStepType.Animation;
-    animationName: string;
-    assetID: UUID;
-    flags: LLGestureAnimationFlags = LLGestureAnimationFlags.None;
+    public stepType: LLGestureStepType = LLGestureStepType.Animation;
+    public animationName: string;
+    public assetID: UUID;
+    public flags: LLGestureAnimationFlags = LLGestureAnimationFlags.None;
 }

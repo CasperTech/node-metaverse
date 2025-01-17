@@ -1,4 +1,4 @@
-import * as Long from 'long';
+import type * as Long from 'long';
 
 export interface GlobalPosition
 {

@@ -1,7 +1,7 @@
-import { UUID } from '../classes/UUID';
+import type { UUID } from '../classes/UUID';
 
 export class GroupChatSessionJoinEvent
 {
-    sessionID: UUID;
-    success: boolean;
+    public sessionID: UUID;
+    public success: boolean;
 }

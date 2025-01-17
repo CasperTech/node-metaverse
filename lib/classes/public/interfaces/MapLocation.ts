@@ -1,6 +1,6 @@
-import { UUID } from '../../UUID';
-import * as Long from 'long';
-import { Vector2 } from '../../Vector2';
+import type { UUID } from '../../UUID';
+import type * as Long from 'long';
+import type { Vector2 } from '../../Vector2';
 
 export interface MapLocation
 {

@@ -9,27 +9,27 @@ import { InviteGroupRequestMessage } from '../messages/InviteGroupRequest';
 import { GroupRole } from '../GroupRole';
 import { GroupRoleDataRequestMessage } from '../messages/GroupRoleDataRequest';
 import { Message } from '../../enums/Message';
-import { GroupRoleDataReplyMessage } from '../messages/GroupRoleDataReply';
+import type { GroupRoleDataReplyMessage } from '../messages/GroupRoleDataReply';
 import { GroupMember } from '../GroupMember';
 import { FilterResponse } from '../../enums/FilterResponse';
 import * as LLSD from '@caspertech/llsd';
 import { EjectGroupMemberRequestMessage } from '../messages/EjectGroupMemberRequest';
 import { GroupProfileRequestMessage } from '../messages/GroupProfileRequest';
-import { GroupProfileReplyMessage } from '../messages/GroupProfileReply';
+import type { GroupProfileReplyMessage } from '../messages/GroupProfileReply';
 import { GroupBanAction } from '../../enums/GroupBanAction';
 import { GroupBan } from '../GroupBan';
-import { GroupInviteEvent } from '../../events/GroupInviteEvent';
-import { GroupProfileReplyEvent } from '../../events/GroupProfileReplyEvent';
+import type { GroupInviteEvent } from '../../events/GroupInviteEvent';
+import type { GroupProfileReplyEvent } from '../../events/GroupProfileReplyEvent';
 
 export class GroupCommands extends CommandsBase
 {
-    async sendGroupNotice(groupID: UUID | string, subject: string, message: string): Promise<void>
+    public async sendGroupNotice(groupID: UUID | string, subject: string, message: string): Promise<void>
     {
         if (typeof groupID === 'string')
         {
             groupID = new UUID(groupID);
         }
-        const circuit = this.circuit;
+        const {circuit} = this;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
         im.AgentData = {
@@ -54,10 +54,10 @@ export class GroupCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return await circuit.waitForAck(sequenceNo, 10000);
+        await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async sendGroupInviteBulk(groupID: UUID | string, sendTo: {
+    public async sendGroupInviteBulk(groupID: UUID | string, sendTo: {
         avatarID: UUID | string,
         roleID: UUID | string | undefined
     }[]): Promise<void>
@@ -96,10 +96,10 @@ export class GroupCommands extends CommandsBase
         }
 
         const sequenceNo = this.circuit.sendMessage(igr, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    getSessionAgentCount(sessionID: UUID | string): number
+    public getSessionAgentCount(sessionID: UUID | string): number
     {
         if (typeof sessionID === 'string')
         {
@@ -108,18 +108,18 @@ export class GroupCommands extends CommandsBase
         return this.agent.getSessionAgentCount(sessionID);
     }
 
-    async sendGroupInvite(groupID: UUID | string, to: UUID | string, role: UUID | string | undefined): Promise<void>
+    public async sendGroupInvite(groupID: UUID | string, to: UUID | string, role: UUID | string | undefined): Promise<void>
     {
         const sendTo = [{
             avatarID: to,
             roleID: role
         }];
-        return await this.sendGroupInviteBulk(groupID, sendTo);
+        await this.sendGroupInviteBulk(groupID, sendTo);
     }
 
-    async acceptGroupInvite(event: GroupInviteEvent): Promise<void>
+    public async acceptGroupInvite(event: GroupInviteEvent): Promise<void>
     {
-        const circuit = this.circuit;
+        const {circuit} = this;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
         im.AgentData = {
@@ -144,12 +144,12 @@ export class GroupCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return await circuit.waitForAck(sequenceNo, 10000);
+        await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async rejectGroupInvite(event: GroupInviteEvent): Promise<void>
+    public async rejectGroupInvite(event: GroupInviteEvent): Promise<void>
     {
-        const circuit = this.circuit;
+        const {circuit} = this;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
         im.AgentData = {
@@ -174,15 +174,15 @@ export class GroupCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return await circuit.waitForAck(sequenceNo, 10000);
+        await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async unbanMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[]): Promise<void>
+    public async unbanMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[]): Promise<void>
     {
         return this.banMembers(groupID, avatars, GroupBanAction.Unban);
     }
 
-    async banMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[], groupAction: GroupBanAction = GroupBanAction.Ban): Promise<void>
+    public async banMembers(groupID: UUID | string, avatars: UUID | string | string[] | UUID[], groupAction: GroupBanAction = GroupBanAction.Ban): Promise<void>
     {
         const listOfIDs: string[] = [];
         if (typeof groupID === 'string')
@@ -212,7 +212,10 @@ export class GroupCommands extends CommandsBase
             listOfIDs.push(avatars.toString());
         }
 
-        const requestData: any = {
+        const requestData: {
+            ban_action: GroupBanAction,
+            ban_ids: unknown[]
+        } = {
             'ban_action': groupAction,
             'ban_ids': []
         };
@@ -224,7 +227,7 @@ export class GroupCommands extends CommandsBase
         await this.currentRegion.caps.capsPostXML(['GroupAPIv1', { 'group_id': groupID.toString() }], requestData);
     }
 
-    async getBanList(groupID: UUID | string): Promise<GroupBan[]>
+    public async getBanList(groupID: UUID | string): Promise<GroupBan[]>
     {
         if (typeof groupID === 'string')
         {
@@ -242,7 +245,7 @@ export class GroupCommands extends CommandsBase
         return bans;
     }
 
-    async getMemberList(groupID: UUID | string): Promise<GroupMember[]>
+    public async getMemberList(groupID: UUID | string): Promise<GroupMember[]>
     {
         if (typeof groupID === 'string')
         {
@@ -253,28 +256,39 @@ export class GroupCommands extends CommandsBase
             'group_id': new LLSD.UUID(groupID.toString())
         };
 
-        const response: any = await this.currentRegion.caps.capsPostXML('GroupMemberData', requestData);
-        if (response['members'])
+        const response = await this.currentRegion.caps.capsPostXML('GroupMemberData', requestData) as {
+            members?: Record<string, {
+                last_login: string,
+                owner: string,
+                title: number,
+                powers: string,
+            }>,
+            titles: Record<string, string>,
+            defaults: {
+                default_powers: string
+            }
+        };
+        if (response.members !== undefined)
         {
-            for (const uuid of Object.keys(response['members']))
+            for (const uuid of Object.keys(response.members))
             {
                 const member = new GroupMember();
-                const data = response['members'][uuid];
+                const data = response.members[uuid];
                 member.AgentID = new UUID(uuid);
-                member.OnlineStatus = data['last_login'];
-                let powers = response['defaults']['default_powers'];
-                if (data['powers'])
+                member.OnlineStatus = data.last_login;
+                let powers = response.defaults.default_powers;
+                if (data.powers)
                 {
-                    powers = data['powers'];
+                    powers = data.powers;
                 }
-                member.IsOwner = data['owner'] === 'Y';
+                member.IsOwner = data.owner === 'Y';
 
                 let titleIndex = 0;
-                if (data['title'])
+                if (data.title)
                 {
-                    titleIndex = data['title'];
+                    titleIndex = data.title;
                 }
-                member.Title = response['titles'][titleIndex];
+                member.Title = response.titles[titleIndex];
                 member.AgentPowers = Utils.HexToLong(powers);
 
                 result.push(member);
@@ -287,75 +301,60 @@ export class GroupCommands extends CommandsBase
         }
     }
 
-    getGroupRoles(groupID: UUID | string): Promise<GroupRole[]>
+    public async getGroupRoles(groupID: UUID | string): Promise<GroupRole[]>
     {
-        return new Promise<GroupRole[]>((resolve, reject) =>
+        const result: GroupRole[] = [];
+        if (typeof groupID === 'string')
         {
-            const result: GroupRole[] = [];
-            if (typeof groupID === 'string')
-            {
-                groupID = new UUID(groupID);
-            }
-            const grdr = new GroupRoleDataRequestMessage();
-            grdr.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: this.circuit.sessionID
-            };
-            const requestID = UUID.random();
-            grdr.GroupData = {
-                GroupID: groupID,
-                RequestID: requestID
-            };
-            let totalRoleCount = 0;
+            groupID = new UUID(groupID);
+        }
+        const grdr = new GroupRoleDataRequestMessage();
+        grdr.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        const requestID = UUID.random();
+        grdr.GroupData = {
+            GroupID: groupID,
+            RequestID: requestID
+        };
+        let totalRoleCount = 0;
 
-            this.circuit.sendMessage(grdr, PacketFlags.Reliable);
-            this.circuit.waitForMessage<GroupRoleDataReplyMessage>(Message.GroupRoleDataReply, 10000, (gmr: GroupRoleDataReplyMessage): FilterResponse =>
+        this.circuit.sendMessage(grdr, PacketFlags.Reliable);
+        await this.circuit.waitForMessage<GroupRoleDataReplyMessage>(Message.GroupRoleDataReply, 10000, (gmr: GroupRoleDataReplyMessage): FilterResponse =>
+        {
+            if (gmr.GroupData.RequestID.toString() === requestID.toString())
             {
-                if (gmr.GroupData.RequestID.toString() === requestID.toString())
+                totalRoleCount = gmr.GroupData.RoleCount;
+                for (const role of gmr.RoleData)
                 {
-                    totalRoleCount = gmr.GroupData.RoleCount;
-                    for (const role of gmr.RoleData)
-                    {
-                        const gr = new GroupRole();
-                        gr.RoleID = role.RoleID;
-                        gr.Name = Utils.BufferToStringSimple(role.Name);
-                        gr.Title = Utils.BufferToStringSimple(role.Title);
-                        gr.Description = Utils.BufferToStringSimple(role.Description);
-                        gr.Powers = role.Powers;
-                        gr.Members = role.Members;
-                        result.push(gr);
-                    }
-                    if (totalRoleCount > result.length)
-                    {
-                        return FilterResponse.Match;
-                    }
-                    else
-                    {
-                        return FilterResponse.Finish;
-                    }
+                    const gr = new GroupRole();
+                    gr.RoleID = role.RoleID;
+                    gr.Name = Utils.BufferToStringSimple(role.Name);
+                    gr.Title = Utils.BufferToStringSimple(role.Title);
+                    gr.Description = Utils.BufferToStringSimple(role.Description);
+                    gr.Powers = role.Powers;
+                    gr.Members = role.Members;
+                    result.push(gr);
+                }
+                if (totalRoleCount > result.length)
+                {
+                    return FilterResponse.Match;
                 }
                 else
                 {
-                    return FilterResponse.NoMatch;
+                    return FilterResponse.Finish;
                 }
-            }).then(() =>
+            }
+            else
             {
-                resolve(result);
-            }).catch((err) =>
-            {
-                if (result.length === 0)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(err);
-                }
-            });
+                return FilterResponse.NoMatch;
+            }
         });
+        return result;
     }
 
-    async ejectFromGroupBulk(groupID: UUID | string, sendTo: UUID[] | string[]): Promise<void>
+    public async ejectFromGroupBulk(groupID: UUID | string, sendTo: UUID[] | string[]): Promise<void>
     {
         if (typeof groupID === 'string')
         {
@@ -385,10 +384,10 @@ export class GroupCommands extends CommandsBase
         };
 
         const sequenceNo = this.circuit.sendMessage(msg, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async ejectFromGroup(groupID: UUID | string, ejecteeID: UUID | string): Promise<void>
+    public async ejectFromGroup(groupID: UUID | string, ejecteeID: UUID | string): Promise<void>
     {
         if (typeof ejecteeID === 'string')
         {
@@ -397,10 +396,10 @@ export class GroupCommands extends CommandsBase
 
         const sendTo: UUID[] = [ejecteeID];
 
-        return await this.ejectFromGroupBulk(groupID, sendTo);
+        await this.ejectFromGroupBulk(groupID, sendTo);
     }
 
-    async getGroupProfile(groupID: UUID | string): Promise<GroupProfileReplyEvent>
+    public async getGroupProfile(groupID: UUID | string): Promise<GroupProfileReplyEvent>
     {
         if (typeof groupID === 'string')
         {
@@ -421,7 +420,7 @@ export class GroupCommands extends CommandsBase
 
         const groupProfileReply: GroupProfileReplyMessage = (await this.circuit.waitForMessage(Message.GroupProfileReply, 10000, (packet: GroupProfileReplyMessage): FilterResponse =>
         {
-            const replyMessage: GroupProfileReplyMessage = packet as GroupProfileReplyMessage;
+            const replyMessage: GroupProfileReplyMessage = packet;
             if (replyMessage.GroupData.GroupID.equals(groupID))
             {
                 console.log('groupProfileReply Finish');
@@ -429,26 +428,26 @@ export class GroupCommands extends CommandsBase
             }
             console.log('groupProfileReply NoMatch');
             return FilterResponse.NoMatch;
-        })) as GroupProfileReplyMessage;
+        }));
 
         return new class implements GroupProfileReplyEvent
         {
-            GroupID = groupProfileReply.GroupData.GroupID;
-            Name = Utils.BufferToStringSimple(groupProfileReply.GroupData.Name);
-            Charter =  Utils.BufferToStringSimple(groupProfileReply.GroupData.Charter);
-            ShowInList = groupProfileReply.GroupData.ShowInList;
-            MemberTitle = Utils.BufferToStringSimple(groupProfileReply.GroupData.MemberTitle);
-            PowersMask = groupProfileReply.GroupData.PowersMask;
-            InsigniaID = groupProfileReply.GroupData.InsigniaID;
-            FounderID = groupProfileReply.GroupData.FounderID;
-            MembershipFee = groupProfileReply.GroupData.MembershipFee;
-            OpenEnrollment = groupProfileReply.GroupData.OpenEnrollment;
-            Money = groupProfileReply.GroupData.Money;
-            GroupMembershipCount = groupProfileReply.GroupData.GroupMembershipCount;
-            GroupRolesCount = groupProfileReply.GroupData.GroupRolesCount;
-            AllowPublish = groupProfileReply.GroupData.AllowPublish;
-            MaturePublish = groupProfileReply.GroupData.MaturePublish;
-            OwnerRole = groupProfileReply.GroupData.OwnerRole;
+            public GroupID = groupProfileReply.GroupData.GroupID;
+            public Name = Utils.BufferToStringSimple(groupProfileReply.GroupData.Name);
+            public Charter =  Utils.BufferToStringSimple(groupProfileReply.GroupData.Charter);
+            public ShowInList = groupProfileReply.GroupData.ShowInList;
+            public MemberTitle = Utils.BufferToStringSimple(groupProfileReply.GroupData.MemberTitle);
+            public PowersMask = groupProfileReply.GroupData.PowersMask;
+            public InsigniaID = groupProfileReply.GroupData.InsigniaID;
+            public FounderID = groupProfileReply.GroupData.FounderID;
+            public MembershipFee = groupProfileReply.GroupData.MembershipFee;
+            public OpenEnrollment = groupProfileReply.GroupData.OpenEnrollment;
+            public Money = groupProfileReply.GroupData.Money;
+            public GroupMembershipCount = groupProfileReply.GroupData.GroupMembershipCount;
+            public GroupRolesCount = groupProfileReply.GroupData.GroupRolesCount;
+            public AllowPublish = groupProfileReply.GroupData.AllowPublish;
+            public MaturePublish = groupProfileReply.GroupData.MaturePublish;
+            public OwnerRole = groupProfileReply.GroupData.OwnerRole;
         };
     }
 }

@@ -1,4 +1,4 @@
-import {
+import type {
     LLGLTFExtensionsAndExtras,
     LLGLTFMaterialData,
     LLGLTFMaterialEntry,
@@ -24,6 +24,163 @@ export class LLGLTFMaterialOverride
     public alphaCutoff?: number;
     public doubleSided?: boolean;
     public textureTransforms?: (LLGLTFTextureTransformOverride | null)[];
+
+    public static fromFullMaterialJSON(json: string): LLGLTFMaterialOverride
+    {
+        const obj = JSON.parse(json) as LLGLTFMaterialData;
+
+        const over = new LLGLTFMaterialOverride();
+
+        if (!obj.materials?.length)
+        {
+            return over;
+        }
+        const mat = obj.materials[0];
+
+        const getTexture = (idx: number): { uuid: string | null, transform: LLGLTFTextureTransformOverride | null } =>
+        {
+            const found: {
+                uuid: string | null,
+                transform: LLGLTFTextureTransformOverride | null
+            } = {
+                uuid: null,
+                transform: null
+            };
+
+            if (obj.textures && Array.isArray(obj.textures) && obj.textures.length > idx)
+            {
+                const source = obj.textures[idx].source;
+                if (source !== undefined && obj.images && Array.isArray(obj.images) && obj.images.length > source)
+                {
+                    const img = obj.images[source];
+                    if ('uri' in img)
+                    {
+                        found.uuid = img.uri ?? null;
+                        if (found.uuid === UUID.zero().toString())
+                        {
+                            found.uuid = null;
+                        }
+                    }
+                }
+                const transform = obj.textures[idx].extensions?.KHR_texture_transform as {
+                    offset?: number[],
+                    scale?: number[],
+                    rotation?: number
+                };
+                if (transform)
+                {
+                    found.transform = transform ?? null;
+                }
+            }
+
+            return found;
+        };
+
+        if (mat.pbrMetallicRoughness)
+        {
+            const pbr = mat.pbrMetallicRoughness;
+            if (pbr.metallicFactor !== undefined)
+            {
+                over.metallicFactor = pbr.metallicFactor;
+            }
+            if (pbr.roughnessFactor !== undefined)
+            {
+                over.roughnessFactor = pbr.roughnessFactor;
+            }
+            if (pbr.baseColorFactor !== undefined && Array.isArray(pbr.baseColorFactor) && pbr.baseColorFactor.length === 4)
+            {
+                over.baseColor = pbr.baseColorFactor;
+            }
+            if (pbr.baseColorTexture?.index !== undefined)
+            {
+                const tex = getTexture(pbr.baseColorTexture.index);
+                if (tex?.uuid)
+                {
+                    over.setTexture(0, tex.uuid);
+                }
+                if (tex?.transform)
+                {
+                    over.setTransform(0, tex.transform);
+                }
+            }
+            if (pbr.metallicRoughnessTexture?.index !== undefined)
+            {
+                const tex = getTexture(pbr.metallicRoughnessTexture.index);
+                if (tex?.uuid)
+                {
+                    over.setTexture(2, tex.uuid);
+                }
+                if (tex?.transform)
+                {
+                    over.setTransform(2, tex.transform);
+                }
+            }
+        }
+
+        if (mat.alphaMode)
+        {
+            switch (mat.alphaMode)
+            {
+                case 'BLEND':
+                    over.alphaMode = 1;
+                    break;
+                case 'MASK':
+                    over.alphaMode = 2;
+                    break;
+            }
+        }
+        else if (mat.extras?.override_alpha_mode)
+        {
+            over.alphaMode = 0;
+        }
+
+        if (mat.alphaCutoff !== undefined)
+        {
+            over.alphaCutoff = mat.alphaCutoff;
+        }
+
+        if (mat.emissiveFactor !== undefined)
+        {
+            over.emissiveFactor = mat.emissiveFactor;
+        }
+
+        if (mat.doubleSided === true)
+        {
+            over.doubleSided = true;
+        }
+        else if (mat.extras?.override_double_sided)
+        {
+            over.doubleSided = false;
+        }
+
+        if (mat.normalTexture?.index !== undefined)
+        {
+            const tex = getTexture(mat.normalTexture?.index);
+            if (tex?.uuid)
+            {
+                over.setTexture(1, tex.uuid);
+            }
+            if (tex?.transform)
+            {
+                over.setTransform(1, tex.transform);
+            }
+        }
+
+        if (mat.emissiveTexture?.index !== undefined)
+        {
+            const tex = getTexture(mat.emissiveTexture?.index);
+            if (tex?.uuid)
+            {
+                over.setTexture(3, tex.uuid);
+            }
+            if (tex?.transform)
+            {
+                over.setTransform(3, tex.transform);
+            }
+        }
+
+        return over;
+    }
 
     public getFullMaterialJSON(): string
     {
@@ -51,15 +208,21 @@ export class LLGLTFMaterialOverride
                 const texture = this.textures?.[texNum];
                 if (texture)
                 {
-                    obj.images!.push({
-                        uri: texture
-                    });
+                    if (obj.images)
+                    {
+                        obj.images.push({
+                            uri: texture
+                        });
+                    }
                 }
                 else
                 {
-                    obj.images!.push({
-                        uri: UUID.zero().toString()
-                    });
+                    if (obj.images)
+                    {
+                        obj.images.push({
+                            uri: UUID.zero().toString()
+                        });
+                    }
                 }
 
                 const tex: {
@@ -236,162 +399,5 @@ export class LLGLTFMaterialOverride
             this.textureTransforms.push(null);
         }
         this.textureTransforms[idx] = trans;
-    }
-
-    public static fromFullMaterialJSON(json: string): LLGLTFMaterialOverride
-    {
-        const obj = JSON.parse(json) as LLGLTFMaterialData;
-
-        const over = new LLGLTFMaterialOverride();
-
-        if (!obj.materials?.length)
-        {
-            return over;
-        }
-        const mat = obj.materials[0];
-
-        const getTexture = (idx: number): { uuid: string | null, transform: LLGLTFTextureTransformOverride | null } =>
-        {
-            const found: {
-                uuid: string | null,
-                transform: LLGLTFTextureTransformOverride | null
-            } = {
-                uuid: null,
-                transform: null
-            };
-
-            if (obj.textures && Array.isArray(obj.textures) && obj.textures.length > idx)
-            {
-                const source = obj.textures[idx].source;
-                if (source !== undefined && obj.images && Array.isArray(obj.images) && obj.images.length > source)
-                {
-                    const img = obj.images[source];
-                    if ('uri' in img)
-                    {
-                        found.uuid = img.uri ?? null;
-                        if (found.uuid === UUID.zero().toString())
-                        {
-                            found.uuid = null;
-                        }
-                    }
-                }
-                const transform = obj.textures[idx].extensions?.KHR_texture_transform as {
-                    offset?: number[],
-                    scale?: number[],
-                    rotation?: number
-                };
-                if (transform)
-                {
-                    found.transform = transform ?? null;
-                }
-            }
-
-            return found;
-        };
-
-        if (mat.pbrMetallicRoughness)
-        {
-            const pbr = mat.pbrMetallicRoughness;
-            if (pbr.metallicFactor !== undefined)
-            {
-                over.metallicFactor = pbr.metallicFactor;
-            }
-            if (pbr.roughnessFactor !== undefined)
-            {
-                over.roughnessFactor = pbr.roughnessFactor;
-            }
-            if (pbr.baseColorFactor !== undefined && Array.isArray(pbr.baseColorFactor) && pbr.baseColorFactor.length === 4)
-            {
-                over.baseColor = pbr.baseColorFactor;
-            }
-            if (pbr.baseColorTexture?.index !== undefined)
-            {
-                const tex = getTexture(pbr.baseColorTexture.index);
-                if (tex && tex.uuid)
-                {
-                    over.setTexture(0, tex.uuid);
-                }
-                if (tex && tex.transform)
-                {
-                    over.setTransform(0, tex.transform);
-                }
-            }
-            if (pbr.metallicRoughnessTexture?.index !== undefined)
-            {
-                const tex = getTexture(pbr.metallicRoughnessTexture.index);
-                if (tex && tex.uuid)
-                {
-                    over.setTexture(2, tex.uuid);
-                }
-                if (tex && tex.transform)
-                {
-                    over.setTransform(2, tex.transform);
-                }
-            }
-        }
-
-        if (mat.alphaMode)
-        {
-            switch (mat.alphaMode)
-            {
-                case 'BLEND':
-                    over.alphaMode = 1;
-                    break;
-                case 'MASK':
-                    over.alphaMode = 2;
-                    break;
-            }
-        }
-        else if (mat.extras && mat.extras.override_alpha_mode)
-        {
-            over.alphaMode = 0;
-        }
-
-        if (mat.alphaCutoff !== undefined)
-        {
-            over.alphaCutoff = mat.alphaCutoff;
-        }
-
-        if (mat.emissiveFactor !== undefined)
-        {
-            over.emissiveFactor = mat.emissiveFactor;
-        }
-
-        if (mat.doubleSided === true)
-        {
-            over.doubleSided = true;
-        }
-        else if (mat.extras && mat.extras.override_double_sided)
-        {
-            over.doubleSided = false;
-        }
-
-        if (mat.normalTexture?.index !== undefined)
-        {
-            const tex = getTexture(mat.normalTexture?.index);
-            if (tex && tex.uuid)
-            {
-                over.setTexture(1, tex.uuid);
-            }
-            if (tex && tex.transform)
-            {
-                over.setTransform(1, tex.transform);
-            }
-        }
-
-        if (mat.emissiveTexture?.index !== undefined)
-        {
-            const tex = getTexture(mat.emissiveTexture?.index);
-            if (tex && tex.uuid)
-            {
-                over.setTexture(3, tex.uuid);
-            }
-            if (tex && tex.transform)
-            {
-                over.setTransform(3, tex.transform);
-            }
-        }
-
-        return over;
     }
 }

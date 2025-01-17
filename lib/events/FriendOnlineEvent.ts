@@ -1,7 +1,7 @@
-import { Friend } from '../classes/public/Friend';
+import type { Friend } from '../classes/public/Friend';
 
 export class FriendOnlineEvent
 {
-    friend: Friend;
-    online: boolean;
+    public friend: Friend;
+    public online: boolean;
 }

@@ -2,7 +2,7 @@ import * as logger from 'winston';
 import * as winston from 'winston';
 import * as moment from 'moment';
 import * as chalk from 'chalk';
-import { TransformableInfo } from 'logform';
+import type { TransformableInfo } from 'logform';
 
 const formatLevel = function(text: string, level: string): string
 {
@@ -58,22 +58,22 @@ logger.configure({
 
 export class Logger
 {
+    public static prefix = '';
     private static prefixLevel = 0;
-    static prefix = '';
 
-    static increasePrefixLevel(): void
+    public static increasePrefixLevel(): void
     {
         this.prefixLevel++;
         this.generatePrefix();
     }
 
-    static decreasePrefixLevel(): void
+    public static decreasePrefixLevel(): void
     {
         this.prefixLevel--;
         this.generatePrefix();
     }
 
-    static generatePrefix(): void
+    public static generatePrefix(): void
     {
         this.prefix = '';
         for (let x = 0; x < this.prefixLevel; x++)
@@ -86,7 +86,7 @@ export class Logger
         }
     }
 
-    static Debug(message: string | object): void
+    public static Debug(message: string | object): void
     {
         if (typeof message === 'string')
         {
@@ -94,7 +94,7 @@ export class Logger
         }
         this.Log('debug', message);
     }
-    static Info(message: string | object): void
+    public static Info(message: string | object): void
     {
         if (typeof message === 'string')
         {
@@ -102,7 +102,7 @@ export class Logger
         }
         this.Log('info', message);
     }
-    static Warn(message: string | object): void
+    public static Warn(message: string | object): void
     {
         if (typeof message === 'string')
         {
@@ -110,7 +110,7 @@ export class Logger
         }
         this.Log('warn', message);
     }
-    static Error(message: string | object | unknown): void
+    public static Error(message: unknown): void
     {
         if (typeof message !== 'object')
         {
@@ -119,7 +119,7 @@ export class Logger
         this.Log('error', message);
     }
 
-    static Log(type: string, message: string | object | unknown): void
+    public static Log(type: string, message: unknown): void
     {
         if (typeof message === 'object')
         {

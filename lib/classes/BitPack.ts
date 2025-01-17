@@ -1,17 +1,18 @@
 export class BitPack
 {
-    static MAX_BITS = 8;
-    static ON = [1];
-    static OFF = [0];
+    public static MAX_BITS = 8;
+    public static ON = [1];
+    public static OFF = [0];
 
     private bitPos = 0;
+    private bytePos: number;
 
-    constructor(private Data: Buffer, private bytePos: number)
+    public constructor(private readonly Data: Buffer, bytePos: number)
     {
-
+        this.bytePos = bytePos;
     }
 
-    get BytePos(): number
+    public get BytePos(): number
     {
         if (this.bytePos !== 0 && this.bitPos === 0)
         {
@@ -23,56 +24,56 @@ export class BitPack
         }
     }
 
-    get BitPos(): number
+    public get BitPos(): number
     {
         return this.bitPos;
     }
 
-    UnpackFloat(): number
+    public UnpackFloat(): number
     {
         const output = this.UnpackBitsBuffer(32);
         return output.readFloatLE(0);
     }
 
-    UnpackBits(count: number): number
+    public UnpackBits(count: number): number
     {
         const output = this.UnpackBitsBuffer(count);
         return output.readInt32LE(0);
     }
 
-    UnpackUBits(count: number): number
+    public UnpackUBits(count: number): number
     {
         const output = this.UnpackBitsBuffer(count);
         return output.readUInt32LE(0);
     }
 
-    UnpsckShort(): number
+    public UnpsckShort(): number
     {
         return this.UnpackBits(16);
     }
 
-    UnpackUShort(): number
+    public UnpackUShort(): number
     {
         return this.UnpackUBits(16);
     }
 
-    UnpackInt(): number
+    public UnpackInt(): number
     {
         return this.UnpackBits(32);
     }
 
-    UnpackUInt(): number
+    public UnpackUInt(): number
     {
         return this.UnpackUBits(32);
     }
 
-    UnpackByte(): number
+    public UnpackByte(): number
     {
         const output = this.UnpackBitsBuffer(8);
         return output[0];
     }
 
-    UnpackFixed(signed: boolean, intBits: number, fracBits: number): number
+    public UnpackFixed(signed: boolean, intBits: number, fracBits: number): number
     {
         let totalBits = intBits + fracBits;
 
@@ -107,7 +108,7 @@ export class BitPack
         return fixedVal;
     }
 
-    UnpackBitsBuffer(totalCount: number): Buffer
+    public UnpackBitsBuffer(totalCount: number): Buffer
     {
         const newBuf = Buffer.alloc(4, 0);
         let count = 0;

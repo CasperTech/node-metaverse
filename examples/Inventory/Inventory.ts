@@ -33,7 +33,8 @@ class Inventory extends ExampleBot
             if (childFolder.name === exampleFolderName)
             {
                 exampleFolder = childFolder;
-                await exampleFolder.populate(false);
+                // Pass "false" to skip inventory cache
+                await exampleFolder.populate();
                 break;
             }
         }
@@ -128,7 +129,8 @@ class Inventory extends ExampleBot
     async iterateFolder(folder: InventoryFolder, prefix: string): Promise<void>
     {
         console.log(prefix + ' [' + folder.name + ']');
-        await folder.populate(false);
+        // Set to false to skip cache
+        await folder.populate();
 
         for (const subFolder of folder.folders)
         {

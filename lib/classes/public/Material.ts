@@ -5,109 +5,110 @@ import { Utils } from '../Utils';
 
 export class Material
 {
-    alphaMaskCutoff: number;
-    diffuseAlphaMode: number;
-    envIntensity: number;
-    normMap: UUID;
-    normOffsetX: number;
-    normOffsetY: number;
-    normRepeatX: number;
-    normRepeatY: number;
-    normRotation: number;
-    specColor: Color4;
-    specExp: number;
-    specMap: UUID;
-    specOffsetX: number;
-    specOffsetY: number;
-    specRepeatX: number;
-    specRepeatY: number;
-    specRotation: number;
+    public alphaMaskCutoff: number;
+    public diffuseAlphaMode: number;
+    public envIntensity: number;
+    public normMap: UUID;
+    public normOffsetX: number;
+    public normOffsetY: number;
+    public normRepeatX: number;
+    public normRepeatY: number;
+    public normRotation: number;
+    public specColor: Color4;
+    public specExp: number;
+    public specMap: UUID;
+    public specOffsetX: number;
+    public specOffsetY: number;
+    public specRepeatX: number;
+    public specRepeatY: number;
+    public specRotation: number;
 
-    static fromLLSD(llsd: string): Material
+    public static fromLLSD(llsd: string): Material
     {
         const parsed = LLSD.LLSD.parseXML(llsd);
         return this.fromLLSDObject(parsed);
     }
-    static fromLLSDObject(parsed: any): Material
+
+    public static fromLLSDObject(parsed: any): Material
     {
         const material = new Material();
-        if (parsed['AlphaMaskCutoff'] !== undefined)
+        if (parsed.AlphaMaskCutoff !== undefined)
         {
-            material.alphaMaskCutoff = parsed['AlphaMaskCutoff'];
+            material.alphaMaskCutoff = parsed.AlphaMaskCutoff;
         }
-        if (parsed['DiffuseAlphaMode'] !== undefined)
+        if (parsed.DiffuseAlphaMode !== undefined)
         {
-            material.diffuseAlphaMode = parsed['DiffuseAlphaMode'];
+            material.diffuseAlphaMode = parsed.DiffuseAlphaMode;
         }
-        if (parsed['EnvIntensity'] !== undefined)
+        if (parsed.EnvIntensity !== undefined)
         {
-            material.envIntensity = parsed['EnvIntensity'];
+            material.envIntensity = parsed.EnvIntensity;
         }
-        if (parsed['NormMap'] !== undefined)
+        if (parsed.NormMap !== undefined)
         {
-            material.normMap = new UUID(parsed['NormMap'].toString())
+            material.normMap = new UUID(parsed.NormMap.toString())
         }
-        if (parsed['NormOffsetX'] !== undefined)
+        if (parsed.NormOffsetX !== undefined)
         {
-            material.normOffsetX = parsed['NormOffsetX'];
+            material.normOffsetX = parsed.NormOffsetX;
         }
-        if (parsed['NormOffsetY'] !== undefined)
+        if (parsed.NormOffsetY !== undefined)
         {
-            material.normOffsetY = parsed['NormOffsetY'];
+            material.normOffsetY = parsed.NormOffsetY;
         }
-        if (parsed['NormRepeatX'] !== undefined)
+        if (parsed.NormRepeatX !== undefined)
         {
-            material.normRepeatX = parsed['NormRepeatX'];
+            material.normRepeatX = parsed.NormRepeatX;
         }
-        if (parsed['NormRepeatY'] !== undefined)
+        if (parsed.NormRepeatY !== undefined)
         {
-            material.normRepeatY = parsed['NormRepeatY'];
+            material.normRepeatY = parsed.NormRepeatY;
         }
-        if (parsed['NormRotation'] !== undefined)
+        if (parsed.NormRotation !== undefined)
         {
-            material.normRotation = parsed['NormRotation'];
+            material.normRotation = parsed.NormRotation;
         }
-        if (parsed['SpecColor'] !== undefined && Array.isArray(parsed['SpecColor']) && parsed['SpecColor'].length > 3)
+        if (parsed.SpecColor !== undefined && Array.isArray(parsed.SpecColor) && parsed.SpecColor.length > 3)
         {
             material.specColor = new Color4([
-                parsed['SpecColor'][0],
-                parsed['SpecColor'][1],
-                parsed['SpecColor'][2],
-                parsed['SpecColor'][3]
+                parsed.SpecColor[0],
+                parsed.SpecColor[1],
+                parsed.SpecColor[2],
+                parsed.SpecColor[3]
             ]);
         }
-        if (parsed['SpecExp'] !== undefined)
+        if (parsed.SpecExp !== undefined)
         {
-            material.specExp = parsed['SpecExp'];
+            material.specExp = parsed.SpecExp;
         }
-        if (parsed['SpecMap'] !== undefined)
+        if (parsed.SpecMap !== undefined)
         {
-            material.specMap = new UUID(parsed['SpecMap'].toString())
+            material.specMap = new UUID(parsed.SpecMap.toString())
         }
-        if (parsed['SpecOffsetX'] !== undefined)
+        if (parsed.SpecOffsetX !== undefined)
         {
-            material.specOffsetX = parsed['SpecOffsetX'];
+            material.specOffsetX = parsed.SpecOffsetX;
         }
-        if (parsed['SpecOffsetY'] !== undefined)
+        if (parsed.SpecOffsetY !== undefined)
         {
-            material.specOffsetY = parsed['SpecOffsetY'];
+            material.specOffsetY = parsed.SpecOffsetY;
         }
-        if (parsed['SpecRepeatX'] !== undefined)
+        if (parsed.SpecRepeatX !== undefined)
         {
-            material.specRepeatX = parsed['SpecRepeatX'];
+            material.specRepeatX = parsed.SpecRepeatX;
         }
-        if (parsed['SpecRepeatY'] !== undefined)
+        if (parsed.SpecRepeatY !== undefined)
         {
-            material.specRepeatY = parsed['SpecRepeatY'];
+            material.specRepeatY = parsed.SpecRepeatY;
         }
-        if (parsed['SpecRotation'] !== undefined)
+        if (parsed.SpecRotation !== undefined)
         {
-            material.specRotation = parsed['SpecRotation'];
+            material.specRotation = parsed.SpecRotation;
         }
         return material;
     }
 
-    toLLSDObject(): any
+    public toLLSDObject(): any
     {
         return {
             'AlphaMaskCutoff': this.alphaMaskCutoff,
@@ -135,18 +136,18 @@ export class Material
         };
     }
 
-    toLLSD(): string
+    public toLLSD(): string
     {
-        return LLSD.LLSD.formatXML(this.toLLSDObject());
+        return String(LLSD.LLSD.formatXML(this.toLLSDObject()));
     }
 
-    async toAsset(uuid: UUID): Promise<Buffer>
+    public async toAsset(uuid: UUID): Promise<Buffer>
     {
         const asset = {
                 'ID': new LLSD.UUID(uuid.toString()),
                 'Material': this.toLLSD()
         };
         const binary = LLSD.LLSD.formatBinary(asset);
-        return await Utils.deflate(Buffer.from(binary.toArray()));
+        return Utils.deflate(Buffer.from(binary.toArray()));
     }
 }

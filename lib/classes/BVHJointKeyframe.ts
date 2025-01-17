@@ -1,7 +1,7 @@
-import { Vector3 } from './Vector3';
+import type { Vector3 } from './Vector3';
 
 export class BVHJointKeyframe
 {
-    time: number;
-    transform: Vector3;
+    public time: number;
+    public transform: Vector3;
 }

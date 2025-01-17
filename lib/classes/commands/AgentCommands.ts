@@ -1,53 +1,32 @@
-import { InventoryFolder } from '../InventoryFolder';
+import type { InventoryFolder } from '../InventoryFolder';
 import { UUID } from '../UUID';
 import { AgentAnimationMessage } from '../messages/AgentAnimation';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { CommandsBase } from './CommandsBase';
-import { Vector3 } from '../Vector3';
+import type { Vector3 } from '../Vector3';
 import { Message } from '../../enums/Message';
 import { Utils } from '../Utils';
 import { FilterResponse } from '../../enums/FilterResponse';
-import { AvatarPropertiesReplyMessage } from '../messages/AvatarPropertiesReply';
+import type { AvatarPropertiesReplyMessage } from '../messages/AvatarPropertiesReply';
 import { AvatarPropertiesRequestMessage } from '../messages/AvatarPropertiesRequest';
-import { AvatarPropertiesReplyEvent } from '../../events/AvatarPropertiesReplyEvent';
-import { Subscription } from 'rxjs';
-import { Avatar } from '../public/Avatar';
+import type { AvatarPropertiesReplyEvent } from '../../events/AvatarPropertiesReplyEvent';
+import type { Subscription } from 'rxjs';
+import type { Avatar } from '../public/Avatar';
+import type { GameObject } from '../public/GameObject';
 
 export class AgentCommands extends CommandsBase
 {
-    private async animate(anim: UUID[], run: boolean): Promise<void>
+    public async startAnimations(anim: UUID[]): Promise<void>
     {
-
-        const circuit = this.currentRegion.circuit;
-        const animPacket = new AgentAnimationMessage();
-        animPacket.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: circuit.sessionID
-        };
-        animPacket.PhysicalAvatarEventList = [];
-        animPacket.AnimationList = [];
-        for (const a of anim)
-        {
-            animPacket.AnimationList.push({
-                AnimID: a,
-                StartAnim: run
-            });
-        }
-
-        return await circuit.waitForAck(circuit.sendMessage(animPacket, PacketFlags.Reliable), 10000);
+        return this.animate(anim, true);
     }
 
-    async startAnimations(anim: UUID[]): Promise<void>
+    public async stopAnimations(anim: UUID[]): Promise<void>
     {
-        return await this.animate(anim, true);
+        return this.animate(anim, false);
     }
 
-    async stopAnimations(anim: UUID[]): Promise<void>
-    {
-        return await this.animate(anim, false);
-    }
-
-    setCamera(position: Vector3, lookAt: Vector3, viewDistance?: number, leftAxis?: Vector3, upAxis?: Vector3): void
+    public setCamera(position: Vector3, lookAt: Vector3, viewDistance?: number, leftAxis?: Vector3, upAxis?: Vector3): void
     {
         this.agent.cameraCenter = position;
         this.agent.cameraLookAt = lookAt;
@@ -66,18 +45,28 @@ export class AgentCommands extends CommandsBase
         this.agent.sendAgentUpdate();
     }
 
-    setViewDistance(viewDistance: number): void
+    // noinspection JSUnusedGlobalSymbols
+    public setViewDistance(viewDistance: number): void
     {
         this.agent.cameraFar = viewDistance;
         this.agent.sendAgentUpdate();
     }
 
-    async getWearables(): Promise<InventoryFolder>
+    // noinspection JSUnusedGlobalSymbols
+    public getGameObject(): GameObject
+    {
+        const agentLocalID = this.currentRegion.agent.localID;
+        return this.currentRegion.objects.getObjectByLocalID(agentLocalID);
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async getWearables(): Promise<InventoryFolder>
     {
         return this.agent.getWearables();
     }
 
-    waitForAppearanceComplete(timeout: number = 30000): Promise<void>
+    // noinspection JSUnusedGlobalSymbols
+    public async waitForAppearanceComplete(timeout = 30000): Promise<void>
     {
         return new Promise((resolve, reject) =>
         {
@@ -87,8 +76,8 @@ export class AgentCommands extends CommandsBase
             }
             else
             {
-                let appearanceSubscription: Subscription | undefined;
-                let timeoutTimer: number | undefined;
+                let appearanceSubscription: Subscription | undefined = undefined;
+                let timeoutTimer: number | undefined = undefined;
                 appearanceSubscription = this.agent.appearanceCompleteEvent.subscribe(() =>
                 {
                     if (timeoutTimer !== undefined)
@@ -116,7 +105,7 @@ export class AgentCommands extends CommandsBase
                         timeoutTimer = undefined;
                         reject(new Error('Timeout'));
                     }
-                }, timeout) as any as number;
+                }, timeout) as unknown as number;
                 if (this.agent.appearanceComplete)
                 {
                     if (appearanceSubscription !== undefined)
@@ -135,7 +124,8 @@ export class AgentCommands extends CommandsBase
         });
     }
 
-    getAvatar(avatarID: UUID | string = UUID.zero()): Avatar | undefined
+    // noinspection JSUnusedGlobalSymbols
+    public getAvatar(avatarID: UUID | string = UUID.zero()): Avatar | undefined
     {
         if (typeof avatarID === 'string')
         {
@@ -145,10 +135,11 @@ export class AgentCommands extends CommandsBase
         {
             avatarID = this.agent.agentID;
         }
-        return this.currentRegion.agents[avatarID.toString()];
+        return this.currentRegion.agents.get(avatarID.toString());
     }
 
-    async getAvatarProperties(avatarID: UUID | string): Promise<AvatarPropertiesReplyEvent>
+    // noinspection JSUnusedGlobalSymbols
+    public async getAvatarProperties(avatarID: UUID | string): Promise<AvatarPropertiesReplyEvent>
     {
         if (typeof avatarID === 'string')
         {
@@ -167,25 +158,46 @@ export class AgentCommands extends CommandsBase
 
         const avatarPropertiesReply: AvatarPropertiesReplyMessage = (await this.circuit.waitForMessage(Message.AvatarPropertiesReply, 10000, (packet: AvatarPropertiesReplyMessage): FilterResponse =>
         {
-            const replyMessage: AvatarPropertiesReplyMessage = packet as AvatarPropertiesReplyMessage;
-            if (replyMessage.AgentData.AvatarID.equals(avatarID))
+            if (packet.AgentData.AvatarID.equals(avatarID))
             {
                 return FilterResponse.Finish;
             }
             return FilterResponse.NoMatch;
-        })) as AvatarPropertiesReplyMessage;
+        }));
 
         return new class implements AvatarPropertiesReplyEvent
         {
-            ImageID = avatarPropertiesReply.PropertiesData.ImageID;
-            FLImageID = avatarPropertiesReply.PropertiesData.FLImageID;
-            PartnerID = avatarPropertiesReply.PropertiesData.PartnerID;
-            AboutText = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.AboutText);
-            FLAboutText = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.FLAboutText);
-            BornOn = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.BornOn);
-            ProfileURL = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.ProfileURL);
-            CharterMember = parseInt(Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.CharterMember), 10); // avatarPropertiesReply.PropertiesData.CharterMember;
-            Flags = avatarPropertiesReply.PropertiesData.Flags;
+            public ImageID = avatarPropertiesReply.PropertiesData.ImageID;
+            public FLImageID = avatarPropertiesReply.PropertiesData.FLImageID;
+            public PartnerID = avatarPropertiesReply.PropertiesData.PartnerID;
+            public AboutText = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.AboutText);
+            public FLAboutText = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.FLAboutText);
+            public BornOn = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.BornOn);
+            public ProfileURL = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.ProfileURL);
+            public CharterMember = parseInt(Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.CharterMember), 10); // avatarPropertiesReply.PropertiesData.CharterMember;
+            public Flags = avatarPropertiesReply.PropertiesData.Flags;
         };
+    }
+
+    private async animate(anim: UUID[], run: boolean): Promise<void>
+    {
+
+        const {circuit} = this.currentRegion;
+        const animPacket = new AgentAnimationMessage();
+        animPacket.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID
+        };
+        animPacket.PhysicalAvatarEventList = [];
+        animPacket.AnimationList = [];
+        for (const a of anim)
+        {
+            animPacket.AnimationList.push({
+                AnimID: a,
+                StartAnim: run
+            });
+        }
+
+        await circuit.waitForAck(circuit.sendMessage(animPacket, PacketFlags.Reliable), 10000);
     }
 }

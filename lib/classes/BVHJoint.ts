@@ -4,17 +4,17 @@ import { BVHJointKeyframe } from './BVHJointKeyframe';
 
 export class BVHJoint
 {
-    name: string;
-    priority: number;
+    public name: string;
+    public priority: number;
 
-    rotationKeyframeCount: number;
-    rotationKeyframes: BVHJointKeyframe[] = [];
+    public rotationKeyframeCount: number;
+    public rotationKeyframes: BVHJointKeyframe[] = [];
 
-    positionKeyframeCount: number;
-    positionKeyframes: BVHJointKeyframe[] = [];
+    public positionKeyframeCount: number;
+    public positionKeyframes: BVHJointKeyframe[] = [];
 
 
-    readFromBuffer(buf: Buffer, pos: number, inPoint: number, outPoint: number): number
+    public readFromBuffer(buf: Buffer, pos: number, inPoint: number, outPoint: number): number
     {
         const result = Utils.BufferToString(buf, pos);
         pos += result.readLength;

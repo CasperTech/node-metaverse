@@ -1,8 +1,8 @@
-import { InventoryFolder } from '../classes/InventoryFolder';
-import { InventoryItem } from '../classes/InventoryItem';
+import type { InventoryFolder } from '../classes/InventoryFolder';
+import type { InventoryItem } from '../classes/InventoryItem';
 
 export class BulkUpdateInventoryEvent
 {
-    folderData: InventoryFolder[] = [];
-    itemData: InventoryItem[] = [];
+    public folderData: InventoryFolder[] = [];
+    public itemData: InventoryItem[] = [];
 }

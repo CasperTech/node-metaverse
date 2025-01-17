@@ -3,8 +3,8 @@ import { Subject } from 'rxjs';
 export class BatchQueue<T>
 {
     private running = false;
-    private pending: Set<T> = new Set<T>();
-    private onResult = new Subject<{
+    private readonly pending: Set<T> = new Set<T>();
+    private readonly onResult = new Subject<{
         batch: Set<T>,
         failed?: Set<T>,
         exception?: unknown
@@ -26,7 +26,7 @@ export class BatchQueue<T>
 
         if (!this.running)
         {
-            this.processBatch().catch((_e) =>
+            this.processBatch().catch((_e: unknown) =>
             {
                 // ignore
             });
@@ -61,7 +61,7 @@ export class BatchQueue<T>
                 if (results.exception !== undefined)
                 {
                     subs.unsubscribe();
-                    reject(results.exception);
+                    reject(new Error(String(results.exception)));
                     return;
                 }
                 if (waiting.size === 0)
@@ -116,7 +116,7 @@ export class BatchQueue<T>
             this.running = false;
             if (this.pending.size > 0)
             {
-                this.processBatch().catch((_e) =>
+                this.processBatch().catch((_e: unknown) =>
                 {
                     // ignore
                 });

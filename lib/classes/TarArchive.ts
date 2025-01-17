@@ -1,6 +1,6 @@
-import { TarFile } from './TarFile';
+import type { TarFile } from './TarFile';
 
 export class TarArchive
 {
-    files: TarFile[] = [];
+    public files: TarFile[] = [];
 }

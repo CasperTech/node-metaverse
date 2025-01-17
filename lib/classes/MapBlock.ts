@@ -1,13 +1,13 @@
-import { UUID } from './UUID';
-import { RegionFlags } from '../enums/RegionFlags';
+import type { UUID } from './UUID';
+import type { RegionFlags } from '../enums/RegionFlags';
 
 export class MapBlock
 {
-    name: string;
-    mapImage: UUID;
-    accessFlags: number;
-    x: number;
-    y: number;
-    waterHeight: number;
-    regionFlags: RegionFlags;
+    public name: string;
+    public mapImage: UUID;
+    public accessFlags: number;
+    public x: number;
+    public y: number;
+    public waterHeight: number;
+    public regionFlags: RegionFlags;
 }

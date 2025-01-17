@@ -1,6 +1,7 @@
 export enum AssetType
 {
-    Unknown = -1,
+    LegacyMaterial = -2,
+    None = -1,
     Texture = 0,
     Sound = 1,
     CallingCard = 2,
@@ -9,7 +10,6 @@ export enum AssetType
     Clothing = 5,
     Object = 6,
     Notecard = 7,
-    Folder = 8,
     Category = 8,
     LSLText = 10,
     LSLBytecode = 11,
@@ -24,10 +24,13 @@ export enum AssetType
     Simstate = 22,
     Link = 24,
     LinkFolder = 25,
-    MarketplaceFolder = 26,
     Widget = 40,
     Person = 46,
     Mesh = 49,
     Settings = 56,
-    Material = 57
+    Material = 57,
+    GLTF = 58,
+    GLTFBin = 59,
+
+    Unknown = 255,
 }

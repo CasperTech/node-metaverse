@@ -5,9 +5,9 @@ import { FilterResponse } from '../../enums/FilterResponse';
 import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
 import { InstantMessageOnline } from '../../enums/InstantMessageOnline';
 import { PacketFlags } from '../../enums/PacketFlags';
-import { GroupChatSessionJoinEvent } from '../../events/GroupChatSessionJoinEvent';
-import { ScriptDialogEvent } from '../../events/ScriptDialogEvent';
-import { InventoryFolder } from '../InventoryFolder';
+import type { GroupChatSessionJoinEvent } from '../../events/GroupChatSessionJoinEvent';
+import type { ScriptDialogEvent } from '../../events/ScriptDialogEvent';
+import type { InventoryFolder } from '../InventoryFolder';
 import { InventoryItem } from '../InventoryItem';
 import { ChatFromViewerMessage } from '../messages/ChatFromViewer';
 import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
@@ -20,9 +20,9 @@ import { CommandsBase } from './CommandsBase';
 
 export class CommunicationsCommands extends CommandsBase
 {
-    async giveInventory(to: UUID | string, itemOrFolder: InventoryItem | InventoryFolder): Promise<void>
+    public async giveInventory(to: UUID | string, itemOrFolder: InventoryItem | InventoryFolder): Promise<void>
     {
-        const circuit = this.circuit;
+        const {circuit} = this;
         if (typeof to === 'string')
         {
             to = new UUID(to);
@@ -39,7 +39,7 @@ export class CommunicationsCommands extends CommandsBase
             await itemOrFolder.populate(false);
             bucket = Buffer.allocUnsafe(17 * (itemOrFolder.items.length + 1));
             let offset = 0;
-            bucket.writeUInt8(AssetType.Folder, offset++);
+            bucket.writeUInt8(AssetType.Category, offset++);
             itemOrFolder.folderID.writeToBuffer(bucket, offset); offset += 16;
             for (const item of itemOrFolder.items)
             {
@@ -71,12 +71,12 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return await circuit.waitForAck(sequenceNo, 10000);
+        await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async sendInstantMessage(to: UUID | string, message: string): Promise<void>
+    public async sendInstantMessage(to: UUID | string, message: string): Promise<void>
     {
-        const circuit = this.circuit;
+        const {circuit} = this;
         if (typeof to === 'string')
         {
             to = new UUID(to);
@@ -105,10 +105,10 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return await circuit.waitForAck(sequenceNo, 10000);
+        await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async nearbyChat(message: string, type: ChatType, channel?: number): Promise<void>
+    public async nearbyChat(message: string, type: ChatType, channel?: number): Promise<void>
     {
         if (channel === undefined)
         {
@@ -125,25 +125,25 @@ export class CommunicationsCommands extends CommandsBase
             Channel: channel
         };
         const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async say(message: string, channel?: number): Promise<void>
+    public async say(message: string, channel?: number): Promise<void>
     {
-        return await this.nearbyChat(message, ChatType.Normal, channel);
+        await this.nearbyChat(message, ChatType.Normal, channel);
     }
 
-    async whisper(message: string, channel?: number): Promise<void>
+    public async whisper(message: string, channel?: number): Promise<void>
     {
-        return await this.nearbyChat(message, ChatType.Whisper, channel);
+        await this.nearbyChat(message, ChatType.Whisper, channel);
     }
 
-    async shout(message: string, channel?: number): Promise<void>
+    public async shout(message: string, channel?: number): Promise<void>
     {
-        return await this.nearbyChat(message, ChatType.Shout, channel);
+        await this.nearbyChat(message, ChatType.Shout, channel);
     }
 
-    async startTypingLocal(): Promise<void>
+    public async startTypingLocal(): Promise<void>
     {
         const cfv = new ChatFromViewerMessage();
         cfv.AgentData = {
@@ -156,10 +156,10 @@ export class CommunicationsCommands extends CommandsBase
             Channel: 0
         };
         const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    sendTeleport(target: UUID | string, message?: string): Promise<void>
+    public async sendTeleport(target: UUID | string, message?: string): Promise<void>
     {
         if (typeof target === 'string')
         {
@@ -185,7 +185,7 @@ export class CommunicationsCommands extends CommandsBase
         return this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async stopTypingLocal(): Promise<void>
+    public async stopTypingLocal(): Promise<void>
     {
         const cfv = new ChatFromViewerMessage();
         cfv.AgentData = {
@@ -198,16 +198,16 @@ export class CommunicationsCommands extends CommandsBase
             Channel: 0
         };
         const sequenceNo = this.circuit.sendMessage(cfv, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
+        await this.circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async startTypingIM(to: UUID | string): Promise<void>
+    public async startTypingIM(to: UUID | string): Promise<void>
     {
         if (typeof to === 'string')
         {
             to = new UUID(to);
         }
-        const circuit = this.circuit;
+        const {circuit} = this;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
         im.AgentData = {
@@ -232,16 +232,16 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return await circuit.waitForAck(sequenceNo, 10000);
+        await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    async stopTypingIM(to: UUID | string): Promise<void>
+    public async stopTypingIM(to: UUID | string): Promise<void>
     {
         if (typeof to === 'string')
         {
             to = new UUID(to);
         }
-        const circuit = this.circuit;
+        const {circuit} = this;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
         im.AgentData = {
@@ -266,125 +266,62 @@ export class CommunicationsCommands extends CommandsBase
             EstateID: 0
         };
         const sequenceNo = circuit.sendMessage(im, PacketFlags.Reliable);
-        return await circuit.waitForAck(sequenceNo, 10000);
+        await circuit.waitForAck(sequenceNo, 10000);
     }
 
-    typeInstantMessage(to: UUID | string, message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>
+    public async typeInstantMessage(to: UUID | string, message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>
     {
-        return new Promise<void>((resolve, reject) =>
+        if (thinkingTime === undefined)
         {
-            if (thinkingTime === undefined)
-            {
-                thinkingTime = 2000;
-            }
-            setTimeout(() =>
-            {
-                if (typeof to === 'string')
-                {
-                    to = new UUID(to);
-                }
-                let typeTimer: NodeJS.Timeout | null = null;
-                this.startTypingIM(to).then(() =>
-                {
-                    typeTimer = setInterval(() =>
-                    {
-                        this.startTypingIM(to).catch(() =>
-                        {
-                            // ignore
-                        });
-                    }, 5000);
-                    if (charactersPerSecond === undefined)
-                    {
-                        charactersPerSecond = 5;
-                    }
+            thinkingTime = 2000;
+        }
+        await Utils.sleep(thinkingTime);
 
-                    const timeToWait = (message.length / charactersPerSecond) * 1000;
-                    setTimeout(() =>
-                    {
-                        if (typeTimer !== null)
-                        {
-                            clearInterval(typeTimer);
-                            typeTimer = null;
-                        }
-                        this.stopTypingIM(to).then(() =>
-                        {
-                            this.sendInstantMessage(to, message).then(() =>
-                            {
-                                resolve();
-                            }).catch((err) =>
-                            {
-                                reject(err);
-                            });
-                        }).catch((err) =>
-                        {
-                            reject(err);
-                        });
-                    }, timeToWait);
-                }).catch((err) =>
-                {
-                    if (typeTimer !== null)
-                    {
-                        clearInterval(typeTimer);
-                        typeTimer = null;
-                    }
-                    reject(err);
-                });
-            }, thinkingTime);
-        });
+        if (typeof to === 'string')
+        {
+            to = new UUID(to);
+        }
+        let typeTimer: NodeJS.Timeout | null = null;
+        await this.startTypingIM(to);
+        typeTimer = setInterval(() =>
+        {
+            // Send a new typing message ever 5 secs
+            // or it will time out at the other end
+            void this.startTypingIM(to);
+        }, 5000);
+        if (charactersPerSecond === undefined)
+        {
+            charactersPerSecond = 5;
+        }
+        const timeToWait = (message.length / charactersPerSecond) * 1000;
+        await Utils.sleep(timeToWait);
+        if (typeTimer !== null)
+        {
+            clearInterval(typeTimer);
+            typeTimer = null;
+        }
+        await this.stopTypingIM(to);
+        await this.sendInstantMessage(to, message);
     }
 
-    typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>
+    public async typeLocalMessage(message: string, thinkingTime?: number, charactersPerSecond?: number): Promise<void>
     {
-        return new Promise<void>((resolve, reject) =>
+        if (thinkingTime === undefined)
         {
-            if (thinkingTime === undefined)
-            {
-                thinkingTime = 0;
-            }
-            setTimeout(() =>
-            {
-                this.startTypingLocal().then(() =>
-                {
-                    this.bot.clientCommands.agent.startAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]).then(() =>
-                    {
-                        if (charactersPerSecond === undefined)
-                        {
-                            charactersPerSecond = 5;
-                        }
-
-                        const timeToWait = (message.length / charactersPerSecond) * 1000;
-                        setTimeout(() =>
-                        {
-                            this.stopTypingLocal().then(() =>
-                            {
-                                this.bot.clientCommands.agent.stopAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]).then(() =>
-                                {
-                                    this.say(message).then(() =>
-                                    {
-                                        resolve();
-                                    }).catch((err) =>
-                                    {
-                                        reject(err);
-                                    });
-                                }).catch((err) =>
-                                {
-                                    reject(err);
-                                });
-                            }).catch((err) =>
-                            {
-                                reject(err);
-                            });
-                        }, timeToWait);
-                    }).catch((err) =>
-                    {
-                        reject(err);
-                    });
-                }).catch((err) =>
-                {
-                    reject(err);
-                });
-            }, thinkingTime);
-        });
+            thinkingTime = 0;
+        }
+        await Utils.sleep(thinkingTime);
+        await this.startTypingLocal();
+        await this.bot.clientCommands.agent.startAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]);
+        if (charactersPerSecond === undefined)
+        {
+            charactersPerSecond = 5;
+        }
+        const timeToWait = (message.length / charactersPerSecond) * 1000;
+        await Utils.sleep(timeToWait);
+        await this.stopTypingLocal();
+        await this.bot.clientCommands.agent.stopAnimations([new UUID('c541c47f-e0c0-058b-ad1a-d6ae3a4584d9')]);
+        await this.say(message);
     }
 
     public async endGroupChatSession(groupID: UUID | string): Promise<void>
@@ -397,7 +334,7 @@ export class CommunicationsCommands extends CommandsBase
         {
             throw new Error('Group session does not exist');
         }
-        const circuit = this.circuit;
+        const {circuit} = this;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
         im.AgentData = {
@@ -438,7 +375,7 @@ export class CommunicationsCommands extends CommandsBase
             return;
         }
 
-        const circuit = this.circuit;
+        const {circuit} = this;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
         im.AgentData = {
@@ -473,7 +410,7 @@ export class CommunicationsCommands extends CommandsBase
         });
     }
 
-    async moderateGroupChat(groupID: UUID | string, memberID: UUID | string, muteText: boolean, muteVoice: boolean): Promise<void>
+    public async moderateGroupChat(groupID: UUID | string, memberID: UUID | string, muteText: boolean, muteVoice: boolean): Promise<any>
     {
         if (typeof groupID === 'object')
         {
@@ -498,7 +435,7 @@ export class CommunicationsCommands extends CommandsBase
         return this.currentRegion.caps.capsPostXML('ChatSessionRequest', requested);
     }
 
-    async sendGroupMessage(groupID: UUID | string, message: string): Promise<number>
+    public async sendGroupMessage(groupID: UUID | string, message: string): Promise<number>
     {
         if (typeof groupID === 'string')
         {
@@ -510,7 +447,7 @@ export class CommunicationsCommands extends CommandsBase
             await this.startGroupChatSession(groupID, message);
         }
 
-        const circuit = this.circuit;
+        const {circuit} = this;
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
         const im: ImprovedInstantMessageMessage = new ImprovedInstantMessageMessage();
         im.AgentData = {
@@ -540,7 +477,7 @@ export class CommunicationsCommands extends CommandsBase
         return this.bot.clientCommands.group.getSessionAgentCount(groupID);
     }
 
-    respondToScriptDialog(event: ScriptDialogEvent, buttonIndex: number): Promise<void>
+    public async respondToScriptDialog(event: ScriptDialogEvent, buttonIndex: number): Promise<void>
     {
         const dialog: ScriptDialogReplyMessage = new ScriptDialogReplyMessage();
         dialog.AgentData = {

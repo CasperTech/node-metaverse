@@ -1,5 +1,5 @@
-import { UUID } from './UUID';
-import { Color4 } from './Color4';
+import type { UUID } from './UUID';
+import type { Color4 } from './Color4';
 import { TextureFlags } from '../enums/TextureFlags';
 import { Bumpiness } from '../enums/Bumpiness';
 import { Shininess } from '../enums/Shininess';
@@ -7,11 +7,11 @@ import { MappingType } from '../enums/MappingType';
 
 export class TextureEntryFace
 {
-    static BUMP_MASK = 0x1F;
-    static FULLBRIGHT_MASK = 0x20;
-    static SHINY_MASK = 0xC0;
-    static MEDIA_MASK = 0x01;
-    static TEX_MAP_MASK = 0x06;
+    public static BUMP_MASK = 0x1F;
+    public static FULLBRIGHT_MASK = 0x20;
+    public static SHINY_MASK = 0xC0;
+    public static MEDIA_MASK = 0x01;
+    public static TEX_MAP_MASK = 0x06;
 
     private _textureID: UUID;
     private _rgba: Color4;
@@ -30,10 +30,10 @@ export class TextureEntryFace
 
     private _material: number;
     private _media: number;
-    private hasAttribute: TextureFlags;
-    private defaultTexture: TextureEntryFace | null;
+    private readonly hasAttribute: TextureFlags;
+    private readonly defaultTexture: TextureEntryFace | null;
 
-    constructor(def: TextureEntryFace | null)
+    public constructor(def: TextureEntryFace | null)
     {
         this.defaultTexture = def;
         if (this.defaultTexture == null)
@@ -46,7 +46,7 @@ export class TextureEntryFace
         }
     }
 
-    get rgba(): Color4
+    public get rgba(): Color4
     {
         if (this._rgba === undefined && this.defaultTexture !== null)
         {
@@ -55,12 +55,12 @@ export class TextureEntryFace
         return this._rgba;
     }
 
-    set rgba(value: Color4)
+    public set rgba(value: Color4)
     {
         this._rgba = value;
     }
 
-    get repeatU(): number
+    public get repeatU(): number
     {
         if (this._repeatU === undefined && this.defaultTexture !== null)
         {
@@ -69,12 +69,12 @@ export class TextureEntryFace
         return this._repeatU;
     }
 
-    set repeatU(value: number)
+    public set repeatU(value: number)
     {
         this._repeatU = value;
     }
 
-    get repeatV(): number
+    public get repeatV(): number
     {
         if (this._repeatV === undefined && this.defaultTexture !== null)
         {
@@ -83,12 +83,12 @@ export class TextureEntryFace
         return this._repeatV;
     }
 
-    set repeatV(value: number)
+    public set repeatV(value: number)
     {
         this._repeatV = value;
     }
 
-    get offsetU(): number
+    public get offsetU(): number
     {
         if (this._offsetU === undefined && this.defaultTexture !== null)
         {
@@ -97,12 +97,12 @@ export class TextureEntryFace
         return this._offsetU;
     }
 
-    set offsetU(value: number)
+    public set offsetU(value: number)
     {
         this._offsetU = value;
     }
 
-    get offsetV(): number
+    public get offsetV(): number
     {
         if (this._offsetV === undefined && this.defaultTexture !== null)
         {
@@ -111,12 +111,12 @@ export class TextureEntryFace
         return this._offsetV;
     }
 
-    set offsetV(value: number)
+    public set offsetV(value: number)
     {
         this._offsetV = value;
     }
 
-    get rotation(): number
+    public get rotation(): number
     {
         if (this._rotation === undefined && this.defaultTexture !== null)
         {
@@ -125,12 +125,12 @@ export class TextureEntryFace
         return this._rotation;
     }
 
-    set rotation(value: number)
+    public set rotation(value: number)
     {
         this._rotation = value;
     }
 
-    get glow(): number
+    public get glow(): number
     {
         if (this._glow === undefined && this.defaultTexture !== null)
         {
@@ -139,12 +139,12 @@ export class TextureEntryFace
         return this._glow;
     }
 
-    set glow(value: number)
+    public set glow(value: number)
     {
         this._glow = value;
     }
 
-    get textureID(): UUID
+    public get textureID(): UUID
     {
         if (this._textureID === undefined && this.defaultTexture !== null)
         {
@@ -153,12 +153,12 @@ export class TextureEntryFace
         return this._textureID;
     }
 
-    set textureID(value: UUID)
+    public set textureID(value: UUID)
     {
         this._textureID = value;
     }
 
-    get materialID(): UUID
+    public get materialID(): UUID
     {
         if (this._materialID === undefined && this.defaultTexture !== null)
         {
@@ -167,12 +167,12 @@ export class TextureEntryFace
         return this._materialID;
     }
 
-    set materialID(value: UUID)
+    public set materialID(value: UUID)
     {
         this._materialID = value;
     }
 
-    get material(): number
+    public get material(): number
     {
         if (this._material === undefined && this.defaultTexture !== null)
         {
@@ -181,7 +181,7 @@ export class TextureEntryFace
         return this._material;
     }
 
-    set material(material: number)
+    public set material(material: number)
     {
         this._material = material;
         if ((this.hasAttribute & TextureFlags.Material) !== 0)
@@ -198,7 +198,7 @@ export class TextureEntryFace
         }
     }
 
-    get media(): number
+    public get media(): number
     {
         if (this._media === undefined && this.defaultTexture !== null)
         {
@@ -207,7 +207,7 @@ export class TextureEntryFace
         return this._media;
     }
 
-    set media(media: number)
+    public set media(media: number)
     {
         this._media = media;
         if ((this.hasAttribute & TextureFlags.Media) !== 0)
@@ -226,7 +226,7 @@ export class TextureEntryFace
         }
     }
 
-    get mappingType(): number
+    public get mappingType(): number
     {
         if (this._mappingType === undefined && this.defaultTexture !== null)
         {
@@ -235,12 +235,12 @@ export class TextureEntryFace
         return this._mappingType;
     }
 
-    set mappingType(value: number)
+    public set mappingType(value: number)
     {
         this._mappingType = value;
     }
 
-    get mediaFlags(): boolean
+    public get mediaFlags(): boolean
     {
         if (this._mediaFlags === undefined && this.defaultTexture !== null)
         {
@@ -249,7 +249,7 @@ export class TextureEntryFace
         return this._mediaFlags;
     }
 
-    set mediaFlags(value: boolean)
+    public set mediaFlags(value: boolean)
     {
         this._mediaFlags = value;
     }

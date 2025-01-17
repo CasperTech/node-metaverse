@@ -1,9 +1,10 @@
 import { ExampleBot } from '../ExampleBot';
-import { GameObject, Utils } from '../../lib';
+import type { GameObject} from '../../lib';
+import { Utils } from '../../lib';
 
 class TaskInventory extends ExampleBot
 {
-    async onConnected(): Promise<void>
+    public async onConnected(): Promise<void>
     {
         let attachments: GameObject[] = [];
         while(!attachments.length)
@@ -29,7 +30,7 @@ class TaskInventory extends ExampleBot
 new TaskInventory().run().then(() =>
 {
 
-}).catch((err) =>
+}).catch((err: unknown) =>
 {
     console.error(err);
 });

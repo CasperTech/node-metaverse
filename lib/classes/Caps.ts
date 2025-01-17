@@ -1,33 +1,35 @@
-import { Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
 import { EventQueueClient } from './EventQueueClient';
-import { UUID } from './UUID';
-import { ClientEvents } from './ClientEvents';
-import { Agent } from './Agent';
+import type { UUID } from './UUID';
+import type { ClientEvents } from './ClientEvents';
+import type { Agent } from './Agent';
 import { Subject } from 'rxjs';
-import { ICapResponse } from './interfaces/ICapResponse';
-import { HTTPAssets } from '../enums/HTTPAssets';
+import type { ICapResponse } from './interfaces/ICapResponse';
 
 import * as LLSD from '@caspertech/llsd';
 import * as url from 'url';
 import got from 'got';
+import { AssetType } from '../enums/AssetType';
+import { AssetTypeRegistry } from './AssetTypeRegistry';
 
 export class Caps
 {
-    static CAP_INVOCATION_DELAY_MS: { [key: string]: number } = {
+    public eventQueueClient: EventQueueClient | null = null;
+
+    private static readonly CAP_INVOCATION_DELAY_MS: Record<string, number> = {
         'NewFileAgentInventory': 2000,
         'FetchInventory2': 200
     };
 
-    private onGotSeedCap: Subject<void> = new Subject<void>();
+    private readonly onGotSeedCap: Subject<void> = new Subject<void>();
     private gotSeedCap = false;
-    private capabilities: { [key: string]: string } = {};
-    private clientEvents: ClientEvents;
-    private agent: Agent;
+    private capabilities: Record<string, string> = {};
+    private readonly clientEvents: ClientEvents;
+    private readonly agent: Agent;
     private active = false;
-    private timeLastCapExecuted: { [key: string]: number } = {};
-    eventQueueClient: EventQueueClient | null = null;
+    private timeLastCapExecuted: Record<string, number> = {};
 
-    constructor(agent: Agent, seedURL: string, clientEvents: ClientEvents)
+    public constructor(agent: Agent, seedURL: string, clientEvents: ClientEvents)
     {
         this.agent = agent;
         this.clientEvents = clientEvents;
@@ -150,29 +152,30 @@ export class Caps
             this.capabilities = LLSD.LLSD.parseXML(resp.body);
             this.gotSeedCap = true;
             this.onGotSeedCap.next();
-            if (this.capabilities['EventQueueGet'])
+            if (this.capabilities.EventQueueGet)
             {
                 if (this.eventQueueClient !== null)
                 {
-                    this.eventQueueClient.shutdown();
+                    void this.eventQueueClient.shutdown();
                 }
                 this.eventQueueClient = new EventQueueClient(this.agent, this, this.clientEvents);
             }
-        }).catch((err) =>
+        }).catch((err: unknown) =>
         {
             console.error('Error getting seed capability');
             console.error(err);
         });
     }
 
-    public async downloadAsset(uuid: UUID, type: HTTPAssets): Promise<Buffer>
+    public async downloadAsset(uuid: UUID, type: AssetType): Promise<Buffer>
     {
-        if (type === HTTPAssets.ASSET_LSL_TEXT || type === HTTPAssets.ASSET_NOTECARD)
+        if (type === AssetType.LSLText || type === AssetType.Notecard)
         {
             throw new Error('Invalid Syntax');
         }
+
         const capURL = await this.getCapability('ViewerAsset');
-        const assetURL = capURL + '/?' + type + '_id=' + uuid.toString();
+        const assetURL = capURL + '/?' + AssetTypeRegistry.getTypeName(type) + '_id=' + uuid.toString();
 
         const response = await got.get(assetURL, {
             https: {
@@ -190,7 +193,7 @@ export class Caps
         return response.body;
     }
 
-    public async requestPost(capURL: string, data: string | Buffer, contentType: string)
+    public async requestPost(capURL: string, data: string | Buffer, contentType: string): Promise<{ status: number, body: string }>
     {
         const response = await got.post(capURL, {
             headers: {
@@ -244,236 +247,154 @@ export class Caps
         return { status: response.statusCode, body: response.body };
     }
 
-    waitForSeedCapability(): Promise<void>
-    {
-        return new Promise((resolve) =>
-        {
-            if (this.gotSeedCap)
-            {
-                resolve();
-            }
-            else
-            {
-                const sub: Subscription = this.onGotSeedCap.subscribe(() =>
-                {
-                    sub.unsubscribe();
-                    resolve();
-                });
-            }
-        });
-    }
-
-    async isCapAvailable(capability: string): Promise<boolean>
+    public async isCapAvailable(capability: string): Promise<boolean>
     {
         await this.waitForSeedCapability();
         return (this.capabilities[capability] !== undefined);
     }
 
-    getCapability(capability: string): Promise<string>
+    public async getCapability(capability: string): Promise<string>
     {
-        return new Promise<string>((resolve, reject) =>
+        if (!this.active)
         {
-            if (!this.active)
+            throw new Error('Requesting getCapability to an inactive Caps instance');
+        }
+        await this.waitForSeedCapability();
+        if (this.capabilities[capability] !== undefined)
+        {
+            return this.capabilities[capability];
+        }
+        throw new Error('Capability ' + capability + ' not available')
+    }
+
+    public async capsRequestUpload(capURL: string, data: Buffer): Promise<any>
+    {
+        const resp: ICapResponse = await this.requestPost(capURL, data, 'application/octet-stream');
+        try
+        {
+            return LLSD.LLSD.parseXML(resp.body);
+        }
+        catch (err)
+        {
+            if (resp.status === 201)
             {
-                reject(new Error('Requesting getCapability to an inactive Caps instance'));
-                return;
+                return resp.body;
             }
-            this.waitForSeedCapability().then(() =>
+            else if (resp.status === 403)
             {
-                if (this.capabilities[capability])
-                {
-                    resolve(this.capabilities[capability]);
-                }
-                else
-                {
-                    reject(new Error('Capability ' + capability + ' not available'));
-                }
-            });
-        });
+                throw new Error('Access Denied');
+            }
+            throw(err);
+        }
     }
 
-    public capsRequestUpload(capURL: string, data: Buffer): Promise<any>
+    public async capsPerformXMLPost(capURL: string, data: any): Promise<any>
     {
-        return new Promise<any>((resolve, reject) =>
+        const xml = LLSD.LLSD.formatXML(data);
+        const resp: ICapResponse = await this.requestPost(capURL, xml, 'application/llsd+xml');
+        try
         {
-            this.requestPost(capURL, data, 'application/octet-stream').then((resp: ICapResponse) =>
-            {
-                try
-                {
-                    resolve(LLSD.LLSD.parseXML(resp.body));
-                }
-                catch (err)
-                {
-                    if (resp.status === 201)
-                    {
-                        resolve({});
-                    }
-                    else if (resp.status === 403)
-                    {
-                        reject(new Error('Access Denied'));
-                    }
-                    else
-                    {
-                        reject(err);
-                    }
-                }
-            }).catch((err) =>
-            {
-                console.error(err);
-                reject(err);
-            });
-        });
-    }
-
-    private waitForCapTimeout(capName: string): Promise<void>
-    {
-        return new Promise((resolve) =>
+            return LLSD.LLSD.parseXML(resp.body);
+        }
+        catch (_err: unknown)
         {
-            if (!Caps.CAP_INVOCATION_DELAY_MS[capName])
+            if (resp.status === 201)
             {
-                resolve();
+                return {};
+            }
+            else if (resp.status === 403)
+            {
+                throw new Error('Access Denied');
+            }
+            else if (resp.status === 404)
+            {
+                throw new Error('Not found');
             }
             else
             {
-                if (!this.timeLastCapExecuted[capName] || this.timeLastCapExecuted[capName] < (new Date().getTime() - Caps.CAP_INVOCATION_DELAY_MS[capName]))
-                {
-                    this.timeLastCapExecuted[capName] = new Date().getTime();
-                }
-                else
-                {
-                    this.timeLastCapExecuted[capName] += Caps.CAP_INVOCATION_DELAY_MS[capName];
-                }
-                const timeToWait = this.timeLastCapExecuted[capName] - new Date().getTime();
-                if (timeToWait > 0)
-                {
-                    setTimeout(() =>
-                    {
-                        resolve();
-                    }, timeToWait);
-                }
-                else
-                {
-                    resolve();
-                }
+                // eslint-disable-next-line @typescript-eslint/only-throw-error
+                throw resp.body;
             }
-        });
+        }
     }
 
-    public capsPerformXMLPost(capURL: string, data: any): Promise<any>
+    public async capsPerformXMLPut(capURL: string, data: any): Promise<any>
     {
-        return new Promise<any>(async(resolve, reject) =>
+        const xml = LLSD.LLSD.formatXML(data);
+        const resp: ICapResponse = await this.requestPut(capURL, xml, 'application/llsd+xml');
+        try
         {
-            const xml = LLSD.LLSD.formatXML(data);
-            this.requestPost(capURL, xml, 'application/llsd+xml').then(async(resp: ICapResponse) =>
+            return LLSD.LLSD.parseXML(resp.body);
+        }
+        catch (err)
+        {
+            if (resp.status === 201)
             {
-                let result: any = null;
-                try
-                {
-                    result = LLSD.LLSD.parseXML(resp.body);
-                    resolve(result);
-                }
-                catch (err)
-                {
-                    if (resp.status === 201)
-                    {
-                        resolve({});
-                    }
-                    else if (resp.status === 403)
-                    {
-                        reject(new Error('Access Denied'));
-                    }
-                    else if (resp.status === 404)
-                    {
-                        reject(new Error('Not found'));
-                    }
-                    else
-                    {
-                        reject(resp.body);
-                    }
-                }
-            }).catch((err) =>
+                return {};
+            }
+            else if (resp.status === 403)
             {
-                console.error(err);
-                reject(err);
-            });
-        });
+                throw new Error('Access Denied');
+            }
+            else
+            {
+                throw err;
+            }
+        }
     }
 
-    capsPerformXMLPut(capURL: string, data: any): Promise<any>
+    public async capsPerformXMLGet(capURL: string): Promise<any>
     {
-        return new Promise<any>(async(resolve, reject) =>
+        const resp = await this.requestGet(capURL);
+        try
         {
-            const xml = LLSD.LLSD.formatXML(data);
-            this.requestPut(capURL, xml, 'application/llsd+xml').then((resp: ICapResponse) =>
+            return LLSD.LLSD.parseXML(resp.body);
+        }
+        catch (err)
+        {
+            if (resp.status === 201)
             {
-                let result: any = null;
-                try
-                {
-                    result = LLSD.LLSD.parseXML(resp.body);
-                    resolve(result);
-                }
-                catch (err)
-                {
-                    if (resp.status === 201)
-                    {
-                        resolve({});
-                    }
-                    else if (resp.status === 403)
-                    {
-                        reject(new Error('Access Denied'));
-                    }
-                    else
-                    {
-                        reject(err);
-                    }
-                }
-            }).catch((err) =>
+                return {};
+            }
+            else if (resp.status === 403)
             {
-                console.error(err);
-                reject(err);
-            });
-        });
+                throw new Error('Access Denied');
+            }
+            else
+            {
+                throw err;
+            }
+        }
     }
 
-    capsPerformXMLGet(capURL: string): Promise<any>
+    public async capsPerformGet(capURL: string): Promise<string>
     {
-        return new Promise<any>(async(resolve, reject) =>
+        const resp = await this.requestGet(capURL);
+        try
         {
-            this.requestGet(capURL).then((resp: ICapResponse) =>
+            return resp.body;
+        }
+        catch (err)
+        {
+            if (resp.status === 201)
             {
-                let result: any = null;
-                try
-                {
-                    result = LLSD.LLSD.parseXML(resp.body);
-                    resolve(result);
-                }
-                catch (err)
-                {
-                    if (resp.status === 201)
-                    {
-                        resolve({});
-                    }
-                    else if (resp.status === 403)
-                    {
-                        reject(new Error('Access Denied'));
-                    }
-                    else
-                    {
-                        reject(err);
-                    }
-                }
-            }).catch((err) =>
+                return '';
+            }
+            else if (resp.status === 403)
             {
-                console.error(err);
-                reject(err);
-            });
-        });
+                throw new Error('Access Denied');
+            }
+            else
+            {
+                throw err;
+            }
+        }
     }
 
-    async capsGetXML(capability: string | [string, { [key: string]: string }]): Promise<any>
+    public async capsGetXML(capability: string | [string, Record<string, string>]): Promise<any>
     {
         let capName = '';
-        let queryParams: { [key: string]: string } = {};
+        let queryParams: Record<string, string> = {};
         if (typeof capability === 'string')
         {
             capName = capability;
@@ -508,10 +429,48 @@ export class Caps
         }
     }
 
-    async capsPostXML(capability: string | [string, { [key: string]: string }], data: any): Promise<any>
+    public async capsGetString(capability: string | [string, Record<string, string>]): Promise<string>
     {
         let capName = '';
-        let queryParams: { [key: string]: string } = {};
+        let queryParams: Record<string, string> = {};
+        if (typeof capability === 'string')
+        {
+            capName = capability;
+        }
+        else
+        {
+            capName = capability[0];
+            queryParams = capability[1];
+        }
+
+        await this.waitForCapTimeout(capName);
+
+        let capURL = await this.getCapability(capName);
+        if (Object.keys(queryParams).length > 0)
+        {
+            const parsedURL = url.parse(capURL, true);
+            for (const key of Object.keys(queryParams))
+            {
+                parsedURL.query[key] = queryParams[key];
+            }
+            capURL = url.format(parsedURL);
+        }
+        try
+        {
+            return await this.capsPerformGet(capURL);
+        }
+        catch (error)
+        {
+            console.log('Error with cap ' + capName);
+            console.log(error);
+            throw error;
+        }
+    }
+
+    public async capsPostXML(capability: string | [string, Record<string, string>], data: any): Promise<any>
+    {
+        let capName = '';
+        let queryParams: Record<string, string> = {};
         if (typeof capability === 'string')
         {
             capName = capability;
@@ -546,10 +505,10 @@ export class Caps
         }
     }
 
-    async capsPutXML(capability: string | [string, { [key: string]: string }], data: any): Promise<any>
+    public async capsPutXML(capability: string | [string, Record<string, string>], data: any): Promise<any>
     {
         let capName = '';
-        let queryParams: { [key: string]: string } = {};
+        let queryParams: Record<string, string> = {};
         if (typeof capability === 'string')
         {
             capName = capability;
@@ -584,13 +543,66 @@ export class Caps
         }
     }
 
-    shutdown(): void
+    public shutdown(): void
     {
         this.onGotSeedCap.complete();
         if (this.eventQueueClient)
         {
-            this.eventQueueClient.shutdown();
+            void this.eventQueueClient.shutdown();
         }
         this.active = false;
+    }
+
+    public async waitForSeedCapability(): Promise<void>
+    {
+        return new Promise((resolve) =>
+        {
+            if (this.gotSeedCap)
+            {
+                resolve();
+            }
+            else
+            {
+                const sub: Subscription = this.onGotSeedCap.subscribe(() =>
+                {
+                    sub.unsubscribe();
+                    resolve();
+                });
+            }
+        });
+    }
+
+    private async waitForCapTimeout(capName: string): Promise<void>
+    {
+        return new Promise((resolve) =>
+        {
+            if (!Caps.CAP_INVOCATION_DELAY_MS[capName])
+            {
+                resolve();
+            }
+            else
+            {
+                if (!this.timeLastCapExecuted[capName] || this.timeLastCapExecuted[capName] < (new Date().getTime() - Caps.CAP_INVOCATION_DELAY_MS[capName]))
+                {
+                    this.timeLastCapExecuted[capName] = new Date().getTime();
+                }
+                else
+                {
+                    this.timeLastCapExecuted[capName] += Caps.CAP_INVOCATION_DELAY_MS[capName];
+                }
+                const timeToWait = this.timeLastCapExecuted[capName] - new Date().getTime();
+                if (timeToWait > 0)
+                {
+                    setTimeout(() =>
+                    {
+                        resolve();
+                    }, timeToWait);
+                }
+                else
+                {
+                    resolve();
+                }
+            }
+        });
     }
 }

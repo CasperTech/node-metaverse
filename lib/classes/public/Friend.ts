@@ -3,7 +3,7 @@ import { RightsFlags } from '../../enums/RightsFlags';
 
 export class Friend extends Avatar
 {
-    online: boolean;
-    theirRights: RightsFlags = RightsFlags.None;
-    myRights: RightsFlags = RightsFlags.None;
+    public online: boolean;
+    public theirRights: RightsFlags = RightsFlags.None;
+    public myRights: RightsFlags = RightsFlags.None;
 }

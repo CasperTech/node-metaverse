@@ -1,4 +1,4 @@
-import { LLSDTokenType } from './LLSDTokenType';
+import type { LLSDTokenType } from './LLSDTokenType';
 
 export interface LLSDTokenSpec
 {

@@ -1,16 +1,16 @@
-import { Circuit } from './Circuit';
-import { ObjectUpdateMessage } from './messages/ObjectUpdate';
-import { ObjectUpdateCachedMessage } from './messages/ObjectUpdateCached';
-import { ObjectUpdateCompressedMessage } from './messages/ObjectUpdateCompressed';
-import { ImprovedTerseObjectUpdateMessage } from './messages/ImprovedTerseObjectUpdate';
+import type { Circuit } from './Circuit';
+import type { ObjectUpdateMessage } from './messages/ObjectUpdate';
+import type { ObjectUpdateCachedMessage } from './messages/ObjectUpdateCached';
+import type { ObjectUpdateCompressedMessage } from './messages/ObjectUpdateCompressed';
+import type { ImprovedTerseObjectUpdateMessage } from './messages/ImprovedTerseObjectUpdate';
 import { RequestMultipleObjectsMessage } from './messages/RequestMultipleObjects';
-import { Agent } from './Agent';
+import type { Agent } from './Agent';
 import { UUID } from './UUID';
 import { Quaternion } from './Quaternion';
 import { Vector3 } from './Vector3';
 import { Utils } from './Utils';
-import { ClientEvents } from './ClientEvents';
-import { IObjectStore } from './interfaces/IObjectStore';
+import type { ClientEvents } from './ClientEvents';
+import type { IObjectStore } from './interfaces/IObjectStore';
 import { RBush3D } from 'rbush-3d/dist';
 import { Vector4 } from './Vector4';
 import { TextureEntry } from './TextureEntry';
@@ -23,17 +23,17 @@ import { ExtraParams } from './public/ExtraParams';
 import { CompressedFlags } from '../enums/CompressedFlags';
 import { PCode } from '../enums/PCode';
 import { BotOptionFlags } from '../enums/BotOptionFlags';
-import { PacketFlags } from '../enums/PacketFlags';
+import type { PacketFlags } from '../enums/PacketFlags';
 
 export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
 {
-    rtree?: RBush3D;
+    public rtree?: RBush3D;
 
-    constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
+    public constructor(circuit: Circuit, agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
         super(circuit, agent, clientEvents, options);
         this.rtree = new RBush3D();
-        this.fullStore = true;
+
     }
 
     protected objectUpdate(objectUpdate: ObjectUpdateMessage): void
@@ -106,6 +106,10 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             {
                 this.cachedMaterialOverrides.set(obj.ID, obj.TextureEntry.gltfMaterialOverrides);
             }
+            if (obj.FullID.toString() === '1efb961a-0c5e-0ea5-84c7-68da50ae2659')
+            {
+                console.log('Whoopie');
+            }
             obj.TextureEntry = TextureEntry.from(objData.TextureEntry);
             const override = this.cachedMaterialOverrides.get(obj.ID);
             if (override)
@@ -139,8 +143,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                         obj.TreeSpecies = pcodeData[0];
                     }
                     break;
-                case PCode.Prim:
-
+                default:
                     break;
             }
 
@@ -150,9 +153,9 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
 
                 if (this.options & BotOptionFlags.StoreMyAttachmentsOnly)
                 {
-                    for (const objParentID of Object.keys(this.objectsByParent))
+                    for (const objParentID of this.objectsByParent.keys())
                     {
-                        const parent = parseInt(objParentID, 10);
+                        const parent = objParentID;
                         if (parent !== this.agent.localID)
                         {
                             let foundAvatars = false;
@@ -186,7 +189,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             obj.extraParams = ExtraParams.from(objData.ExtraParams);
             obj.NameValue = this.parseNameValues(Utils.BufferToStringSimple(objData.NameValue));
 
-            obj.IsAttachment = obj.NameValue['AttachItemID'] !== undefined;
+            obj.IsAttachment = obj.NameValue.get('AttachItemID') !== undefined;
             if (obj.IsAttachment && obj.State !== undefined)
             {
                 obj.attachmentPoint = this.decodeAttachPoint(obj.State);
@@ -216,11 +219,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 const parentObj = this.objects.get(objData.ParentID ?? 0);
                 if (objData.ParentID !== undefined && objData.ParentID !== 0 && !parentObj && !obj.IsAttachment)
                 {
-                    this.requestMissingObject(objData.ParentID).then(() =>
-                    {
-                    }).catch(() =>
-                    {
-                    });
+                    void this.requestMissingObject(objData.ParentID);
                 }
                 this.notifyObjectUpdate(newObject, obj);
                 obj.onTextureUpdate.next();
@@ -260,7 +259,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         }
     }
 
-    protected async objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage): Promise<void>
+    protected objectUpdateCompressed(objectUpdateCompressed: ObjectUpdateCompressedMessage): void
     {
         for (const obj of objectUpdateCompressed.ObjectData)
         {
@@ -272,7 +271,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             pos += 16;
             const localID = buf.readUInt32LE(pos);
             pos += 4;
-            const pcode = buf.readUInt8(pos++);
+            const pcode: PCode = buf.readUInt8(pos++);
             let newObj = false;
             let o = this.objects.get(localID);
             if (!o)
@@ -354,7 +353,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
             {
                 if (o.ParentID !== undefined && o.ParentID !== 0 && !this.objects.has(o.ParentID) && !o.IsAttachment)
                 {
-                    this.requestMissingObject(o.ParentID).catch((e) =>
+                    this.requestMissingObject(o.ParentID).catch((e: unknown) =>
                     {
                         console.error(e);
                     });
@@ -393,13 +392,13 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 }
                 if (compressedflags & CompressedFlags.HasParticles)
                 {
-                    o.Particles = ParticleSystem.from(buf.slice(pos, pos + 86));
+                    o.Particles = ParticleSystem.from(buf.subarray(pos, pos + 86));
                     pos += 86;
                 }
 
                 // Extra params
                 const extraParamsLength = ExtraParams.getLengthOfParams(buf, pos);
-                o.extraParams = ExtraParams.from(buf.slice(pos, pos + extraParamsLength));
+                o.extraParams = ExtraParams.from(buf.subarray(pos, pos + extraParamsLength));
                 pos += extraParamsLength;
 
                 if (compressedflags & CompressedFlags.HasSound)
@@ -447,7 +446,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 {
                     this.cachedMaterialOverrides.set(o.ID, o.TextureEntry.gltfMaterialOverrides);
                 }
-                o.TextureEntry = TextureEntry.from(buf.slice(pos, pos + textureEntryLength));
+                o.TextureEntry = TextureEntry.from(buf.subarray(pos, pos + textureEntryLength));
                 const override = this.cachedMaterialOverrides.get(o.ID);
                 if (override)
                 {
@@ -460,7 +459,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 {
                     const textureAnimLength = buf.readUInt32LE(pos);
                     pos = pos + 4;
-                    o.textureAnim = TextureAnim.from(buf.slice(pos, pos + textureAnimLength));
+                    o.textureAnim = TextureAnim.from(buf.subarray(pos, pos + textureAnimLength));
                 }
 
                 o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
@@ -482,9 +481,8 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
         const dilation = objectUpdateTerse.RegionData.TimeDilation / 65535.0;
         this.clientEvents.onRegionTimeDilation.next(dilation);
 
-        for (let i = 0; i < objectUpdateTerse.ObjectData.length; i++)
+        for(const objectData of objectUpdateTerse.ObjectData)
         {
-            const objectData = objectUpdateTerse.ObjectData[i];
             if (!(this.options & BotOptionFlags.StoreMyAttachmentsOnly))
             {
                 let pos = 0;
@@ -535,7 +533,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                         {
                             this.cachedMaterialOverrides.set(o.ID, o.TextureEntry.gltfMaterialOverrides);
                         }
-                        o.TextureEntry = TextureEntry.from(objectData.TextureEntry.slice(4));
+                        o.TextureEntry = TextureEntry.from(objectData.TextureEntry.subarray(4));
                         const override = this.cachedMaterialOverrides.get(o.ID);
                         if (override)
                         {
@@ -551,10 +549,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                 else
                 {
                     // We don't know about this object, so request it
-                    this.requestMissingObject(localID).catch(() =>
-                    {
-
-                    });
+                    void this.requestMissingObject(localID);
                 }
             }
         }

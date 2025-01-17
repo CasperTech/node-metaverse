@@ -1,6 +1,6 @@
-import { UUID } from '../classes/UUID';
+import type { UUID } from '../classes/UUID';
 
 export class GroupChatClosedEvent
 {
-    groupID: UUID;
+    public groupID: UUID;
 }

@@ -3,20 +3,20 @@ import { BVHJoint } from './BVHJoint';
 
 export class BVH
 {
-    priority: number;
-    length: number;
-    expressionName: string;
-    inPoint: number;
-    outPoint: number;
-    loop: number;
-    easeInTime: number;
-    easeOutTime: number;
-    handPose: number;
-    jointCount: number;
-    joints: BVHJoint[] = [];
+    public priority: number;
+    public length: number;
+    public expressionName: string;
+    public inPoint: number;
+    public outPoint: number;
+    public loop: number;
+    public easeInTime: number;
+    public easeOutTime: number;
+    public handPose: number;
+    public jointCount: number;
+    public joints: BVHJoint[] = [];
 
     // Decodes the binary LL animation format into human-readable BVH.
-    readFromBuffer(buf: Buffer, pos: number): number
+    public readFromBuffer(buf: Buffer, pos: number): number
     {
         const header1 = buf.readUInt16LE(pos);
         pos = pos + 2;

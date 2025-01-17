@@ -1,14 +1,14 @@
-import { UUID } from '../classes/UUID';
-import { Vector3 } from '../classes/Vector3';
+import type { UUID } from '../classes/UUID';
+import type { Vector3 } from '../classes/Vector3';
 
 export class LureEvent
 {
-    from: UUID;
-    fromName: string;
-    lureMessage: string;
-    regionID: UUID;
-    position: Vector3;
-    gridX: number;
-    gridY: number;
-    lureID: UUID;
+    public from: UUID;
+    public fromName: string;
+    public lureMessage: string;
+    public regionID: UUID;
+    public position: Vector3;
+    public gridX: number;
+    public gridY: number;
+    public lureID: UUID;
 }

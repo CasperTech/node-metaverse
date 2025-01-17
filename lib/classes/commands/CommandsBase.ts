@@ -1,7 +1,7 @@
-import { Region } from '../Region';
-import { Bot } from '../../Bot';
-import { Agent } from '../Agent';
-import { Circuit } from '../Circuit';
+import type { Region } from '../Region';
+import type { Bot } from '../../Bot';
+import type { Agent } from '../Agent';
+import type { Circuit } from '../Circuit';
 
 export class CommandsBase
 {
@@ -10,7 +10,7 @@ export class CommandsBase
     protected bot: Bot;
     protected circuit: Circuit;
 
-    constructor(region: Region, agent: Agent, bot: Bot)
+    public constructor(region: Region, agent: Agent, bot: Bot)
     {
         this.currentRegion = region;
         this.agent = agent;
@@ -18,8 +18,8 @@ export class CommandsBase
         this.circuit = this.currentRegion.circuit;
     }
 
-    shutdown(): void
+    public shutdown(): void
     {
-
+        // optional override
     }
 }

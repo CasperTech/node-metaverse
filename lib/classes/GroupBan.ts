@@ -1,8 +1,8 @@
-import { UUID } from './UUID';
+import type { UUID } from './UUID';
 
 export class GroupBan
 {
-    constructor(public AgentID: UUID, public BanDate: Date)
+    public constructor(public readonly AgentID: UUID, public readonly BanDate: Date)
     {
 
     }

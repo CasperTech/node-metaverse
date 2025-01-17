@@ -3,14 +3,14 @@ import { Vector2 } from '../Vector2';
 
 export class TextureAnim
 {
-    textureAnimFlags: TextureAnimFlags = 0;
-    textureAnimFace = 0;
-    textureAnimSize = Vector2.getZero();
-    textureAnimStart = 0;
-    textureAnimLength = 0;
-    textureAnimRate = 0;
+    public textureAnimFlags: TextureAnimFlags = 0;
+    public textureAnimFace = 0;
+    public textureAnimSize = Vector2.getZero();
+    public textureAnimStart = 0;
+    public textureAnimLength = 0;
+    public textureAnimRate = 0;
 
-    static from(buf: Buffer): TextureAnim
+    public static from(buf: Buffer): TextureAnim
     {
         const obj = new TextureAnim();
         let animPos = 0;
@@ -30,9 +30,9 @@ export class TextureAnim
         }
         return obj;
     }
-    toBuffer(): Buffer
+    public toBuffer(): Buffer
     {
-        if (this.textureAnimFlags === 0 && this.textureAnimFace === 0 && this.textureAnimStart === 0 && this.textureAnimLength === 0 && this.textureAnimRate === 0)
+        if (this.textureAnimFlags === TextureAnimFlags.ANIM_OFF && this.textureAnimFace === 0 && this.textureAnimStart === 0 && this.textureAnimLength === 0 && this.textureAnimRate === 0)
         {
             return Buffer.allocUnsafe(0);
         }
@@ -47,7 +47,7 @@ export class TextureAnim
         buf.writeFloatLE(this.textureAnimRate, animPos);
         return buf;
     }
-    toBase64(): string
+    public toBase64(): string
     {
         const bin = this.toBuffer();
         return bin.toString('base64');

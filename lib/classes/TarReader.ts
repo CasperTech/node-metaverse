@@ -1,6 +1,6 @@
 import { TarFile } from './TarFile';
 import { TarArchive } from './TarArchive';
-import { Readable } from 'stream';
+import type { Readable } from 'stream';
 
 import * as path from 'path';
 import * as os from 'os';
@@ -11,12 +11,8 @@ export class TarReader
 {
     private outFile: string;
 
-    constructor()
-    {
 
-    }
-
-    parse(stream: Readable): Promise<TarArchive>
+    public async parse(stream: Readable): Promise<TarArchive>
     {
         return new Promise<TarArchive>((resolve, reject) =>
         {
@@ -47,9 +43,9 @@ export class TarReader
                             const wantedBytes = chunk.length - remainingBytes;
                             if (longName)
                             {
-                                fileChunks.push(chunk.slice(0, chunk.length - wantedBytes));
+                                fileChunks.push(chunk.subarray(0, chunk.length - wantedBytes));
                             }
-                            queuedChunks = [chunk.slice(chunk.length - wantedBytes)];
+                            queuedChunks = [chunk.subarray(chunk.length - wantedBytes)];
                             queuedBytes = queuedChunks[0].length;
                             remainingBytes = 0;
                         }
@@ -73,20 +69,20 @@ export class TarReader
                         if (queuedBytes >= 512)
                         {
                             const buf = Buffer.concat(queuedChunks);
-                            const header = buf.slice(0, 512);
-                            queuedChunks = [buf.slice(512)];
+                            const header = buf.subarray(0, 512);
+                            queuedChunks = [buf.subarray(512)];
                             queuedBytes = queuedChunks[0].length;
 
-                            let hdrFileName = this.trimEntry(header.slice(0, 100));
+                            let hdrFileName = this.trimEntry(header.subarray(0, 100));
                             console.log('Filename: ' + hdrFileName);
-                            const hdrFileMode = this.decodeOctal(header.slice(100, 100 + 8));
-                            const hdrUserID = this.decodeOctal(header.slice(108, 108 + 8));
-                            const hdrGroupID = this.decodeOctal(header.slice(116, 116 + 8));
-                            fileSize = this.decodeOctal(header.slice(124, 124 + 12));
-                            const hdrModifyTime = this.decodeOctal(header.slice(136, 136 + 12));
-                            const checksum = this.decodeOctal(header.slice(148, 148 + 8));
+                            const hdrFileMode = this.decodeOctal(header.subarray(100, 100 + 8));
+                            const hdrUserID = this.decodeOctal(header.subarray(108, 108 + 8));
+                            const hdrGroupID = this.decodeOctal(header.subarray(116, 116 + 8));
+                            fileSize = this.decodeOctal(header.subarray(124, 124 + 12));
+                            const hdrModifyTime = this.decodeOctal(header.subarray(136, 136 + 12));
+                            const checksum = this.decodeOctal(header.subarray(148, 148 + 8));
                             const linkIndicator = header[156];
-                            const linkedFile = this.trimEntry(header.slice(157, 157 + 100));
+                            const linkedFile = this.trimEntry(header.subarray(157, 157 + 100));
                             paddingSize = (Math.ceil(fileSize / 512) * 512) - fileSize;
 
                             // Check CRC
@@ -100,8 +96,8 @@ export class TarReader
                             }
                             if (sum !== checksum)
                             {
-                                    readState = 3;
-                                    continue;
+                                readState = 3;
+                                continue;
                             }
                             if (linkIndicator === 76)
                             {
@@ -151,7 +147,7 @@ export class TarReader
                     if (readState === 2 && queuedBytes >= paddingSize)
                     {
                         const buf = Buffer.concat(queuedChunks);
-                        queuedChunks = [buf.slice(paddingSize)];
+                        queuedChunks = [buf.subarray(paddingSize)];
                         queuedBytes = queuedChunks[0].length;
                         readState = 0;
                         chunk = Buffer.alloc(0);
@@ -175,7 +171,7 @@ export class TarReader
         });
     }
 
-    close(): void
+    public close(): void
     {
         fs.unlinkSync(this.outFile);
         this.outFile = '';
@@ -188,7 +184,7 @@ export class TarReader
         {
             end = buf.length - 1;
         }
-        return buf.slice(0, end).toString('ascii');
+        return buf.subarray(0, end).toString('ascii');
     }
 
     private decodeOctal(buf: Buffer): number

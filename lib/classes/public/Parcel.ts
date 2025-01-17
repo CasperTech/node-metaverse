@@ -1,85 +1,85 @@
-import { Vector3 } from '../Vector3';
-import { UUID } from '../UUID';
+import type { Vector3 } from '../Vector3';
+import type { UUID } from '../UUID';
 import * as builder from 'xmlbuilder';
 import { ParcelFlags } from '../../enums/ParcelFlags';
-import { Region } from '../Region';
+import type { Region } from '../Region';
 
 export class Parcel
 {
-    LocalID: number;
-    ParcelID: UUID;
+    public LocalID: number;
+    public ParcelID: UUID;
 
-    RegionDenyAgeUnverified: boolean;
+    public RegionDenyAgeUnverified: boolean;
 
-    MediaDesc: string;
-    MediaWidth: number;
-    MediaHeight: number;
-    MediaLoop: number;
-    MediaType: string;
-    ObscureMedia: number;
-    ObscureMusic: number;
+    public MediaDesc: string;
+    public MediaWidth: number;
+    public MediaHeight: number;
+    public MediaLoop: number;
+    public MediaType: string;
+    public ObscureMedia: number;
+    public ObscureMusic: number;
 
-    AABBMax: Vector3;
-    AABBMin: Vector3;
-    AnyAVSounds: boolean;
-    Area: number;
-    AuctionID: number;
-    AuthBuyerID: UUID;
-    Bitmap: Buffer;
-    Category: number;
-    ClaimDate: number;
-    ClaimPrice: number;
-    Desc: string;
-    Dwell: number;
-    GroupAVSounds: boolean;
-    GroupID: UUID;
-    GroupPrims: number;
-    IsGroupOwned: boolean;
-    LandingType: number;
-    MaxPrims: number;
-    MediaAutoScale: number;
-    MediaID: UUID;
-    MediaURL: string;
-    MusicURL: string;
-    Name: string;
-    OtherCleanTime: number;
-    OtherCount: number;
-    OtherPrims: number;
-    OwnerID: UUID;
-    OwnerPrims: number;
-    ParcelFlags: ParcelFlags;
-    ParcelPrimBonus: number;
-    PassHours: number;
-    PassPrice: number;
-    PublicCount: number;
-    RegionDenyAnonymous: boolean;
-    RegionDenyIdentified: boolean;
-    RegionDenyTransacted: boolean;
-    RegionPushOverride: boolean;
-    RentPrice: number;
-    RequestResult: number;
-    SalePrice: number;
-    SeeAvs: boolean;
-    SelectedPrims: number;
-    SelfCount: number;
-    SequenceID: number;
-    SimWideMaxPrims: number;
-    SimWideTotalPrims: number;
-    SnapSelection: boolean;
-    SnapshotID: UUID;
-    Status: number;
-    TotalPrims: number;
-    UserLocation: Vector3;
-    UserLookAt: Vector3;
+    public AABBMax: Vector3;
+    public AABBMin: Vector3;
+    public AnyAVSounds: boolean;
+    public Area: number;
+    public AuctionID: number;
+    public AuthBuyerID: UUID;
+    public Bitmap: Buffer;
+    public Category: number;
+    public ClaimDate: number;
+    public ClaimPrice: number;
+    public Desc: string;
+    public Dwell: number;
+    public GroupAVSounds: boolean;
+    public GroupID: UUID;
+    public GroupPrims: number;
+    public IsGroupOwned: boolean;
+    public LandingType: number;
+    public MaxPrims: number;
+    public MediaAutoScale: number;
+    public MediaID: UUID;
+    public MediaURL: string;
+    public MusicURL: string;
+    public Name: string;
+    public OtherCleanTime: number;
+    public OtherCount: number;
+    public OtherPrims: number;
+    public OwnerID: UUID;
+    public OwnerPrims: number;
+    public ParcelFlags: ParcelFlags;
+    public ParcelPrimBonus: number;
+    public PassHours: number;
+    public PassPrice: number;
+    public PublicCount: number;
+    public RegionDenyAnonymous: boolean;
+    public RegionDenyIdentified: boolean;
+    public RegionDenyTransacted: boolean;
+    public RegionPushOverride: boolean;
+    public RentPrice: number;
+    public RequestResult: number;
+    public SalePrice: number;
+    public SeeAvs: boolean;
+    public SelectedPrims: number;
+    public SelfCount: number;
+    public SequenceID: number;
+    public SimWideMaxPrims: number;
+    public SimWideTotalPrims: number;
+    public SnapSelection: boolean;
+    public SnapshotID: UUID;
+    public Status: number;
+    public TotalPrims: number;
+    public UserLocation: Vector3;
+    public UserLookAt: Vector3;
 
-    RegionAllowAccessOverride: boolean;
+    public RegionAllowAccessOverride: boolean;
 
-    constructor(private region: Region)
+    public constructor(private readonly region: Region)
     {
 
     }
 
-    canIRez(): boolean
+    public canIRez(): boolean
     {
         if (this.ParcelFlags & ParcelFlags.CreateObjects)
         {
@@ -96,7 +96,7 @@ export class Parcel
         return false;
     }
 
-    exportXML(): string
+    public exportXML(): string
     {
         const document = builder.create('LandData');
         document.ele('Area', this.Area);

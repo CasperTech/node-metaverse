@@ -1,10 +1,10 @@
-import { ExtendedMeshFlags } from './ExtendedMeshFlags';
+import type { ExtendedMeshFlags } from './ExtendedMeshFlags';
 
 export class ExtendedMeshData
 {
     public flags: ExtendedMeshFlags = 0 as ExtendedMeshFlags;
 
-    constructor(buf?: Buffer, pos?: number, length?: number)
+    public constructor(buf?: Buffer, pos?: number, length?: number)
     {
         if (buf !== undefined && pos !== undefined && length !== undefined)
         {
@@ -15,12 +15,12 @@ export class ExtendedMeshData
         }
     }
 
-    writeToBuffer(buf: Buffer, pos: number): void
+    public writeToBuffer(buf: Buffer, pos: number): void
     {
         buf.writeUInt32LE(this.flags, pos);
     }
 
-    getBuffer(): Buffer
+    public getBuffer(): Buffer
     {
         const buf = Buffer.allocUnsafe(4);
         this.writeToBuffer(buf, 0);

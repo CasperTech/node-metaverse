@@ -1,10 +1,10 @@
-import { UUID } from '../classes/UUID';
+import type { UUID } from '../classes/UUID';
 
 export class GroupNoticeEvent
 {
-    groupID: UUID;
-    from: UUID;
-    fromName: string;
-    subject: string;
-    message: string;
+    public groupID: UUID;
+    public from: UUID;
+    public fromName: string;
+    public subject: string;
+    public message: string;
 }

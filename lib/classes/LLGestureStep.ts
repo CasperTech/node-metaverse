@@ -1,6 +1,6 @@
-import { LLGestureStepType } from '../enums/LLGestureStepType';
+import type { LLGestureStepType } from '../enums/LLGestureStepType';
 
 export class LLGestureStep
 {
-    stepType: LLGestureStepType
+    public stepType: LLGestureStepType
 }

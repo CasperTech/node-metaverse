@@ -1,10 +1,10 @@
-import { TSMMat4 } from '../../../tsm/mat4';
+import type { Matrix4 } from '../../Matrix4';
 
 export interface LLSkin
 {
     jointNames: string[];
-    bindShapeMatrix: TSMMat4;
-    inverseBindMatrix: TSMMat4[];
-    altInverseBindMatrix?: TSMMat4[];
-    pelvisOffset?: TSMMat4;
+    bindShapeMatrix: Matrix4;
+    inverseBindMatrix: Matrix4[];
+    altInverseBindMatrix?: Matrix4[];
+    pelvisOffset?: Matrix4;
 }

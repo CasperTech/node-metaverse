@@ -5,7 +5,7 @@ export class RenderMaterialData
 {
     public params: RenderMaterialParam[] = [];
 
-    constructor(buf?: Buffer, pos?: number, length?: number)
+    public constructor(buf?: Buffer, pos?: number, length?: number)
     {
         let localPos = 0;
         if (buf !== undefined && pos !== undefined && length !== undefined)
@@ -31,7 +31,7 @@ export class RenderMaterialData
         }
     }
 
-    writeToBuffer(buf: Buffer, pos: number): void
+    public writeToBuffer(buf: Buffer, pos: number): void
     {
         buf.writeUInt8(this.params.length, pos++);
         for (const param of this.params)
@@ -42,7 +42,7 @@ export class RenderMaterialData
         }
     }
 
-    getBuffer(): Buffer
+    public getBuffer(): Buffer
     {
         const buf = Buffer.allocUnsafe(1 + (this.params.length * 17));
         this.writeToBuffer(buf, 0);

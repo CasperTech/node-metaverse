@@ -1,4 +1,4 @@
-import { Vector3 } from '../../Vector3';
+import type { Vector3 } from '../../Vector3';
 
 export interface LLPhysicsConvex
 {

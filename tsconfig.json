@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2020",
         "module": "commonjs",
         "declaration": true,
         "outDir": "dist",
@@ -15,7 +15,7 @@
         "strictBindCallApply": true,
         "strictPropertyInitialization": false,
         "strictNullChecks": true,
-        "noFallthroughCasesInSwitch": true,
+        "noFallthroughCasesInSwitch": false,
         "types": [
             "node"
         ]
@@ -25,6 +25,7 @@
         "examples/**/*.ts"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "lib/**/*.spec.ts"
     ]
 }

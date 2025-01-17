@@ -1,5 +1,5 @@
 export class TimeoutError extends Error
 {
-    timeout: true;
-    waitingForMessage: number;
+    public timeout: true;
+    public waitingForMessage: number;
 }

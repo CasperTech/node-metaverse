@@ -1,4 +1,4 @@
 export class EventQueueStateChangeEvent
 {
-    active: boolean;
+    public active: boolean;
 }

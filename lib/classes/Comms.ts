@@ -1,16 +1,16 @@
-import { Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
 import { GroupChatClosedEvent } from '../events/GroupChatClosedEvent';
-import { Agent } from './Agent';
-import { Circuit } from './Circuit';
-import { Packet } from './Packet';
+import type { Agent } from './Agent';
+import type { Circuit } from './Circuit';
+import type { Packet } from './Packet';
 import { Message } from '../enums/Message';
-import { ChatFromSimulatorMessage } from './messages/ChatFromSimulator';
-import { ImprovedInstantMessageMessage } from './messages/ImprovedInstantMessage';
+import type { ChatFromSimulatorMessage } from './messages/ChatFromSimulator';
+import type { ImprovedInstantMessageMessage } from './messages/ImprovedInstantMessage';
 import { Utils } from './Utils';
 import { InstantMessageDialog } from '../enums/InstantMessageDialog';
-import { AlertMessageMessage } from './messages/AlertMessage';
-import { ClientEvents } from './ClientEvents';
-import { ScriptDialogMessage } from './messages/ScriptDialog';
+import type { AlertMessageMessage } from './messages/AlertMessage';
+import type { ClientEvents } from './ClientEvents';
+import type { ScriptDialogMessage } from './messages/ScriptDialog';
 import { InstantMessageEvent } from '../events/InstantMessageEvent';
 import { ChatSourceType } from '../enums/ChatSourceType';
 import { InstantMessageEventFlags } from '../enums/InstantMessageEventFlags';
@@ -30,9 +30,15 @@ export class Comms
 {
     private groupChatExpiredSub?: Subscription;
 
-    constructor(public readonly circuit: Circuit, public readonly agent: Agent, public readonly clientEvents: ClientEvents)
+    public constructor(public readonly circuit: Circuit, public readonly agent: Agent, public readonly clientEvents: ClientEvents)
     {
-        this.groupChatExpiredSub = this.agent.onGroupChatExpired.subscribe(this.groupChatExpired.bind(this));
+        this.groupChatExpiredSub = this.agent.onGroupChatExpired.subscribe((groupID: UUID) =>
+        {
+            this.groupChatExpired(groupID).catch((_e: unknown) =>
+            {
+                // ignore
+            })
+        });
 
         this.circuit.subscribeToMessages([
             Message.ImprovedInstantMessage,
@@ -44,8 +50,9 @@ export class Comms
             switch (packet.message.id)
             {
                 case Message.ImprovedInstantMessage:
+                {
                     const im = packet.message as ImprovedInstantMessageMessage;
-                    switch (im.MessageBlock.Dialog)
+                    switch (im.MessageBlock.Dialog as InstantMessageDialog)
                     {
                         case InstantMessageDialog.MessageFromAgent:
                         {
@@ -62,6 +69,7 @@ export class Comms
                         case InstantMessageDialog.MessageBox:
                             break;
                         case InstantMessageDialog.GroupInvitation:
+                        {
                             const giEvent = new GroupInviteEvent();
                             giEvent.from = im.AgentData.AgentID;
                             giEvent.fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
@@ -69,6 +77,7 @@ export class Comms
                             giEvent.inviteID = im.MessageBlock.ID;
                             this.clientEvents.onGroupInvite.next(giEvent);
                             break;
+                        }
                         case InstantMessageDialog.InventoryOffered:
                         {
                             const fromName = Utils.BufferToStringSimple(im.MessageBlock.FromAgentName);
@@ -287,10 +296,11 @@ export class Comms
                             this.clientEvents.onGroupChat.next(groupChatEvent);
                             break;
                         }
-
+                        default:
+                            break;
                     }
                     break;
-
+                }
                 case Message.ChatFromSimulator:
                 {
                     const chat = packet.message as ChatFromSimulatorMessage;
@@ -343,11 +353,13 @@ export class Comms
                     this.clientEvents.onScriptDialog.next(event);
                     break;
                 }
+                default:
+                    break;
             }
         });
     }
 
-    shutdown(): void
+    public shutdown(): void
     {
         if (this.groupChatExpiredSub !== undefined)
         {

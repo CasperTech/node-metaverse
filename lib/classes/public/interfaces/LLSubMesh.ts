@@ -1,9 +1,9 @@
-import { Vector3 } from '../../Vector3';
-import { Vector2 } from '../../Vector2';
+import type { Vector2 } from '../../Vector2';
+import type { Vector3 } from '../../Vector3';
 
 export interface LLSubMesh
 {
-    noGeometry?: true,
+    noGeometry?: boolean,
     position?: Vector3[],
     positionDomain?: {
         min: Vector3,
@@ -16,6 +16,6 @@ export interface LLSubMesh
         max: Vector2
     }
     triangleList?: number[],
-    weights?: { [key: number]: number }[],
+    weights?: Record<number, number>[],
 
 }

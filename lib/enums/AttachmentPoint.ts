@@ -45,7 +45,6 @@ export enum AttachmentPoint
     // Extras
     Neck, // FS: Neck
     Root = 40, // FS: Avatar Center
-    Center = 40,
     LefHandRing1 = 41, // FS: Left Ring Finger
     RightHandRing1 = 42, // FS: Right Ring Finger
     TailBase = 43, // FS: Tail Base

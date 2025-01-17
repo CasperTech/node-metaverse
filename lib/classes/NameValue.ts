@@ -1,7 +1,7 @@
 export class NameValue
 {
-    type: string;
-    class: string;
-    sendTo: string;
-    value: string;
+    public type: string;
+    public class: string;
+    public sendTo: string;
+    public value: string;
 }

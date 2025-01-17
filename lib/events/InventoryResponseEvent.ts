@@ -1,10 +1,10 @@
-import { UUID } from '../classes/UUID';
+import type { UUID } from '../classes/UUID';
 
 export class InventoryResponseEvent
 {
-    from: UUID;
-    fromName: string;
-    message: string;
-    accepted: boolean;
-    requestID: UUID;
+    public from: UUID;
+    public fromName: string;
+    public message: string;
+    public accepted: boolean;
+    public requestID: UUID;
 }

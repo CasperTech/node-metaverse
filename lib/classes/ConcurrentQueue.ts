@@ -1,14 +1,29 @@
 export class ConcurrentQueue
 {
-    private concurrency: number;
+    private readonly concurrency: number;
     private runningCount;
-    private jobQueue: { job: () => Promise<void>, resolve: (value: void | PromiseLike<void>) => void, reject: (reason?: unknown) => void }[];
+    private readonly jobQueue: { job: () => Promise<void>, resolve: (value: void | PromiseLike<void>) => void, reject: (reason?: unknown) => void }[] = [];
 
-    constructor(concurrency: number)
+    public constructor(concurrency: number)
     {
         this.concurrency = concurrency;
         this.runningCount = 0;
         this.jobQueue = [];
+    }
+
+    public async addJob(job: () => Promise<void>): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            if (this.runningCount < this.concurrency)
+            {
+                this.executeJob(job, resolve, reject);
+            }
+            else
+            {
+                this.jobQueue.push({ job, resolve, reject });
+            }
+        });
     }
 
     private executeJob(job: () => Promise<void>, resolve: (value: void | PromiseLike<void>) => void, reject: (reason?: unknown) => void): void
@@ -25,23 +40,13 @@ export class ConcurrentQueue
     {
         if (this.runningCount < this.concurrency && this.jobQueue.length > 0)
         {
-            const { job, resolve, reject } = this.jobQueue.shift()!;
+            const data = this.jobQueue.shift();
+            if (!data)
+            {
+                return;
+            }
+            const { job, resolve, reject } = data;
             this.executeJob(job, resolve, reject);
         }
-    }
-
-    public addJob(job: () => Promise<void>): Promise<void>
-    {
-        return new Promise<void>((resolve, reject) =>
-        {
-            if (this.runningCount < this.concurrency)
-            {
-                this.executeJob(job, resolve, reject);
-            }
-            else
-            {
-                this.jobQueue.push({ job, resolve, reject });
-            }
-        });
     }
 }

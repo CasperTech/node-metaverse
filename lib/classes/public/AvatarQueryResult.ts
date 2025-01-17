@@ -1,28 +1,28 @@
-import { UUID } from '../UUID';
+import type { UUID } from '../UUID';
 
 export class AvatarQueryResult
 {
-    constructor(private avatarKey: UUID, private firstName: string, private lastName: string)
+    public constructor(private readonly avatarKey: UUID, private readonly firstName: string, private readonly lastName: string)
     {
 
     }
 
-    getName(): string
+    public getName(): string
     {
         return this.firstName + ' ' + this.lastName;
     }
 
-    getFirstName(): string
+    public getFirstName(): string
     {
         return this.firstName;
     }
 
-    getLastName(): string
+    public getLastName(): string
     {
         return this.lastName;
     }
 
-    getKey(): UUID
+    public getKey(): UUID
     {
         return this.avatarKey;
     }

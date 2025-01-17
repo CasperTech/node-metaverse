@@ -8,36 +8,36 @@ import { SourcePattern } from '../enums/SourcePattern';
 
 export class ParticleSystem
 {
-    startGlow = 0.0;
-    endGlow = 0.0;
-    blendFuncSource: BlendFunc = BlendFunc.SourceAlpha;
-    blendFuncDest: BlendFunc = BlendFunc.OneMinusSourceAlpha;
-    crc  = 0;
-    pattern: SourcePattern = SourcePattern.None;
-    maxAge = 0.0;
-    startAge = 0.0;
-    innerAngle = 0.0;
-    outerAngle = 0.0;
-    burstRate = 0.0;
-    burstRadius = 0.0;
-    burstSpeedMin = 0.0;
-    burstSpeedMax = 0.0;
-    burstPartCount = 0;
-    angularVelocity = Vector3.getZero();
-    acceleration = Vector3.getZero();
-    texture = UUID.zero();
-    target = UUID.zero();
-    dataFlags: ParticleDataFlags = ParticleDataFlags.None;
-    partMaxAge = 0.0;
-    startColor = Color4.black;
-    endColor = Color4.black;
-    startScaleX = 0.0;
-    startScaleY = 0.0;
-    endScaleX = 0.0;
-    endScaleY = 0.0;
-    flags = 0;
+    public startGlow = 0.0;
+    public endGlow = 0.0;
+    public blendFuncSource: BlendFunc = BlendFunc.SourceAlpha;
+    public blendFuncDest: BlendFunc = BlendFunc.OneMinusSourceAlpha;
+    public crc  = 0;
+    public pattern: SourcePattern = SourcePattern.None;
+    public maxAge = 0.0;
+    public startAge = 0.0;
+    public innerAngle = 0.0;
+    public outerAngle = 0.0;
+    public burstRate = 0.0;
+    public burstRadius = 0.0;
+    public burstSpeedMin = 0.0;
+    public burstSpeedMax = 0.0;
+    public burstPartCount = 0;
+    public angularVelocity = Vector3.getZero();
+    public acceleration = Vector3.getZero();
+    public texture = UUID.zero();
+    public target = UUID.zero();
+    public dataFlags: ParticleDataFlags = ParticleDataFlags.None;
+    public partMaxAge = 0.0;
+    public startColor = Color4.black;
+    public endColor = Color4.black;
+    public startScaleX = 0.0;
+    public startScaleY = 0.0;
+    public endScaleX = 0.0;
+    public endScaleY = 0.0;
+    public flags = 0;
 
-    static from(buf: Buffer): ParticleSystem
+    public static from(buf: Buffer): ParticleSystem
     {
         const ps = new ParticleSystem();
         let pos = 0;
@@ -61,14 +61,14 @@ export class ParticleSystem
             pos += 4;
             pos = this.unpackLegacyData(ps, buf, pos);
 
-            if ((ps.dataFlags & ParticleDataFlags.DataGlow) === ParticleDataFlags.DataGlow)
+            if ((ps.dataFlags & ParticleDataFlags.DataGlow) as ParticleDataFlags === ParticleDataFlags.DataGlow)
             {
                 let glow = buf.readUInt8(pos++);
                 ps.startGlow = glow / 255.0;
                 glow = buf.readUInt8(pos++);
                 ps.endGlow = glow / 255.0;
             }
-            if ((ps.dataFlags & ParticleDataFlags.DataBlend) === ParticleDataFlags.DataBlend)
+            if ((ps.dataFlags & ParticleDataFlags.DataBlend) as ParticleDataFlags === ParticleDataFlags.DataBlend)
             {
                 ps.blendFuncSource = buf.readUInt8(pos++);
                 ps.blendFuncDest = buf.readUInt8(pos);
@@ -77,10 +77,10 @@ export class ParticleSystem
         return ps;
     }
 
-    static packFixed(buf: Buffer, pos: number, data: number, signed: boolean, intBits: number, fracBits: number): number
+    public static packFixed(buf: Buffer, pos: number, data: number, signed: boolean, intBits: number, fracBits: number): number
     {
         let totalBits = intBits + fracBits;
-        let min;
+        let min = 0;
 
         if (signed)
         {
@@ -119,7 +119,7 @@ export class ParticleSystem
         throw new Error('Total bits greater than 32');
     }
 
-    static unpackFixed(buf: Buffer, pos: number, signed: boolean, intBits: number, fracBits: number): number
+    public static unpackFixed(buf: Buffer, pos: number, signed: boolean, intBits: number, fracBits: number): number
     {
         let totalBits = intBits + fracBits;
         let fixedVal = 0.0;
@@ -155,7 +155,7 @@ export class ParticleSystem
         return fixedVal;
     }
 
-    static unpackSystem(ps: ParticleSystem, buf: Buffer, pos: number): number
+    public static unpackSystem(ps: ParticleSystem, buf: Buffer, pos: number): number
     {
         const startPos = pos;
         ps.crc = buf.readUInt32LE(pos);
@@ -201,7 +201,7 @@ export class ParticleSystem
         return pos;
     }
 
-    static unpackLegacyData(ps: ParticleSystem, buf: Buffer, pos: number): number
+    public static unpackLegacyData(ps: ParticleSystem, buf: Buffer, pos: number): number
     {
         ps.dataFlags = buf.readUInt32LE(pos);
         pos += 4;
@@ -226,7 +226,7 @@ export class ParticleSystem
         return pos;
     }
 
-    toBuffer(): Buffer
+    public toBuffer(): Buffer
     {
         if (this.crc === 0)
         {
@@ -271,25 +271,25 @@ export class ParticleSystem
         pos = pos + ParticleSystem.packFixed(legacyBlock, pos, this.endScaleX, false, 3, 5);
         pos = pos + ParticleSystem.packFixed(legacyBlock, pos, this.endScaleY, false, 3, 5);
 
-        if ((this.dataFlags & ParticleDataFlags.DataGlow) === ParticleDataFlags.DataGlow || (this.dataFlags & ParticleDataFlags.DataBlend) === ParticleDataFlags.DataBlend)
+        if ((this.dataFlags & ParticleDataFlags.DataGlow) as ParticleDataFlags === ParticleDataFlags.DataGlow || (this.dataFlags & ParticleDataFlags.DataBlend) as ParticleDataFlags === ParticleDataFlags.DataBlend)
         {
             let extraBytes = 0;
-            if ((this.dataFlags & ParticleDataFlags.DataGlow) === ParticleDataFlags.DataGlow)
+            if ((this.dataFlags & ParticleDataFlags.DataGlow) as ParticleDataFlags === ParticleDataFlags.DataGlow)
             {
                 extraBytes += 2;
             }
-            if ((this.dataFlags & ParticleDataFlags.DataBlend) === ParticleDataFlags.DataBlend)
+            if ((this.dataFlags & ParticleDataFlags.DataBlend) as ParticleDataFlags === ParticleDataFlags.DataBlend)
             {
                 extraBytes += 2;
             }
             const extraBuf = Buffer.allocUnsafe(extraBytes);
             pos = 0;
-            if ((this.dataFlags & ParticleDataFlags.DataGlow) === ParticleDataFlags.DataGlow)
+            if ((this.dataFlags & ParticleDataFlags.DataGlow) as ParticleDataFlags === ParticleDataFlags.DataGlow)
             {
                 extraBuf.writeUInt8(this.startGlow * 255, pos++);
                 extraBuf.writeUInt8(this.endGlow * 255, pos++);
             }
-            if ((this.dataFlags & ParticleDataFlags.DataBlend) === ParticleDataFlags.DataBlend)
+            if ((this.dataFlags & ParticleDataFlags.DataBlend) as ParticleDataFlags === ParticleDataFlags.DataBlend)
             {
                 extraBuf.writeUInt8(this.blendFuncSource, pos++);
                 extraBuf.writeUInt8(this.blendFuncDest, pos++);
@@ -311,7 +311,7 @@ export class ParticleSystem
         }
     }
 
-    toBase64(): string
+    public toBase64(): string
     {
         return this.toBuffer().toString('base64');
     }

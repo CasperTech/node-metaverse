@@ -1,13 +1,13 @@
-import { ChatSourceType } from '../enums/ChatSourceType';
-import { UUID } from '../classes/UUID';
-import { InstantMessageEventFlags } from '../enums/InstantMessageEventFlags';
+import type { ChatSourceType } from '../enums/ChatSourceType';
+import type { UUID } from '../classes/UUID';
+import type { InstantMessageEventFlags } from '../enums/InstantMessageEventFlags';
 
 export class InstantMessageEvent
 {
-    source: ChatSourceType;
-    fromName: string;
-    from: UUID;
-    owner: UUID;
-    message: string;
-    flags: InstantMessageEventFlags;
+    public source: ChatSourceType;
+    public fromName: string;
+    public from: UUID;
+    public owner: UUID;
+    public message: string;
+    public flags: InstantMessageEventFlags;
 }

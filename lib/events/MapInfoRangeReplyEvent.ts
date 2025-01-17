@@ -1,6 +1,6 @@
-import { MapBlock } from '../classes/MapBlock';
+import type { MapBlock } from '../classes/MapBlock';
 
 export class MapInfoRangeReplyEvent
 {
-    regions: MapBlock[];
+    public regions: MapBlock[];
 }

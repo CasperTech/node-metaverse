@@ -2,8 +2,9 @@
 
 import * as Long from 'long';
 import { MessageFlags } from '../../enums/MessageFlags';
-import { MessageBase } from '../MessageBase';
+import type { MessageBase } from '../MessageBase';
 import { Message } from '../../enums/Message';
+import type { StatID } from '../../enums/StatID';
 
 export class SimStatsMessage implements MessageBase
 {
@@ -18,7 +19,7 @@ export class SimStatsMessage implements MessageBase
         ObjectCapacity: number;
     };
     Stat: {
-        StatID: number;
+        StatID: StatID;
         StatValue: number;
     }[];
     PidStat: {
@@ -37,32 +38,32 @@ export class SimStatsMessage implements MessageBase
     writeToBuffer(buf: Buffer, pos: number): number
     {
         const startPos = pos;
-        buf.writeUInt32LE(this.Region['RegionX'], pos);
+        buf.writeUInt32LE(this.Region.RegionX, pos);
         pos += 4;
-        buf.writeUInt32LE(this.Region['RegionY'], pos);
+        buf.writeUInt32LE(this.Region.RegionY, pos);
         pos += 4;
-        buf.writeUInt32LE(this.Region['RegionFlags'], pos);
+        buf.writeUInt32LE(this.Region.RegionFlags, pos);
         pos += 4;
-        buf.writeUInt32LE(this.Region['ObjectCapacity'], pos);
+        buf.writeUInt32LE(this.Region.ObjectCapacity, pos);
         pos += 4;
         let count = this.Stat.length;
         buf.writeUInt8(this.Stat.length, pos++);
         for (let i = 0; i < count; i++)
         {
-            buf.writeUInt32LE(this.Stat[i]['StatID'], pos);
+            buf.writeUInt32LE(this.Stat[i].StatID, pos);
             pos += 4;
-            buf.writeFloatLE(this.Stat[i]['StatValue'], pos);
+            buf.writeFloatLE(this.Stat[i].StatValue, pos);
             pos += 4;
         }
-        buf.writeInt32LE(this.PidStat['PID'], pos);
+        buf.writeInt32LE(this.PidStat.PID, pos);
         pos += 4;
         count = this.RegionInfo.length;
         buf.writeUInt8(this.RegionInfo.length, pos++);
         for (let i = 0; i < count; i++)
         {
-            buf.writeInt32LE(this.RegionInfo[i]['RegionFlagsExtended'].low, pos);
+            buf.writeInt32LE(this.RegionInfo[i].RegionFlagsExtended.low, pos);
             pos += 4;
-            buf.writeInt32LE(this.RegionInfo[i]['RegionFlagsExtended'].high, pos);
+            buf.writeInt32LE(this.RegionInfo[i].RegionFlagsExtended.high, pos);
             pos += 4;
         }
         return pos - startPos;
@@ -83,13 +84,13 @@ export class SimStatsMessage implements MessageBase
             RegionFlags: 0,
             ObjectCapacity: 0
         };
-        newObjRegion['RegionX'] = buf.readUInt32LE(pos);
+        newObjRegion.RegionX = buf.readUInt32LE(pos);
         pos += 4;
-        newObjRegion['RegionY'] = buf.readUInt32LE(pos);
+        newObjRegion.RegionY = buf.readUInt32LE(pos);
         pos += 4;
-        newObjRegion['RegionFlags'] = buf.readUInt32LE(pos);
+        newObjRegion.RegionFlags = buf.readUInt32LE(pos);
         pos += 4;
-        newObjRegion['ObjectCapacity'] = buf.readUInt32LE(pos);
+        newObjRegion.ObjectCapacity = buf.readUInt32LE(pos);
         pos += 4;
         this.Region = newObjRegion;
         if (pos >= buf.length)
@@ -107,9 +108,9 @@ export class SimStatsMessage implements MessageBase
                 StatID: 0,
                 StatValue: 0
             };
-            newObjStat['StatID'] = buf.readUInt32LE(pos);
+            newObjStat.StatID = buf.readUInt32LE(pos);
             pos += 4;
-            newObjStat['StatValue'] = buf.readFloatLE(pos);
+            newObjStat.StatValue = buf.readFloatLE(pos);
             pos += 4;
             this.Stat.push(newObjStat);
         }
@@ -118,7 +119,7 @@ export class SimStatsMessage implements MessageBase
         } = {
             PID: 0
         };
-        newObjPidStat['PID'] = buf.readInt32LE(pos);
+        newObjPidStat.PID = buf.readInt32LE(pos);
         pos += 4;
         this.PidStat = newObjPidStat;
         if (pos >= buf.length)
@@ -134,7 +135,7 @@ export class SimStatsMessage implements MessageBase
             } = {
                 RegionFlagsExtended: Long.ZERO
             };
-            newObjRegionInfo['RegionFlagsExtended'] = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
+            newObjRegionInfo.RegionFlagsExtended = new Long(buf.readInt32LE(pos), buf.readInt32LE(pos + 4));
             pos += 8;
             this.RegionInfo.push(newObjRegionInfo);
         }

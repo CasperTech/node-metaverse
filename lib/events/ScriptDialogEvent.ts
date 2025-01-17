@@ -1,14 +1,14 @@
-import { UUID } from '../classes/UUID';
+import type { UUID } from '../classes/UUID';
 
 export class ScriptDialogEvent
 {
-    ObjectID: UUID;
-    FirstName: string;
-    LastName: string;
-    ObjectName: string;
-    Message: string;
-    ChatChannel: number;
-    ImageID: UUID;
-    Buttons: string[];
-    Owners: UUID[];
+    public ObjectID: UUID;
+    public FirstName: string;
+    public LastName: string;
+    public ObjectName: string;
+    public Message: string;
+    public ChatChannel: number;
+    public ImageID: UUID;
+    public Buttons: string[];
+    public Owners: UUID[];
 }

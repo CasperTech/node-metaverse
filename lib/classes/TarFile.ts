@@ -2,18 +2,18 @@ import * as fs from 'fs';
 
 export class TarFile
 {
-    fileName: string;
-    fileMode: number;
-    userID: number;
-    groupID: number;
-    modifyTime: Date;
-    linkIndicator: number;
-    linkedFile: string;
-    offset: number;
-    fileSize: number;
-    archiveFile: string;
+    public fileName: string;
+    public fileMode: number;
+    public userID: number;
+    public groupID: number;
+    public modifyTime: Date;
+    public linkIndicator: number;
+    public linkedFile: string;
+    public offset: number;
+    public fileSize: number;
+    public archiveFile: string;
 
-    read(): Promise<Buffer>
+    public async read(): Promise<Buffer>
     {
         return new Promise<Buffer>((resolve, reject) =>
         {

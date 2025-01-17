@@ -1,9 +1,9 @@
-import { GameObject } from '../classes/public/GameObject';
-import { UUID } from '../classes/UUID';
+import type { GameObject } from '../classes/public/GameObject';
+import type { UUID } from '../classes/UUID';
 
 export class ObjectKilledEvent
 {
-    objectID: UUID;
-    localID: number;
-    object: GameObject;
+    public objectID: UUID;
+    public localID: number;
+    public object: GameObject;
 }

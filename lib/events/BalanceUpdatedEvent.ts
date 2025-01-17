@@ -1,10 +1,10 @@
-import { UUID } from '../classes/UUID';
-import { MoneyTransactionType } from '../enums/MoneyTransactionType';
+import type { UUID } from '../classes/UUID';
+import type { MoneyTransactionType } from '../enums/MoneyTransactionType';
 
 export class BalanceUpdatedEvent
 {
-    balance: number;
-    transaction: {
+    public balance: number;
+    public transaction: {
         type: MoneyTransactionType,
         success: boolean,
         from: UUID,

@@ -1,19 +1,19 @@
-import { ParcelInfoFlags } from '../enums/ParcelInfoFlags';
-import { UUID } from '../classes/UUID';
-import { Vector3 } from '../classes/Vector3';
+import type { ParcelInfoFlags } from '../enums/ParcelInfoFlags';
+import type { UUID } from '../classes/UUID';
+import type { Vector3 } from '../classes/Vector3';
 
 export class ParcelInfoReplyEvent
 {
-    OwnerID: UUID;
-    ParcelName: string;
-    ParcelDescription: string;
-    Area: number;
-    BillableArea: number;
-    Flags: ParcelInfoFlags;
-    GlobalCoordinates: Vector3;
-    RegionName: string;
-    SnapshotID: UUID;
-    Traffic: number;
-    SalePrice: number;
-    AuctionID: number;
+    public OwnerID: UUID;
+    public ParcelName: string;
+    public ParcelDescription: string;
+    public Area: number;
+    public BillableArea: number;
+    public Flags: ParcelInfoFlags;
+    public GlobalCoordinates: Vector3;
+    public RegionName: string;
+    public SnapshotID: UUID;
+    public Traffic: number;
+    public SalePrice: number;
+    public AuctionID: number;
 }

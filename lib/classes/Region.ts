@@ -1,313 +1,170 @@
 import { Circuit } from './Circuit';
-import { Agent } from './Agent';
+import type { Agent } from './Agent';
 import { Caps } from './Caps';
 import { Comms } from './Comms';
-import { ClientEvents } from './ClientEvents';
-import { IObjectStore } from './interfaces/IObjectStore';
+import type { ClientEvents } from './ClientEvents';
+import type { IObjectStore } from './interfaces/IObjectStore';
 import { ObjectStoreFull } from './ObjectStoreFull';
 import { ObjectStoreLite } from './ObjectStoreLite';
 import { RequestRegionInfoMessage } from './messages/RequestRegionInfo';
-import { RegionInfoMessage } from './messages/RegionInfo';
+import type { RegionInfoMessage } from './messages/RegionInfo';
 import { Message } from '../enums/Message';
 import { Utils } from './Utils';
-import { RegionHandshakeMessage } from './messages/RegionHandshake';
+import type { RegionHandshakeMessage } from './messages/RegionHandshake';
 import { MapNameRequestMessage } from './messages/MapNameRequest';
 import { GridLayerType } from '../enums/GridLayerType';
-import { MapBlockReplyMessage } from './messages/MapBlockReply';
+import type { MapBlockReplyMessage } from './messages/MapBlockReply';
 import { FilterResponse } from '../enums/FilterResponse';
-import * as Long from 'long';
-import { Packet } from './Packet';
-import { LayerDataMessage } from './messages/LayerData';
+import type * as Long from 'long';
+import type { Packet } from './Packet';
+import type { LayerDataMessage } from './messages/LayerData';
 import { LayerType } from '../enums/LayerType';
-import { Subject, Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 import { BitPack } from './BitPack';
 import * as builder from 'xmlbuilder';
 import { SimAccessFlags } from '../enums/SimAccessFlags';
 import { ParcelDwellRequestMessage } from './messages/ParcelDwellRequest';
-import { ParcelDwellReplyMessage } from './messages/ParcelDwellReply';
+import type { ParcelDwellReplyMessage } from './messages/ParcelDwellReply';
 import { Parcel } from './public/Parcel';
-import { RegionEnvironment } from './public/RegionEnvironment';
-import { Color4 } from './Color4';
-import { SkyPreset } from './public/interfaces/SkyPreset';
-import { Vector4 } from './Vector4';
-import { WaterPreset } from './public/interfaces/WaterPreset';
-import { ClientCommands } from './ClientCommands';
-import { SimulatorViewerTimeMessageMessage } from './messages/SimulatorViewerTimeMessage';
-import { ParcelOverlayMessage } from './messages/ParcelOverlay';
-import { ILandBlock } from './interfaces/ILandBlock';
+import type { ClientCommands } from './ClientCommands';
+import type { SimulatorViewerTimeMessageMessage } from './messages/SimulatorViewerTimeMessage';
+import type { ParcelOverlayMessage } from './messages/ParcelOverlay';
+import type { ILandBlock } from './interfaces/ILandBlock';
 import { LandFlags } from '../enums/LandFlags';
 import { ParcelPropertiesRequestMessage } from './messages/ParcelPropertiesRequest';
 import { UUID } from './UUID';
 import { RegionFlags } from '../enums/RegionFlags';
 import { BotOptionFlags } from '../enums/BotOptionFlags';
-import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
+import type { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
 import { PacketFlags } from '../enums/PacketFlags';
 import { Vector3 } from './Vector3';
-import { Vector2 } from './Vector2';
 import { ObjectResolver } from './ObjectResolver';
-import { SimStatsMessage } from './messages/SimStats';
+import type { SimStatsMessage } from './messages/SimStats';
 import { SimStatsEvent } from '../events/SimStatsEvent';
 import { StatID } from '../enums/StatID';
-import { CoarseLocationUpdateMessage } from './messages/CoarseLocationUpdate';
+import type { CoarseLocationUpdateMessage } from './messages/CoarseLocationUpdate';
 import { Avatar } from './public/Avatar';
-import { MoneyBalanceReplyMessage } from './messages/MoneyBalanceReply';
+import type { MoneyBalanceReplyMessage } from './messages/MoneyBalanceReply';
 import { BalanceUpdatedEvent } from '../events/BalanceUpdatedEvent';
 import { Logger } from './Logger';
 import { EconomyDataRequestMessage } from './messages/EconomyDataRequest';
-import { EconomyDataMessage } from './messages/EconomyData';
+import type { EconomyDataMessage } from './messages/EconomyData';
+import { RegionEnvironment } from './public/RegionEnvironment';
+import { LLSD } from './llsd/LLSD';
 
 export class Region
 {
-    static CopyMatrix16: number[] = [];
-    static CosineTable16: number[] = [];
-    static DequantizeTable16: number[] = [];
-    static setup = false;
-    static OO_SQRT_2 = 0.7071067811865475244008443621049;
+    public static CopyMatrix16: number[] = [];
+    public static CosineTable16: number[] = [];
+    public static DequantizeTable16: number[] = [];
+    public static setup = false;
+    public static OO_SQRT_2 = 0.707106781186547;
 
-    regionName: string;
-    regionOwner: UUID;
-    regionID: UUID;
-    regionSizeX = 256;
-    regionSizeY = 256;
-    regionHandle: Long;
-    xCoordinate: number;
-    yCoordinate: number;
-    estateID: number;
-    parentEstateID: number;
-    regionFlags: RegionFlags;
-    mapImage: UUID;
+    public regionName: string;
+    public regionOwner: UUID;
+    public regionID: UUID;
+    public regionSizeX = 256;
+    public regionSizeY = 256;
+    public regionHandle: Long;
+    public xCoordinate: number;
+    public yCoordinate: number;
+    public estateID: number;
+    public parentEstateID: number;
+    public regionFlags: RegionFlags;
+    public mapImage: UUID;
 
-    simAccess: number;
-    maxAgents: number;
-    billableFactor: number;
-    objectBonusFactor: number;
-    waterHeight: number;
-    terrainRaiseLimit: number;
-    terrainLowerLimit: number;
-    pricePerMeter: number;
-    redirectGridX: number;
-    redirectGridY: number;
-    useEstateSun: boolean;
-    sunHour: number;
-    productSKU: string;
-    productName: string;
-    maxAgents32: number;
-    hardMaxAgents: number;
-    hardMaxObjects: number;
-    cacheID: UUID;
-    cpuClassID: number;
-    cpuRatio: number;
-    coloName: string;
+    public simAccess: number;
+    public maxAgents: number;
+    public billableFactor: number;
+    public objectBonusFactor: number;
+    public waterHeight: number;
+    public terrainRaiseLimit: number;
+    public terrainLowerLimit: number;
+    public pricePerMeter: number;
+    public redirectGridX: number;
+    public redirectGridY: number;
+    public useEstateSun: boolean;
+    public sunHour: number;
+    public productSKU: string;
+    public productName: string;
+    public maxAgents32: number;
+    public hardMaxAgents: number;
+    public hardMaxObjects: number;
+    public cacheID: UUID;
+    public cpuClassID: number;
+    public cpuRatio: number;
+    public coloName: string;
 
-    terrainBase0: UUID;
-    terrainBase1: UUID;
-    terrainBase2: UUID;
-    terrainBase3: UUID;
-    terrainDetail0: UUID;
-    terrainDetail1: UUID;
-    terrainDetail2: UUID;
-    terrainDetail3: UUID;
-    terrainStartHeight00: number;
-    terrainStartHeight01: number;
-    terrainStartHeight10: number;
-    terrainStartHeight11: number;
-    terrainHeightRange00: number;
-    terrainHeightRange01: number;
-    terrainHeightRange10: number;
-    terrainHeightRange11: number;
+    public terrainBase0: UUID;
+    public terrainBase1: UUID;
+    public terrainBase2: UUID;
+    public terrainBase3: UUID;
+    public terrainDetail0: UUID;
+    public terrainDetail1: UUID;
+    public terrainDetail2: UUID;
+    public terrainDetail3: UUID;
+    public terrainStartHeight00: number;
+    public terrainStartHeight01: number;
+    public terrainStartHeight10: number;
+    public terrainStartHeight11: number;
+    public terrainHeightRange00: number;
+    public terrainHeightRange01: number;
+    public terrainHeightRange10: number;
+    public terrainHeightRange11: number;
 
-    handshakeComplete = false;
-    handshakeCompleteEvent: Subject<void> = new Subject<void>();
+    public handshakeComplete = false;
+    public handshakeCompleteEvent: Subject<void> = new Subject<void>();
 
-    circuit: Circuit;
-    objects: IObjectStore;
-    caps: Caps;
-    comms: Comms;
-    clientEvents: ClientEvents;
-    clientCommands: ClientCommands;
-    options: BotOptionFlags;
-    agent: Agent;
-    messageSubscription: Subscription;
-    parcelPropertiesSubscription: Subscription;
+    public circuit: Circuit;
+    public objects: IObjectStore;
+    public caps: Caps;
+    public comms: Comms;
+    public clientEvents: ClientEvents;
+    public clientCommands: ClientCommands;
+    public options: BotOptionFlags;
+    public agent: Agent;
+    public messageSubscription: Subscription;
+    public parcelPropertiesSubscription: Subscription;
 
-    terrain: number[][] = [];
-    tilesReceived = 0;
-    terrainComplete = false;
-    terrainCompleteEvent: Subject<void> = new Subject<void>();
+    public terrain: number[][] = [];
+    public tilesReceived = 0;
+    public terrainComplete = false;
+    public terrainCompleteEvent: Subject<void> = new Subject<void>();
 
-    parcelsComplete = false;
-    parcelsCompleteEvent: Subject<void> = new Subject<void>();
+    public parcelsComplete = false;
+    public parcelsCompleteEvent: Subject<void> = new Subject<void>();
 
-    parcelOverlayComplete = false;
-    parcelOverlayCompleteEvent: Subject<void> = new Subject<void>();
+    public parcelOverlayComplete = false;
+    public parcelOverlayCompleteEvent: Subject<void> = new Subject<void>();
 
-    parcelOverlay: ILandBlock[] = [];
-    parcels: { [key: number]: Parcel } = {};
-    parcelsByUUID: { [key: string]: Parcel } = {};
-    parcelMap: number[][] = [];
+    public parcelOverlay: ILandBlock[] = [];
+    public parcels: Record<number, Parcel> = {};
+    public parcelsByUUID: Record<string, Parcel> = {};
+    public parcelMap: number[][] = [];
+
+    public textures: {
+        cloudTextureID?: UUID;
+        sunTextureID?: UUID;
+        moonTextureID?: UUID;
+    } = {};
 
 
-    parcelCoordinates: { x: number, y: number }[] = [];
+    public parcelCoordinates: { x: number, y: number }[] = [];
 
-    environment: RegionEnvironment;
+    public environment: RegionEnvironment;
 
-    timeOffset = 0;
+    public timeOffset = 0;
 
-    resolver: ObjectResolver = new ObjectResolver(this);
+    public resolver: ObjectResolver = new ObjectResolver(this);
 
-    agents: { [key: string]: Avatar } = {};
+    public agents = new Map<string, Avatar>();
 
     private uploadCost: number;
 
-    private parcelOverlayReceived: { [key: number]: Buffer } = {};
+    private parcelOverlayReceived: Record<number, Buffer> = {};
 
-    static IDCTColumn16(linein: number[], lineout: number[], column: number): void
-    {
-        let total: number;
-        let usize: number;
-
-        for (let n = 0; n < 16; n++)
-        {
-            total = this.OO_SQRT_2 * linein[column];
-
-            for (let u = 1; u < 16; u++)
-            {
-                usize = u * 16;
-                total += linein[usize + column] * this.CosineTable16[usize + n];
-            }
-
-            lineout[16 * n + column] = total;
-        }
-    }
-
-    static IDCTLine16(linein: number[], lineout: number[], line: number): void
-    {
-        const oosob: number = 2.0 / 16.0;
-        const lineSize: number = line * 16;
-        let total = 0;
-
-        for (let n = 0; n < 16; n++)
-        {
-            total = this.OO_SQRT_2 * linein[lineSize];
-
-            for (let u = 1; u < 16; u++)
-            {
-                total += linein[lineSize + u] * this.CosineTable16[u * 16 + n];
-            }
-
-            lineout[lineSize + n] = total * oosob;
-        }
-    }
-
-    static InitialSetup(): void
-    {
-        // Build copy matrix 16
-        {
-            let diag = false;
-            let right = true;
-            let i = 0;
-            let j = 0;
-            let count = 0;
-
-            for (let x = 0; x < 16 * 16; x++)
-            {
-                this.CopyMatrix16.push(0);
-                this.DequantizeTable16.push(0);
-                this.CosineTable16.push(0);
-            }
-            while (i < 16 && j < 16)
-            {
-                this.CopyMatrix16[j * 16 + i] = count++;
-
-                if (!diag)
-                {
-                    if (right)
-                    {
-                        if (i < 16 - 1)
-                        {
-                            i++;
-                        }
-                        else
-                        {
-                            j++;
-                        }
-
-                        right = false;
-                        diag = true;
-                    }
-                    else
-                    {
-                        if (j < 16 - 1)
-                        {
-                            j++;
-                        }
-                        else
-                        {
-                            i++;
-                        }
-
-                        right = true;
-                        diag = true;
-                    }
-                }
-                else
-                {
-                    if (right)
-                    {
-                        i++;
-                        j--;
-                        if (i === 16 - 1 || j === 0)
-                        {
-                            diag = false;
-                        }
-                    }
-                    else
-                    {
-                        i--;
-                        j++;
-                        if (j === 16 - 1 || i === 0)
-                        {
-                            diag = false;
-                        }
-                    }
-                }
-            }
-        }
-        {
-            for (let j = 0; j < 16; j++)
-            {
-                for (let i = 0; i < 16; i++)
-                {
-                    this.DequantizeTable16[j * 16 + i] = 1.0 + 2.0 * (i + j);
-                }
-            }
-        }
-        {
-            const hposz: number = Math.PI * 0.5 / 16.0;
-
-            for (let u = 0; u < 16; u++)
-            {
-                for (let n = 0; n < 16; n++)
-                {
-                    this.CosineTable16[u * 16 + n] = Math.cos((2.0 * n + 1.0) * u * hposz);
-                }
-            }
-        }
-        this.setup = true;
-    }
-
-    private static doesBitmapContainCoordinate(bitmap: Buffer, x: number, y: number): boolean
-    {
-        const mapBlockX = Math.floor(x / 4);
-        const mapBlockY = Math.floor(y / 4);
-
-        let index = (mapBlockY * 64) + mapBlockX;
-        const bit = index % 8;
-        index >>= 3;
-        return ((bitmap[index] & (1 << bit)) !== 0);
-    }
-
-    constructor(agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
+    public constructor(agent: Agent, clientEvents: ClientEvents, options: BotOptionFlags)
     {
         if (!Region.setup)
         {
@@ -343,9 +200,11 @@ export class Region
         }
         this.comms = new Comms(this.circuit, agent, clientEvents);
 
-        this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe(async(parcelProperties: ParcelPropertiesEvent) =>
+        this.parcelPropertiesSubscription = this.clientEvents.onParcelPropertiesEvent.subscribe((parcelProperties: ParcelPropertiesEvent) =>
         {
-            await this.resolveParcel(parcelProperties);
+            this.resolveParcel(parcelProperties).catch((_e: unknown) => {
+                // ignore
+            });
         });
 
         this.messageSubscription = this.circuit.subscribeToMessages([
@@ -385,7 +244,7 @@ export class Region
                 case Message.CoarseLocationUpdate:
                 {
                     const locations: CoarseLocationUpdateMessage = packet.message as CoarseLocationUpdateMessage;
-                    const foundAgents: { [key: string]: Vector3 } = {};
+                    const foundAgents: Record<string, Vector3> = {};
                     for (let x = 0; x < locations.AgentData.length; x++)
                     {
                         const agentData = locations.AgentData[x];
@@ -393,35 +252,35 @@ export class Region
                         const newPosition = new Vector3([location.X, location.Y, location.Z * 4]);
                         foundAgents[agentData.AgentID.toString()] = newPosition;
 
-                        if (this.agents[agentData.AgentID.toString()] === undefined)
+                        const foundAgent = this.agents.get(agentData.AgentID.toString());
+                        if (foundAgent === undefined)
                         {
                             let resolved = await this.clientCommands.grid.avatarKey2Name(agentData.AgentID);
                             if (Array.isArray(resolved))
                             {
                                 resolved = resolved[0];
                             }
-                            if (this.agents[agentData.AgentID.toString()] === undefined)
-                            {
-                                this.agents[agentData.AgentID.toString()] = new Avatar(agentData.AgentID, resolved.getFirstName(), resolved.getLastName());
-                                this.clientEvents.onAvatarEnteredRegion.next(this.agents[agentData.AgentID.toString()]);
-                            }
-                            else
-                            {
-                                this.agents[agentData.AgentID.toString()].coarsePosition = newPosition;
-                            }
+                            const ag = new Avatar(agentData.AgentID, resolved.getFirstName(), resolved.getLastName());
+                            ag.coarsePosition = newPosition;
+                            this.agents.set(agentData.AgentID.toString(), ag);
+                            this.clientEvents.onAvatarEnteredRegion.next(ag);
                         }
                         else
                         {
-                            this.agents[agentData.AgentID.toString()].coarsePosition = newPosition;
+                            foundAgent.coarsePosition = newPosition;
                         }
                     }
-                    const keys = Object.keys(this.agents)
+                    const keys = this.agents.keys();
                     for (const agentID of keys)
                     {
                         if (foundAgents[agentID] === undefined)
                         {
-                            this.agents[agentID].coarseLeftRegion();
-                            delete this.agents[agentID];
+                            const foundAgent = this.agents.get(agentID);
+                            if (foundAgent !== undefined)
+                            {
+                                foundAgent.coarseLeftRegion();
+                                this.agents.delete(agentID);
+                            }
                         }
                     }
                     break;
@@ -651,11 +510,12 @@ export class Region
                     // stride - unused for now
                     nibbler.UnpackBits(16);
                     const patchSize = nibbler.UnpackBits(8);
-                    const headerLayerType = nibbler.UnpackBits(8);
+                    const headerLayerType: LayerType = nibbler.UnpackBits(8);
 
                     switch (type)
                     {
                         case LayerType.Land:
+                        {
                             if (headerLayerType === type) // Quick sanity check
                             {
                                 let x = 0;
@@ -764,9 +624,9 @@ export class Region
                                             throw new Error('IDCTPatchLarge not implemented');
                                         }
 
-                                        for (let j = 0; j < block.length; j++)
+                                        for (const bl of block)
                                         {
-                                            output.push(block[j] * mult + addVal);
+                                            output.push(bl * mult + addVal);
                                         }
 
                                         let outputIndex = 0;
@@ -791,6 +651,9 @@ export class Region
                                 }
                             }
                             break;
+                        }
+                        default:
+                            break;
                     }
                     break;
                 }
@@ -801,8 +664,545 @@ export class Region
                     this.timeOffset = (new Date().getTime() / 1000) - timeStamp;
                     break;
                 }
+                default:
+                    break;
             }
         })
+    }
+
+    public static IDCTColumn16(linein: number[], lineout: number[], column: number): void
+    {
+        let total = 0;
+        let usize = 0;
+
+        for (let n = 0; n < 16; n++)
+        {
+            total = this.OO_SQRT_2 * linein[column];
+
+            for (let u = 1; u < 16; u++)
+            {
+                usize = u * 16;
+                total += linein[usize + column] * this.CosineTable16[usize + n];
+            }
+
+            lineout[16 * n + column] = total;
+        }
+    }
+
+    public static IDCTLine16(linein: number[], lineout: number[], line: number): void
+    {
+        const oosob: number = 2.0 / 16.0;
+        const lineSize: number = line * 16;
+        let total = 0;
+
+        for (let n = 0; n < 16; n++)
+        {
+            total = this.OO_SQRT_2 * linein[lineSize];
+
+            for (let u = 1; u < 16; u++)
+            {
+                total += linein[lineSize + u] * this.CosineTable16[u * 16 + n];
+            }
+
+            lineout[lineSize + n] = total * oosob;
+        }
+    }
+
+    public static InitialSetup(): void
+    {
+        // Build copy matrix 16
+        {
+            let diag = false;
+            let right = true;
+            let i = 0;
+            let j = 0;
+            let count = 0;
+
+            for (let x = 0; x < 16 * 16; x++)
+            {
+                this.CopyMatrix16.push(0);
+                this.DequantizeTable16.push(0);
+                this.CosineTable16.push(0);
+            }
+            while (i < 16 && j < 16)
+            {
+                this.CopyMatrix16[j * 16 + i] = count++;
+
+                if (!diag)
+                {
+                    if (right)
+                    {
+                        if (i < 16 - 1)
+                        {
+                            i++;
+                        }
+                        else
+                        {
+                            j++;
+                        }
+
+                        right = false;
+                        diag = true;
+                    }
+                    else
+                    {
+                        if (j < 16 - 1)
+                        {
+                            j++;
+                        }
+                        else
+                        {
+                            i++;
+                        }
+
+                        right = true;
+                        diag = true;
+                    }
+                }
+                else
+                {
+                    if (right)
+                    {
+                        i++;
+                        j--;
+                        if (i === 16 - 1 || j === 0)
+                        {
+                            diag = false;
+                        }
+                    }
+                    else
+                    {
+                        i--;
+                        j++;
+                        if (j === 16 - 1 || i === 0)
+                        {
+                            diag = false;
+                        }
+                    }
+                }
+            }
+        }
+        {
+            for (let j = 0; j < 16; j++)
+            {
+                for (let i = 0; i < 16; i++)
+                {
+                    this.DequantizeTable16[j * 16 + i] = 1.0 + 2.0 * (i + j);
+                }
+            }
+        }
+        {
+            const hposz: number = Math.PI * 0.5 / 16.0;
+
+            for (let u = 0; u < 16; u++)
+            {
+                for (let n = 0; n < 16; n++)
+                {
+                    this.CosineTable16[u * 16 + n] = Math.cos((2.0 * n + 1.0) * u * hposz);
+                }
+            }
+        }
+        this.setup = true;
+    }
+
+    public async getUploadCost(): Promise<number>
+    {
+        if (this.uploadCost !== undefined)
+        {
+            return this.uploadCost;
+        }
+
+        const msg = new EconomyDataRequestMessage();
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        const economyReply = await this.circuit.waitForMessage<EconomyDataMessage>(Message.EconomyData, 10000, (_message: EconomyDataMessage): FilterResponse =>
+        {
+            return FilterResponse.Finish;
+        });
+
+        this.uploadCost = economyReply.Info.PriceUpload;
+        return this.uploadCost;
+    }
+
+    public async getParcelProperties(x: number, y: number): Promise<Parcel>
+    {
+        return new Promise<Parcel>((resolve, reject) =>
+        {
+            const request = new ParcelPropertiesRequestMessage();
+            request.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            request.ParcelData = {
+                North: y + 1,
+                East: x + 1,
+                South: y,
+                West: x,
+                SequenceID: -10000,
+                SnapSelection: false
+            };
+            this.circuit.sendMessage(request, PacketFlags.Reliable);
+            let messageAwait: Subscription | undefined = undefined;
+            let messageWaitTimer: number | undefined = undefined;
+
+            messageAwait = this.clientEvents.onParcelPropertiesEvent.subscribe((parcelProperties: ParcelPropertiesEvent) =>
+            {
+                if (Region.doesBitmapContainCoordinate(parcelProperties.Bitmap, x, y))
+                {
+                    if (messageAwait !== undefined)
+                    {
+                        messageAwait.unsubscribe();
+                        messageAwait = undefined;
+                    }
+                    if (messageWaitTimer !== undefined)
+                    {
+                        clearTimeout(messageWaitTimer);
+                        messageWaitTimer = undefined;
+                    }
+                    this.resolveParcel(parcelProperties).then((value: Parcel) =>
+                    {
+                        resolve(value);
+                    }).catch((e: unknown) =>
+                    {
+                        reject(e as Error);
+                    })
+                }
+            });
+
+            messageWaitTimer = setTimeout(() =>
+            {
+                if (messageAwait !== undefined)
+                {
+                    messageAwait.unsubscribe();
+                    messageAwait = undefined;
+                }
+                if (messageWaitTimer !== undefined)
+                {
+                    clearTimeout(messageWaitTimer);
+                    messageWaitTimer = undefined;
+                }
+                reject(new Error('Timed out'));
+            }, 10000) as unknown as number;
+        });
+    }
+
+    public async getParcels(): Promise<Parcel[]>
+    {
+        await this.waitForParcelOverlay();
+        const parcels: Parcel[] = [];
+        for (const parcel of this.parcelCoordinates)
+        {
+            try
+            {
+                parcels.push(await this.getParcelProperties(parcel.x * 4.0, parcel.y * 4.0));
+            }
+            catch (error)
+            {
+                console.error(error);
+            }
+        }
+        return parcels;
+    }
+
+    public resetParcels(): void
+    {
+        this.parcelMap = [];
+        for (let x = 0; x < 64; x++)
+        {
+            this.parcelMap.push([]);
+            for (let y = 0; y < 64; y++)
+            {
+                this.parcelMap[x].push(0);
+            }
+        }
+        this.parcels = {};
+        this.parcelsByUUID = {};
+        this.parcelsComplete = false;
+    }
+
+    public async waitForParcelOverlay(): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            if (this.parcelOverlayComplete)
+            {
+                resolve();
+            }
+            else
+            {
+                let timeout: NodeJS.Timeout | null = null;
+                const subscription = this.parcelOverlayCompleteEvent.subscribe(() =>
+                {
+                    if (timeout !== null)
+                    {
+                        clearTimeout(timeout);
+                    }
+                    subscription.unsubscribe();
+                    resolve();
+                });
+                timeout = setTimeout(() =>
+                {
+                    subscription.unsubscribe();
+                    reject(new Error('Timeout waiting for parcel overlay'));
+                }, 10000);
+            }
+        });
+    }
+
+    public async waitForParcels(): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            if (this.parcelsComplete)
+            {
+                resolve();
+            }
+            else
+            {
+                let timeout: NodeJS.Timeout | null = null;
+                const subscription = this.parcelsCompleteEvent.subscribe(() =>
+                {
+                    if (timeout !== null)
+                    {
+                        clearTimeout(timeout);
+                    }
+                    subscription.unsubscribe();
+                    resolve();
+                });
+                timeout = setTimeout(() =>
+                {
+                    subscription.unsubscribe();
+                    reject(new Error('Timeout waiting for parcels'));
+                }, 10000);
+            }
+        });
+    }
+
+    public async waitForTerrain(): Promise<void>
+    {
+        return new Promise<void>((resolve, reject) =>
+        {
+            if (this.terrainComplete)
+            {
+                resolve();
+            }
+            else
+            {
+                let timeout: NodeJS.Timeout | null = null;
+                const subscription = this.terrainCompleteEvent.subscribe(() =>
+                {
+                    if (timeout !== null)
+                    {
+                        clearTimeout(timeout);
+                    }
+                    subscription.unsubscribe();
+                    resolve();
+                });
+                timeout = setTimeout(() =>
+                {
+                    subscription.unsubscribe();
+                    reject(new Error('Timeout waiting for terrain'));
+                }, 10000);
+            }
+        });
+    }
+
+    public getTerrainHeightAtPoint(x: number, y: number): number
+    {
+        const patchX = Math.floor(x / 16);
+        const patchY = Math.floor(y / 16);
+        x = x % 16;
+        y = y % 16;
+
+        const p = this.terrain[patchY * 16 + patchX];
+        if (p === null)
+        {
+            return 0;
+        }
+        return p[y * 16 + x];
+    }
+
+    public exportXML(): string
+    {
+        const document = builder.create('RegionSettings');
+        const general = document.ele('General');
+        general.ele('AllowDamage', (this.regionFlags & RegionFlags.AllowDamage) ? 'True' : 'False');
+        general.ele('AllowLandResell', !(this.regionFlags & RegionFlags.BlockLandResell) ? 'True' : 'False');
+        general.ele('AllowLandJoinDivide', (this.regionFlags & RegionFlags.AllowParcelChanges) ? 'True' : 'False');
+        general.ele('BlockFly', (this.regionFlags & RegionFlags.NoFly) ? 'True' : 'False');
+        general.ele('BlockLandShowInSearch', (this.regionFlags & RegionFlags.BlockParcelSearch) ? 'True' : 'False');
+        general.ele('BlockTerraform', (this.regionFlags & RegionFlags.BlockTerraform) ? 'True' : 'False');
+        general.ele('DisableCollisions', (this.regionFlags & RegionFlags.SkipCollisions) ? 'True' : 'False');
+        general.ele('DisablePhysics', (this.regionFlags & RegionFlags.SkipPhysics) ? 'True' : 'False');
+        general.ele('DisableScripts', (this.regionFlags & RegionFlags.EstateSkipScripts) ? 'True' : 'False');
+        general.ele('MaturityRating', (this.simAccess & SimAccessFlags.Mature & SimAccessFlags.Adult & SimAccessFlags.PG));
+        general.ele('RestrictPushing', (this.regionFlags & RegionFlags.RestrictPushObject) ? 'True' : 'False');
+        general.ele('AgentLimit', this.maxAgents);
+        general.ele('ObjectBonus', this.objectBonusFactor);
+        const groundTextures = document.ele('GroundTextures');
+        groundTextures.ele('Texture1', this.terrainDetail0.toString());
+        groundTextures.ele('Texture2', this.terrainDetail1.toString());
+        groundTextures.ele('Texture3', this.terrainDetail2.toString());
+        groundTextures.ele('Texture4', this.terrainDetail3.toString());
+
+        groundTextures.ele('ElevationLowSW', this.terrainStartHeight00);
+        groundTextures.ele('ElevationLowNW', this.terrainStartHeight01);
+        groundTextures.ele('ElevationLowSE', this.terrainStartHeight10);
+        groundTextures.ele('ElevationLowNE', this.terrainStartHeight11);
+
+        groundTextures.ele('ElevationHighSW', this.terrainHeightRange00);
+        groundTextures.ele('ElevationHighNW', this.terrainHeightRange01);
+        groundTextures.ele('ElevationHighSE', this.terrainHeightRange10);
+        groundTextures.ele('ElevationHighNE', this.terrainHeightRange11);
+
+        const terrain = document.ele('Terrain');
+        terrain.ele('WaterHeight', this.waterHeight);
+        terrain.ele('TerrainRaiseLimit', this.terrainRaiseLimit);
+        terrain.ele('TerrainLowerLimit', this.terrainLowerLimit);
+        terrain.ele('UseEstateSun', (this.useEstateSun) ? 'True' : 'False');
+        terrain.ele('FixedSun', (this.regionFlags & RegionFlags.SunFixed) ? 'True' : 'False');
+        terrain.ele('SunPosition', this.sunHour);
+        if (this.environment)
+        {
+            const env = document.ele('Environment');
+            env.ele('data', this.environment.toNotation());
+        }
+        return document.end({ pretty: true, allowEmpty: true });
+    }
+
+    public activateCaps(seedURL: string): void
+    {
+        if (this.caps !== undefined)
+        {
+            this.caps.shutdown();
+        }
+        this.caps = new Caps(this.agent, seedURL, this.clientEvents);
+    }
+
+    public async handshake(handshake: RegionHandshakeMessage): Promise<void>
+    {
+        this.regionName = Utils.BufferToStringSimple(handshake.RegionInfo.SimName);
+        this.simAccess = handshake.RegionInfo.SimAccess;
+        this.regionFlags = handshake.RegionInfo.RegionFlags;
+        this.regionOwner = handshake.RegionInfo.SimOwner;
+        this.agent.setIsEstateManager(handshake.RegionInfo.IsEstateManager);
+        this.waterHeight = handshake.RegionInfo.WaterHeight;
+        this.billableFactor = handshake.RegionInfo.BillableFactor;
+        this.cacheID = handshake.RegionInfo.CacheID;
+        this.terrainBase0 = handshake.RegionInfo.TerrainBase0;
+        this.terrainBase1 = handshake.RegionInfo.TerrainBase1;
+        this.terrainBase2 = handshake.RegionInfo.TerrainBase2;
+        this.terrainBase3 = handshake.RegionInfo.TerrainBase3;
+        this.terrainDetail0 = handshake.RegionInfo.TerrainDetail0;
+        this.terrainDetail1 = handshake.RegionInfo.TerrainDetail1;
+        this.terrainDetail2 = handshake.RegionInfo.TerrainDetail2;
+        this.terrainDetail3 = handshake.RegionInfo.TerrainDetail3;
+        this.terrainStartHeight00 = handshake.RegionInfo.TerrainStartHeight00;
+        this.terrainStartHeight01 = handshake.RegionInfo.TerrainStartHeight01;
+        this.terrainStartHeight10 = handshake.RegionInfo.TerrainStartHeight10;
+        this.terrainStartHeight11 = handshake.RegionInfo.TerrainStartHeight11;
+        this.terrainHeightRange00 = handshake.RegionInfo.TerrainHeightRange00;
+        this.terrainHeightRange01 = handshake.RegionInfo.TerrainHeightRange01;
+        this.terrainHeightRange10 = handshake.RegionInfo.TerrainHeightRange10;
+        this.terrainHeightRange11 = handshake.RegionInfo.TerrainHeightRange11;
+        this.regionID = handshake.RegionInfo2.RegionID;
+        this.cpuClassID = handshake.RegionInfo3.CPUClassID;
+        this.cpuRatio = handshake.RegionInfo3.CPURatio;
+        this.coloName = Utils.BufferToStringSimple(handshake.RegionInfo3.ColoName);
+        this.productSKU = Utils.BufferToStringSimple(handshake.RegionInfo3.ProductSKU);
+        this.productName = Utils.BufferToStringSimple(handshake.RegionInfo3.ProductName);
+
+
+        const request: RequestRegionInfoMessage = new RequestRegionInfoMessage();
+        request.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        this.circuit.sendMessage(request, PacketFlags.Reliable);
+        const regionInfo: RegionInfoMessage = await this.circuit.waitForMessage<RegionInfoMessage>(Message.RegionInfo, 30000);
+
+        this.estateID = regionInfo.RegionInfo.EstateID;
+        this.parentEstateID = regionInfo.RegionInfo.ParentEstateID;
+        this.maxAgents = regionInfo.RegionInfo.MaxAgents;
+        this.objectBonusFactor = regionInfo.RegionInfo.ObjectBonusFactor;
+        this.terrainRaiseLimit = regionInfo.RegionInfo.TerrainRaiseLimit;
+        this.terrainLowerLimit = regionInfo.RegionInfo.TerrainLowerLimit;
+        this.pricePerMeter = regionInfo.RegionInfo.PricePerMeter;
+        this.redirectGridX = regionInfo.RegionInfo.RedirectGridX;
+        this.redirectGridY = regionInfo.RegionInfo.RedirectGridY;
+        this.useEstateSun = regionInfo.RegionInfo.UseEstateSun;
+        this.sunHour = regionInfo.RegionInfo.SunHour;
+        this.maxAgents32 = regionInfo.RegionInfo2.MaxAgents32;
+        this.hardMaxAgents = regionInfo.RegionInfo2.HardMaxAgents;
+        this.hardMaxObjects = regionInfo.RegionInfo2.HardMaxObjects;
+
+        const msg: MapNameRequestMessage = new MapNameRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID,
+            Flags: GridLayerType.Objects,
+            EstateID: 0,
+            Godlike: false
+        };
+        msg.NameData = {
+            Name: handshake.RegionInfo.SimName
+        };
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+        await this.circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 30000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
+        {
+            for (const region of filterMsg.Data)
+            {
+                const name = Utils.BufferToStringSimple(region.Name);
+                if (name.trim().toLowerCase() === this.regionName.trim().toLowerCase())
+                {
+                    this.xCoordinate = region.X;
+                    this.yCoordinate = region.Y;
+                    this.mapImage = region.MapImageID;
+                    const globalPos = Utils.RegionCoordinatesToHandle(this.xCoordinate, this.yCoordinate);
+                    this.regionHandle = globalPos.regionHandle;
+                    return FilterResponse.Finish;
+                }
+            }
+            return FilterResponse.NoMatch;
+        });
+
+
+        await this.caps.waitForSeedCapability();
+
+        try
+        {
+            const extResponse = await this.caps.capsGetString('ExtEnvironment');
+            this.environment = new RegionEnvironment(LLSD.parseXML(extResponse));
+        }
+        catch (e: unknown)
+        {
+            Logger.Error(e);
+            Logger.Warn('Unable to get environment settings from region');
+        }
+
+        this.handshakeComplete = true;
+        this.handshakeCompleteEvent.next();
+    }
+
+    public shutdown(): void
+    {
+        this.parcelPropertiesSubscription.unsubscribe();
+        this.messageSubscription.unsubscribe();
+        this.comms.shutdown();
+        this.caps.shutdown();
+        this.objects.shutdown();
+        this.resolver.shutdown();
+        this.circuit.shutdown();
+    }
+
+    private static doesBitmapContainCoordinate(bitmap: Buffer, x: number, y: number): boolean
+    {
+        const mapBlockX = Math.floor(x / 4);
+        const mapBlockY = Math.floor(y / 4);
+
+        let index = (mapBlockY * 64) + mapBlockX;
+        const bit = index % 8;
+        index >>= 3;
+        return ((bitmap[index] & (1 << bit)) !== 0);
     }
 
     private async resolveParcel(parcelProperties: ParcelPropertiesEvent): Promise<Parcel>
@@ -989,459 +1389,5 @@ export class Region
         {
             this.fillParcel(parcelID, x, y + 1);
         }
-    }
-
-    public async getUploadCost(): Promise<number>
-    {
-        if (this.uploadCost !== undefined)
-        {
-            return this.uploadCost;
-        }
-
-        const msg = new EconomyDataRequestMessage();
-        this.circuit.sendMessage(msg, PacketFlags.Reliable);
-        const economyReply = await this.circuit.waitForMessage<EconomyDataMessage>(Message.EconomyData, 10000, (_message: EconomyDataMessage): FilterResponse =>
-        {
-            return FilterResponse.Finish;
-        });
-
-        this.uploadCost = economyReply.Info.PriceUpload;
-        return this.uploadCost;
-    }
-
-    public getParcelProperties(x: number, y: number): Promise<Parcel>
-    {
-        return new Promise<Parcel>((resolve, reject) =>
-        {
-            const request = new ParcelPropertiesRequestMessage();
-            request.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: this.circuit.sessionID
-            };
-            request.ParcelData = {
-                North: y + 1,
-                East: x + 1,
-                South: y,
-                West: x,
-                SequenceID: -10000,
-                SnapSelection: false
-            };
-            this.circuit.sendMessage(request, PacketFlags.Reliable);
-            let messageAwait: Subscription | undefined = undefined;
-            let messageWaitTimer: number | undefined = undefined;
-
-            messageAwait = this.clientEvents.onParcelPropertiesEvent.subscribe(async(parcelProperties: ParcelPropertiesEvent) =>
-            {
-                if (Region.doesBitmapContainCoordinate(parcelProperties.Bitmap, x, y))
-                {
-                    if (messageAwait !== undefined)
-                    {
-                        messageAwait.unsubscribe();
-                        messageAwait = undefined;
-                    }
-                    if (messageWaitTimer !== undefined)
-                    {
-                        clearTimeout(messageWaitTimer);
-                        messageWaitTimer = undefined;
-                    }
-                    resolve(await this.resolveParcel(parcelProperties));
-                }
-            });
-
-            messageWaitTimer = setTimeout(() =>
-            {
-                if (messageAwait !== undefined)
-                {
-                    messageAwait.unsubscribe();
-                    messageAwait = undefined;
-                }
-                if (messageWaitTimer !== undefined)
-                {
-                    clearTimeout(messageWaitTimer);
-                    messageWaitTimer = undefined;
-                }
-                reject(new Error('Timed out'));
-            }, 10000) as any as number;
-        });
-    }
-
-    async getParcels(): Promise<Parcel[]>
-    {
-        await this.waitForParcelOverlay();
-        const parcels: Parcel[] = [];
-        for (const parcel of this.parcelCoordinates)
-        {
-            try
-            {
-                parcels.push(await this.getParcelProperties(parcel.x * 4.0, parcel.y * 4.0));
-            }
-            catch (error)
-            {
-                console.error(error);
-            }
-        }
-        return parcels;
-    }
-
-    resetParcels(): void
-    {
-        this.parcelMap = [];
-        for (let x = 0; x < 64; x++)
-        {
-            this.parcelMap.push([]);
-            for (let y = 0; y < 64; y++)
-            {
-                this.parcelMap[x].push(0);
-            }
-        }
-        this.parcels = {};
-        this.parcelsByUUID = {};
-        this.parcelsComplete = false;
-    }
-
-    waitForParcelOverlay(): Promise<void>
-    {
-        return new Promise<void>((resolve, reject) =>
-        {
-            if (this.parcelOverlayComplete)
-            {
-                resolve();
-            }
-            else
-            {
-                let timeout: NodeJS.Timeout | null = null;
-                const subscription = this.parcelOverlayCompleteEvent.subscribe(() =>
-                {
-                    if (timeout !== null)
-                    {
-                        clearTimeout(timeout);
-                    }
-                    subscription.unsubscribe();
-                    resolve();
-                });
-                timeout = setTimeout(() =>
-                {
-                    subscription.unsubscribe();
-                    reject(new Error('Timeout waiting for parcel overlay'));
-                }, 10000);
-            }
-        });
-    }
-
-    waitForParcels(): Promise<void>
-    {
-        return new Promise<void>((resolve, reject) =>
-        {
-            if (this.parcelsComplete)
-            {
-                resolve();
-            }
-            else
-            {
-                let timeout: NodeJS.Timeout | null = null;
-                const subscription = this.parcelsCompleteEvent.subscribe(() =>
-                {
-                    if (timeout !== null)
-                    {
-                        clearTimeout(timeout);
-                    }
-                    subscription.unsubscribe();
-                    resolve();
-                });
-                timeout = setTimeout(() =>
-                {
-                    subscription.unsubscribe();
-                    reject(new Error('Timeout waiting for parcels'));
-                }, 10000);
-            }
-        });
-    }
-
-    waitForTerrain(): Promise<void>
-    {
-        return new Promise<void>((resolve, reject) =>
-        {
-            if (this.terrainComplete)
-            {
-                resolve();
-            }
-            else
-            {
-                let timeout: NodeJS.Timeout | null = null;
-                const subscription = this.terrainCompleteEvent.subscribe(() =>
-                {
-                    if (timeout !== null)
-                    {
-                        clearTimeout(timeout);
-                    }
-                    subscription.unsubscribe();
-                    resolve();
-                });
-                timeout = setTimeout(() =>
-                {
-                    subscription.unsubscribe();
-                    reject(new Error('Timeout waiting for terrain'));
-                }, 10000);
-            }
-        });
-    }
-
-    getTerrainHeightAtPoint(x: number, y: number): number
-    {
-        const patchX = Math.floor(x / 16);
-        const patchY = Math.floor(y / 16);
-        x = x % 16;
-        y = y % 16;
-
-        const p = this.terrain[patchY * 16 + patchX];
-        if (p === null)
-        {
-            return 0;
-        }
-        return p[y * 16 + x];
-    }
-
-    exportXML(): string
-    {
-        const document = builder.create('RegionSettings');
-        const general = document.ele('General');
-        general.ele('AllowDamage', (this.regionFlags & RegionFlags.AllowDamage) ? 'True' : 'False');
-        general.ele('AllowLandResell', !(this.regionFlags & RegionFlags.BlockLandResell) ? 'True' : 'False');
-        general.ele('AllowLandJoinDivide', (this.regionFlags & RegionFlags.AllowParcelChanges) ? 'True' : 'False');
-        general.ele('BlockFly', (this.regionFlags & RegionFlags.NoFly) ? 'True' : 'False');
-        general.ele('BlockLandShowInSearch', (this.regionFlags & RegionFlags.BlockParcelSearch) ? 'True' : 'False');
-        general.ele('BlockTerraform', (this.regionFlags & RegionFlags.BlockTerraform) ? 'True' : 'False');
-        general.ele('DisableCollisions', (this.regionFlags & RegionFlags.SkipCollisions) ? 'True' : 'False');
-        general.ele('DisablePhysics', (this.regionFlags & RegionFlags.SkipPhysics) ? 'True' : 'False');
-        general.ele('DisableScripts', (this.regionFlags & RegionFlags.EstateSkipScripts) ? 'True' : 'False');
-        general.ele('MaturityRating', (this.simAccess & SimAccessFlags.Mature & SimAccessFlags.Adult & SimAccessFlags.PG));
-        general.ele('RestrictPushing', (this.regionFlags & RegionFlags.RestrictPushObject) ? 'True' : 'False');
-        general.ele('AgentLimit', this.maxAgents);
-        general.ele('ObjectBonus', this.objectBonusFactor);
-        const groundTextures = document.ele('GroundTextures');
-        groundTextures.ele('Texture1', this.terrainDetail0.toString());
-        groundTextures.ele('Texture2', this.terrainDetail1.toString());
-        groundTextures.ele('Texture3', this.terrainDetail2.toString());
-        groundTextures.ele('Texture4', this.terrainDetail3.toString());
-
-        groundTextures.ele('ElevationLowSW', this.terrainStartHeight00);
-        groundTextures.ele('ElevationLowNW', this.terrainStartHeight01);
-        groundTextures.ele('ElevationLowSE', this.terrainStartHeight10);
-        groundTextures.ele('ElevationLowNE', this.terrainStartHeight11);
-
-        groundTextures.ele('ElevationHighSW', this.terrainHeightRange00);
-        groundTextures.ele('ElevationHighNW', this.terrainHeightRange01);
-        groundTextures.ele('ElevationHighSE', this.terrainHeightRange10);
-        groundTextures.ele('ElevationHighNE', this.terrainHeightRange11);
-
-        const terrain = document.ele('Terrain');
-        terrain.ele('WaterHeight', this.waterHeight);
-        terrain.ele('TerrainRaiseLimit', this.terrainRaiseLimit);
-        terrain.ele('TerrainLowerLimit', this.terrainLowerLimit);
-        terrain.ele('UseEstateSun', (this.useEstateSun) ? 'True' : 'False');
-        terrain.ele('FixedSun', (this.regionFlags & RegionFlags.SunFixed) ? 'True' : 'False');
-        terrain.ele('SunPosition', this.sunHour);
-        this.environment.getXML(document);
-        return document.end({ pretty: true, allowEmpty: true });
-    }
-
-    activateCaps(seedURL: string): void
-    {
-        if (this.caps !== undefined)
-        {
-            this.caps.shutdown();
-        }
-        this.caps = new Caps(this.agent, seedURL, this.clientEvents);
-    }
-
-    async handshake(handshake: RegionHandshakeMessage): Promise<void>
-    {
-        this.regionName = Utils.BufferToStringSimple(handshake.RegionInfo.SimName);
-        this.simAccess = handshake.RegionInfo.SimAccess;
-        this.regionFlags = handshake.RegionInfo.RegionFlags;
-        this.regionOwner = handshake.RegionInfo.SimOwner;
-        this.agent.setIsEstateManager(handshake.RegionInfo.IsEstateManager);
-        this.waterHeight = handshake.RegionInfo.WaterHeight;
-        this.billableFactor = handshake.RegionInfo.BillableFactor;
-        this.cacheID = handshake.RegionInfo.CacheID;
-        this.terrainBase0 = handshake.RegionInfo.TerrainBase0;
-        this.terrainBase1 = handshake.RegionInfo.TerrainBase1;
-        this.terrainBase2 = handshake.RegionInfo.TerrainBase2;
-        this.terrainBase3 = handshake.RegionInfo.TerrainBase3;
-        this.terrainDetail0 = handshake.RegionInfo.TerrainDetail0;
-        this.terrainDetail1 = handshake.RegionInfo.TerrainDetail1;
-        this.terrainDetail2 = handshake.RegionInfo.TerrainDetail2;
-        this.terrainDetail3 = handshake.RegionInfo.TerrainDetail3;
-        this.terrainStartHeight00 = handshake.RegionInfo.TerrainStartHeight00;
-        this.terrainStartHeight01 = handshake.RegionInfo.TerrainStartHeight01;
-        this.terrainStartHeight10 = handshake.RegionInfo.TerrainStartHeight10;
-        this.terrainStartHeight11 = handshake.RegionInfo.TerrainStartHeight11;
-        this.terrainHeightRange00 = handshake.RegionInfo.TerrainHeightRange00;
-        this.terrainHeightRange01 = handshake.RegionInfo.TerrainHeightRange01;
-        this.terrainHeightRange10 = handshake.RegionInfo.TerrainHeightRange10;
-        this.terrainHeightRange11 = handshake.RegionInfo.TerrainHeightRange11;
-        this.regionID = handshake.RegionInfo2.RegionID;
-        this.cpuClassID = handshake.RegionInfo3.CPUClassID;
-        this.cpuRatio = handshake.RegionInfo3.CPURatio;
-        this.coloName = Utils.BufferToStringSimple(handshake.RegionInfo3.ColoName);
-        this.productSKU = Utils.BufferToStringSimple(handshake.RegionInfo3.ProductSKU);
-        this.productName = Utils.BufferToStringSimple(handshake.RegionInfo3.ProductName);
-
-
-        const request: RequestRegionInfoMessage = new RequestRegionInfoMessage();
-        request.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID
-        };
-        this.circuit.sendMessage(request, PacketFlags.Reliable);
-        const regionInfo: RegionInfoMessage = await this.circuit.waitForMessage<RegionInfoMessage>(Message.RegionInfo, 10000);
-
-        this.estateID = regionInfo.RegionInfo.EstateID;
-        this.parentEstateID = regionInfo.RegionInfo.ParentEstateID;
-        this.maxAgents = regionInfo.RegionInfo.MaxAgents;
-        this.objectBonusFactor = regionInfo.RegionInfo.ObjectBonusFactor;
-        this.terrainRaiseLimit = regionInfo.RegionInfo.TerrainRaiseLimit;
-        this.terrainLowerLimit = regionInfo.RegionInfo.TerrainLowerLimit;
-        this.pricePerMeter = regionInfo.RegionInfo.PricePerMeter;
-        this.redirectGridX = regionInfo.RegionInfo.RedirectGridX;
-        this.redirectGridY = regionInfo.RegionInfo.RedirectGridY;
-        this.useEstateSun = regionInfo.RegionInfo.UseEstateSun;
-        this.sunHour = regionInfo.RegionInfo.SunHour;
-        this.maxAgents32 = regionInfo.RegionInfo2.MaxAgents32;
-        this.hardMaxAgents = regionInfo.RegionInfo2.HardMaxAgents;
-        this.hardMaxObjects = regionInfo.RegionInfo2.HardMaxObjects;
-
-        const msg: MapNameRequestMessage = new MapNameRequestMessage();
-        msg.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.circuit.sessionID,
-            Flags: GridLayerType.Objects,
-            EstateID: 0,
-            Godlike: false
-        };
-        msg.NameData = {
-            Name: handshake.RegionInfo.SimName
-        };
-        this.circuit.sendMessage(msg, PacketFlags.Reliable);
-        await this.circuit.waitForMessage<MapBlockReplyMessage>(Message.MapBlockReply, 10000, (filterMsg: MapBlockReplyMessage): FilterResponse =>
-        {
-            for (const region of filterMsg.Data)
-            {
-                const name = Utils.BufferToStringSimple(region.Name);
-                if (name.trim().toLowerCase() === this.regionName.trim().toLowerCase())
-                {
-                    this.xCoordinate = region.X;
-                    this.yCoordinate = region.Y;
-                    this.mapImage = region.MapImageID;
-                    const globalPos = Utils.RegionCoordinatesToHandle(this.xCoordinate, this.yCoordinate);
-                    this.regionHandle = globalPos.regionHandle;
-                    return FilterResponse.Finish;
-                }
-            }
-            return FilterResponse.NoMatch;
-        });
-
-        this.environment = new RegionEnvironment();
-        this.environment.dayCycleKeyframes = [];
-        this.environment.skyPresets = {};
-        this.environment.water = {
-            blurMultiplier: 0,
-            fresnelOffset: 0,
-            fresnelScale: 0,
-            normalScale: Vector3.getZero(),
-            normalMap: UUID.zero(),
-            scaleAbove: 0,
-            scaleBelow: 0,
-            underWaterFogMod: 0,
-            waterFogColor: Color4.white,
-            waterFogDensity: 0,
-            wave1Dir: Vector2.getZero(),
-            wave2Dir: Vector2.getZero()
-        };
-
-        await this.caps.waitForSeedCapability();
-
-        try
-        {
-            const response = await this.caps.capsGetXML('EnvironmentSettings');
-            if (response.length >= 4)
-            {
-                if (Array.isArray(response[1]) && typeof response[2] === 'object' && typeof response[3] === 'object')
-                {
-                    for (const kf of response[1])
-                    {
-                        this.environment.dayCycleKeyframes.push({
-                            time: kf[0],
-                            preset: kf[1]
-                        });
-                    }
-                    for (const presetKey of Object.keys(response[2]))
-                    {
-                        const preset = response[2][presetKey];
-                        this.environment.skyPresets[presetKey] = new class implements SkyPreset
-                        {
-                            ambient = new Vector4(preset['ambient']);
-                            blueDensity = new Vector4(preset['blue_density']);
-                            blueHorizon = new Vector4(preset['blue_horizon']);
-                            cloudColor = new Color4(preset['cloud_color']);
-                            cloudPosDensity1 = new Vector4(preset['cloud_pos_density1']);
-                            cloudPosDensity2 = new Vector4(preset['cloud_pos_density2']);
-                            cloudScale = new Vector4(preset['cloud_scale']);
-                            cloudScrollRate = new Vector2(preset['cloud_scroll_rate']);
-                            cloudShadow = new Vector4(preset['cloud_shadow']);
-                            densityMultiplier = new Vector4(preset['density_multiplier']);
-                            distanceMultiplier = new Vector4(preset['distance_multiplier']);
-                            eastAngle = preset['east_angle'];
-                            enableCloudScroll = {
-                                x: preset['enable_cloud_scroll'][0],
-                                y: preset['enable_cloud_scroll'][1]
-                            };
-                            gamma = new Vector4(preset['gamma']);
-                            glow = new Vector4(preset['glow']);
-                            hazeDensity = new Vector4(preset['haze_density']);
-                            hazeHorizon = new Vector4(preset['haze_horizon']);
-                            lightNormal = new Vector4(preset['lightnorm']);
-                            maxY = new Vector4(preset['max_y']);
-                            starBrightness = preset['start_brightness'];
-                            sunAngle = preset['sun_angle'];
-                            sunlightColor = new Color4(preset['sunlight_color']);
-                        };
-                    }
-                    const wat = response[3];
-                    this.environment.water = new class implements WaterPreset
-                    {
-                        blurMultiplier = wat['blurMultiplier'];
-                        fresnelOffset = wat['fresnelOffset'];
-                        fresnelScale = wat['fresnelScale'];
-                        normalScale = new Vector3(wat['normScale']);
-                        normalMap = new UUID(wat['normalMap'].toString());
-                        scaleAbove = wat['scaleAbove'];
-                        scaleBelow = wat['scaleBelow'];
-                        underWaterFogMod = wat['underWaterFogMod'];
-                        waterFogColor = new Color4(wat['waterFogColor']);
-                        waterFogDensity = wat['waterFogDensity'];
-                        wave1Dir = new Vector2(wat['wave1Dir']);
-                        wave2Dir = new Vector2(wat['wave2Dir']);
-                    };
-                }
-            }
-        }
-        catch (e)
-        {
-            Logger.Warn('Unable to get environment settings from region');
-        }
-        this.handshakeComplete = true;
-        this.handshakeCompleteEvent.next();
-    }
-
-    shutdown(): void
-    {
-        this.parcelPropertiesSubscription.unsubscribe();
-        this.messageSubscription.unsubscribe();
-        this.comms.shutdown();
-        this.caps.shutdown();
-        this.objects.shutdown();
-        this.resolver.shutdown();
-        this.circuit.shutdown();
     }
 }

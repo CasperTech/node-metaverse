@@ -1,18 +1,18 @@
 import { Vector3 } from '../Vector3';
 import { UUID } from '../UUID';
 import { Quaternion } from '../Quaternion';
-import { Tree } from '../../enums/Tree';
+import type { Tree } from '../../enums/Tree';
 import { Vector4 } from '../Vector4';
 import { TextureEntry } from '../TextureEntry';
 import { Color4 } from '../Color4';
 import { ParticleSystem } from '../ParticleSystem';
-import { ITreeBoundingBox } from '../interfaces/ITreeBoundingBox';
-import { NameValue } from '../NameValue';
-import * as Long from 'long';
-import { IGameObjectData } from '../interfaces/IGameObjectData';
+import type { ITreeBoundingBox } from '../interfaces/ITreeBoundingBox';
+import type { NameValue } from '../NameValue';
+import type * as Long from 'long';
+import type { IGameObjectData } from '../interfaces/IGameObjectData';
+import type { XMLElement, XMLNode } from 'xmlbuilder';
 import * as builder from 'xmlbuilder';
-import { XMLElement, XMLNode } from 'xmlbuilder';
-import { Region } from '../Region';
+import type { Region } from '../Region';
 import { InventoryItem } from '../InventoryItem';
 import { LLWearable } from '../LLWearable';
 import { TextureAnim } from './TextureAnim';
@@ -32,156 +32,1305 @@ import { ProfileShape } from '../../enums/ProfileShape';
 import { HoleType } from '../../enums/HoleType';
 import { SculptType } from '../../enums/SculptType';
 import { PacketFlags } from '../../enums/PacketFlags';
-import { HTTPAssets } from '../../enums/HTTPAssets';
-import { PhysicsShapeType } from '../../enums/PhysicsShapeType';
+import type { PhysicsShapeType } from '../../enums/PhysicsShapeType';
 import { PCode } from '../../enums/PCode';
-import { SoundFlags } from '../../enums/SoundFlags';
+import type { SoundFlags } from '../../enums/SoundFlags';
 import { DeRezObjectMessage } from '../messages/DeRezObject';
 import { DeRezDestination } from '../../enums/DeRezDestination';
 import { Message } from '../../enums/Message';
-import { UpdateCreateInventoryItemMessage } from '../messages/UpdateCreateInventoryItem';
+import type { UpdateCreateInventoryItemMessage } from '../messages/UpdateCreateInventoryItem';
 import { FilterResponse } from '../../enums/FilterResponse';
 import { UpdateTaskInventoryMessage } from '../messages/UpdateTaskInventory';
-import { ObjectPropertiesMessage } from '../messages/ObjectProperties';
+import type { ObjectPropertiesMessage } from '../messages/ObjectProperties';
 import { ObjectSelectMessage } from '../messages/ObjectSelect';
 import { ObjectDeselectMessage } from '../messages/ObjectDeselect';
 import { AttachmentPoint } from '../../enums/AttachmentPoint';
 import { RequestTaskInventoryMessage } from '../messages/RequestTaskInventory';
-import { ReplyTaskInventoryMessage } from '../messages/ReplyTaskInventory';
+import type { ReplyTaskInventoryMessage } from '../messages/ReplyTaskInventory';
 import { InventoryType } from '../../enums/InventoryType';
-import { InventoryFolder } from '../InventoryFolder';
-import { ObjectUpdateMessage } from '../messages/ObjectUpdate';
+import type { InventoryFolder } from '../InventoryFolder';
+import type { ObjectUpdateMessage } from '../messages/ObjectUpdate';
 import { Subject } from 'rxjs';
 import { RezScriptMessage } from '../messages/RezScript';
 import { PermissionMask } from '../../enums/PermissionMask';
 import { AssetType } from '../../enums/AssetType';
 import { LLGLTFMaterialOverride } from '../LLGLTFMaterialOverride';
+import { RemoveTaskInventoryMessage } from '../messages/RemoveTaskInventory';
 
 import * as uuid from 'uuid';
 import { Logger } from '../Logger';
+import { InventoryTypeRegistry } from '../InventoryTypeRegistry';
+import { AssetTypeRegistry } from '../AssetTypeRegistry';
 
 export class GameObject implements IGameObjectData
 {
-    rtreeEntry?: ITreeBoundingBox;
+    public dateReceived: Date;
+    public rtreeEntry?: ITreeBoundingBox;
 
-    textureAnim: TextureAnim;
-    extraParams: ExtraParams;
+    public textureAnim: TextureAnim;
+    public extraParams: ExtraParams;
 
-    deleted = false;
-    creatorID?: UUID;
-    creationDate?: Long;
-    baseMask?: number;
-    ownerMask?: number;
-    groupMask?: number;
-    groupID?: UUID;
-    everyoneMask?: number;
-    nextOwnerMask?: number;
-    ownershipCost?: number;
-    saleType?: number;
-    salePrice?: number;
-    aggregatePerms?: number;
-    aggregatePermTextures?: number;
-    aggregatePermTexturesOwner?: number;
-    category: number;
-    inventorySerial: number;
-    itemID: UUID;
-    folderID: UUID;
-    fromTaskID: UUID;
-    lastOwnerID: UUID;
-    name?: string;
-    description?: string;
-    touchName?: string;
-    sitName?: string;
-    textureID?: string;
-    resolvedAt?: number;
-    resolvedInventory = false;
-    totalChildren?: number;
+    public deleted = false;
+    public creatorID?: UUID;
+    public creationDate?: Long;
+    public baseMask?: number;
+    public ownerMask?: number;
+    public groupMask?: number;
+    public groupID?: UUID;
+    public everyoneMask?: number;
+    public nextOwnerMask?: number;
+    public ownershipCost?: number;
+    public saleType?: number;
+    public salePrice?: number;
+    public aggregatePerms?: number;
+    public aggregatePermTextures?: number;
+    public aggregatePermTexturesOwner?: number;
+    public category: number;
+    public inventorySerial: number;
+    public itemID: UUID;
+    public folderID: UUID;
+    public fromTaskID: UUID;
+    public lastOwnerID: UUID;
+    public name?: string;
+    public description?: string;
+    public touchName?: string;
+    public sitName?: string;
+    public textureID?: string;
+    public resolvedAt?: number;
+    public resolvedInventory = false;
+    public totalChildren?: number;
 
-    landImpact?: number;
-    calculatedLandImpact?: number;
-    physicaImpact?: number;
-    resourceImpact?: number;
-    linkResourceImpact?: number;
-    linkPhysicsImpact?: number;
-    limitingType?: string;
+    public landImpact?: number;
+    public calculatedLandImpact?: number;
+    public physicaImpact?: number;
+    public resourceImpact?: number;
+    public linkResourceImpact?: number;
+    public linkPhysicsImpact?: number;
+    public limitingType?: string;
 
-    children?: GameObject[];
-    ID = 0;
-    FullID = UUID.random();
-    ParentID?: number;
-    OwnerID = UUID.zero();
-    IsAttachment = false;
-    NameValue: { [key: string]: NameValue } = {};
-    PCode: PCode = PCode.None;
+    public children?: GameObject[];
+    public ID = 0;
+    public FullID = UUID.random();
+    public ParentID?: number;
+    public _ownerID = UUID.zero();
+    public IsAttachment = false;
+    public NameValue = new Map<string, NameValue>();
+    public PCode: PCode = PCode.None;
 
-    State?: number;
-    CRC?: number;
-    Material?: number;
-    ClickAction?: number;
-    Scale?: Vector3;
-    Flags?: PrimFlags;
-    PathCurve?: number;
-    ProfileCurve?: number;
-    PathBegin?: number;
-    PathEnd?: number;
-    PathScaleX?: number;
-    PathScaleY?: number;
-    PathShearX?: number;
-    PathShearY?: number;
-    PathTwist?: number;
-    PathTwistBegin?: number;
-    PathRadiusOffset?: number;
-    PathTaperX?: number;
-    PathTaperY?: number;
-    PathRevolutions?: number;
-    PathSkew?: number;
-    ProfileBegin?: number;
-    ProfileEnd?: number;
-    ProfileHollow?: number;
-    TextureEntry?: TextureEntry;
-    Text?: string;
-    TextColor?: Color4;
-    MediaURL?: string;
-    JointType?: number;
-    JointPivot?: Vector3;
-    JointAxisOrAnchor?: Vector3;
-    Position?: Vector3;
-    Rotation?: Quaternion;
-    CollisionPlane?: Vector4;
-    Velocity?: Vector3;
-    Acceleration?: Vector3;
-    AngularVelocity?: Vector3;
-    TreeSpecies?: Tree;
-    Sound?: UUID;
-    SoundGain?: number;
-    SoundFlags?: SoundFlags;
-    SoundRadius?: number;
-    Particles?: ParticleSystem;
+    public State?: number;
+    public CRC?: number;
+    public Material?: number;
+    public ClickAction?: number;
+    public Scale?: Vector3;
+    public Flags?: PrimFlags;
+    public PathCurve?: number;
+    public ProfileCurve?: number;
+    public PathBegin?: number;
+    public PathEnd?: number;
+    public PathScaleX?: number;
+    public PathScaleY?: number;
+    public PathShearX?: number;
+    public PathShearY?: number;
+    public PathTwist?: number;
+    public PathTwistBegin?: number;
+    public PathRadiusOffset?: number;
+    public PathTaperX?: number;
+    public PathTaperY?: number;
+    public PathRevolutions?: number;
+    public PathSkew?: number;
+    public ProfileBegin?: number;
+    public ProfileEnd?: number;
+    public ProfileHollow?: number;
+    public TextureEntry?: TextureEntry;
+    public Text?: string;
+    public TextColor?: Color4;
+    public MediaURL?: string;
+    public JointType?: number;
+    public JointPivot?: Vector3;
+    public JointAxisOrAnchor?: Vector3;
+    public Position?: Vector3;
+    public Rotation?: Quaternion;
+    public CollisionPlane?: Vector4;
+    public Velocity?: Vector3;
+    public Acceleration?: Vector3;
+    public AngularVelocity?: Vector3;
+    public TreeSpecies?: Tree;
+    public Sound?: UUID;
+    public SoundGain?: number;
+    public SoundFlags?: SoundFlags;
+    public SoundRadius?: number;
+    public Particles?: ParticleSystem;
 
-    density?: number;
-    friction?: number;
-    gravityMultiplier?: number;
-    physicsShapeType?: PhysicsShapeType;
-    restitution?: number;
-    attachmentPoint: AttachmentPoint = AttachmentPoint.Default;
+    public density?: number;
+    public friction?: number;
+    public gravityMultiplier?: number;
+    public physicsShapeType?: PhysicsShapeType;
+    public restitution?: number;
+    public attachmentPoint: AttachmentPoint = AttachmentPoint.Default;
+    public inventory: InventoryItem[] = [];
+    public linksetData?: Map<string, {
+        value: string,
+        pass: string
+    }>;
 
-    region: Region;
+    public region: Region;
+    public resolveAttempts = 0;
+    public childrenPopulated = false;
+    public claimedForBuild = false;
+    public createdSelected = false;
+    public isMarkedRoot = false;
+    public onTextureUpdate: Subject<void> = new Subject<void>();
 
-    inventory: InventoryItem[] = [];
+    public get OwnerID(): UUID
+    {
+        return this._ownerID;
+    }
 
-    resolveAttempts = 0;
-    childrenPopulated = false;
+    public set OwnerID(owner: UUID)
+    {
+        this._ownerID = owner;
+    }
 
-    claimedForBuild = false;
-    createdSelected = false;
-    isMarkedRoot = false;
-    onTextureUpdate: Subject<void> = new Subject<void>();
+    public constructor()
+    {
+        this.dateReceived = new Date();
+        this.Position = Vector3.getZero();
+        this.Rotation = Quaternion.getIdentity();
+        this.AngularVelocity = Vector3.getZero();
+        this.TreeSpecies = 0;
+        this.SoundFlags = 0;
+        this.SoundRadius = 1.0;
+        this.SoundGain = 1.0;
+    }
+
+    public static async fromXML(xml: any): Promise<GameObject>
+    {
+        let result: any = null;
+        if (typeof xml === 'string')
+        {
+            const parsed = await Utils.parseXML(xml);
+            if (parsed.SceneObjectGroup === undefined)
+            {
+                throw new Error('SceneObjectGroup not found');
+            }
+            result = parsed.SceneObjectGroup;
+        }
+        else
+        {
+            result = xml;
+        }
+
+        let rootPartXML: any = null;
+        if (result.SceneObjectPart !== undefined)
+        {
+            rootPartXML = result.SceneObjectPart;
+        }
+        else if (result.RootPart?.[0]?.SceneObjectPart !== undefined)
+        {
+            rootPartXML = result.RootPart[0].SceneObjectPart;
+        }
+        else
+        {
+            throw new Error('Root part not found');
+        }
+
+        const rootPart = GameObject.partFromXMLJS(rootPartXML[0], true);
+        rootPart.children = [];
+        rootPart.totalChildren = 0;
+        if (result.OtherParts !== undefined && Array.isArray(result.OtherParts) && result.OtherParts.length > 0)
+        {
+            const [obj] = result.OtherParts;
+            if (obj.SceneObjectPart !== undefined || obj.Part !== undefined)
+            {
+                if (obj.Part !== undefined)
+                {
+                    for (const part of obj.Part)
+                    {
+                        rootPart.children.push(GameObject.partFromXMLJS(part.SceneObjectPart[0], false));
+                        rootPart.totalChildren++;
+                    }
+                }
+                else
+                {
+                    for (const part of obj.SceneObjectPart)
+                    {
+                        rootPart.children.push(GameObject.partFromXMLJS(part, false));
+                        rootPart.totalChildren++;
+                    }
+                }
+            }
+        }
+        return rootPart;
+    }
+
+    public static async deRezObjects(region: Region, objects: GameObject[], destination: DeRezDestination, transactionID: UUID, destFolder: UUID): Promise<void>
+    {
+        const msg = new DeRezObjectMessage();
+
+        msg.AgentData = {
+            AgentID: region.agent.agentID,
+            SessionID: region.circuit.sessionID
+        };
+        msg.AgentBlock = {
+            GroupID: UUID.zero(),
+            Destination: destination,
+            DestinationID: destFolder,
+            TransactionID: transactionID,
+            PacketCount: 1,
+            PacketNumber: 1
+        };
+        msg.ObjectData = [];
+        for (const obj of objects)
+        {
+            msg.ObjectData.push({
+                ObjectLocalID: obj.ID
+            });
+        }
+        const ack = region.circuit.sendMessage(msg, PacketFlags.Reliable);
+        return region.circuit.waitForAck(ack, 10000);
+    }
+
+    public static async takeManyToInventory(region: Region, objects: GameObject[], folder?: InventoryFolder): Promise<InventoryItem>
+    {
+        const transactionID = UUID.random();
+        let enforceFolder = true;
+        if (folder === undefined)
+        {
+            enforceFolder = false;
+            folder = region.agent.inventory.getRootFolderMain();
+        }
+
+        if (folder !== undefined)
+        {
+            void GameObject.deRezObjects(region, objects, DeRezDestination.AgentInventoryTake, transactionID, folder.folderID);
+
+            const createInventoryMsg: UpdateCreateInventoryItemMessage = await region.circuit.waitForMessage<UpdateCreateInventoryItemMessage>(Message.UpdateCreateInventoryItem, 20000, (message: UpdateCreateInventoryItemMessage) =>
+            {
+                for (const inv of message.InventoryData)
+                {
+                    const name = Utils.BufferToStringSimple(inv.Name);
+                    if (name === objects[0].name)
+                    {
+                        return FilterResponse.Finish;
+                    }
+                }
+                return FilterResponse.NoMatch;
+            });
+
+            for (const inv of createInventoryMsg.InventoryData)
+            {
+                const name = Utils.BufferToStringSimple(inv.Name);
+                if (name === objects[0].name)
+                {
+                    const itemID = inv.ItemID;
+                    const item = await region.agent.inventory.fetchInventoryItem(itemID);
+                    if (item === null)
+                    {
+                        throw new Error('Inventory item was unable to be retrieved after take to inventory');
+                    }
+                    else
+                    {
+                        if (enforceFolder && !item.parentID.equals(folder.folderID))
+                        {
+                            await item.moveToFolder(folder);
+                        }
+                    }
+                    return item;
+                }
+            }
+        }
+        throw new Error('Failed to take object')
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async waitForTextureUpdate(timeout?: number): Promise<void>
+    {
+        await Utils.waitOrTimeOut(this.onTextureUpdate, timeout);
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async rezScript(name: string, description: string, perms: PermissionMask = 532480 as PermissionMask): Promise<InventoryItem>
+    {
+        const rezScriptMsg = new RezScriptMessage();
+        rezScriptMsg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID,
+            GroupID: this.region.agent.activeGroupID
+        };
+        rezScriptMsg.UpdateBlock = {
+            ObjectLocalID: this.ID,
+            Enabled: true
+        };
+        const tmpName = uuid.v4();
+        const invItem = new InventoryItem(this);
+        invItem.itemID = UUID.zero();
+        invItem.parentID = this.FullID;
+        invItem.permissions.creator = this.region.agent.agentID;
+        invItem.permissions.group = UUID.zero();
+        invItem.permissions.baseMask = PermissionMask.All;
+        invItem.permissions.ownerMask = PermissionMask.All;
+        invItem.permissions.groupMask = 0;
+        invItem.permissions.everyoneMask = 0;
+        invItem.permissions.nextOwnerMask = perms;
+        invItem.permissions.groupOwned = false;
+        invItem.type = AssetType.LSLText;
+        invItem.inventoryType = InventoryType.LSL;
+        invItem.flags = 0;
+        invItem.salePrice = this.salePrice ?? 10;
+        invItem.saleType = this.saleType ?? 0;
+        invItem.name = tmpName;
+        invItem.description = description;
+        invItem.created = new Date();
+
+        rezScriptMsg.InventoryBlock = {
+            ItemID: UUID.zero(),
+            FolderID: this.FullID,
+            CreatorID: this.region.agent.agentID,
+            OwnerID: this.region.agent.agentID,
+            GroupID: UUID.zero(),
+            BaseMask: PermissionMask.All,
+            OwnerMask: PermissionMask.All,
+            GroupMask: 0,
+            EveryoneMask: 0,
+            NextOwnerMask: perms,
+            GroupOwned: false,
+            TransactionID: UUID.zero(),
+            Type: AssetType.LSLText,
+            InvType: InventoryType.LSL,
+            Flags: 0,
+            SaleType: this.saleType ?? 0,
+            SalePrice: this.salePrice ?? 10,
+            Name: Utils.StringToBuffer(tmpName),
+            Description: Utils.StringToBuffer(description),
+            CreationDate: Math.floor(invItem.created.getTime() / 1000),
+            CRC: invItem.getCRC()
+        };
+        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(rezScriptMsg, PacketFlags.Reliable), 10000);
+        await this.updateInventory();
+        for (const item of this.inventory)
+        {
+            if (item.name === tmpName)
+            {
+                // We are intentionally not waiting for this rename job so that the wait below succeeds
+                void item.rename(name);
+                try
+                {
+                    await this.waitForInventoryUpdate();
+                }
+                catch (_error: unknown)
+                {
+                    // ignore
+                }
+                await this.updateInventory();
+                for (const newItem of this.inventory)
+                {
+                    if (newItem.itemID.equals(item.itemID))
+                    {
+                        return newItem;
+                    }
+                }
+                return item;
+            }
+        }
+        throw new Error('Failed to add script to object');
+    }
+
+    public async updateInventory(): Promise<void>
+    {
+        if (this.PCode === PCode.Avatar)
+        {
+            return;
+        }
+
+        try
+        {
+            const capURL = await this.region.caps.getCapability('RequestTaskInventory');
+            const result = await this.region.caps.capsPerformXMLGet(capURL + '?task_id=' + this.FullID.toString()) as {
+                contents?: {
+                    asset_id?: string,
+                    created_at?: number,
+                    desc?: string,
+                    flags?: number,
+                    inv_type?: string,
+                    item_id?: string,
+                    metadata?: Record<string, unknown>,
+                    name?: string,
+                    parent_id?: string;
+                    permissions?: {
+                        base_mask?: number;
+                        creator_id?: string;
+                        everyone_mask?: number;
+                        group_id?: string;
+                        group_mask?: number;
+                        is_owner_group?: boolean;
+                        last_owner_id?: string;
+                        next_owner_mask?: number;
+                        owner_id?: string;
+                        owner_mask?: number;
+                    }
+                    sale_info?: {
+                        sale_price?: number;
+                        sale_type?: string;
+                    }
+                    type?: string
+                }[]
+            };
+
+            if (result.contents)
+            {
+                this.inventory = [];
+                for(const item of result.contents)
+                {
+                    const invItem =  new InventoryItem(this, this.region.agent);
+                    invItem.assetID = new UUID(item.asset_id);
+                    invItem.created = new Date((item.created_at ?? 0) * 1000);
+                    invItem.description = item.desc ?? '';
+                    invItem.flags = item.flags ?? 0;
+                    const invType = InventoryTypeRegistry.getTypeFromTypeName(item.inv_type ?? '');
+                    if (invType)
+                    {
+                        invItem.inventoryType = invType.type;
+                    }
+                    const type = AssetTypeRegistry.getTypeFromTypeName(item.type ?? '');
+                    if (type !== undefined)
+                    {
+                        invItem.type = type.type;
+                    }
+                    invItem.itemID = new UUID(item.item_id);
+                    invItem.name = item.name ?? '';
+                    invItem.parentID = new UUID(item.parent_id);
+                    invItem.permissions = {
+                        baseMask: item.permissions?.base_mask ?? 0,
+                        creator: new UUID(item.permissions?.creator_id),
+                        everyoneMask: item.permissions?.everyone_mask ?? 0,
+                        group: new UUID(item.permissions?.group_id),
+                        groupMask: item.permissions?.group_mask ?? 0,
+                        groupOwned: item.permissions?.is_owner_group ?? false,
+                        lastOwner: new UUID(item.permissions?.last_owner_id),
+                        nextOwnerMask: item.permissions?.next_owner_mask ?? 0,
+                        owner: new UUID(item.permissions?.owner_id),
+                        ownerMask: item.permissions?.owner_mask ?? 0
+                    }
+                    invItem.salePrice = item.sale_info?.sale_price ?? 0;
+                    switch (item.sale_info?.sale_type)
+                    {
+                        case 'not':
+                            invItem.saleType = 0;
+                            break;
+                        case 'orig':
+                            invItem.saleType = 1;
+                            break;
+                        case 'copy':
+                            invItem.saleType = 2;
+                            break;
+                        case 'cntn':
+                            invItem.saleType = 3;
+                            break;
+                        case undefined:
+                            break;
+                    }
+                    this.inventory.push(invItem);
+                }
+                return;
+            }
+        }
+        catch(_e: unknown)
+        {
+            // ignore
+        }
+
+
+        const req = new RequestTaskInventoryMessage();
+        req.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        req.InventoryData = {
+            LocalID: this.ID
+        };
+        this.region.circuit.sendMessage(req, PacketFlags.Reliable);
+        return this.waitForTaskInventory();
+    }
+
+    public hasNameValueEntry(key: string): boolean
+    {
+        return this.NameValue.has(key);
+    }
+
+    public getNameValueEntry(key: string): string
+    {
+        const entry = this.NameValue.get(key);
+        if(entry !== undefined)
+        {
+            return entry.value;
+        }
+        return '';
+    }
+
+    public setIfDefined(def?: number, v?: number): number
+    {
+        if (def === undefined)
+        {
+            def = 0;
+        }
+        if (v === undefined)
+        {
+            return def;
+        }
+        else
+        {
+            return v;
+        }
+    }
+
+    public async setShape(PathCurve?: number,
+                          ProfileCurve?: number,
+                          PathBegin?: number,
+                          PathEnd?: number,
+                          PathScaleX?: number,
+                          PathScaleY?: number,
+                          PathShearX?: number,
+                          PathShearY?: number,
+                          PathTwist?: number,
+                          PathTwistBegin?: number,
+                          PathRadiusOffset?: number,
+                          PathTaperX?: number,
+                          PathTaperY?: number,
+                          PathRevolutions?: number,
+                          PathSkew?: number,
+                          ProfileBegin?: number,
+                          ProfileEnd?: number,
+                          ProfileHollow?: number): Promise<void>
+    {
+        this.PathCurve = this.setIfDefined(this.PathCurve, PathCurve);
+        this.ProfileCurve = this.setIfDefined(this.ProfileCurve, ProfileCurve);
+        this.PathBegin = this.setIfDefined(this.PathBegin, PathBegin);
+        this.PathEnd = this.setIfDefined(this.PathEnd, PathEnd);
+        this.PathScaleX = this.setIfDefined(this.PathScaleX, PathScaleX);
+        this.PathScaleY = this.setIfDefined(this.PathScaleY, PathScaleY);
+        this.PathShearX = this.setIfDefined(this.PathShearX, PathShearX);
+        this.PathShearY = this.setIfDefined(this.PathShearY, PathShearY);
+        this.PathTwist = this.setIfDefined(this.PathTwist, PathTwist);
+        this.PathTwistBegin = this.setIfDefined(this.PathTwistBegin, PathTwistBegin);
+        this.PathRadiusOffset = this.setIfDefined(this.PathRadiusOffset, PathRadiusOffset);
+        this.PathTaperX = this.setIfDefined(this.PathTaperX, PathTaperX);
+        this.PathTaperY = this.setIfDefined(this.PathTaperY, PathTaperY);
+        this.PathRevolutions = this.setIfDefined(this.PathRevolutions, PathRevolutions);
+        this.PathSkew = this.setIfDefined(this.PathSkew, PathSkew);
+        this.ProfileBegin = this.setIfDefined(this.ProfileBegin, ProfileBegin);
+        this.ProfileEnd = this.setIfDefined(this.ProfileEnd, ProfileEnd);
+        this.ProfileHollow = this.setIfDefined(this.ProfileHollow, ProfileHollow);
+        if (this.region === undefined)
+        {
+            return;
+        }
+        const msg = new ObjectShapeMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                ObjectLocalID: this.ID,
+                PathCurve: this.PathCurve,
+                ProfileCurve: this.ProfileCurve,
+                PathBegin: Utils.packBeginCut(this.PathBegin),
+                PathEnd: Utils.packEndCut(this.PathEnd),
+                PathScaleX: Utils.packPathScale(this.PathScaleX),
+                PathScaleY: Utils.packPathScale(this.PathScaleY),
+                PathShearX: Utils.packPathShear(this.PathShearX),
+                PathShearY: Utils.packPathShear(this.PathShearY),
+                PathTwist: Utils.packPathTwist(this.PathTwist),
+                PathTwistBegin: Utils.packPathTwist(this.PathTwistBegin),
+                PathRadiusOffset: Utils.packPathTwist(this.PathRadiusOffset),
+                PathTaperX: Utils.packPathTaper(this.PathTaperX),
+                PathTaperY: Utils.packPathTaper(this.PathTaperY),
+                PathRevolutions: Utils.packPathRevolutions(this.PathRevolutions),
+                PathSkew: Utils.packPathTwist(this.PathSkew),
+                ProfileBegin: Utils.packBeginCut(this.ProfileBegin),
+                ProfileEnd: Utils.packEndCut(this.ProfileEnd),
+                ProfileHollow: Utils.packProfileHollow(this.ProfileHollow)
+            }
+        ];
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    public async setName(name: string): Promise<void>
+    {
+        this.name = name;
+        if (this.region === undefined)
+        {
+            return;
+        }
+        const msg = new ObjectNameMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                LocalID: this.ID,
+                Name: Utils.StringToBuffer(name)
+            }
+        ];
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    public async setGeometry(pos?: Vector3, rot?: Quaternion, scale?: Vector3, wholeLinkset = false): Promise<void>
+    {
+        const data = [];
+        const linked = (wholeLinkset) ? UpdateType.Linked : 0;
+        if (pos !== undefined)
+        {
+            this.Position = pos;
+            data.push({
+                ObjectLocalID: this.ID,
+                Type: UpdateType.Position | linked,
+                Data: pos.getBuffer()
+            });
+        }
+        if (rot !== undefined)
+        {
+            this.Rotation = rot;
+            data.push({
+                ObjectLocalID: this.ID,
+                Type: UpdateType.Rotation | linked,
+                Data: rot.getBuffer()
+            })
+        }
+        if (scale !== undefined)
+        {
+            this.Scale = scale;
+            data.push({
+                ObjectLocalID: this.ID,
+                Type: UpdateType.Scale | linked,
+                Data: scale.getBuffer()
+            })
+        }
+        if (this.region === undefined || data.length === 0)
+        {
+            return;
+        }
+        const msg = new MultipleObjectUpdateMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = data;
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async linkTo(rootObj: GameObject): Promise<void>
+    {
+        const msg = new ObjectLinkMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                ObjectLocalID: rootObj.ID
+            },
+            {
+                ObjectLocalID: this.ID
+            }
+        ];
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
+    }
+
+    public async linkFrom(objects: GameObject[]): Promise<void>
+    {
+        if (objects.length === 0)
+        {
+            return;
+        }
+        const primsExpectingUpdate = new Map<number, GameObject>();
+        const msg = new ObjectLinkMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                ObjectLocalID: this.ID
+            }
+        ];
+        primsExpectingUpdate.set(this.ID, this);
+        for (const obj of objects)
+        {
+            msg.ObjectData.push(
+                {
+                    ObjectLocalID: obj.ID
+                });
+            primsExpectingUpdate.set(obj.ID, obj);
+        }
+        await this.region.circuit.sendAndWaitForMessage<ObjectUpdateMessage>(msg, PacketFlags.Reliable, Message.ObjectUpdate, 10000, (message: ObjectUpdateMessage) =>
+        {
+            let match = false;
+            for (const obj of message.ObjectData)
+            {
+                const num = obj.ID;
+                if (primsExpectingUpdate.has(num))
+                {
+                    primsExpectingUpdate.delete(num);
+                    match = true;
+                }
+            }
+            if (match)
+            {
+                if (primsExpectingUpdate.size === 0)
+                {
+                    return FilterResponse.Finish;
+                }
+                return FilterResponse.Match;
+            }
+            return FilterResponse.NoMatch;
+        });
+    }
+
+    public async setDescription(desc: string): Promise<void>
+    {
+        this.description = desc;
+        if (this.region === undefined)
+        {
+            return;
+        }
+        const msg = new ObjectDescriptionMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [
+            {
+                LocalID: this.ID,
+                Description: Utils.StringToBuffer(desc)
+            }
+        ];
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    public async setTextureEntry(e: TextureEntry): Promise<void>
+    {
+        this.TextureEntry = e;
+        if (this.region === undefined)
+        {
+            return;
+        }
+
+        return this.setTextureAndMediaURL();
+    }
+
+    public async setTextureAndMediaURL(): Promise<void>
+    {
+        const msg = new ObjectImageMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        if (this.MediaURL === undefined)
+        {
+            this.MediaURL = '';
+        }
+        if (this.TextureEntry === undefined)
+        {
+            this.TextureEntry = new TextureEntry();
+        }
+        msg.ObjectData = [
+            {
+                ObjectLocalID: this.ID,
+                TextureEntry: this.TextureEntry.toBuffer(),
+                MediaURL: Utils.StringToBuffer(this.MediaURL)
+            }
+        ];
+        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+    }
+
+    public async setExtraParams(ex: ExtraParams): Promise<void>
+    {
+        this.extraParams = ex;
+        if (this.region === undefined)
+        {
+            return;
+        }
+
+        // Set ExtraParams
+        const msg = new ObjectExtraParamsMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.ObjectData = [];
+        let params = 0;
+        if (ex.lightData !== null)
+        {
+            params++;
+            const data = ex.lightData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.Light,
+                ParamInUse: (ex.lightData.Intensity !== 0.0),
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.flexibleData !== null)
+        {
+            params++;
+            const data = ex.flexibleData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.Flexible,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.lightImageData !== null)
+        {
+            params++;
+            const data = ex.lightImageData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.LightImage,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.sculptData !== null)
+        {
+            params++;
+            const data = ex.sculptData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.Sculpt,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.meshData !== null)
+        {
+            params++;
+            const data = ex.meshData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.Mesh,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.reflectionProbeData != null)
+        {
+            params++;
+            const data = ex.reflectionProbeData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.ReflectionProbe,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (ex.renderMaterialData != null)
+        {
+            params++;
+            const data = ex.renderMaterialData.getBuffer();
+            msg.ObjectData.push({
+                ObjectLocalID: this.ID,
+                ParamType: ExtraParamType.RenderMaterial,
+                ParamInUse: true,
+                ParamData: data,
+                ParamSize: data.length
+            });
+        }
+        if (params > 0)
+        {
+            const ack = this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
+            await this.region.circuit.waitForAck(ack, 10000);
+        }
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public populateChildren(): void
+    {
+        this.region.objects.populateChildren(this);
+    }
+
+    public async exportXMLElement(rootNode?: string, skipInventory = false, skipResolve = false): Promise<XMLElement>
+    {
+        const document = builder.create('SceneObjectGroup');
+        let linkNum = 1;
+        await this.getXML(document, this, linkNum, rootNode, skipInventory, skipResolve);
+        if (this.children && this.children.length > 0)
+        {
+            const otherParts = document.ele('OtherParts');
+
+            const children = [...this.children];
+            children.sort((a, b) => b.dateReceived.getTime() - a.dateReceived.getTime());
+            for (const child of children)
+            {
+                await child.getXML(otherParts, this, ++linkNum, (rootNode !== undefined) ? 'Part' : undefined, skipInventory, skipResolve);
+            }
+        }
+        return document;
+    }
+
+    public async exportXML(rootNode?: string, skipInventory = false, skipResolve = false): Promise<string>
+    {
+        return (await this.exportXMLElement(rootNode, skipInventory, skipResolve)).end({ pretty: true, allowEmpty: true });
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public toJSON(): IGameObjectData
+    {
+        return {
+            deleted: this.deleted,
+            creatorID: this.creatorID,
+            creationDate: this.creationDate,
+            baseMask: this.baseMask,
+            ownerMask: this.ownerMask,
+            groupMask: this.groupMask,
+            everyoneMask: this.everyoneMask,
+            nextOwnerMask: this.nextOwnerMask,
+            ownershipCost: this.ownershipCost,
+            saleType: this.saleType,
+            salePrice: this.salePrice,
+            aggregatePerms: this.aggregatePerms,
+            aggregatePermTextures: this.aggregatePermTextures,
+            aggregatePermTexturesOwner: this.aggregatePermTexturesOwner,
+            category: this.category,
+            inventorySerial: this.inventorySerial,
+            itemID: this.itemID,
+            folderID: this.folderID,
+            fromTaskID: this.fromTaskID,
+            lastOwnerID: this.lastOwnerID,
+            name: this.name,
+            description: this.description,
+            touchName: this.touchName,
+            sitName: this.sitName,
+            resolvedAt: this.resolvedAt,
+            resolvedInventory: this.resolvedInventory,
+            totalChildren: this.totalChildren,
+            landImpact: this.landImpact,
+            calculatedLandImpact: this.calculatedLandImpact,
+            physicaImpact: this.physicaImpact,
+            resourceImpact: this.resourceImpact,
+            linkResourceImpact: this.linkResourceImpact,
+            linkPhysicsImpact: this.linkPhysicsImpact,
+            limitingType: this.limitingType,
+            children: this.children,
+            ID: this.ID,
+            FullID: this.FullID,
+            ParentID: this.ParentID,
+            OwnerID: this.OwnerID,
+            IsAttachment: this.IsAttachment,
+            NameValue: this.NameValue,
+            PCode: this.PCode,
+            State: this.State,
+            CRC: this.CRC,
+            Material: this.Material,
+            ClickAction: this.ClickAction,
+            Scale: this.Scale,
+            Flags: this.Flags,
+            PathCurve: this.PathCurve,
+            ProfileCurve: this.ProfileCurve,
+            PathBegin: this.PathBegin,
+            PathEnd: this.PathEnd,
+            PathScaleX: this.PathScaleX,
+            PathScaleY: this.PathScaleY,
+            PathShearX: this.PathShearX,
+            PathShearY: this.PathShearY,
+            PathTwist: this.PathTwist,
+            PathTwistBegin: this.PathTwistBegin,
+            PathRadiusOffset: this.PathRadiusOffset,
+            PathTaperX: this.PathTaperX,
+            PathTaperY: this.PathTaperY,
+            PathRevolutions: this.PathRevolutions,
+            PathSkew: this.PathSkew,
+            ProfileBegin: this.ProfileBegin,
+            ProfileEnd: this.ProfileEnd,
+            ProfileHollow: this.ProfileHollow,
+            TextureEntry: this.TextureEntry,
+            Text: this.Text,
+            TextColor: this.TextColor,
+            MediaURL: this.MediaURL,
+            JointType: this.JointType,
+            JointPivot: this.JointPivot,
+            JointAxisOrAnchor: this.JointAxisOrAnchor,
+            Position: this.Position,
+            Rotation: this.Rotation,
+            CollisionPlane: this.CollisionPlane,
+            Velocity: this.Velocity,
+            Acceleration: this.Acceleration,
+            AngularVelocity: this.AngularVelocity,
+            TreeSpecies: this.TreeSpecies,
+            Sound: this.Sound,
+            SoundGain: this.SoundGain,
+            SoundFlags: this.SoundFlags,
+            SoundRadius: this.SoundRadius,
+            Particles: this.Particles,
+            density: this.density,
+            friction: this.friction,
+            gravityMultiplier: this.gravityMultiplier,
+            physicsShapeType: this.physicsShapeType,
+            restitution: this.restitution
+        }
+    }
+    public setObjectData(data: Buffer): void
+    {
+        let dataPos = 0;
+
+        // noinspection FallThroughInSwitchStatementJS, TsLint
+        switch (data.length)
+        {
+            case 76:
+                // Avatar collision normal;
+                this.CollisionPlane = new Vector4(data, dataPos);
+                dataPos += 16;
+                // falls through
+            case 60:
+                // Position
+                this.Position = new Vector3(data, dataPos);
+                dataPos += 12;
+                this.Velocity = new Vector3(data, dataPos);
+                dataPos += 12;
+                this.Acceleration = new Vector3(data, dataPos);
+                dataPos += 12;
+                this.Rotation = new Quaternion(data, dataPos);
+                dataPos += 12;
+                this.AngularVelocity = new Vector3(data, dataPos);
+                dataPos += 12;
+                break;
+            case 48:
+                this.CollisionPlane = new Vector4(data, dataPos);
+                dataPos += 16;
+            // falls through
+            case 32:
+                this.Position = new Vector3([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -0.5 * 256.0, 1.5 * 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -0.5 * 256.0, 1.5 * 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 3.0 * 256.0)
+                ]);
+                dataPos += 6;
+                this.Velocity = new Vector3([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                ]);
+                dataPos += 6;
+                this.Acceleration = new Vector3([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                ]);
+                dataPos += 6;
+                this.Rotation = new Quaternion([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -1.0, 1.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -1.0, 1.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -1.0, 1.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -1.0, 1.0)
+                ]);
+                dataPos += 8;
+                this.AngularVelocity = new Vector3([
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
+                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
+                ]);
+                dataPos += 6;
+                break;
+            case 16:
+                this.Position = new Vector3([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
+                ]);
+                this.Velocity = new Vector3([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
+                ]);
+                this.Acceleration = new Vector3([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
+                ]);
+                this.Rotation = new Quaternion([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0)
+                ]);
+                this.AngularVelocity = new Vector3([
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
+                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
+                ]);
+                break;
+        }
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async deRezObject(destination: DeRezDestination, transactionID: UUID, destFolder: UUID): Promise<void>
+    {
+        return GameObject.deRezObjects(this.region, [this], destination, transactionID, destFolder);
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async takeToInventory(folder?: InventoryFolder): Promise<InventoryItem>
+    {
+        return GameObject.takeManyToInventory(this.region, [this], folder);
+    }
+
+    public async dropInventoryIntoContents(inventoryItem: InventoryItem | UUID): Promise<void>
+    {
+        const transactionID = UUID.zero();
+
+        if (inventoryItem instanceof UUID)
+        {
+
+            const item: InventoryItem | null = await this.region.agent.inventory.fetchInventoryItem(inventoryItem);
+            if (item === null)
+            {
+                throw new Error('Failed to drop inventory into object contents - Inventory item ' + inventoryItem.toString() + ' not found');
+            }
+            inventoryItem = item;
+        }
+
+        const msg = new UpdateTaskInventoryMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.UpdateData = {
+            Key: 0,
+            LocalID: this.ID
+        };
+        msg.InventoryData = {
+            ItemID: inventoryItem.itemID,
+            FolderID: inventoryItem.parentID,
+            CreatorID: inventoryItem.permissions.creator,
+            OwnerID: this.region.agent.agentID,
+            GroupID: inventoryItem.permissions.group,
+            BaseMask: inventoryItem.permissions.baseMask,
+            OwnerMask: inventoryItem.permissions.ownerMask,
+            GroupMask: inventoryItem.permissions.groupMask,
+            EveryoneMask: inventoryItem.permissions.everyoneMask,
+            NextOwnerMask: inventoryItem.permissions.nextOwnerMask,
+            GroupOwned: inventoryItem.permissions.groupOwned ?? false,
+            TransactionID: transactionID,
+            Type: inventoryItem.type,
+            InvType: inventoryItem.inventoryType,
+            Flags: inventoryItem.flags,
+            SaleType: inventoryItem.saleType,
+            SalePrice: inventoryItem.salePrice,
+            Name: Utils.StringToBuffer(inventoryItem.name),
+            Description: Utils.StringToBuffer(inventoryItem.description),
+            CreationDate: inventoryItem.created.getTime() / 1000,
+            CRC: inventoryItem.getCRC()
+        };
+        const serial = this.inventorySerial;
+        this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
+        return this.waitForInventoryUpdate(serial);
+    }
+
+    public async waitForInventoryUpdate(inventorySerial?: number): Promise<void>
+    {
+        // We need to select the object, or we won't get the objectProperties message
+        await this.deselect();
+        void this.select();
+        await this.region.circuit.waitForMessage<ObjectPropertiesMessage>(Message.ObjectProperties, 10000, (message: ObjectPropertiesMessage) =>
+        {
+            for (const obj of message.ObjectData)
+            {
+                if (obj.ObjectID.equals(this.FullID))
+                {
+                    if (inventorySerial === undefined)
+                    {
+                        inventorySerial = this.inventorySerial;
+                    }
+                    if (obj.InventorySerial > inventorySerial)
+                    {
+                        return FilterResponse.Finish;
+                    }
+                }
+            }
+            return FilterResponse.NoMatch;
+        });
+        await this.deselect();
+    }
+
+    public async select(): Promise<void>
+    {
+        const selectObject = new ObjectSelectMessage();
+        selectObject.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        selectObject.ObjectData = [{
+            ObjectLocalID: this.ID
+        }];
+        const ack = this.region.circuit.sendMessage(selectObject, PacketFlags.Reliable);
+        return this.region.circuit.waitForAck(ack, 10000);
+    }
+
+    public async deselect(): Promise<void>
+    {
+        const deselectObject = new ObjectDeselectMessage();
+        deselectObject.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        deselectObject.ObjectData = [{
+            ObjectLocalID: this.ID
+        }];
+        const ack = this.region.circuit.sendMessage(deselectObject, PacketFlags.Reliable);
+        return this.region.circuit.waitForAck(ack, 10000);
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async removeTaskInventory(itemKey: UUID): Promise<void>;
+    // noinspection JSUnusedGlobalSymbols
+    public async removeTaskInventory(itemName: string): Promise<void>;
+    // noinspection JSUnusedGlobalSymbols
+    public async removeTaskInventory(item: string | UUID): Promise<void>
+    {
+        if (typeof item === 'string')
+        {
+            for(const invItem of this.inventory)
+            {
+                if (invItem.name === item)
+                {
+                    item = invItem.itemID;
+                    break;
+                }
+            }
+        }
+        if (typeof item === 'string')
+        {
+            throw new Error('Task inventory item not found');
+        }
+
+        const msg = new RemoveTaskInventoryMessage();
+        msg.AgentData = {
+            AgentID: this.region.agent.agentID,
+            SessionID: this.region.circuit.sessionID
+        };
+        msg.InventoryData = {
+            LocalID: this.ID,
+            ItemID: item
+        };
+        this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
+        await this.waitForInventoryUpdate(this.inventorySerial);
+    }
 
     private static partFromXMLJS(obj: any, isRoot: boolean): GameObject
     {
         const go = new GameObject();
         go.Flags = 0;
-        let prop: any;
+        let prop: any = '';
         if (Utils.getFromXMLJS(obj, 'AllowedDrop') !== undefined)
         {
             go.Flags = go.Flags | PrimFlags.AllowInventoryDrop;
@@ -383,9 +1532,9 @@ export class GameObject implements IGameObjectData
                 const buf = Buffer.from(prop, 'base64');
                 go.TextureEntry = TextureEntry.from(buf);
             }
-            if (go.TextureEntry && shape['MatOvrd'] && Array.isArray(shape['MatOvrd']) && shape['MatOvrd'].length > 0)
+            if (go.TextureEntry && shape.MatOvrd !== undefined && Array.isArray(shape.MatOvrd) && shape.MatOvrd.length > 0)
             {
-                const tex = Buffer.from(shape['MatOvrd'][0], 'base64');
+                const tex = Buffer.from(shape.MatOvrd[0], 'base64');
                 let pos = 0;
                 const entryCount = tex.readUInt8(pos++);
                 for (let x = 0; x < entryCount; x++)
@@ -393,7 +1542,7 @@ export class GameObject implements IGameObjectData
                     const te_index = tex.readUInt8(pos++);
                     const len = tex.readUInt16LE(pos++);
                     pos++;
-                    const json = tex.slice(pos, pos + len).toString('utf-8');
+                    const json = tex.subarray(pos, pos + len).toString('utf-8');
                     pos = pos + len;
                     go.TextureEntry.gltfMaterialOverrides.set(te_index, LLGLTFMaterialOverride.fromFullMaterialJSON(json));
                 }
@@ -478,7 +1627,7 @@ export class GameObject implements IGameObjectData
             }
             if ((prop = Utils.getFromXMLJS(shape, 'ProfileShape')) !== undefined)
             {
-                if (!go.ProfileCurve)
+                if (go.ProfileCurve === undefined)
                 {
                     go.ProfileCurve = 0;
                 }
@@ -486,7 +1635,7 @@ export class GameObject implements IGameObjectData
             }
             if ((prop = Utils.getFromXMLJS(shape, 'HollowShape')) !== undefined)
             {
-                if (!go.ProfileCurve)
+                if (go.ProfileCurve === undefined)
                 {
                     go.ProfileCurve = 0;
                 }
@@ -500,10 +1649,11 @@ export class GameObject implements IGameObjectData
                     const id = UUID.fromXMLJS(shape, 'SculptTexture');
                     if (id instanceof UUID)
                     {
-                        if (!go.extraParams)
+                        if (go.extraParams === undefined)
                         {
                             go.extraParams = new ExtraParams();
                         }
+                        // noinspection JSBitwiseOperatorUsage
                         if (type & SculptType.Mesh)
                         {
                             go.extraParams.setMeshData(type, id);
@@ -517,28 +1667,43 @@ export class GameObject implements IGameObjectData
             }
             if (Utils.getFromXMLJS(shape, 'FlexiEntry') !== undefined)
             {
-                const flexiSoftness = Utils.getFromXMLJS(shape, 'FlexiSoftness');
-                const flexiTension = Utils.getFromXMLJS(shape, 'FlexiTension');
-                const flexiDrag = Utils.getFromXMLJS(shape, 'FlexiDrag');
-                const flexiGravity = Utils.getFromXMLJS(shape, 'FlexiGravity');
-                const flexiWind = Utils.getFromXMLJS(shape, 'FlexiWind');
-                const flexiForceX = Utils.getFromXMLJS(shape, 'FlexiForceX');
-                const flexiForceY = Utils.getFromXMLJS(shape, 'FlexiForceY');
-                const flexiForceZ = Utils.getFromXMLJS(shape, 'FlexiForceZ');
+                const flexiSoftness = Utils.getFromXMLJS(shape, 'FlexiSoftness') as number | false;
+                const flexiTension = Utils.getFromXMLJS(shape, 'FlexiTension') as number | false;
+                const flexiDrag = Utils.getFromXMLJS(shape, 'FlexiDrag') as number | false;
+                const flexiGravity = Utils.getFromXMLJS(shape, 'FlexiGravity') as number | false;
+                const flexiWind = Utils.getFromXMLJS(shape, 'FlexiWind') as number | false;
+                const flexiForceX = Utils.getFromXMLJS(shape, 'FlexiForceX') as number | false;
+                const flexiForceY = Utils.getFromXMLJS(shape, 'FlexiForceY') as number | false;
+                const flexiForceZ = Utils.getFromXMLJS(shape, 'FlexiForceZ') as number | false;
                 if (flexiSoftness !== false &&
                     flexiTension !== false &&
-                    flexiDrag && false &&
+                    flexiDrag !== false &&
                     flexiGravity !== false &&
                     flexiWind !== false &&
                     flexiForceX !== false &&
                     flexiForceY !== false &&
                     flexiForceZ !== false)
                 {
-                    if (!go.extraParams)
+                    let forceX = Number(flexiForceX);
+                    let forceY = Number(flexiForceY);
+                    let forceZ = Number(flexiForceZ);
+                    if (isNaN(forceX))
+                    {
+                        forceX = 0;
+                    }
+                    if (isNaN(forceY))
+                    {
+                        forceY = 0;
+                    }
+                    if (isNaN(forceZ))
+                    {
+                        forceZ = 0;
+                    }
+                    if (go.extraParams === undefined)
                     {
                         go.extraParams = new ExtraParams();
                     }
-                    go.extraParams.setFlexiData(flexiSoftness, flexiTension, flexiDrag, flexiGravity, flexiWind, new Vector3([flexiForceX, flexiForceY, flexiForceZ]));
+                    go.extraParams.setFlexiData(flexiSoftness, flexiTension, flexiDrag, flexiGravity, flexiWind, new Vector3([forceX, forceY, forceZ]));
                 }
             }
             if (Utils.getFromXMLJS(shape, 'LightEntry') !== undefined)
@@ -560,7 +1725,7 @@ export class GameObject implements IGameObjectData
                     lightFalloff !== false &&
                     lightIntensity !== false)
                 {
-                    if (!go.extraParams)
+                    if (go.extraParams === undefined)
                     {
                         go.extraParams = new ExtraParams();
                     }
@@ -581,12 +1746,12 @@ export class GameObject implements IGameObjectData
         }
         if ((prop = Utils.getFromXMLJS(obj, 'TaskInventory')) !== undefined)
         {
-            if (prop.TaskInventoryItem)
+            if (prop.TaskInventoryItem !== undefined)
             {
                 for (const invItemXML of prop.TaskInventoryItem)
                 {
                     const invItem = new InventoryItem(go);
-                    let subProp: any;
+                    let subProp: any = '';
                     if ((subProp = UUID.fromXMLJS(invItemXML, 'AssetID')) !== undefined)
                     {
                         invItem.assetID = subProp;
@@ -667,392 +1832,19 @@ export class GameObject implements IGameObjectData
                     {
                         invItem.permsGranter = subProp;
                     }
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'ScriptRunning')) !== undefined)
+                    {
+                        invItem.scriptRunning = subProp === true;
+                    }
+                    if ((subProp = Utils.getFromXMLJS(invItemXML, 'ScriptMono')) !== undefined)
+                    {
+                        invItem.scriptMono = subProp === true;
+                    }
                     go.inventory.push(invItem);
                 }
             }
         }
         return go;
-    }
-
-    static async fromXML(xml: string | any): Promise<GameObject>
-    {
-        let result;
-        if (typeof xml === 'string')
-        {
-            const parsed = await Utils.parseXML(xml);
-            if (!parsed['SceneObjectGroup'])
-            {
-                throw new Error('SceneObjectGroup not found');
-            }
-            result = parsed['SceneObjectGroup'];
-        }
-        else
-        {
-            result = xml;
-        }
-
-        let rootPartXML;
-        if (result['SceneObjectPart'])
-        {
-            rootPartXML = result['SceneObjectPart'];
-        }
-        else if (result['RootPart'] && result['RootPart'][0] && result['RootPart'][0]['SceneObjectPart'])
-        {
-            rootPartXML = result['RootPart'][0]['SceneObjectPart'];
-        }
-        else
-        {
-            throw new Error('Root part not found');
-        }
-
-        const rootPart = GameObject.partFromXMLJS(rootPartXML[0], true);
-        rootPart.children = [];
-        rootPart.totalChildren = 0;
-        if (result['OtherParts'] && Array.isArray(result['OtherParts']) && result['OtherParts'].length > 0)
-        {
-            const obj = result['OtherParts'][0];
-            if (obj['SceneObjectPart'] || obj['Part'])
-            {
-                if (obj['Part'])
-                {
-                    for (const part of obj['Part'])
-                    {
-                        rootPart.children.push(GameObject.partFromXMLJS(part['SceneObjectPart'][0], false));
-                        rootPart.totalChildren++;
-                    }
-                }
-                else
-                {
-                    for (const part of obj['SceneObjectPart'])
-                    {
-                        rootPart.children.push(GameObject.partFromXMLJS(part, false));
-                        rootPart.totalChildren++;
-                    }
-                }
-            }
-        }
-        return rootPart;
-    }
-
-    static async deRezObjects(region: Region, objects: GameObject[], destination: DeRezDestination, transactionID: UUID, destFolder: UUID): Promise<void>
-    {
-        const msg = new DeRezObjectMessage();
-
-        msg.AgentData = {
-            AgentID: region.agent.agentID,
-            SessionID: region.circuit.sessionID
-        };
-        msg.AgentBlock = {
-            GroupID: UUID.zero(),
-            Destination: destination,
-            DestinationID: destFolder,
-            TransactionID: transactionID,
-            PacketCount: 1,
-            PacketNumber: 1
-        };
-        msg.ObjectData = [];
-        for (const obj of objects)
-        {
-            msg.ObjectData.push({
-                ObjectLocalID: obj.ID
-            });
-        }
-        const ack = region.circuit.sendMessage(msg, PacketFlags.Reliable);
-        return region.circuit.waitForAck(ack, 10000);
-    }
-
-    static takeManyToInventory(region: Region, objects: GameObject[], folder?: InventoryFolder): Promise<InventoryItem>
-    {
-        const transactionID = UUID.random();
-        let enforceFolder = true;
-        if (folder === undefined)
-        {
-            enforceFolder = false;
-            folder = region.agent.inventory.getRootFolderMain();
-        }
-        return new Promise<InventoryItem>((resolve, reject) =>
-        {
-
-            region.circuit.waitForMessage<UpdateCreateInventoryItemMessage>(Message.UpdateCreateInventoryItem, 10000, (message: UpdateCreateInventoryItemMessage) =>
-            {
-                for (const inv of message.InventoryData)
-                {
-                    const name = Utils.BufferToStringSimple(inv.Name);
-                    if (name === objects[0].name)
-                    {
-                        return FilterResponse.Finish;
-                    }
-                }
-                return FilterResponse.NoMatch;
-            }).then((createInventoryMsg: UpdateCreateInventoryItemMessage) =>
-            {
-                for (const inv of createInventoryMsg.InventoryData)
-                {
-                    const name = Utils.BufferToStringSimple(inv.Name);
-                    if (name === objects[0].name)
-                    {
-                        const itemID = inv.ItemID;
-                        region.agent.inventory.fetchInventoryItem(itemID).then((item: InventoryItem | null) =>
-                        {
-                            if (item === null)
-                            {
-                                reject(new Error('Inventory item was unable to be retrieved after take to inventory'));
-                            }
-                            else
-                            {
-                                if (enforceFolder && folder !== undefined && !item.parentID.equals(folder.folderID))
-                                {
-                                    item.moveToFolder(folder).then(() =>
-                                    {
-                                        resolve(item);
-                                    }).catch((err: Error) =>
-                                    {
-                                        console.error('Error moving item to correct folder');
-                                        console.error(err);
-                                        resolve(item);
-                                    });
-                                }
-                                else
-                                {
-                                    resolve(item);
-                                }
-                            }
-                        }).catch((err) =>
-                        {
-                            reject(err);
-                        });
-                        return;
-                    }
-                }
-            }).catch(() =>
-            {
-                reject(new Error('Timed out waiting for UpdateCreateInventoryItem'));
-            });
-            if (folder !== undefined)
-            {
-                GameObject.deRezObjects(region, objects, DeRezDestination.AgentInventoryTake, transactionID, folder.folderID).then(() =>
-                {
-                }).catch((err) =>
-                {
-                    console.error(err);
-                });
-            }
-        });
-    }
-
-    constructor()
-    {
-        this.Position = Vector3.getZero();
-        this.Rotation = Quaternion.getIdentity();
-        this.AngularVelocity = Vector3.getZero();
-        this.TreeSpecies = 0;
-        this.SoundFlags = 0;
-        this.SoundRadius = 1.0;
-        this.SoundGain = 1.0;
-    }
-
-    async waitForTextureUpdate(timeout?: number): Promise<void>
-    {
-        return Utils.waitOrTimeOut<void>(this.onTextureUpdate, timeout);
-    }
-
-    async rezScript(name: string, description: string, perms: PermissionMask = 532480 as PermissionMask): Promise<InventoryItem>
-    {
-        const rezScriptMsg = new RezScriptMessage();
-        rezScriptMsg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID,
-            GroupID: this.region.agent.activeGroupID
-        };
-        rezScriptMsg.UpdateBlock = {
-            ObjectLocalID: this.ID,
-            Enabled: true
-        };
-        const tmpName = uuid.v4();
-        const invItem = new InventoryItem(this);
-        invItem.itemID = UUID.zero();
-        invItem.parentID = this.FullID;
-        invItem.permissions.creator = this.region.agent.agentID;
-        invItem.permissions.group = UUID.zero();
-        invItem.permissions.baseMask = PermissionMask.All;
-        invItem.permissions.ownerMask = PermissionMask.All;
-        invItem.permissions.groupMask = 0;
-        invItem.permissions.everyoneMask = 0;
-        invItem.permissions.nextOwnerMask = perms;
-        invItem.permissions.groupOwned = false;
-        invItem.type = AssetType.LSLText;
-        invItem.inventoryType = InventoryType.LSL;
-        invItem.flags = 0;
-        invItem.salePrice = this.salePrice || 10;
-        invItem.saleType = this.saleType || 0;
-        invItem.name = tmpName;
-        invItem.description = description;
-        invItem.created = new Date();
-
-        rezScriptMsg.InventoryBlock = {
-            ItemID: UUID.zero(),
-            FolderID: this.FullID,
-            CreatorID: this.region.agent.agentID,
-            OwnerID: this.region.agent.agentID,
-            GroupID: UUID.zero(),
-            BaseMask: PermissionMask.All,
-            OwnerMask: PermissionMask.All,
-            GroupMask: 0,
-            EveryoneMask: 0,
-            NextOwnerMask: perms,
-            GroupOwned: false,
-            TransactionID: UUID.zero(),
-            Type: AssetType.LSLText,
-            InvType: InventoryType.LSL,
-            Flags: 0,
-            SaleType: this.saleType || 0,
-            SalePrice: this.salePrice || 10,
-            Name: Utils.StringToBuffer(tmpName),
-            Description: Utils.StringToBuffer(description),
-            CreationDate: Math.floor(invItem.created.getTime() / 1000),
-            CRC: invItem.getCRC()
-        };
-        await this.region.circuit.waitForAck(this.region.circuit.sendMessage(rezScriptMsg, PacketFlags.Reliable), 10000);
-        await this.updateInventory();
-        for (const item of this.inventory)
-        {
-            if (item.name === tmpName)
-            {
-                // We are intentionally not waiting for this rename job so that the wait below succeeds
-                item.renameInTask(this, name).then(() =>
-                {
-
-                }).catch(() =>
-                {
-
-                });
-                try
-                {
-                    await this.waitForInventoryUpdate();
-                }
-                catch (error)
-                {
-
-                }
-                await this.updateInventory();
-                for (const newItem of this.inventory)
-                {
-                    if (newItem.itemID.equals(item.itemID))
-                    {
-                        return newItem;
-                    }
-                }
-                return item;
-            }
-        }
-        throw new Error('Failed to add script to object');
-    }
-
-    public async updateInventory(): Promise<void>
-    {
-        if (this.PCode === PCode.Avatar)
-        {
-            return;
-        }
-
-        try
-        {
-            const capURL = await this.region.caps.getCapability('RequestTaskInventory');
-            const result = await this.region.caps.capsPerformXMLGet(capURL + '?task_id=' + this.FullID) as {
-                contents?: {
-                    asset_id?: string,
-                    created_at?: number,
-                    desc?: string,
-                    flags?: number,
-                    inv_type?: string,
-                    item_id?: string,
-                    metadata?: Record<string, unknown>,
-                    name?: string,
-                    parent_id?: string;
-                    permissions?: {
-                        base_mask?: number;
-                        creator_id?: string;
-                        everyone_mask?: number;
-                        group_id?: string;
-                        group_mask?: number;
-                        is_owner_group?: boolean;
-                        last_owner_id?: string;
-                        next_owner_mask?: number;
-                        owner_id?: string;
-                        owner_mask?: number;
-                    }
-                    sale_info?: {
-                        sale_price?: number;
-                        sale_type?: string;
-                    }
-                    type?: string
-                }[]
-            };
-
-            if (result.contents)
-            {
-                this.inventory = [];
-                for(const item of result.contents)
-                {
-                    const invItem =  new InventoryItem(this, this.region.agent);
-                    invItem.assetID = new UUID(item.asset_id);
-                    invItem.created = new Date((item.created_at ?? 0) * 1000);
-                    invItem.description = item.desc ?? '';
-                    invItem.flags = item.flags ?? 0;
-                    invItem.inventoryType = Utils.HTTPAssetTypeToInventoryType(item.inv_type ?? '');
-                    invItem.itemID = new UUID(item.item_id);
-                    invItem.name = item.name ?? '';
-                    invItem.parentID = new UUID(item.parent_id);
-                    invItem.permissions = {
-                        baseMask: item.permissions?.base_mask ?? 0,
-                        creator: new UUID(item.permissions?.creator_id),
-                        everyoneMask: item.permissions?.everyone_mask ?? 0,
-                        group: new UUID(item.permissions?.group_id),
-                        groupMask: item.permissions?.group_mask ?? 0,
-                        groupOwned: item.permissions?.is_owner_group ?? false,
-                        lastOwner: new UUID(item.permissions?.last_owner_id),
-                        nextOwnerMask: item.permissions?.next_owner_mask ?? 0,
-                        owner: new UUID(item.permissions?.owner_id),
-                        ownerMask: item.permissions?.owner_mask ?? 0
-                    }
-                    invItem.salePrice = item.sale_info?.sale_price ?? 0;
-                    switch (item.sale_info?.sale_type)
-                    {
-                        case 'not':
-                            invItem.saleType = 0;
-                            break;
-                        case 'orig':
-                            invItem.saleType = 1;
-                            break;
-                        case 'copy':
-                            invItem.saleType = 2;
-                            break;
-                        case 'cntn':
-                            invItem.saleType = 3;
-                            break;
-                    }
-                    invItem.type = Utils.capInventoryTypeToAssetType(item.inv_type ?? '');
-                    this.inventory.push(invItem);
-                }
-                return;
-            }
-        }
-        catch(e)
-        {
-            // ignore
-        }
-
-
-        const req = new RequestTaskInventoryMessage();
-        req.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        req.InventoryData = {
-            LocalID: this.ID
-        };
-        this.region.circuit.sendMessage(req, PacketFlags.Reliable);
-        return this.waitForTaskInventory();
     }
 
     private async waitForTaskInventory(): Promise<void>
@@ -1159,393 +1951,6 @@ export class GameObject implements IGameObjectData
         }
     }
 
-    hasNameValueEntry(key: string): boolean
-    {
-        return this.NameValue[key] !== undefined;
-    }
-
-    getNameValueEntry(key: string): string
-    {
-        if (this.NameValue[key])
-        {
-            return this.NameValue[key].value;
-        }
-        return '';
-    }
-
-    setIfDefined(def?: number, v?: number): number
-    {
-        if (def === undefined)
-        {
-            def = 0;
-        }
-        if (v === undefined)
-        {
-            return def;
-        }
-        else
-        {
-            return v;
-        }
-    }
-
-    async setShape(PathCurve?: number,
-                   ProfileCurve?: number,
-                   PathBegin?: number,
-                   PathEnd?: number,
-                   PathScaleX?: number,
-                   PathScaleY?: number,
-                   PathShearX?: number,
-                   PathShearY?: number,
-                   PathTwist?: number,
-                   PathTwistBegin?: number,
-                   PathRadiusOffset?: number,
-                   PathTaperX?: number,
-                   PathTaperY?: number,
-                   PathRevolutions?: number,
-                   PathSkew?: number,
-                   ProfileBegin?: number,
-                   ProfileEnd?: number,
-                   ProfileHollow?: number): Promise<void>
-    {
-        this.PathCurve = this.setIfDefined(this.PathCurve, PathCurve);
-        this.ProfileCurve = this.setIfDefined(this.ProfileCurve, ProfileCurve);
-        this.PathBegin = this.setIfDefined(this.PathBegin, PathBegin);
-        this.PathEnd = this.setIfDefined(this.PathEnd, PathEnd);
-        this.PathScaleX = this.setIfDefined(this.PathScaleX, PathScaleX);
-        this.PathScaleY = this.setIfDefined(this.PathScaleY, PathScaleY);
-        this.PathShearX = this.setIfDefined(this.PathShearX, PathShearX);
-        this.PathShearY = this.setIfDefined(this.PathShearY, PathShearY);
-        this.PathTwist = this.setIfDefined(this.PathTwist, PathTwist);
-        this.PathTwistBegin = this.setIfDefined(this.PathTwistBegin, PathTwistBegin);
-        this.PathRadiusOffset = this.setIfDefined(this.PathRadiusOffset, PathRadiusOffset);
-        this.PathTaperX = this.setIfDefined(this.PathTaperX, PathTaperX);
-        this.PathTaperY = this.setIfDefined(this.PathTaperY, PathTaperY);
-        this.PathRevolutions = this.setIfDefined(this.PathRevolutions, PathRevolutions);
-        this.PathSkew = this.setIfDefined(this.PathSkew, PathSkew);
-        this.ProfileBegin = this.setIfDefined(this.ProfileBegin, ProfileBegin);
-        this.ProfileEnd = this.setIfDefined(this.ProfileEnd, ProfileEnd);
-        this.ProfileHollow = this.setIfDefined(this.ProfileHollow, ProfileHollow);
-        if (!this.region)
-        {
-            return;
-        }
-        const msg = new ObjectShapeMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        msg.ObjectData = [
-            {
-                ObjectLocalID: this.ID,
-                PathCurve: this.PathCurve,
-                ProfileCurve: this.ProfileCurve,
-                PathBegin: Utils.packBeginCut(this.PathBegin),
-                PathEnd: Utils.packEndCut(this.PathEnd),
-                PathScaleX: Utils.packPathScale(this.PathScaleX),
-                PathScaleY: Utils.packPathScale(this.PathScaleY),
-                PathShearX: Utils.packPathShear(this.PathShearX),
-                PathShearY: Utils.packPathShear(this.PathShearY),
-                PathTwist: Utils.packPathTwist(this.PathTwist),
-                PathTwistBegin: Utils.packPathTwist(this.PathTwistBegin),
-                PathRadiusOffset: Utils.packPathTwist(this.PathRadiusOffset),
-                PathTaperX: Utils.packPathTaper(this.PathTaperX),
-                PathTaperY: Utils.packPathTaper(this.PathTaperY),
-                PathRevolutions: Utils.packPathRevolutions(this.PathRevolutions),
-                PathSkew: Utils.packPathTwist(this.PathSkew),
-                ProfileBegin: Utils.packBeginCut(this.ProfileBegin),
-                ProfileEnd: Utils.packEndCut(this.ProfileEnd),
-                ProfileHollow: Utils.packProfileHollow(this.ProfileHollow)
-            }
-        ];
-        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
-    }
-
-    async setName(name: string): Promise<void>
-    {
-        this.name = name;
-        if (!this.region)
-        {
-            return;
-        }
-        const msg = new ObjectNameMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        msg.ObjectData = [
-            {
-                LocalID: this.ID,
-                Name: Utils.StringToBuffer(name)
-            }
-        ];
-        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
-    }
-
-    async setGeometry(pos?: Vector3, rot?: Quaternion, scale?: Vector3, wholeLinkset: boolean = false): Promise<void>
-    {
-        const data = [];
-        const linked = (wholeLinkset) ? UpdateType.Linked : 0;
-        if (pos !== undefined)
-        {
-            this.Position = pos;
-            data.push({
-                ObjectLocalID: this.ID,
-                Type: UpdateType.Position | linked,
-                Data: pos.getBuffer()
-            });
-        }
-        if (rot !== undefined)
-        {
-            this.Rotation = rot;
-            data.push({
-                ObjectLocalID: this.ID,
-                Type: UpdateType.Rotation | linked,
-                Data: rot.getBuffer()
-            })
-        }
-        if (scale !== undefined)
-        {
-            this.Scale = scale;
-            data.push({
-                ObjectLocalID: this.ID,
-                Type: UpdateType.Scale | linked,
-                Data: scale.getBuffer()
-            })
-        }
-        if (!this.region || data.length === 0)
-        {
-            return;
-        }
-        const msg = new MultipleObjectUpdateMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        msg.ObjectData = data;
-        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
-    }
-
-    linkTo(rootObj: GameObject): Promise<void>
-    {
-        const msg = new ObjectLinkMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        msg.ObjectData = [
-            {
-                ObjectLocalID: rootObj.ID
-            },
-            {
-                ObjectLocalID: this.ID
-            }
-        ];
-        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 30000);
-    }
-
-    async linkFrom(objects: GameObject[]): Promise<void>
-    {
-        return new Promise<void>((resolve, reject) =>
-        {
-            if (objects.length === 0)
-            {
-                resolve();
-                return;
-            }
-            const primsExpectingUpdate: { [key: number]: GameObject } = {};
-            const msg = new ObjectLinkMessage();
-            msg.AgentData = {
-                AgentID: this.region.agent.agentID,
-                SessionID: this.region.circuit.sessionID
-            };
-            msg.ObjectData = [
-                {
-                    ObjectLocalID: this.ID
-                }
-            ];
-            primsExpectingUpdate[this.ID] = this;
-            for (const obj of objects)
-            {
-                msg.ObjectData.push(
-                    {
-                        ObjectLocalID: obj.ID
-                    });
-                primsExpectingUpdate[obj.ID] = obj;
-            }
-            this.region.circuit.waitForMessage<ObjectUpdateMessage>(Message.ObjectUpdate, 10000, (message: ObjectUpdateMessage) =>
-            {
-                let match = false;
-                for (const obj of message.ObjectData)
-                {
-                    const num = obj.ID;
-                    if (primsExpectingUpdate[num] !== undefined)
-                    {
-                        delete primsExpectingUpdate[num];
-                        match = true;
-                    }
-                }
-                if (match)
-                {
-                    if (Object.keys(primsExpectingUpdate).length === 0)
-                    {
-                        return FilterResponse.Finish;
-                    }
-                    return FilterResponse.Match;
-                }
-                return FilterResponse.NoMatch;
-            }).then(() =>
-            {
-                resolve();
-            }).catch((err) =>
-            {
-                reject(err);
-            });
-            this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
-        });
-
-    }
-
-    async setDescription(desc: string): Promise<void>
-    {
-        this.description = desc;
-        if (!this.region)
-        {
-            return;
-        }
-        const msg = new ObjectDescriptionMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        msg.ObjectData = [
-            {
-                LocalID: this.ID,
-                Description: Utils.StringToBuffer(desc)
-            }
-        ];
-        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
-    }
-
-    async setTextureEntry(e: TextureEntry): Promise<void>
-    {
-        this.TextureEntry = e;
-        if (!this.region)
-        {
-            return;
-        }
-
-        return this.setTextureAndMediaURL();
-    }
-
-    setTextureAndMediaURL(): Promise<void>
-    {
-        const msg = new ObjectImageMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        if (this.MediaURL === undefined)
-        {
-            this.MediaURL = '';
-        }
-        if (this.TextureEntry === undefined)
-        {
-            this.TextureEntry = new TextureEntry();
-        }
-        msg.ObjectData = [
-            {
-                ObjectLocalID: this.ID,
-                TextureEntry: this.TextureEntry.toBuffer(),
-                MediaURL: Utils.StringToBuffer(this.MediaURL)
-            }
-        ];
-        return this.region.circuit.waitForAck(this.region.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
-    }
-
-    async setExtraParams(ex: ExtraParams): Promise<void>
-    {
-        this.extraParams = ex;
-        if (!this.region)
-        {
-            return;
-        }
-
-        // Set ExtraParams
-        const msg = new ObjectExtraParamsMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        msg.ObjectData = [];
-        let params = 0;
-        if (ex.lightData !== null)
-        {
-            params++;
-            const data = ex.lightData.getBuffer();
-            msg.ObjectData.push({
-                ObjectLocalID: this.ID,
-                ParamType: ExtraParamType.Light,
-                ParamInUse: (ex.lightData.Intensity !== 0.0),
-                ParamData: data,
-                ParamSize: data.length
-            });
-        }
-        if (ex.flexibleData !== null)
-        {
-            params++;
-            const data = ex.flexibleData.getBuffer();
-            msg.ObjectData.push({
-                ObjectLocalID: this.ID,
-                ParamType: ExtraParamType.Flexible,
-                ParamInUse: true,
-                ParamData: data,
-                ParamSize: data.length
-            });
-        }
-        if (ex.lightImageData !== null)
-        {
-            params++;
-            const data = ex.lightImageData.getBuffer();
-            msg.ObjectData.push({
-                ObjectLocalID: this.ID,
-                ParamType: ExtraParamType.LightImage,
-                ParamInUse: true,
-                ParamData: data,
-                ParamSize: data.length
-            });
-        }
-        if (ex.sculptData !== null)
-        {
-            params++;
-            const data = ex.sculptData.getBuffer();
-            msg.ObjectData.push({
-                ObjectLocalID: this.ID,
-                ParamType: ExtraParamType.Sculpt,
-                ParamInUse: true,
-                ParamData: data,
-                ParamSize: data.length
-            });
-        }
-        if (ex.meshData !== null)
-        {
-            params++;
-            const data = ex.meshData.getBuffer();
-            msg.ObjectData.push({
-                ObjectLocalID: this.ID,
-                ParamType: ExtraParamType.Mesh,
-                ParamInUse: true,
-                ParamData: data,
-                ParamSize: data.length
-            });
-        }
-        if (params > 0)
-        {
-            const ack = this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
-            return this.region.circuit.waitForAck(ack, 10000);
-        }
-    }
-
     private async getInventoryXML(xml: XMLNode, inv: InventoryItem): Promise<void>
     {
         if (!inv.assetID.isZero() || !inv.itemID.isZero())
@@ -1560,7 +1965,7 @@ export class GameObject implements IGameObjectData
             UUID.getXML(item.ele('AssetID'), inv.assetID);
             UUID.getXML(item.ele('ItemID'), inv.itemID);
 
-            if (inv.permissions)
+            if (inv.permissions !== undefined)
             {
                 item.ele('BasePermissions', inv.permissions.baseMask);
                 item.ele('EveryonePermissions', inv.permissions.everyoneMask);
@@ -1583,7 +1988,7 @@ export class GameObject implements IGameObjectData
             {
                 try
                 {
-                    const type = (inv.type === 5 ? HTTPAssets.ASSET_CLOTHING : HTTPAssets.ASSET_BODYPART);
+                    const type = (inv.type === AssetType.Clothing) ? AssetType.Clothing : AssetType.Bodypart;
                     const data = await this.region.clientCommands.asset.downloadAsset(type, inv.assetID);
                     const wearable: LLWearable = new LLWearable(data.toString('utf-8'));
                     inv.flags = inv.flags | wearable.type;
@@ -1599,6 +2004,11 @@ export class GameObject implements IGameObjectData
             UUID.getXML(item.ele('ParentPartID'), this.FullID);
             item.ele('Type', inv.type);
             item.ele('Name', inv.name);
+            if (inv.type === AssetType.LSLText)
+            {
+                item.ele('ScriptRunning', inv.scriptRunning);
+                item.ele('ScriptMono', inv.scriptMono);
+            }
         }
     }
 
@@ -1607,7 +2017,7 @@ export class GameObject implements IGameObjectData
         if (!skipResolve)
         {
             const resolver = this.region?.resolver;
-            if (resolver)
+            if (resolver !== undefined)
             {
                 if (this.resolvedAt === undefined)
                 {
@@ -1646,11 +2056,12 @@ export class GameObject implements IGameObjectData
         }
 
         let root = xml;
-        if (rootNode)
+        if (rootNode !== undefined)
         {
             root = xml.ele(rootNode);
         }
         const sceneObjectPart = root.ele('SceneObjectPart').att('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance').att('xmlns:xsd', 'http://www.w3.org/2001/XMLSchema');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
         sceneObjectPart.ele('AllowedDrop', (this.Flags !== undefined && (this.Flags & PrimFlags.AllowInventoryDrop) === PrimFlags.AllowInventoryDrop) ? 'true' : 'false');
         UUID.getXML(sceneObjectPart.ele('CreatorID'), this.creatorID);
         UUID.getXML(sceneObjectPart.ele('FolderID'), this.folderID);
@@ -1659,7 +2070,7 @@ export class GameObject implements IGameObjectData
         sceneObjectPart.ele('LocalId', this.ID);
         sceneObjectPart.ele('Name', this.name);
         sceneObjectPart.ele('Material', this.Material);
-        if (this.region)
+        if (this.region !== undefined)
         {
             sceneObjectPart.ele('RegionHandle', this.region.regionHandle.toString());
         }
@@ -1696,7 +2107,7 @@ export class GameObject implements IGameObjectData
             {
                 shape.ele('TextureEntry', this.TextureEntry.toBase64());
 
-                if (this.TextureEntry.gltfMaterialOverrides)
+                if (this.TextureEntry.gltfMaterialOverrides !== undefined)
                 {
                     const overrideKeys = Array.from(this.TextureEntry.gltfMaterialOverrides.keys());
                     const numEntries = overrideKeys.length;
@@ -1728,7 +2139,7 @@ export class GameObject implements IGameObjectData
                     }
                 }
             }
-            if (this.extraParams)
+            if (this.extraParams !== undefined)
             {
                 shape.ele('ExtraParams', this.extraParams.toBase64());
             }
@@ -1762,7 +2173,7 @@ export class GameObject implements IGameObjectData
             shape.ele('State', state);
             shape.ele('LastAttachPoint', 0);
 
-            if (this.ProfileCurve)
+            if (this.ProfileCurve !== undefined)
             {
 
                 const profileShape: ProfileShape = this.ProfileCurve & 0x0F;
@@ -1771,13 +2182,13 @@ export class GameObject implements IGameObjectData
                 shape.ele('ProfileShape', ProfileShape[profileShape]);
                 shape.ele('HollowShape', HoleType[holeType]);
             }
-            if (this.extraParams !== undefined && this.extraParams.meshData !== null)
+            if (this.extraParams?.meshData !== null)
             {
                 shape.ele('SculptType', this.extraParams.meshData.type);
                 UUID.getXML(shape.ele('SculptTexture'), this.extraParams.meshData.meshData);
                 shape.ele('SculptEntry', true);
             }
-            else if (this.extraParams !== undefined && this.extraParams.sculptData !== null)
+            else if (this.extraParams?.sculptData !== null)
             {
                 shape.ele('SculptType', this.extraParams.sculptData.type);
                 UUID.getXML(shape.ele('SculptTexture'), this.extraParams.sculptData.texture);
@@ -1787,7 +2198,7 @@ export class GameObject implements IGameObjectData
             {
                 shape.ele('SculptEntry', false);
             }
-            if (this.extraParams !== undefined && this.extraParams.flexibleData !== null)
+            if (this.extraParams?.flexibleData !== null)
             {
                 shape.ele('FlexiSoftness', this.extraParams.flexibleData.Softness);
                 shape.ele('FlexiTension', this.extraParams.flexibleData.Tension);
@@ -1803,7 +2214,7 @@ export class GameObject implements IGameObjectData
             {
                 shape.ele('FlexiEntry', false);
             }
-            if (this.extraParams !== undefined && this.extraParams.lightData !== null)
+            if (this.extraParams?.lightData !== null)
             {
                 shape.ele('LightColorR', this.extraParams.lightData.Color.red);
                 shape.ele('LightColorG', this.extraParams.lightData.Color.green);
@@ -1845,20 +2256,18 @@ export class GameObject implements IGameObjectData
         {
             for (const flag of Object.keys(PrimFlags))
             {
-                if (typeof flag === 'string')
+                const fl: any = PrimFlags;
+                const flagName: string = flag;
+                const flagValue: number = fl[flagName];
+                // noinspection JSBitwiseOperatorUsage
+                if (this.Flags & flagValue)
                 {
-                    const fl: any = PrimFlags;
-                    const flagName: string = flag;
-                    const flagValue: number = fl[flagName];
-                    if (this.Flags & flagValue)
-                    {
-                        flags.push(flagName);
-                    }
+                    flags.push(flagName);
                 }
             }
         }
         sceneObjectPart.ele('Flags', flags.join(' '));
-        if (this.textureAnim)
+        if (this.textureAnim !== undefined)
         {
             sceneObjectPart.ele('TextureAnimation', this.textureAnim.toBase64());
         }
@@ -1866,7 +2275,7 @@ export class GameObject implements IGameObjectData
         {
             sceneObjectPart.ele('ParticleSystem', this.Particles.toBase64());
         }
-        if (this.physicsShapeType)
+        if (this.physicsShapeType != null)
         {
             sceneObjectPart.ele('PhysicsShapeType', this.physicsShapeType);
         }
@@ -1878,7 +2287,7 @@ export class GameObject implements IGameObjectData
             sceneObjectPart.ele('SoundRadius', this.SoundRadius);
             sceneObjectPart.ele('SoundQueueing', false);
         }
-        if (this.inventory && this.inventory.length > 0)
+        if (this.inventory !== undefined && this.inventory.length > 0)
         {
             const inventory = sceneObjectPart.ele('TaskInventory');
             for (const inv of this.inventory)
@@ -1886,338 +2295,22 @@ export class GameObject implements IGameObjectData
                 await this.getInventoryXML(inventory, inv);
             }
         }
-    }
-
-    populateChildren(): void
-    {
-        this.region.objects.populateChildren(this);
-    }
-
-    async exportXMLElement(rootNode?: string, skipInventory = false, skipResolve = false): Promise<XMLElement>
-    {
-        const document = builder.create('SceneObjectGroup');
-        let linkNum = 1;
-        await this.getXML(document, this, linkNum, rootNode, skipInventory, skipResolve);
-        if (this.children && this.children.length > 0)
+        if (this.linksetData !== undefined)
         {
-            const otherParts = document.ele('OtherParts');
-            for (const child of this.children)
+            const lsData= sceneObjectPart.ele('LinksetData');
+            for(const k of Array.from(this.linksetData.keys()))
             {
-                await child.getXML(otherParts, this, ++linkNum, (rootNode !== undefined) ? 'Part' : undefined, skipInventory, skipResolve);
-            }
-        }
-        return document;
-    }
-
-    async exportXML(rootNode?: string, skipInventory = false, skipResolve = false): Promise<string>
-    {
-        return (await this.exportXMLElement(rootNode, skipInventory, skipResolve)).end({ pretty: true, allowEmpty: true });
-    }
-
-    public toJSON(): IGameObjectData
-    {
-        return {
-            deleted: this.deleted,
-            creatorID: this.creatorID,
-            creationDate: this.creationDate,
-            baseMask: this.baseMask,
-            ownerMask: this.ownerMask,
-            groupMask: this.groupMask,
-            everyoneMask: this.everyoneMask,
-            nextOwnerMask: this.nextOwnerMask,
-            ownershipCost: this.ownershipCost,
-            saleType: this.saleType,
-            salePrice: this.salePrice,
-            aggregatePerms: this.aggregatePerms,
-            aggregatePermTextures: this.aggregatePermTextures,
-            aggregatePermTexturesOwner: this.aggregatePermTexturesOwner,
-            category: this.category,
-            inventorySerial: this.inventorySerial,
-            itemID: this.itemID,
-            folderID: this.folderID,
-            fromTaskID: this.fromTaskID,
-            lastOwnerID: this.lastOwnerID,
-            name: this.name,
-            description: this.description,
-            touchName: this.touchName,
-            sitName: this.sitName,
-            resolvedAt: this.resolvedAt,
-            resolvedInventory: this.resolvedInventory,
-            totalChildren: this.totalChildren,
-            landImpact: this.landImpact,
-            calculatedLandImpact: this.calculatedLandImpact,
-            physicaImpact: this.physicaImpact,
-            resourceImpact: this.resourceImpact,
-            linkResourceImpact: this.linkResourceImpact,
-            linkPhysicsImpact: this.linkPhysicsImpact,
-            limitingType: this.limitingType,
-            children: this.children,
-            ID: this.ID,
-            FullID: this.FullID,
-            ParentID: this.ParentID,
-            OwnerID: this.OwnerID,
-            IsAttachment: this.IsAttachment,
-            NameValue: this.NameValue,
-            PCode: this.PCode,
-            State: this.State,
-            CRC: this.CRC,
-            Material: this.Material,
-            ClickAction: this.ClickAction,
-            Scale: this.Scale,
-            Flags: this.Flags,
-            PathCurve: this.PathCurve,
-            ProfileCurve: this.ProfileCurve,
-            PathBegin: this.PathBegin,
-            PathEnd: this.PathEnd,
-            PathScaleX: this.PathScaleX,
-            PathScaleY: this.PathScaleY,
-            PathShearX: this.PathShearX,
-            PathShearY: this.PathShearY,
-            PathTwist: this.PathTwist,
-            PathTwistBegin: this.PathTwistBegin,
-            PathRadiusOffset: this.PathRadiusOffset,
-            PathTaperX: this.PathTaperX,
-            PathTaperY: this.PathTaperY,
-            PathRevolutions: this.PathRevolutions,
-            PathSkew: this.PathSkew,
-            ProfileBegin: this.ProfileBegin,
-            ProfileEnd: this.ProfileEnd,
-            ProfileHollow: this.ProfileHollow,
-            TextureEntry: this.TextureEntry,
-            Text: this.Text,
-            TextColor: this.TextColor,
-            MediaURL: this.MediaURL,
-            JointType: this.JointType,
-            JointPivot: this.JointPivot,
-            JointAxisOrAnchor: this.JointAxisOrAnchor,
-            Position: this.Position,
-            Rotation: this.Rotation,
-            CollisionPlane: this.CollisionPlane,
-            Velocity: this.Velocity,
-            Acceleration: this.Acceleration,
-            AngularVelocity: this.AngularVelocity,
-            TreeSpecies: this.TreeSpecies,
-            Sound: this.Sound,
-            SoundGain: this.SoundGain,
-            SoundFlags: this.SoundFlags,
-            SoundRadius: this.SoundRadius,
-            Particles: this.Particles,
-            density: this.density,
-            friction: this.friction,
-            gravityMultiplier: this.gravityMultiplier,
-            physicsShapeType: this.physicsShapeType,
-            restitution: this.restitution
-        }
-    }
-    setObjectData(data: Buffer): void
-    {
-        let dataPos = 0;
-
-        // noinspection FallThroughInSwitchStatementJS, TsLint
-        switch (data.length)
-        {
-            // @ts-ignore
-            case 76:
-                // Avatar collision normal;
-                this.CollisionPlane = new Vector4(data, dataPos);
-                dataPos += 16;
-                /* falls through */
-            case 60:
-                // Position
-                this.Position = new Vector3(data, dataPos);
-                dataPos += 12;
-                this.Velocity = new Vector3(data, dataPos);
-                dataPos += 12;
-                this.Acceleration = new Vector3(data, dataPos);
-                dataPos += 12;
-                this.Rotation = new Quaternion(data, dataPos);
-                dataPos += 12;
-                this.AngularVelocity = new Vector3(data, dataPos);
-                dataPos += 12;
-                break;
-            // @ts-ignore
-            case 48:
-                this.CollisionPlane = new Vector4(data, dataPos);
-                dataPos += 16;
-                /* falls through */
-            case 32:
-                this.Position = new Vector3([
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -0.5 * 256.0, 1.5 * 256.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -0.5 * 256.0, 1.5 * 256.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 3.0 * 256.0)
-                ]);
-                dataPos += 6;
-                this.Velocity = new Vector3([
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                ]);
-                dataPos += 6;
-                this.Acceleration = new Vector3([
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                ]);
-                dataPos += 6;
-                this.Rotation = new Quaternion([
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -1.0, 1.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -1.0, 1.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -1.0, 1.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -1.0, 1.0)
-                ]);
-                dataPos += 8;
-                this.AngularVelocity = new Vector3([
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos), -256.0, 256.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 2), -256.0, 256.0),
-                    Utils.UInt16ToFloat(data.readUInt16LE(dataPos + 4), -256.0, 256.0)
-                ]);
-                dataPos += 6;
-                break;
-            case 16:
-                this.Position = new Vector3([
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
-                ]);
-                this.Velocity = new Vector3([
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
-                ]);
-                this.Acceleration = new Vector3([
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
-                ]);
-                this.Rotation = new Quaternion([
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -1.0, 1.0)
-                ]);
-                this.AngularVelocity = new Vector3([
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0),
-                    Utils.ByteToFloat(data.readUInt8(dataPos++), -256.0, 256.0)
-                ]);
-                break;
-        }
-    }
-
-    async deRezObject(destination: DeRezDestination, transactionID: UUID, destFolder: UUID): Promise<void>
-    {
-        return GameObject.deRezObjects(this.region, [this], destination, transactionID, destFolder);
-    }
-
-    async takeToInventory(folder?: InventoryFolder): Promise<InventoryItem>
-    {
-        return GameObject.takeManyToInventory(this.region, [this], folder);
-    }
-
-    async dropInventoryIntoContents(inventoryItem: InventoryItem | UUID): Promise<void>
-    {
-        const transactionID = UUID.zero();
-
-        if (inventoryItem instanceof UUID)
-        {
-
-            const item: InventoryItem | null = await this.region.agent.inventory.fetchInventoryItem(inventoryItem);
-            if (item === null)
-            {
-                throw new Error('Failed to drop inventory into object contents - Inventory item ' + inventoryItem.toString() + ' not found');
-                return;
-            }
-            inventoryItem = item;
-        }
-
-        const msg = new UpdateTaskInventoryMessage();
-        msg.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        msg.UpdateData = {
-            Key: 0,
-            LocalID: this.ID
-        };
-        msg.InventoryData = {
-            ItemID: inventoryItem.itemID,
-            FolderID: inventoryItem.parentID,
-            CreatorID: inventoryItem.permissions.creator,
-            OwnerID: inventoryItem.permissions.owner,
-            GroupID: inventoryItem.permissions.group,
-            BaseMask: inventoryItem.permissions.baseMask,
-            OwnerMask: inventoryItem.permissions.ownerMask,
-            GroupMask: inventoryItem.permissions.groupMask,
-            EveryoneMask: inventoryItem.permissions.everyoneMask,
-            NextOwnerMask: inventoryItem.permissions.nextOwnerMask,
-            GroupOwned: inventoryItem.permissions.groupOwned || false,
-            TransactionID: transactionID,
-            Type: inventoryItem.type,
-            InvType: inventoryItem.inventoryType,
-            Flags: inventoryItem.flags,
-            SaleType: inventoryItem.saleType,
-            SalePrice: inventoryItem.salePrice,
-            Name: Utils.StringToBuffer(inventoryItem.name),
-            Description: Utils.StringToBuffer(inventoryItem.description),
-            CreationDate: inventoryItem.created.getTime() / 1000,
-            CRC: inventoryItem.getCRC()
-        };
-        const serial = this.inventorySerial;
-        this.region.circuit.sendMessage(msg, PacketFlags.Reliable);
-        return this.waitForInventoryUpdate(serial);
-    }
-
-    async waitForInventoryUpdate(inventorySerial?: number): Promise<void>
-    {
-        // We need to select the object or we won't get the objectProperties message
-        await this.deselect();
-        this.select();
-        await this.region.circuit.waitForMessage<ObjectPropertiesMessage>(Message.ObjectProperties, 10000, (message: ObjectPropertiesMessage) =>
-        {
-            for (const obj of message.ObjectData)
-            {
-                if (obj.ObjectID.equals(this.FullID))
+                const d = this.linksetData.get(k);
+                if (d === undefined)
                 {
-                    if (inventorySerial === undefined)
-                    {
-                        inventorySerial = this.inventorySerial;
-                    }
-                    if (obj.InventorySerial > inventorySerial)
-                    {
-                        return FilterResponse.Finish;
-                    }
+                    continue;
                 }
+                const dataEntry = lsData.ele('LinksetDataEntry');
+                dataEntry.ele('Key', k);
+                dataEntry.ele('Value', d.value);
+                dataEntry.ele('Hash', d.pass);
             }
-            return FilterResponse.NoMatch;
-        });
-        await this.deselect();
-    }
 
-    select(): Promise<void>
-    {
-        const selectObject = new ObjectSelectMessage();
-        selectObject.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        selectObject.ObjectData = [{
-            ObjectLocalID: this.ID
-        }];
-        const ack = this.region.circuit.sendMessage(selectObject, PacketFlags.Reliable);
-        return this.region.circuit.waitForAck(ack, 10000);
-    }
-
-    deselect(): Promise<void>
-    {
-        const deselectObject = new ObjectDeselectMessage();
-        deselectObject.AgentData = {
-            AgentID: this.region.agent.agentID,
-            SessionID: this.region.circuit.sessionID
-        };
-        deselectObject.ObjectData = [{
-            ObjectLocalID: this.ID
-        }];
-        const ack = this.region.circuit.sendMessage(deselectObject, PacketFlags.Reliable);
-        return this.region.circuit.waitForAck(ack, 10000);
+        }
     }
 }

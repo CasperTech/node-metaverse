@@ -2,14 +2,14 @@ import { Vector3 } from '../Vector3';
 
 export class FlexibleData
 {
-    Softness = 0;
-    Tension = 0.0;
-    Drag = 0.0;
-    Gravity = 0.0;
-    Wind = 0.0;
-    Force = Vector3.getZero();
+    public Softness = 0;
+    public Tension = 0.0;
+    public Drag = 0.0;
+    public Gravity = 0.0;
+    public Wind = 0.0;
+    public Force = Vector3.getZero();
 
-    constructor(buf?: Buffer, pos?: number, length?: number)
+    public constructor(buf?: Buffer, pos?: number, length?: number)
     {
         if (buf !== undefined && pos !== undefined && length !== undefined)
         {
@@ -24,7 +24,8 @@ export class FlexibleData
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number): void
+
+    public writeToBuffer(buf: Buffer, pos: number): void
     {
         buf[pos] = (this.Softness & 2) << 6;
         buf[pos + 1] = (this.Softness & 1) << 7;
@@ -34,7 +35,8 @@ export class FlexibleData
         buf[pos++] = (this.Wind) * 10;
         this.Force.writeToBuffer(buf, pos, false);
     }
-    getBuffer(): Buffer
+
+    public getBuffer(): Buffer
     {
         const buf = Buffer.allocUnsafe(16);
         this.writeToBuffer(buf, 0);

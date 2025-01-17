@@ -1,14 +1,14 @@
-import { UUID } from '../classes/UUID';
+import type { UUID } from '../classes/UUID';
 
 export class AvatarPropertiesReplyEvent
 {
-    ImageID: UUID;
-    FLImageID: UUID;
-    PartnerID: UUID;
-    AboutText: string;
-    FLAboutText: string;
-    BornOn: string;
-    ProfileURL: string;
-    CharterMember: number;
-    Flags: number;
+    public ImageID: UUID;
+    public FLImageID: UUID;
+    public PartnerID: UUID;
+    public AboutText: string;
+    public FLAboutText: string;
+    public BornOn: string;
+    public ProfileURL: string;
+    public CharterMember: number;
+    public Flags: number;
 }

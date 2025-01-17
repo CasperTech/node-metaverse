@@ -1,6 +1,6 @@
-import { ClientEvents } from './ClientEvents';
-import { Agent } from './Agent';
-import { Caps } from './Caps';
+import type { ClientEvents } from './ClientEvents';
+import type { Agent } from './Agent';
+import type { Caps } from './Caps';
 import { EventQueueStateChangeEvent } from '../events/EventQueueStateChangeEvent';
 import { ParcelPropertiesEvent } from '../events/ParcelPropertiesEvent';
 import { Vector3 } from './Vector3';
@@ -20,19 +20,21 @@ import { InventoryLibrary } from '../enums/InventoryLibrary';
 import { LandStatsEvent } from '../events/LandStatsEvent';
 
 import * as LLSD from '@caspertech/llsd';
-import got, { CancelableRequest, Response } from 'got';
+import type { CancelableRequest, Response } from 'got';
+import got from 'got';
 import * as Long from 'long';
 
 export class EventQueueClient
 {
-    caps: Caps;
-    ack?: number;
-    done = false;
-    private currentRequest?: CancelableRequest<Response<string>> = undefined;
-    private clientEvents: ClientEvents;
-    private agent: Agent;
+    public caps: Caps;
+    public ack?: number;
+    public done = false;
 
-    constructor(agent: Agent, caps: Caps, clientEvents: ClientEvents)
+    private currentRequest?: CancelableRequest<Response<string>> = undefined;
+    private readonly clientEvents: ClientEvents;
+    private readonly agent: Agent;
+
+    public constructor(agent: Agent, caps: Caps, clientEvents: ClientEvents)
     {
         this.agent = agent;
         this.clientEvents = clientEvents;
@@ -43,7 +45,7 @@ export class EventQueueClient
         this.clientEvents.onEventQueueStateChange.next(state);
     }
 
-    shutdown(): void
+    public async shutdown(): Promise<void>
     {
         // We must ACK any outstanding events
         this.done = true;
@@ -56,15 +58,13 @@ export class EventQueueClient
             'ack': this.ack,
             'done': true
         };
-        this.capsPostXML('EventQueueGet', req).then(() =>
-        {
-            const state = new EventQueueStateChangeEvent();
-            state.active = false;
-            this.clientEvents.onEventQueueStateChange.next(state);
-        });
+        await this.capsPostXML('EventQueueGet', req);
+        const state = new EventQueueStateChangeEvent();
+        state.active = false;
+        this.clientEvents.onEventQueueStateChange.next(state);
     }
 
-    Get(): void
+    public Get(): void
     {
         const req = {
             'ack': this.ack,
@@ -73,9 +73,9 @@ export class EventQueueClient
         const startTime = new Date().getTime();
         this.capsPostXML('EventQueueGet', req).then((data) =>
         {
-            if (data['id'])
+            if (data.id)
             {
-                this.ack = data['id'];
+                this.ack = data.id;
             }
             else
             {
@@ -83,16 +83,16 @@ export class EventQueueClient
             }
             try
             {
-                if (data['events'])
+                if (data.events)
                 {
-                    for (const event of data['events'])
+                    for (const event of data.events)
                     {
                         try
                         {
-                            if (event['message'])
+                            if (event.message)
                             {
                                 // noinspection TsLint
-                                switch (event['message'])
+                                switch (event.message)
                                 {
                                     case 'EnableSimulator':
 
@@ -114,55 +114,55 @@ export class EventQueueClient
                                         break;
                                     case 'BulkUpdateInventory':
                                     {
-                                        const body = event['body'];
+                                        const body = event.body;
                                         const buie = new BulkUpdateInventoryEvent();
-                                        if (body['FolderData'])
+                                        if (body.FolderData)
                                         {
-                                            for (const f of body['FolderData'])
+                                            for (const f of body.FolderData)
                                             {
-                                                const folderID = new UUID(f['FolderID']);
+                                                const folderID = new UUID(f.FolderID);
                                                 if (!folderID.isZero())
                                                 {
                                                     const folder = new InventoryFolder(InventoryLibrary.Main, this.agent.inventory.main, this.agent);
                                                     folder.folderID = folderID;
-                                                    folder.name = f['Name'];
-                                                    folder.parentID = new UUID(f['ParentID']);
-                                                    folder.typeDefault = parseInt(f['Type'], 10);
+                                                    folder.name = f.Name;
+                                                    folder.parentID = new UUID(f.ParentID);
+                                                    folder.typeDefault = parseInt(f.Type, 10);
                                                     buie.folderData.push(folder);
                                                 }
                                             }
                                         }
-                                        if (body['ItemData'])
+                                        if (body.ItemData)
                                         {
-                                            for (const i of body['ItemData'])
+                                            for (const i of body.ItemData)
                                             {
-                                                const itemID = new UUID(i['ItemID']);
+                                                const itemID = new UUID(i.ItemID);
                                                 if (!itemID.isZero())
                                                 {
-                                                    const folder = this.agent.inventory.findFolder(new UUID(i['FolderID']));
-                                                    const item = new InventoryItem(folder || undefined, this.agent);
+                                                    const folder = this.agent.inventory.findFolder(new UUID(i.FolderID));
+                                                    const item = new InventoryItem(folder ?? undefined, this.agent);
 
-                                                    item.assetID = new UUID(i['AssetID']);
-                                                    item.permissions.baseMask = Utils.OctetsToUInt32BE(i['BaseMask'].octets);
-                                                    item.permissions.everyoneMask = Utils.OctetsToUInt32BE(i['EveryoneMask'].octets);
-                                                    item.permissions.groupMask = Utils.OctetsToUInt32BE(i['GroupMask'].octets);
-                                                    item.permissions.nextOwnerMask = Utils.OctetsToUInt32BE(i['NextOwnerMask'].octets);
-                                                    item.permissions.ownerMask = Utils.OctetsToUInt32BE(i['OwnerMask'].octets);
-                                                    item.permissions.groupOwned = i['GroupOwned'];
-                                                    item.permissions.creator = new UUID(i['CreatorID']);
-                                                    item.permissions.group = new UUID(i['GroupID']);
-                                                    item.permissions.owner = new UUID(i['OwnerID']);
-                                                    item.flags = Utils.OctetsToUInt32BE(i['Flags'].octets);
-                                                    item.callbackID = Utils.OctetsToUInt32BE(i['CallbackID'].octets);
-                                                    item.created = new Date(parseInt(i['CreationDate'], 10) * 1000);
-                                                    item.description = i['Description'];
-                                                    item.parentID = new UUID(i['FolderID']);
-                                                    item.inventoryType = parseInt(i['InvType'], 10);
-                                                    item.salePrice = parseInt(i['SalePrice'], 10);
-                                                    item.saleType = parseInt(i['SaleType'], 10);
-                                                    item.type = parseInt(i['Type'], 10);
+                                                    item.assetID = new UUID(i.AssetID);
+                                                    item.permissions.baseMask = Utils.OctetsToUInt32BE(i.BaseMask.octets);
+                                                    item.permissions.everyoneMask = Utils.OctetsToUInt32BE(i.EveryoneMask.octets);
+                                                    item.permissions.groupMask = Utils.OctetsToUInt32BE(i.GroupMask.octets);
+                                                    item.permissions.nextOwnerMask = Utils.OctetsToUInt32BE(i.NextOwnerMask.octets);
+                                                    item.permissions.ownerMask = Utils.OctetsToUInt32BE(i.OwnerMask.octets);
+                                                    item.permissions.groupOwned = i.GroupOwned;
+                                                    item.permissions.creator = new UUID(i.CreatorID);
+                                                    item.permissions.group = new UUID(i.GroupID);
+                                                    item.permissions.owner = new UUID(i.OwnerID);
+                                                    item.flags = Utils.OctetsToUInt32BE(i.Flags.octets);
+                                                    item.callbackID = Utils.OctetsToUInt32BE(i.CallbackID.octets);
+                                                    item.created = new Date(parseInt(i.CreationDate, 10) * 1000);
+                                                    item.description = i.Description;
+                                                    item.parentID = new UUID(i.FolderID);
+                                                    item.inventoryType = parseInt(i.InvType, 10);
+                                                    item.salePrice = parseInt(i.SalePrice, 10);
+                                                    item.saleType = parseInt(i.SaleType, 10);
+                                                    item.type = parseInt(i.Type, 10);
                                                     item.itemID = itemID;
-                                                    item.name = i['Name'];
+                                                    item.name = i.Name;
                                                     buie.itemData.push(item);
                                                 }
                                             }
@@ -172,80 +172,80 @@ export class EventQueueClient
                                     }
                                     case 'ParcelProperties':
                                     {
-                                        const body = event['body'];
+                                        const body = event.body;
                                         const pprop = new ParcelPropertiesEvent();
-                                        pprop.RegionDenyAgeUnverified = body['AgeVerificationBlock'][0]['RegionDenyAgeUnverified'];
-                                        pprop.MediaDesc = body['MediaData'][0]['MediaDesc'];
-                                        pprop.MediaHeight = body['MediaData'][0]['MediaHeight'];
-                                        pprop.MediaLoop = body['MediaData'][0]['MediaLoop'];
-                                        pprop.MediaType = body['MediaData'][0]['MediaType'];
-                                        pprop.MediaWidth = body['MediaData'][0]['MediaWidth'];
-                                        pprop.ObscureMedia = body['MediaData'][0]['ObscureMedia'];
-                                        pprop.ObscureMusic = body['MediaData'][0]['ObscureMusic'];
-                                        pprop.AABBMax = new Vector3([parseInt(body['ParcelData'][0]['AABBMax'][0], 10), parseInt( body['ParcelData'][0]['AABBMax'][1], 10), parseInt(body['ParcelData'][0]['AABBMax'][2], 10)]);
-                                        pprop.AABBMin = new Vector3([parseInt(body['ParcelData'][0]['AABBMin'][0], 10), parseInt(body['ParcelData'][0]['AABBMin'][1], 10), parseInt( body['ParcelData'][0]['AABBMin'][2], 10)]);
-                                        pprop.AnyAVSounds = body['ParcelData'][0]['AnyAVSounds'];
-                                        pprop.Area = body['ParcelData'][0]['Area'];
+                                        pprop.RegionDenyAgeUnverified = body.AgeVerificationBlock[0].RegionDenyAgeUnverified;
+                                        pprop.MediaDesc = body.MediaData[0].MediaDesc;
+                                        pprop.MediaHeight = body.MediaData[0].MediaHeight;
+                                        pprop.MediaLoop = body.MediaData[0].MediaLoop;
+                                        pprop.MediaType = body.MediaData[0].MediaType;
+                                        pprop.MediaWidth = body.MediaData[0].MediaWidth;
+                                        pprop.ObscureMedia = body.MediaData[0].ObscureMedia;
+                                        pprop.ObscureMusic = body.MediaData[0].ObscureMusic;
+                                        pprop.AABBMax = new Vector3([parseInt(body.ParcelData[0].AABBMax[0], 10), parseInt( body.ParcelData[0].AABBMax[1], 10), parseInt(body.ParcelData[0].AABBMax[2], 10)]);
+                                        pprop.AABBMin = new Vector3([parseInt(body.ParcelData[0].AABBMin[0], 10), parseInt(body.ParcelData[0].AABBMin[1], 10), parseInt( body.ParcelData[0].AABBMin[2], 10)]);
+                                        pprop.AnyAVSounds = body.ParcelData[0].AnyAVSounds;
+                                        pprop.Area = body.ParcelData[0].Area;
                                         try
                                         {
-                                            pprop.AuctionID = Buffer.from(body['ParcelData'][0]['AuctionID'].toArray()).readUInt32BE(0);
+                                            pprop.AuctionID = Buffer.from(body.ParcelData[0].AuctionID.toArray()).readUInt32BE(0);
                                         }
-                                        catch (ignore)
+                                        catch (_ignore: unknown)
                                         {
                                             // TODO: Opensim glitch
                                         }
-                                        pprop.AuthBuyerID = new UUID(String(body['ParcelData'][0]['AuthBuyerID']));
+                                        pprop.AuthBuyerID = new UUID(String(body.ParcelData[0].AuthBuyerID));
 
-                                        pprop.Bitmap = Buffer.from(body['ParcelData'][0]['Bitmap'].toArray());
-                                        pprop.Category = body['ParcelData'][0]['Category'];
-                                        pprop.ClaimDate = body['ParcelData'][0]['ClaimDate'];
-                                        pprop.ClaimPrice = body['ParcelData'][0]['ClaimPrice'];
-                                        pprop.Desc = body['ParcelData'][0]['Desc'];
-                                        pprop.GroupAVSounds = body['ParcelData'][0]['GroupAVSounds'];
-                                        pprop.GroupID = new UUID(String(body['ParcelData'][0]['GroupID']));
-                                        pprop.GroupPrims = body['ParcelData'][0]['GroupPrims'];
-                                        pprop.IsGroupOwned = body['ParcelData'][0]['IsGroupOwned'];
-                                        pprop.LandingType = body['ParcelData'][0]['LandingType'];
-                                        pprop.LocalID = body['ParcelData'][0]['LocalID'];
-                                        pprop.MaxPrims = body['ParcelData'][0]['MaxPrims'];
-                                        pprop.MediaAutoScale = body['ParcelData'][0]['MediaAutoScale'];
-                                        pprop.MediaID = new UUID(String(body['ParcelData'][0]['MediaID']));
-                                        pprop.MediaURL = body['ParcelData'][0]['MediaURL'];
-                                        pprop.MusicURL = body['ParcelData'][0]['MusicURL'];
-                                        pprop.Name = body['ParcelData'][0]['Name'];
-                                        pprop.OtherCleanTime = body['ParcelData'][0]['OtherCleanTime'];
-                                        pprop.OtherCount = body['ParcelData'][0]['OtherCount'];
-                                        pprop.OtherPrims = body['ParcelData'][0]['OtherPrims'];
-                                        pprop.OwnerID = body['ParcelData'][0]['OwnerID'];
-                                        pprop.OwnerPrims = body['ParcelData'][0]['OwnerPrims'];
-                                        pprop.ParcelFlags = Buffer.from(body['ParcelData'][0]['ParcelFlags'].toArray()).readUInt32BE(0);
-                                        pprop.ParcelPrimBonus = body['ParcelData'][0]['ParcelPrimBonus'];
-                                        pprop.PassHours = body['ParcelData'][0]['PassHours'];
-                                        pprop.PassPrice = body['ParcelData'][0]['PassPrice'];
-                                        pprop.PublicCount = body['ParcelData'][0]['PublicCount'];
-                                        pprop.RegionDenyAnonymous = body['ParcelData'][0]['RegionDenyAnonymous'];
-                                        pprop.RegionDenyIdentified = body['ParcelData'][0]['RegionDenyIdentified'];
-                                        pprop.RegionPushOverride = body['ParcelData'][0]['RegionPushOverride'];
-                                        pprop.RegionDenyTransacted = body['ParcelData'][0]['RegionDenyTransacted'];
-                                        pprop.RentPrice = body['ParcelData'][0]['RentPrice'];
-                                        pprop.RequestResult = body['ParcelData'][0]['RequestResult'];
-                                        pprop.SalePrice = body['ParcelData'][0]['SalePrice'];
-                                        pprop.SeeAvs = body['ParcelData'][0]['SeeAVs'];
-                                        pprop.SelectedPrims = body['ParcelData'][0]['SelectedPrims'];
-                                        pprop.SelfCount = body['ParcelData'][0]['SelfCount'];
-                                        pprop.SequenceID = body['ParcelData'][0]['SequenceID'];
-                                        pprop.SimWideMaxPrims = body['ParcelData'][0]['SimWideMaxPrims'];
-                                        pprop.SimWideTotalPrims = body['ParcelData'][0]['SimWideTotalPrims'];
-                                        pprop.SnapSelection = body['ParcelData'][0]['SnapSelection'];
-                                        pprop.SnapshotID = new UUID(body['ParcelData'][0]['SnapshotID'].toString());
-                                        pprop.Status = body['ParcelData'][0]['Status'];
-                                        pprop.TotalPrims = body['ParcelData'][0]['TotalPrims'];
-                                        pprop.UserLocation = new Vector3([parseInt(body['ParcelData'][0]['UserLocation'][0], 10), parseInt(body['ParcelData'][0]['UserLocation'][1], 10), parseInt(body['ParcelData'][0]['UserLocation'][2], 10)]);
-                                        pprop.UserLookAt = new Vector3([parseInt(body['ParcelData'][0]['UserLookAt'][0], 10), parseInt(body['ParcelData'][0]['UserLookAt'][1], 10), parseInt(body['ParcelData'][0]['UserLookAt'][2], 10)]);
-                                        if (body['RegionAllowAccessBlock'] !== undefined && body['RegionAllowAccessBlock'].length > 0)
+                                        pprop.Bitmap = Buffer.from(body.ParcelData[0].Bitmap.toArray());
+                                        pprop.Category = body.ParcelData[0].Category;
+                                        pprop.ClaimDate = body.ParcelData[0].ClaimDate;
+                                        pprop.ClaimPrice = body.ParcelData[0].ClaimPrice;
+                                        pprop.Desc = body.ParcelData[0].Desc;
+                                        pprop.GroupAVSounds = body.ParcelData[0].GroupAVSounds;
+                                        pprop.GroupID = new UUID(String(body.ParcelData[0].GroupID));
+                                        pprop.GroupPrims = body.ParcelData[0].GroupPrims;
+                                        pprop.IsGroupOwned = body.ParcelData[0].IsGroupOwned;
+                                        pprop.LandingType = body.ParcelData[0].LandingType;
+                                        pprop.LocalID = body.ParcelData[0].LocalID;
+                                        pprop.MaxPrims = body.ParcelData[0].MaxPrims;
+                                        pprop.MediaAutoScale = body.ParcelData[0].MediaAutoScale;
+                                        pprop.MediaID = new UUID(String(body.ParcelData[0].MediaID));
+                                        pprop.MediaURL = body.ParcelData[0].MediaURL;
+                                        pprop.MusicURL = body.ParcelData[0].MusicURL;
+                                        pprop.Name = body.ParcelData[0].Name;
+                                        pprop.OtherCleanTime = body.ParcelData[0].OtherCleanTime;
+                                        pprop.OtherCount = body.ParcelData[0].OtherCount;
+                                        pprop.OtherPrims = body.ParcelData[0].OtherPrims;
+                                        pprop.OwnerID = body.ParcelData[0].OwnerID;
+                                        pprop.OwnerPrims = body.ParcelData[0].OwnerPrims;
+                                        pprop.ParcelFlags = Buffer.from(body.ParcelData[0].ParcelFlags.toArray()).readUInt32BE(0);
+                                        pprop.ParcelPrimBonus = body.ParcelData[0].ParcelPrimBonus;
+                                        pprop.PassHours = body.ParcelData[0].PassHours;
+                                        pprop.PassPrice = body.ParcelData[0].PassPrice;
+                                        pprop.PublicCount = body.ParcelData[0].PublicCount;
+                                        pprop.RegionDenyAnonymous = body.ParcelData[0].RegionDenyAnonymous;
+                                        pprop.RegionDenyIdentified = body.ParcelData[0].RegionDenyIdentified;
+                                        pprop.RegionPushOverride = body.ParcelData[0].RegionPushOverride;
+                                        pprop.RegionDenyTransacted = body.ParcelData[0].RegionDenyTransacted;
+                                        pprop.RentPrice = body.ParcelData[0].RentPrice;
+                                        pprop.RequestResult = body.ParcelData[0].RequestResult;
+                                        pprop.SalePrice = body.ParcelData[0].SalePrice;
+                                        pprop.SeeAvs = body.ParcelData[0].SeeAVs;
+                                        pprop.SelectedPrims = body.ParcelData[0].SelectedPrims;
+                                        pprop.SelfCount = body.ParcelData[0].SelfCount;
+                                        pprop.SequenceID = body.ParcelData[0].SequenceID;
+                                        pprop.SimWideMaxPrims = body.ParcelData[0].SimWideMaxPrims;
+                                        pprop.SimWideTotalPrims = body.ParcelData[0].SimWideTotalPrims;
+                                        pprop.SnapSelection = body.ParcelData[0].SnapSelection;
+                                        pprop.SnapshotID = new UUID(body.ParcelData[0].SnapshotID.toString());
+                                        pprop.Status = body.ParcelData[0].Status;
+                                        pprop.TotalPrims = body.ParcelData[0].TotalPrims;
+                                        pprop.UserLocation = new Vector3([parseInt(body.ParcelData[0].UserLocation[0], 10), parseInt(body.ParcelData[0].UserLocation[1], 10), parseInt(body.ParcelData[0].UserLocation[2], 10)]);
+                                        pprop.UserLookAt = new Vector3([parseInt(body.ParcelData[0].UserLookAt[0], 10), parseInt(body.ParcelData[0].UserLookAt[1], 10), parseInt(body.ParcelData[0].UserLookAt[2], 10)]);
+                                        if (body.RegionAllowAccessBlock !== undefined && body.RegionAllowAccessBlock.length > 0)
                                         {
                                             // TODO: OpenSim glitch
-                                            pprop.RegionAllowAccessOverride = body['RegionAllowAccessBlock'][0]['RegionAllowAccessOverride'];
+                                            pprop.RegionAllowAccessOverride = body.RegionAllowAccessBlock[0].RegionAllowAccessOverride;
                                         }
                                         this.clientEvents.onParcelPropertiesEvent.next(pprop);
                                         break;
@@ -320,7 +320,7 @@ export class EventQueueClient
                                     case 'TeleportFailed':
                                     {
                                         const tpEvent = new TeleportEvent();
-                                        tpEvent.message = event['body']['Info'][0]['Reason'];
+                                        tpEvent.message = event.body.Info[0].Reason;
                                         tpEvent.eventType = TeleportEventType.TeleportFailed;
                                         tpEvent.simIP = '';
                                         tpEvent.simPort = 0;
@@ -331,13 +331,13 @@ export class EventQueueClient
                                     }
                                     case 'ChatterBoxSessionStartReply':
                                     {
-                                        if (event['body'])
+                                        if (event.body)
                                         {
                                             const gcsje = new GroupChatSessionJoinEvent();
-                                            gcsje.success = event['body']['success'];
+                                            gcsje.success = event.body.success;
                                             if (gcsje.success)
                                             {
-                                                gcsje.sessionID = new UUID(event['body']['session_id'].toString());
+                                                gcsje.sessionID = new UUID(event.body.session_id.toString());
                                                 const added = this.agent.addChatSession(gcsje.sessionID, true);
                                                 if (!added)
                                                 {
@@ -350,17 +350,17 @@ export class EventQueueClient
                                     }
                                     case 'ChatterBoxInvitation':
                                     {
-                                        if (event['body'] && event['body']['instantmessage'] && event['body']['instantmessage']['message_params'] && event['body']['instantmessage']['message_params']['id'])
+                                        if (event.body?.instantmessage?.message_params?.id)
                                         {
-                                            const messageParams = event['body']['instantmessage']['message_params'];
-                                            const imSessionID = messageParams['id'];
+                                            const messageParams = event.body.instantmessage.message_params;
+                                            const imSessionID = messageParams.id;
 
 
                                             const groupChatEvent = new GroupChatEvent();
-                                            groupChatEvent.from = new UUID(messageParams['from_id'].toString());
-                                            groupChatEvent.fromName = messageParams['from_name'];
-                                            groupChatEvent.groupID = new UUID(messageParams['id'].toString());
-                                            groupChatEvent.message = messageParams['message'];
+                                            groupChatEvent.from = new UUID(messageParams.from_id.toString());
+                                            groupChatEvent.fromName = messageParams.from_name;
+                                            groupChatEvent.groupID = new UUID(messageParams.id.toString());
+                                            groupChatEvent.message = messageParams.message;
 
                                             const requested = {
                                                 'method': 'accept invitation',
@@ -375,7 +375,7 @@ export class EventQueueClient
                                                 this.clientEvents.onGroupChatSessionJoin.next(gcsje);
                                                 this.clientEvents.onGroupChat.next(groupChatEvent);
                                                 this.agent.updateLastMessage(groupChatEvent.groupID);
-                                            }).catch((err) =>
+                                            }).catch((err: unknown) =>
                                             {
                                                 console.error(err);
                                             });
@@ -384,27 +384,27 @@ export class EventQueueClient
                                     }
                                     case 'ChatterBoxSessionAgentListUpdates':
                                     {
-                                        if (event['body'])
+                                        if (event.body)
                                         {
-                                            if (event['body']['agent_updates'])
+                                            if (event.body.agent_updates)
                                             {
-                                                for (const agentUpdate of Object.keys(event['body']['agent_updates']))
+                                                for (const agentUpdate of Object.keys(event.body.agent_updates))
                                                 {
-                                                    const updObj =  event['body']['agent_updates'][agentUpdate];
+                                                    const updObj =  event.body.agent_updates[agentUpdate];
                                                     const gcsale = new GroupChatSessionAgentListEvent();
                                                     gcsale.agentID = new UUID(agentUpdate);
-                                                    gcsale.groupID = new UUID(event['body']['session_id'].toString());
+                                                    gcsale.groupID = new UUID(event.body.session_id.toString());
                                                     gcsale.canVoiceChat = false;
                                                     gcsale.isModerator = false;
-                                                    gcsale.entered = (updObj['transition'] === 'ENTER');
+                                                    gcsale.entered = (updObj.transition === 'ENTER');
 
-                                                    if (gcsale.entered && updObj['info'])
+                                                    if (gcsale.entered && updObj.info)
                                                     {
-                                                        if (updObj['info']['can_voice_chat'] === true)
+                                                        if (updObj.info.can_voice_chat === true)
                                                         {
                                                             gcsale.canVoiceChat = true;
                                                         }
-                                                        if (updObj['info']['is_moderator'] === true)
+                                                        if (updObj.info.is_moderator === true)
                                                         {
                                                             gcsale.isModerator = true;
                                                         }
@@ -417,7 +417,7 @@ export class EventQueueClient
                                     }
                                     case 'ObjectPhysicsProperties':
                                     {
-                                        const objData = event['body']['ObjectData'];
+                                        const objData = event.body.ObjectData;
                                         for (const obj of objData)
                                         {
                                             const objPhysEvent = new ObjectPhysicsDataEvent();
@@ -435,29 +435,48 @@ export class EventQueueClient
                                     }
                                     case 'TeleportFinish':
                                     {
-                                        const info = event['body']['Info'][0];
-                                        if (info['LocationID'])
+                                        const info = event.body.Info[0];
+                                        if (info.LocationID)
                                         {
-                                            info['LocationID'] = Buffer.from(info['LocationID'].toArray()).readUInt32BE(0);
+                                            info.LocationID = Buffer.from(info.LocationID.toArray()).readUInt32BE(0);
 
-                                            const regionHandleBuf = Buffer.from(info['RegionHandle'].toArray());
-                                            info['RegionHandle'] = new Long(regionHandleBuf.readUInt32LE(0), regionHandleBuf.readUInt32LE(4), true);
+                                            const regionHandleBuf = Buffer.from(info.RegionHandle.toArray());
+                                            info.RegionHandle = new Long(regionHandleBuf.readUInt32LE(0), regionHandleBuf.readUInt32LE(4), true);
 
 
-                                            info['SimIP'] = new IPAddress(Buffer.from(info['SimIP'].toArray()), 0).toString();
+                                            info.SimIP = new IPAddress(Buffer.from(info.SimIP.toArray()), 0).toString();
 
-                                            info['TeleportFlags'] = Buffer.from(info['TeleportFlags'].toArray()).readUInt32BE(0);
+                                            info.TeleportFlags = Buffer.from(info.TeleportFlags.toArray()).readUInt32BE(0);
 
                                             const tpEvent = new TeleportEvent();
                                             tpEvent.message = '';
                                             tpEvent.eventType = TeleportEventType.TeleportCompleted;
-                                            tpEvent.simIP = info['SimIP'];
-                                            tpEvent.simPort = info['SimPort'];
-                                            tpEvent.seedCapability = info['SeedCapability'];
+                                            tpEvent.simIP = info.SimIP;
+                                            tpEvent.simPort = info.SimPort;
+                                            tpEvent.seedCapability = info.SeedCapability;
 
                                             this.clientEvents.onTeleportEvent.next(tpEvent);
                                         }
 
+                                        break;
+                                    }
+                                    case 'ScriptRunningReply':
+                                    {
+                                        const body = event.body.Script as {
+                                            ItemID: any,
+                                            Mono: boolean,
+                                            ObjectID: any,
+                                            Running: boolean
+                                        }[];
+                                        for(const it of body)
+                                        {
+                                            this.clientEvents.onScriptRunningReply.next({
+                                                ItemID: new UUID(it.ItemID.toString()),
+                                                Mono: it.Mono,
+                                                ObjectID: new UUID(it.ObjectID.toString()),
+                                                Running: it.Running
+                                            });
+                                        }
                                         break;
                                     }
                                     case 'LandStatReply':
@@ -588,48 +607,30 @@ export class EventQueueClient
         }
     }
 
-    capsPostXML(capability: string, data: any, attempt: number = 0): Promise<any>
+    public async capsPostXML(capability: string, data: any, attempt = 0): Promise<any>
     {
-        return new Promise<any>((resolve, reject) =>
+        const url = await this.caps.getCapability(capability);
+        const serializedData = LLSD.LLSD.formatXML(data);
+        const body = await this.request(url, serializedData, 'application/llsd+xml');
+        if (body.includes('<llsd>'))
         {
-            this.caps.getCapability(capability).then((url) =>
+            return LLSD.LLSD.parseXML(body);
+        }
+        else
+        {
+            // Retry caps request three times before giving up
+            if (attempt < 3 && capability !== 'EventQueueGet')
             {
-                const serializedData = LLSD.LLSD.formatXML(data);
-                this.request(url, serializedData, 'application/llsd+xml').then((body: string) =>
+                this.capsPostXML(capability, data, ++attempt).catch((_e: unknown) =>
                 {
-                    try
-                    {
-                        if (body.indexOf('<llsd>') !== -1)
-                        {
-                            const parsed = LLSD.LLSD.parseXML(body);
-                            resolve(parsed);
-                        }
-                        else
-                        {
-                            // Retry caps request three times before giving up
-                            if (attempt < 3 && capability !== 'EventQueueGet')
-                            {
-                                this.capsPostXML(capability, data, ++attempt);
-                                return;
-                            }
-                            else
-                            {
-                                reject(new Error('Not an LLSD response, capability: ' + capability));
-                            }
-                        }
-                    }
-                    catch (error)
-                    {
-                       reject(error);
-                    }
-                }).catch((err) =>
-                {
-                    reject(err);
+                    // ignore
                 });
-            }).catch((err) =>
+                return '';
+            }
+            else
             {
-                reject(err);
-            });
-        });
+                throw new Error('Not an LLSD response, capability: ' + capability);
+            }
+        }
     }
 }

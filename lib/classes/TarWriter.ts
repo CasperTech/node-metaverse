@@ -7,16 +7,16 @@ export class TarWriter extends Transform
 
     private fileActive = false;
 
-    async newFile(archivePath: string, realPath: string): Promise<void>
+    public async newFile(archivePath: string, realPath: string): Promise<void>
     {
         if (this.fileActive)
         {
-            this.endFile();
+            await this.endFile();
         }
         const stat = fs.statSync(realPath);
 
         const buf = Buffer.from(archivePath, 'ascii');
-        this.writeHeader(
+        await this.writeHeader(
             this.chopString('././@LongName', 100),
             stat.mode,
             stat.uid,
@@ -27,9 +27,9 @@ export class TarWriter extends Transform
         );
         this.thisFileSize = buf.length;
         await this.pipeFromBuffer(buf);
-        this.endFile();
+        await this.endFile();
 
-        this.writeHeader(
+        await this.writeHeader(
             this.chopString(archivePath, 100),
             stat.mode,
             stat.uid,
@@ -43,7 +43,7 @@ export class TarWriter extends Transform
         this.fileActive = true;
     }
 
-    async pipeFromBuffer(buf: Buffer): Promise<void>
+    public async pipeFromBuffer(buf: Buffer): Promise<void>
     {
         const readableInstanceStream = new Readable({
             read(): void
@@ -55,7 +55,7 @@ export class TarWriter extends Transform
         return this.pipeFrom(readableInstanceStream);
     }
 
-    pipeFrom(str: Readable): Promise<void>
+    public async pipeFrom(str: Readable): Promise<void>
     {
         return new Promise((resolve, reject) =>
         {
@@ -69,6 +69,21 @@ export class TarWriter extends Transform
             });
             str.pipe(this, { end: false });
         });
+    }
+
+    public async endFile(): Promise<void>
+    {
+        const finalSize = Math.ceil(this.thisFileSize / 512) * 512;
+        const remainingSize = finalSize - this.thisFileSize;
+        const buf = Buffer.alloc(remainingSize);
+        await this.pipeFromBuffer(buf);
+        this.fileActive = false;
+    }
+
+    public _transform(chunk: any, encoding: 'ascii' | 'utf-8' | 'utf16le' | 'ucs-2' | 'base64' | 'latin1' | 'binary' | 'hex', callback: (error?: Error, data?: any) => void): void
+    {
+        this.push(chunk, encoding);
+        callback();
     }
 
     private async writeHeader(fileName: string, mode: number, uid: number, gid: number, fileSize: number, mTime: Date, fileType: string): Promise<void>
@@ -102,21 +117,6 @@ export class TarWriter extends Transform
         sumStr += '\0 ';
         header.write(sumStr, 148, sumStr.length);
         return this.pipeFromBuffer(header);
-    }
-
-    async endFile(): Promise<void>
-    {
-        const finalSize = Math.ceil(this.thisFileSize / 512) * 512;
-        const remainingSize = finalSize - this.thisFileSize;
-        const buf = Buffer.alloc(remainingSize);
-        await this.pipeFromBuffer(buf);
-        this.fileActive = false;
-    }
-
-    public _transform(chunk: any, encoding: 'ascii' | 'utf-8' | 'utf16le' | 'ucs-2' | 'base64' | 'latin1' | 'binary' | 'hex', callback: (error?: Error, data?: any) => void): void
-    {
-        this.push(chunk, encoding);
-        callback();
     }
 
     private chopString(str: string, maxLength: number): string

@@ -1,10 +1,10 @@
-import { GameObject } from '../classes/public/GameObject';
-import { UUID } from '../classes/UUID';
+import type { GameObject } from '../classes/public/GameObject';
+import type { UUID } from '../classes/UUID';
 
 export class NewObjectEvent
 {
-    objectID: UUID;
-    localID: number;
-    object: GameObject;
-    createSelected: boolean;
+    public objectID: UUID;
+    public localID: number;
+    public object: GameObject;
+    public createSelected: boolean;
 }

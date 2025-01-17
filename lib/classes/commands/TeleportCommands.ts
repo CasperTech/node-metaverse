@@ -2,24 +2,25 @@ import { CommandsBase } from './CommandsBase';
 import { Region } from '../Region';
 import { TeleportEventType } from '../../enums/TeleportEventType';
 import { TeleportLureRequestMessage } from '../messages/TeleportLureRequest';
-import { Vector3 } from '../Vector3';
+import type { Vector3 } from '../Vector3';
 import { TeleportLocationRequestMessage } from '../messages/TeleportLocationRequest';
-import * as Long from 'long';
-import { Agent } from '../Agent';
-import { Subscription } from 'rxjs';
-import { TeleportEvent } from '../../events/TeleportEvent';
-import { LureEvent } from '../../events/LureEvent';
+import type * as Long from 'long';
+import type { Agent } from '../Agent';
+import type { Subscription } from 'rxjs';
+import type { TeleportEvent } from '../../events/TeleportEvent';
+import type { LureEvent } from '../../events/LureEvent';
 import { TeleportFlags } from '../../enums/TeleportFlags';
 import { PacketFlags } from '../../enums/PacketFlags';
-import { RegionInfoReplyEvent } from '../../events/RegionInfoReplyEvent';
-import { Bot } from '../../Bot';
+import type { RegionInfoReplyEvent } from '../../events/RegionInfoReplyEvent';
+import type { Bot } from '../../Bot';
 import { Utils } from '../Utils';
 
 export class TeleportCommands extends CommandsBase
 {
     private expectingTeleport = false;
-    private teleportSubscription: Subscription;
-    constructor(region: Region, agent: Agent, bot: Bot)
+    private readonly teleportSubscription: Subscription;
+
+    public constructor(region: Region, agent: Agent, bot: Bot)
     {
         super(region, agent, bot);
         this.teleportSubscription = this.bot.clientEvents.onTeleportEvent.subscribe((e: TeleportEvent) =>
@@ -46,7 +47,7 @@ export class TeleportCommands extends CommandsBase
                     this.bot.changeRegion(newRegion, false).then(() =>
                     {
                         // Change region successful
-                    }).catch((error) =>
+                    }).catch((error: unknown) =>
                     {
                         console.log('Failed to change region');
                         console.error(error);
@@ -56,12 +57,70 @@ export class TeleportCommands extends CommandsBase
         });
     }
 
-    shutdown(): void
+    public override shutdown(): void
     {
         this.teleportSubscription.unsubscribe();
     }
 
-    private awaitTeleportEvent(requested: boolean): Promise<TeleportEvent>
+    public async acceptTeleport(lure: LureEvent): Promise<TeleportEvent>
+    {
+        const {circuit} = this.currentRegion;
+        const tlr = new TeleportLureRequestMessage();
+        tlr.Info = {
+            AgentID: this.agent.agentID,
+            SessionID: circuit.sessionID,
+            LureID: lure.lureID,
+            TeleportFlags: TeleportFlags.ViaLure
+        };
+        circuit.sendMessage(tlr, PacketFlags.Reliable);
+        return this.awaitTeleportEvent(true)
+    }
+
+    public async teleportToRegionCoordinates(x: number, y: number, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
+    {
+        const globalPos = Utils.RegionCoordinatesToHandle(x, y);
+        return this.teleportToHandle(globalPos.regionHandle, position, lookAt);
+    }
+
+    public async teleportToHandle(handle: Long, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
+    {
+        return new Promise<TeleportEvent>((resolve, reject) =>
+        {
+            const rtm = new TeleportLocationRequestMessage();
+            rtm.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.circuit.sessionID
+            };
+            rtm.Info = {
+                LookAt: lookAt,
+                Position: position,
+                RegionHandle: handle
+            };
+            this.circuit.sendMessage(rtm, PacketFlags.Reliable);
+            this.awaitTeleportEvent(true).then((event: TeleportEvent) =>
+            {
+                resolve(event);
+            }).catch((err: unknown) =>
+            {
+                if (err instanceof Error)
+                {
+                    reject(err);
+                }
+                else
+                {
+                    reject(new Error('Failed to teleport'));
+                }
+            });
+        });
+    }
+
+    public async teleportTo(regionName: string, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
+    {
+        const region: RegionInfoReplyEvent = await this.bot.clientCommands.grid.getRegionByName(regionName);
+        return this.teleportToHandle(region.handle, position, lookAt);
+    }
+
+    private async awaitTeleportEvent(requested: boolean): Promise<TeleportEvent>
     {
         return new Promise<TeleportEvent>((resolve, reject) =>
         {
@@ -85,7 +144,14 @@ export class TeleportCommands extends CommandsBase
                     }
                     if (e.eventType === TeleportEventType.TeleportFailed)
                     {
-                        reject(e);
+                        reject(new class extends Error
+                        {
+                            public teleportEvent: TeleportEvent = e;
+                            public constructor()
+                            {
+                                super('Teleport failed')
+                            }
+                        });
                     }
                     else if (e.eventType === TeleportEventType.TeleportCompleted)
                     {
@@ -115,9 +181,16 @@ export class TeleportCommands extends CommandsBase
                         this.bot.changeRegion(region, requested).then(() =>
                         {
                             resolve(e);
-                        }).catch((error) =>
+                        }).catch((error: unknown) =>
                         {
-                            reject(error);
+                            if (error instanceof Error)
+                            {
+                                reject(error);
+                            }
+                            else
+                            {
+                                reject(new Error('Failed to teleport'));
+                            }
                         });
                     }
                 });
@@ -126,80 +199,6 @@ export class TeleportCommands extends CommandsBase
             {
                 reject(new Error('EventQueue not ready'));
             }
-        });
-    }
-
-    acceptTeleport(lure: LureEvent): Promise<TeleportEvent>
-    {
-        return new Promise<TeleportEvent>((resolve, reject) =>
-        {
-            const circuit = this.currentRegion.circuit;
-            const tlr = new TeleportLureRequestMessage();
-            tlr.Info = {
-                AgentID: this.agent.agentID,
-                SessionID: circuit.sessionID,
-                LureID: lure.lureID,
-                TeleportFlags: TeleportFlags.ViaLure
-            };
-            circuit.sendMessage(tlr, PacketFlags.Reliable);
-            this.awaitTeleportEvent(true).then((event: TeleportEvent) =>
-            {
-                resolve(event);
-            }).catch((err) =>
-            {
-                reject(err);
-            });
-        });
-    }
-
-    teleportToRegionCoordinates(x: number, y: number, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
-    {
-        const globalPos = Utils.RegionCoordinatesToHandle(x, y);
-        return this.teleportToHandle(globalPos.regionHandle, position, lookAt);
-    }
-
-    teleportToHandle(handle: Long, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
-    {
-        return new Promise<TeleportEvent>((resolve, reject) =>
-        {
-            const rtm = new TeleportLocationRequestMessage();
-            rtm.AgentData = {
-                AgentID: this.agent.agentID,
-                SessionID: this.circuit.sessionID
-            };
-            rtm.Info = {
-                LookAt: lookAt,
-                Position: position,
-                RegionHandle: handle
-            };
-            this.circuit.sendMessage(rtm, PacketFlags.Reliable);
-            this.awaitTeleportEvent(true).then((event: TeleportEvent) =>
-            {
-                resolve(event);
-            }).catch((err) =>
-            {
-                reject(err);
-            });
-        });
-    }
-
-    teleportTo(regionName: string, position: Vector3, lookAt: Vector3): Promise<TeleportEvent>
-    {
-        return new Promise<TeleportEvent>((resolve, reject) =>
-        {
-            this.bot.clientCommands.grid.getRegionByName(regionName).then((region: RegionInfoReplyEvent) =>
-            {
-                this.teleportToHandle(region.handle, position, lookAt).then((event: TeleportEvent) =>
-                {
-                    resolve(event);
-                }).catch((err) =>
-                {
-                    reject(err);
-                })
-            }).catch((err) =>
-            {
-                reject(err);
-            });
         });
     }
 }

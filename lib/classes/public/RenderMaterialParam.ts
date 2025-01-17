@@ -1,4 +1,4 @@
-import { UUID } from '../UUID';
+import type { UUID } from '../UUID';
 
 export class RenderMaterialParam
 {

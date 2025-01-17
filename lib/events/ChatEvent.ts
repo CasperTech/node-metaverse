@@ -1,17 +1,17 @@
-import { ChatAudibleLevel } from '../enums/ChatAudible';
-import { ChatType } from '../enums/ChatType';
-import { UUID } from '../classes/UUID';
-import { ChatSourceType } from '../enums/ChatSourceType';
-import { Vector3 } from '../classes/Vector3';
+import type { ChatAudibleLevel } from '../enums/ChatAudible';
+import type { ChatType } from '../enums/ChatType';
+import type { UUID } from '../classes/UUID';
+import type { ChatSourceType } from '../enums/ChatSourceType';
+import type { Vector3 } from '../classes/Vector3';
 
 export class ChatEvent
 {
-    from: UUID;
-    ownerID: UUID;
-    fromName: string;
-    chatType: ChatType;
-    sourceType: ChatSourceType;
-    audible: ChatAudibleLevel;
-    position: Vector3;
-    message: string;
+    public from: UUID;
+    public ownerID: UUID;
+    public fromName: string;
+    public chatType: ChatType;
+    public sourceType: ChatSourceType;
+    public audible: ChatAudibleLevel;
+    public position: Vector3;
+    public message: string;
 }

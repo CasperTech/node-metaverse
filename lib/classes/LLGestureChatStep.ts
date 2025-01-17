@@ -4,7 +4,7 @@ import { LLGestureChatFlags } from '../enums/LLGestureChatFlags';
 
 export class LLGestureChatStep extends LLGestureStep
 {
-    stepType: LLGestureStepType = LLGestureStepType.Chat;
-    chatText: string;
-    flags: LLGestureChatFlags = LLGestureChatFlags.None;
+    public stepType: LLGestureStepType = LLGestureStepType.Chat;
+    public chatText: string;
+    public flags: LLGestureChatFlags = LLGestureChatFlags.None;
 }

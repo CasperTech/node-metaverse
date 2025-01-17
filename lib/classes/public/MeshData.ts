@@ -3,10 +3,10 @@ import { SculptType } from '../../enums/SculptType';
 
 export class MeshData
 {
-    meshData: UUID = UUID.zero();
-    type: SculptType = SculptType.None;
+    public meshData: UUID = UUID.zero();
+    public type: SculptType = SculptType.None;
 
-    constructor(buf?: Buffer, pos?: number, length?: number)
+    public constructor(buf?: Buffer, pos?: number, length?: number)
     {
         if (buf !== undefined && pos !== undefined && length !== undefined)
         {
@@ -18,12 +18,15 @@ export class MeshData
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number): void
+
+    public writeToBuffer(buf: Buffer, pos: number): void
     {
-        this.meshData.writeToBuffer(buf, pos); pos = pos + 16;
+        this.meshData.writeToBuffer(buf, pos);
+        pos = pos + 16;
         buf.writeUInt8(this.type, pos);
     }
-    getBuffer(): Buffer
+
+    public getBuffer(): Buffer
     {
         const buf = Buffer.allocUnsafe(17);
         this.writeToBuffer(buf, 0);

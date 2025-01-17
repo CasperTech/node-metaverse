@@ -1,9 +1,9 @@
-import { Friend } from '../classes/public/Friend';
-import { RightsFlags } from '../enums/RightsFlags';
+import type { Friend } from '../classes/public/Friend';
+import type { RightsFlags } from '../enums/RightsFlags';
 
 export class FriendRightsEvent
 {
-    friend: Friend;
-    myRights: RightsFlags;
-    theirRights: RightsFlags;
+    public friend: Friend;
+    public myRights: RightsFlags;
+    public theirRights: RightsFlags;
 }

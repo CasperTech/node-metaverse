@@ -5,15 +5,11 @@ export enum InventoryType
     Sound = 1,
     CallingCard = 2,
     Landmark = 3,
-    Script = 4,
-    Clothing = 5,
     Object = 6,
     Notecard = 7,
     Category = 8,
-    Folder = 8,
     RootCategory = 9,
     LSL = 10,
-    Bodypart = 13,
     Snapshot = 15,
     Attachment = 17,
     Wearable = 18,
@@ -24,4 +20,6 @@ export enum InventoryType
     Person = 24,
     Settings = 25,
     Material = 26,
+    GLTF = 27,
+    GLTFBin = 28
 }

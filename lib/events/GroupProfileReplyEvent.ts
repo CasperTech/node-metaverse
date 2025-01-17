@@ -1,22 +1,22 @@
-import { UUID } from '../classes/UUID';
-import * as Long from 'long';
+import type { UUID } from '../classes/UUID';
+import type * as Long from 'long';
 
 export class GroupProfileReplyEvent
 {
-    GroupID: UUID;
-    Name: string;
-    Charter: string;
-    ShowInList: boolean;
-    MemberTitle: string;
-    PowersMask: Long;
-    InsigniaID: UUID;
-    FounderID: UUID;
-    MembershipFee: number;
-    OpenEnrollment: boolean;
-    Money: number;
-    GroupMembershipCount: number;
-    GroupRolesCount: number;
-    AllowPublish: boolean;
-    MaturePublish: boolean;
-    OwnerRole: UUID;
+    public GroupID: UUID;
+    public Name: string;
+    public Charter: string;
+    public ShowInList: boolean;
+    public MemberTitle: string;
+    public PowersMask: Long;
+    public InsigniaID: UUID;
+    public FounderID: UUID;
+    public MembershipFee: number;
+    public OpenEnrollment: boolean;
+    public Money: number;
+    public GroupMembershipCount: number;
+    public GroupRolesCount: number;
+    public AllowPublish: boolean;
+    public MaturePublish: boolean;
+    public OwnerRole: UUID;
 }

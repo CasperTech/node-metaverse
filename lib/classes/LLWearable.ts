@@ -1,16 +1,16 @@
 import { UUID } from './UUID';
-import { WearableType } from '../enums/WearableType';
-import { SaleType } from '../enums/SaleType';
+import type { WearableType } from '../enums/WearableType';
+import type { SaleType } from '../enums/SaleType';
 import { SaleTypeLL } from '../enums/SaleTypeLL';
 import { Utils } from './Utils';
 
 export class LLWearable
 {
-    name: string;
-    type: WearableType;
-    parameters: { [key: number]: number } = {};
-    textures: { [key: number]: UUID } = {};
-    permission: {
+    public name: string;
+    public type: WearableType;
+    public parameters: Record<number, number> = {};
+    public textures: Record<number, UUID> = {};
+    public permission: {
         baseMask: number,
         ownerMask: number,
         groupMask: number,
@@ -31,9 +31,10 @@ export class LLWearable
         lastOwnerID: UUID.zero(),
         groupID: UUID.zero()
     };
-    saleType: SaleType;
-    salePrice: number;
-    constructor(data?: string)
+    public saleType: SaleType;
+    public salePrice: number;
+
+    public constructor(data?: string)
     {
         if (data !== undefined)
         {
@@ -131,6 +132,10 @@ export class LLWearable
                                 const max = index + num;
                                 for (index; index < max; index++)
                                 {
+                                    if (lines[index + 1] === undefined)
+                                    {
+                                        break;
+                                    }
                                     const texLine = Utils.parseLine(lines[index + 1]);
                                     if (texLine.key !== null)
                                     {
@@ -146,7 +151,6 @@ export class LLWearable
                                 // ignore
                                 break;
                             default:
-                                console.log('skipping: ' + lines[index]);
                                 break;
                         }
                     }
@@ -155,7 +159,7 @@ export class LLWearable
         }
     }
 
-    toAsset(): string
+    public toAsset(): string
     {
         const lines: string[] = [
             'LLWearable version 22'
@@ -190,7 +194,7 @@ export class LLWearable
         for (const num of Object.keys(this.textures))
         {
             const val = this.textures[parseInt(num, 10)];
-            lines.push(num + ' ' + val);
+            lines.push(num + ' ' + val.toString());
         }
         return lines.join('\n') + '\n';
     }

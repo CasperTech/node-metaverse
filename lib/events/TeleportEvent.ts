@@ -1,10 +1,10 @@
-import { TeleportEventType } from '../enums/TeleportEventType';
+import type { TeleportEventType } from '../enums/TeleportEventType';
 
 export class TeleportEvent
 {
-    eventType: TeleportEventType;
-    message: string;
-    simIP: string;
-    simPort: number;
-    seedCapability: string;
+    public eventType: TeleportEventType;
+    public message: string;
+    public simIP: string;
+    public simPort: number;
+    public seedCapability: string;
 }

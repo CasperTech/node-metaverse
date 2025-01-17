@@ -1,11 +1,11 @@
-import { UUID } from './UUID';
-import * as Long from 'long';
+import type { UUID } from './UUID';
+import type * as Long from 'long';
 
 export class GroupMember
 {
-    AgentID: UUID;
-    OnlineStatus: string;
-    AgentPowers: Long;
-    Title: string;
-    IsOwner: boolean;
+    public AgentID: UUID;
+    public OnlineStatus: string;
+    public AgentPowers: Long;
+    public Title: string;
+    public IsOwner: boolean;
 }

@@ -3,10 +3,10 @@ import { Vector3 } from '../Vector3';
 
 export class LightImageData
 {
-    texture: UUID = UUID.zero();
-    params: Vector3 = Vector3.getZero();
+    public texture: UUID = UUID.zero();
+    public params: Vector3 = Vector3.getZero();
 
-    constructor(buf: Buffer, pos: number, length: number)
+    public constructor(buf: Buffer, pos: number, length: number)
     {
         if (length >= 28)
         {
@@ -15,12 +15,14 @@ export class LightImageData
             this.params = new Vector3(buf, pos);
         }
     }
-    writeToBuffer(buf: Buffer, pos: number): void
+
+    public writeToBuffer(buf: Buffer, pos: number): void
     {
         this.texture.writeToBuffer(buf, pos); pos = pos + 16;
         this.params.writeToBuffer(buf, pos, false);
     }
-    getBuffer(): Buffer
+
+    public getBuffer(): Buffer
     {
         const buf = Buffer.allocUnsafe(28);
         this.writeToBuffer(buf, 0);

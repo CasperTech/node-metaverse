@@ -1,8 +1,8 @@
-import { UUID } from './UUID';
+import type { UUID } from './UUID';
 
 export class Wearable
 {
-    itemID: UUID;
-    assetID: UUID;
-    wearableType: number;
+    public itemID: UUID;
+    public assetID: UUID;
+    public wearableType: number;
 }

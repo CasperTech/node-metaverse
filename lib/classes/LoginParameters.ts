@@ -2,19 +2,19 @@ import { Utils } from './Utils';
 
 export class LoginParameters
 {
-    firstName: string;
-    lastName: string;
-    password: string;
-    start = 'last';
-    url = 'https://login.agni.lindenlab.com/cgi-bin/login.cgi';
-    token?: string;
-    mfa_hash?: string;
-    agreeToTOS?: true;
-    readCritical?: true;
+    public firstName: string;
+    public lastName: string;
+    public password: string;
+    public start = 'last';
+    public url = 'https://login.agni.lindenlab.com/cgi-bin/login.cgi';
+    public token?: string;
+    public mfa_hash?: string;
+    public agreeToTOS?: true;
+    public readCritical?: true;
 
-    passwordPrehashed = false;
+    public passwordPrehashed = false;
 
-    getHashedPassword(): string
+    public getHashedPassword(): string
     {
         if (this.passwordPrehashed)
         {

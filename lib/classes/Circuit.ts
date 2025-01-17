@@ -1,13 +1,13 @@
 import { UUID } from './UUID';
 import * as dgram from 'dgram';
-import { Socket } from 'dgram';
+import type { Socket } from 'dgram';
 import { Packet } from './Packet';
-import { MessageBase } from './MessageBase';
+import type { MessageBase } from './MessageBase';
 import { PacketAckMessage } from './messages/PacketAck';
 import { Message } from '../enums/Message';
-import { StartPingCheckMessage } from './messages/StartPingCheck';
+import type { StartPingCheckMessage } from './messages/StartPingCheck';
 import { CompletePingCheckMessage } from './messages/CompletePingCheck';
-import { Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators'
 import { FilterResponse } from '../enums/FilterResponse';
 import { Subject } from 'rxjs';
@@ -15,49 +15,46 @@ import { TimeoutError } from './TimeoutError';
 import { RequestXferMessage } from './messages/RequestXfer';
 import { SendXferPacketMessage } from './messages/SendXferPacket';
 import { ConfirmXferPacketMessage } from './messages/ConfirmXferPacket';
-import { AbortXferMessage } from './messages/AbortXfer';
+import type { AbortXferMessage } from './messages/AbortXfer';
 import { PacketFlags } from '../enums/PacketFlags';
-import { AssetType } from '../enums/AssetType';
+import type { AssetType } from '../enums/AssetType';
 import { Utils } from './Utils';
 
-import * as Long from 'long';
+import type * as Long from 'long';
 
 export class Circuit
 {
-    secureSessionID: UUID;
-    sessionID: UUID;
-    circuitCode: number;
-    udpBlacklist: string[];
-    timestamp: number;
-    client: Socket | null = null;
-    port: number;
-    ipAddress: string;
-    sequenceNumber = 0;
+    public secureSessionID: UUID;
+    public sessionID: UUID;
+    public circuitCode: number;
+    public udpBlacklist: string[];
+    public timestamp: number;
+    public port: number;
+    public ipAddress: string;
+    private client: Socket | null = null;
+    private sequenceNumber = 0;
 
-    awaitingAck: {
-        [key: number]: {
-            packet: Packet,
-            timeout: NodeJS.Timeout,
-            sent: number
-        }
-    } = {};
-    receivedPackets: {
-        [key: number]: NodeJS.Timeout
-    } = {};
-    active = false;
+    private readonly awaitingAck = new Map<number, {
+        packet: Packet,
+        timeout: NodeJS.Timeout,
+        sent: number
+    }>();
 
-    private onPacketReceived: Subject<Packet>;
-    private onAckReceived: Subject<number>;
+    private readonly receivedPackets = new Map<number, NodeJS.Timeout>();
+    private active = false;
 
-    constructor()
+    private readonly onPacketReceived: Subject<Packet>;
+    private readonly onAckReceived: Subject<number>;
+
+    public constructor()
     {
         this.onPacketReceived = new Subject<Packet>();
         this.onAckReceived = new Subject<number>();
     }
 
-    subscribeToMessages(ids: number[], callback: (packet: Packet) => void): Subscription
+    public subscribeToMessages(ids: number[], callback: (packet: Packet) => Promise<void> | void): Subscription
     {
-        const lookupObject: { [key: number]: boolean } = {};
+        const lookupObject: Record<number, boolean> = {};
         for (const id of ids)
         {
             lookupObject[id] = true;
@@ -69,7 +66,7 @@ export class Circuit
         }) as any).subscribe(callback as any);
     }
 
-    sendMessage(message: MessageBase, flags: PacketFlags): number
+    public sendMessage(message: MessageBase, flags: PacketFlags): number
     {
         if (!this.active)
         {
@@ -83,46 +80,7 @@ export class Circuit
         return packet.sequenceNumber;
     }
 
-    private sendXferPacket(xferID: Long, packetID: number, data: Buffer, pos: { position: number }): void
-    {
-        const sendXfer = new SendXferPacketMessage();
-        let final = false;
-        sendXfer.XferID = {
-            ID: xferID,
-            Packet: packetID
-        };
-        const packetLength = Math.min(data.length - pos.position, 1000);
-        if (packetLength < 1000)
-        {
-            sendXfer.XferID.Packet = (sendXfer.XferID.Packet | 0x80000000) >>> 0;
-            final = true;
-        }
-        if (packetID === 0)
-        {
-            const packet = Buffer.allocUnsafe(packetLength + 4);
-            packet.writeUInt32LE(data.length, 0);
-            data.copy(packet, 4, 0, packetLength);
-            sendXfer.DataPacket = {
-                Data: packet
-            };
-            pos.position += packetLength;
-        }
-        else
-        {
-            const packet = data.slice(pos.position, pos.position + packetLength);
-            sendXfer.DataPacket = {
-                Data: packet
-            };
-            pos.position += packetLength;
-        }
-        this.sendMessage(sendXfer, PacketFlags.Reliable);
-        if (final)
-        {
-            pos.position = -1;
-        }
-    }
-
-    XferFileUp(xferID: Long, data: Buffer): Promise<void>
+    public async XferFileUp(xferID: Long, data: Buffer): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
@@ -159,7 +117,10 @@ export class Circuit
                             subs.unsubscribe();
                             reject(new Error('Transfer aborted'));
                         }
+                        break;
                     }
+                    default:
+                        break;
                 }
             });
 
@@ -172,13 +133,13 @@ export class Circuit
         });
     }
 
-    XferFileDown(fileName: string, deleteOnCompletion: boolean, useBigPackets: boolean, vFileID: UUID, vFileType: AssetType, fromCache: boolean): Promise<Buffer>
+    public async XferFileDown(fileName: string, deleteOnCompletion: boolean, useBigPackets: boolean, vFileID: UUID, vFileType: AssetType, fromCache: boolean): Promise<Buffer>
     {
         return new Promise<Buffer>((resolve, reject) =>
         {
             let subscription: null | Subscription = null;
             let timeout: NodeJS.Timeout | null = null;
-            const receivedChunks: { [key: number]: Buffer } = {};
+            const receivedChunks: Record<number, Buffer> = {};
             const resetTimeout = function(): void
             {
                 if (timeout !== null)
@@ -246,7 +207,7 @@ export class Circuit
                             if (firstPacket)
                             {
                                 dataSize = message.DataPacket.Data.readUInt32LE(0);
-                                receivedChunks[packetNum] = message.DataPacket.Data.slice(4);
+                                receivedChunks[packetNum] = message.DataPacket.Data.subarray(4);
                                 firstPacket = false;
                             }
                             else
@@ -299,27 +260,14 @@ export class Circuit
                         }
                         break;
                     }
+                    default:
+                        break;
                 }
             });
         });
     }
 
-    resend(sequenceNumber: number): void
-    {
-        if (!this.active)
-        {
-            console.log('Resend triggered, but circuit is not active!');
-            return;
-        }
-        if (this.awaitingAck[sequenceNumber])
-        {
-            const toResend: Packet = this.awaitingAck[sequenceNumber].packet;
-            toResend.packetFlags = toResend.packetFlags | PacketFlags.Resent;
-            this.sendPacket(toResend);
-        }
-    }
-
-    waitForAck(ack: number, timeout: number): Promise<void>
+    public async waitForAck(ack: number, timeout: number): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
@@ -359,17 +307,13 @@ export class Circuit
         });
     }
 
-    init(): void
+    public init(): void
     {
         if (this.client !== null)
         {
             this.client.close();
         }
         this.client = dgram.createSocket('udp4');
-        this.client.on('listening', () =>
-        {
-
-        });
 
         this.client.on('message', (message, remote) =>
         {
@@ -379,25 +323,28 @@ export class Circuit
             }
         });
 
-        this.client.on('error', () =>
-        {
-
-        });
         this.active = true;
     }
 
-    shutdown(): void
+    public shutdown(): void
     {
-        for (const sequenceNumber of Object.keys(this.awaitingAck))
+        for (const seqKey of this.awaitingAck.keys())
         {
-            clearTimeout(this.awaitingAck[parseInt(sequenceNumber, 10)].timeout);
-            delete this.awaitingAck[parseInt(sequenceNumber, 10)];
+            const ack = this.awaitingAck.get(seqKey);
+            if (ack !== undefined)
+            {
+                clearTimeout(ack.timeout);
+            }
+            this.awaitingAck.delete(seqKey);
         }
-        for (const sequenceNumber of Object.keys(this.receivedPackets))
+        for (const seqKey of this.receivedPackets.keys())
         {
-            const seq: number = parseInt(sequenceNumber, 10);
-            clearTimeout(this.receivedPackets[seq]);
-            delete this.receivedPackets[seq];
+            const s = this.receivedPackets.get(seqKey);
+            if (s !== undefined)
+            {
+                clearTimeout(s);
+            }
+            this.receivedPackets.delete(seqKey);
         }
         if (this.client !== null)
         {
@@ -409,7 +356,14 @@ export class Circuit
         this.active = false;
     }
 
-    waitForMessage<T extends MessageBase>(id: Message, timeout: number, messageFilter?: (message: T) => FilterResponse): Promise<T>
+    public async sendAndWaitForMessage<T extends MessageBase>(message: MessageBase, flags: PacketFlags, id: Message, timeout: number, messageFilter?: (message: T) => FilterResponse): Promise<T>
+    {
+        const awaiter = this.waitForMessage(id, timeout, messageFilter);
+        this.sendMessage(message, flags);
+        return awaiter;
+    }
+
+    public async waitForMessage<T extends MessageBase>(id: Message, timeout: number, messageFilter?: (message: T) => FilterResponse): Promise<T>
     {
         return new Promise<T>((resolve, reject) =>
         {
@@ -421,7 +375,7 @@ export class Circuit
                 subscription: null
             };
 
-            const timeoutFunc = () =>
+            const timeoutFunc = (): void =>
             {
                 if (handleObj.subscription !== null)
                 {
@@ -480,16 +434,94 @@ export class Circuit
         });
     }
 
-    sendPacket(packet: Packet): void
+    public getOldestUnacked(): number
+    {
+        let result = 0;
+        let oldest = -1;
+
+        const keys: number[] = Array.from(this.awaitingAck.keys());
+
+        for (const nSeq of keys)
+        {
+            const awaiting = this.awaitingAck.get(nSeq);
+            if (awaiting !== undefined)
+            {
+                if (oldest === -1 || awaiting.sent < oldest)
+                {
+                    result = nSeq;
+                    oldest = awaiting.sent;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private sendXferPacket(xferID: Long, packetID: number, data: Buffer, pos: { position: number }): void
+    {
+        const sendXfer = new SendXferPacketMessage();
+        let final = false;
+        sendXfer.XferID = {
+            ID: xferID,
+            Packet: packetID
+        };
+        const packetLength = Math.min(data.length - pos.position, 1000);
+        if (packetLength < 1000)
+        {
+            sendXfer.XferID.Packet = (sendXfer.XferID.Packet | 0x80000000) >>> 0;
+            final = true;
+        }
+        if (packetID === 0)
+        {
+            const packet = Buffer.allocUnsafe(packetLength + 4);
+            packet.writeUInt32LE(data.length, 0);
+            data.copy(packet, 4, 0, packetLength);
+            sendXfer.DataPacket = {
+                Data: packet
+            };
+            pos.position += packetLength;
+        }
+        else
+        {
+            const packet = data.subarray(pos.position, pos.position + packetLength);
+            sendXfer.DataPacket = {
+                Data: packet
+            };
+            pos.position += packetLength;
+        }
+        this.sendMessage(sendXfer, PacketFlags.Reliable);
+        if (final)
+        {
+            pos.position = -1;
+        }
+    }
+
+    private resend(sequenceNumber: number): void
+    {
+        if (!this.active)
+        {
+            console.log('Resend triggered, but circuit is not active!');
+            return;
+        }
+        const waiting = this.awaitingAck.get(sequenceNumber);
+        if (waiting)
+        {
+            const toResend: Packet = waiting.packet;
+            toResend.packetFlags = toResend.packetFlags | PacketFlags.Resent;
+            this.sendPacket(toResend);
+        }
+    }
+
+    private sendPacket(packet: Packet): void
     {
         if (packet.packetFlags & PacketFlags.Reliable)
         {
-            this.awaitingAck[packet.sequenceNumber] =
-                {
-                    packet: packet,
-                    timeout: setTimeout(this.resend.bind(this, packet.sequenceNumber), 1000),
-                    sent: new Date().getTime()
-                };
+            this.awaitingAck.set(packet.sequenceNumber,
+            {
+                packet: packet,
+                timeout: setTimeout(this.resend.bind(this, packet.sequenceNumber), 1000),
+                sent: new Date().getTime()
+            });
         }
         let dataToSend: Buffer = Buffer.allocUnsafe(packet.getSize());
         dataToSend = packet.writeToBuffer(dataToSend, 0);
@@ -497,8 +529,8 @@ export class Circuit
         {
             this.client.send(dataToSend, 0, dataToSend.length, this.port, this.ipAddress, (_err, _bytes) =>
             {
-
-            })
+                // nothing
+            });
         }
         else
         {
@@ -506,17 +538,18 @@ export class Circuit
         }
     }
 
-    ackReceived(sequenceNumber: number): void
+    private ackReceived(sequenceNumber: number): void
     {
-        if (this.awaitingAck[sequenceNumber])
+        const awaiting = this.awaitingAck.get(sequenceNumber);
+        if (awaiting !== undefined)
         {
-            clearTimeout(this.awaitingAck[sequenceNumber].timeout);
-            delete this.awaitingAck[sequenceNumber];
+            clearTimeout(awaiting.timeout);
+            this.awaitingAck.delete(sequenceNumber);
         }
         this.onAckReceived.next(sequenceNumber);
     }
 
-    sendAck(sequenceNumber: number): void
+    private sendAck(sequenceNumber: number): void
     {
         const msg: PacketAckMessage = new PacketAckMessage();
         msg.Packets = [
@@ -527,36 +560,13 @@ export class Circuit
         this.sendMessage(msg, 0 as PacketFlags);
     }
 
-    getOldestUnacked(): number
-    {
-        let result = 0;
-        let oldest = -1;
-
-        const keys: string[] = Object.keys(this.awaitingAck);
-
-        for (const seqID of keys)
-        {
-            const nSeq = parseInt(seqID, 10);
-            if (oldest === -1 || this.awaitingAck[nSeq].sent < oldest)
-            {
-                result = nSeq;
-                oldest = this.awaitingAck[nSeq].sent;
-            }
-        }
-
-        return result;
-    }
-
-    expireReceivedPacket(sequenceNumber: number): void
+    private expireReceivedPacket(sequenceNumber: number): void
     {
         // Enough time has elapsed that we can forget about this packet
-        if (this.receivedPackets[sequenceNumber])
-        {
-            delete this.receivedPackets[sequenceNumber];
-        }
+        this.receivedPackets.delete(sequenceNumber);
     }
 
-    receivedPacket(bytes: Buffer): void
+    private receivedPacket(bytes: Buffer): void
     {
         const packet = new Packet();
         try
@@ -569,14 +579,15 @@ export class Circuit
             return;
         }
 
-        if (this.receivedPackets[packet.sequenceNumber])
+        const received = this.receivedPackets.get(packet.sequenceNumber);
+        if (received)
         {
-            clearTimeout(this.receivedPackets[packet.sequenceNumber]);
-            this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
+            clearTimeout(received);
+            this.receivedPackets.set(packet.sequenceNumber, setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000));
             this.sendAck(packet.sequenceNumber);
             return;
         }
-        this.receivedPackets[packet.sequenceNumber] = setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000);
+        this.receivedPackets.set(packet.sequenceNumber, setTimeout(this.expireReceivedPacket.bind(this, packet.sequenceNumber), 10000));
 
         // console.log('<--- ' + packet.message.name);
 

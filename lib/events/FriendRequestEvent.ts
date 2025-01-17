@@ -1,9 +1,9 @@
-import { UUID } from '../classes/UUID';
+import type { UUID } from '../classes/UUID';
 
 export class FriendRequestEvent
 {
-    from: UUID;
-    fromName: string;
-    requestID: UUID;
-    message: string;
+    public from: UUID;
+    public fromName: string;
+    public requestID: UUID;
+    public message: string;
 }

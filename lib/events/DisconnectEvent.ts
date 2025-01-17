@@ -1,5 +1,5 @@
 export class DisconnectEvent
 {
-    requested: boolean;
-    message: string;
+    public requested: boolean;
+    public message: string;
 }

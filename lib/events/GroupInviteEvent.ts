@@ -1,9 +1,9 @@
-import { UUID } from '../classes/UUID';
+import type { UUID } from '../classes/UUID';
 
 export class GroupInviteEvent
 {
-    from: UUID;
-    fromName: string;
-    message: string;
-    inviteID: UUID;
+    public from: UUID;
+    public fromName: string;
+    public message: string;
+    public inviteID: UUID;
 }

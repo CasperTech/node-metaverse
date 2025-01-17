@@ -1,24 +1,24 @@
 import { ControlFlags, PacketFlags } from "../..";
 import { AgentRequestSitMessage, AgentSitMessage } from "../MessageClasses";
-import { UUID } from "../UUID";
-import { Vector3 } from "../Vector3";
+import type { UUID } from "../UUID";
+import type { Vector3 } from "../Vector3";
 import { CommandsBase } from "./CommandsBase";
 
 export class MovementCommands extends CommandsBase {
 
-    async sitOnObject(targetID: UUID, offset: Vector3): Promise<void>
+    public async sitOnObject(targetID: UUID, offset: Vector3): Promise<void>
     {
         await this.requestSitOnObject(targetID, offset);
         await this.sitOn();
     }
 
-    sitOnGround(): void
+    public sitOnGround(): void
     {
         this.agent.setControlFlag(ControlFlags.AGENT_CONTROL_SIT_ON_GROUND);
         this.agent.sendAgentUpdate();
     }
 
-    stand(): void
+    public stand(): void
     {
         this.agent.clearControlFlag(ControlFlags.AGENT_CONTROL_SIT_ON_GROUND);
         this.agent.setControlFlag(ControlFlags.AGENT_CONTROL_STAND_UP);

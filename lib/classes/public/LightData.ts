@@ -2,13 +2,13 @@ import { Color4 } from '../Color4';
 
 export class LightData
 {
-    Color: Color4 = Color4.black;
-    Radius = 0.0;
-    Cutoff = 0.0;
-    Falloff = 0.0;
-    Intensity = 0.0;
+    public Color: Color4 = Color4.black;
+    public Radius = 0.0;
+    public Cutoff = 0.0;
+    public Falloff = 0.0;
+    public Intensity = 0.0;
 
-    constructor(buf?: Buffer, pos?: number, length?: number)
+    public constructor(buf?: Buffer, pos?: number, length?: number)
     {
         if (buf !== undefined && pos !== undefined && length !== undefined)
         {
@@ -29,7 +29,8 @@ export class LightData
             }
         }
     }
-    writeToBuffer(buf: Buffer, pos: number): void
+
+    public writeToBuffer(buf: Buffer, pos: number): void
     {
         const tmpColour = new Color4(this.Color.getRed(), this.Color.getGreen(), this.Color.getBlue(), this.Color.getAlpha());
         tmpColour.alpha = this.Intensity;
@@ -38,7 +39,8 @@ export class LightData
         buf.writeFloatLE(this.Cutoff, pos); pos = pos + 4;
         buf.writeFloatLE(this.Falloff, pos);
     }
-    getBuffer(): Buffer
+
+    public getBuffer(): Buffer
     {
         const buf = Buffer.allocUnsafe(16);
         this.writeToBuffer(buf, 0);

@@ -4,28 +4,28 @@ import { LightData } from './LightData';
 import { LightImageData } from './LightImageData';
 import { MeshData } from './MeshData';
 import { SculptData } from './SculptData';
-import { UUID } from '../UUID';
-import { Vector3 } from '../Vector3';
-import { Color4 } from '../Color4';
+import type { UUID } from '../UUID';
+import type { Vector3 } from '../Vector3';
+import type { Color4 } from '../Color4';
 import { ExtendedMeshData } from './ExtendedMeshData';
 import { RenderMaterialData } from './RenderMaterialData';
 import { ReflectionProbeData } from './ReflectionProbeData';
-import { ExtendedMeshFlags } from './ExtendedMeshFlags';
-import { ReflectionProbeFlags } from './ReflectionProbeFlags';
-import { RenderMaterialParam } from './RenderMaterialParam';
+import type { ExtendedMeshFlags } from './ExtendedMeshFlags';
+import type { ReflectionProbeFlags } from './ReflectionProbeFlags';
+import type { RenderMaterialParam } from './RenderMaterialParam';
 
 export class ExtraParams
 {
-    flexibleData: FlexibleData | null = null;
-    lightData: LightData | null = null;
-    lightImageData: LightImageData | null = null;
-    meshData: MeshData | null = null;
-    sculptData: SculptData | null = null;
-    extendedMeshData: ExtendedMeshData | null = null;
-    renderMaterialData: RenderMaterialData | null = null;
-    reflectionProbeData: ReflectionProbeData | null = null;
+    public flexibleData: FlexibleData | null = null;
+    public lightData: LightData | null = null;
+    public lightImageData: LightImageData | null = null;
+    public meshData: MeshData | null = null;
+    public sculptData: SculptData | null = null;
+    public extendedMeshData: ExtendedMeshData | null = null;
+    public renderMaterialData: RenderMaterialData | null = null;
+    public reflectionProbeData: ReflectionProbeData | null = null;
 
-    static getLengthOfParams(buf: Buffer, pos: number): number
+    public static getLengthOfParams(buf: Buffer, pos: number): number
     {
         const startPos = pos;
         if (pos >= buf.length)
@@ -42,55 +42,52 @@ export class ExtraParams
         }
         return pos - startPos;
     }
-    static from(buf: Buffer): ExtraParams
+
+    public static from(buf: Buffer): ExtraParams
     {
         const ep = new ExtraParams();
-        if (buf instanceof Buffer)
+        let pos = 0;
+        if (pos >= buf.length)
         {
-            let pos = 0;
-            if (pos >= buf.length)
-            {
-                return ep;
-            }
-            const extraParamCount = buf.readUInt8(pos++);
-            for (let k = 0; k < extraParamCount; k++)
-            {
-                const type: ExtraParamType = buf.readUInt16LE(pos);
-                pos = pos + 2;
-                const paramLength = buf.readUInt32LE(pos);
-                pos = pos + 4;
-
-                switch (type)
-                {
-                    case ExtraParamType.Flexible:
-                        ep.flexibleData = new FlexibleData(buf, pos, paramLength);
-                        break;
-                    case ExtraParamType.Light:
-                        ep.lightData = new LightData(buf, pos, paramLength);
-                        break;
-                    case ExtraParamType.LightImage:
-                        ep.lightImageData = new LightImageData(buf, pos, paramLength);
-                        break;
-                    case ExtraParamType.Mesh:
-                        ep.meshData = new MeshData(buf, pos, paramLength);
-                        break;
-                    case ExtraParamType.Sculpt:
-                        ep.sculptData = new SculptData(buf, pos, paramLength);
-                        break;
-                    case ExtraParamType.ExtendedMesh:
-                        ep.extendedMeshData = new ExtendedMeshData(buf, pos, paramLength);
-                        break;
-                    case ExtraParamType.RenderMaterial:
-                        ep.renderMaterialData = new RenderMaterialData(buf, pos, paramLength);
-                        break;
-                    case ExtraParamType.ReflectionProbe:
-                        ep.reflectionProbeData = new ReflectionProbeData(buf, pos, paramLength);
-                        break;
-                }
-
-                pos += paramLength;
-            }
             return ep;
+        }
+        const extraParamCount = buf.readUInt8(pos++);
+        for (let k = 0; k < extraParamCount; k++)
+        {
+            const type: ExtraParamType = buf.readUInt16LE(pos);
+            pos = pos + 2;
+            const paramLength = buf.readUInt32LE(pos);
+            pos = pos + 4;
+
+            switch (type)
+            {
+                case ExtraParamType.Flexible:
+                    ep.flexibleData = new FlexibleData(buf, pos, paramLength);
+                    break;
+                case ExtraParamType.Light:
+                    ep.lightData = new LightData(buf, pos, paramLength);
+                    break;
+                case ExtraParamType.LightImage:
+                    ep.lightImageData = new LightImageData(buf, pos, paramLength);
+                    break;
+                case ExtraParamType.Mesh:
+                    ep.meshData = new MeshData(buf, pos, paramLength);
+                    break;
+                case ExtraParamType.Sculpt:
+                    ep.sculptData = new SculptData(buf, pos, paramLength);
+                    break;
+                case ExtraParamType.ExtendedMesh:
+                    ep.extendedMeshData = new ExtendedMeshData(buf, pos, paramLength);
+                    break;
+                case ExtraParamType.RenderMaterial:
+                    ep.renderMaterialData = new RenderMaterialData(buf, pos, paramLength);
+                    break;
+                case ExtraParamType.ReflectionProbe:
+                    ep.reflectionProbeData = new ReflectionProbeData(buf, pos, paramLength);
+                    break;
+            }
+
+            pos += paramLength;
         }
         return ep;
     }
@@ -101,12 +98,14 @@ export class ExtraParams
         this.meshData.meshData = uuid;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     public setExtendedMeshData(flags: ExtendedMeshFlags): void
     {
         this.extendedMeshData = new ExtendedMeshData();
         this.extendedMeshData.flags = flags;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     public setReflectionProbeData(ambiance: number, clipDistance: number, flags: ReflectionProbeFlags): void
     {
         this.reflectionProbeData = new ReflectionProbeData();
@@ -115,6 +114,7 @@ export class ExtraParams
         this.reflectionProbeData.flags = flags;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     public setRenderMaterialData(params: RenderMaterialParam[]): void
     {
         this.renderMaterialData = new RenderMaterialData();
@@ -127,6 +127,7 @@ export class ExtraParams
         this.sculptData.type = type;
         this.sculptData.texture = uuid;
     }
+
     public setFlexiData(softness: number, tension: number, drag: number, gravity: number, wind: number, force: Vector3): void
     {
         this.flexibleData = new FlexibleData();
@@ -137,6 +138,7 @@ export class ExtraParams
         this.flexibleData.Wind = wind;
         this.flexibleData.Force = force;
     }
+
     public setLightData(color: Color4, radius: number, cutoff: number, falloff: number, intensity: number): void
     {
         this.lightData = new LightData();
@@ -146,6 +148,7 @@ export class ExtraParams
         this.lightData.Falloff = falloff;
         this.lightData.Intensity = intensity;
     }
+
     public toBuffer(): Buffer
     {
         let totalLength = 1;
@@ -243,6 +246,7 @@ export class ExtraParams
         }
         return buf;
     }
+
     public toBase64(): string
     {
         return this.toBuffer().toString('base64');

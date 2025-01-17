@@ -1,12 +1,12 @@
-import { PhysicsShapeType } from '../enums/PhysicsShapeType';
+import type { PhysicsShapeType } from '../enums/PhysicsShapeType';
 
 export class ObjectPhysicsDataEvent
 {
-    localID: number;
+    public localID: number;
 
-    density: number;
-    friction: number;
-    gravityMultiplier: number;
-    physicsShapeType: PhysicsShapeType;
-    restitution: number;
+    public density: number;
+    public friction: number;
+    public gravityMultiplier: number;
+    public physicsShapeType: PhysicsShapeType;
+    public restitution: number;
 }

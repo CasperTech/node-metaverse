@@ -1,20 +1,21 @@
-import { GameObject } from './public/GameObject';
+import type { GameObject } from './public/GameObject';
 import { PCode, PrimFlags, UUID } from '..';
-import { Region } from './Region';
-import { Subscription } from 'rxjs';
-import { GetObjectsOptions } from './commands/RegionCommands';
-import { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
+import type { Region } from './Region';
+import type { Subscription } from 'rxjs';
+import type { GetObjectsOptions } from './commands/RegionCommands';
+import type { ObjectResolvedEvent } from '../events/ObjectResolvedEvent';
 import { clearTimeout } from 'timers';
 import { BatchQueue } from './BatchQueue';
 
 export class ObjectResolver
 {
-    private resolveQueue = new BatchQueue<GameObject>(256, this.resolveInternal.bind(this));
-    private getCostsQueue = new BatchQueue<GameObject>(64, this.getCostsInternal.bind(this));
+    private readonly resolveQueue = new BatchQueue<GameObject>(256, this.resolveInternal.bind(this));
+    private readonly getCostsQueue = new BatchQueue<GameObject>(64, this.getCostsInternal.bind(this));
+    private region?: Region;
 
-    constructor(private region?: Region)
+    public constructor(region?: Region)
     {
-
+        this.region = region;
     }
 
     public async resolveObjects(objects: GameObject[], options: GetObjectsOptions): Promise<GameObject[]>
@@ -29,6 +30,7 @@ export class ObjectResolver
         const failed: GameObject[] = [];
         for (const obj of objects)
         {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
             if (!obj.IsAttachment && !options.includeTempObjects && ((obj.Flags ?? 0) & PrimFlags.TemporaryOnRez) === PrimFlags.TemporaryOnRez)
             {
                 continue;
@@ -38,6 +40,22 @@ export class ObjectResolver
                 continue;
             }
             this.region.objects.populateChildren(obj);
+            let fullyResolved = obj.resolvedAt !== undefined;
+            if (fullyResolved && obj.children)
+            {
+                for(const o of obj.children)
+                {
+                    if (o.resolvedAt === undefined)
+                    {
+                        fullyResolved = false;
+                        break;
+                    }
+                }
+            }
+            if (fullyResolved && !options.forceReResolve)
+            {
+                continue;
+            }
             this.scanObject(obj, objs);
         }
 
@@ -46,7 +64,7 @@ export class ObjectResolver
             return failed;
         }
 
-        return await this.resolveQueue.add(Array.from(objs.values()));
+        return this.resolveQueue.add(Array.from(objs.values()));
     }
 
     public async getInventory(object: GameObject): Promise<void>
@@ -147,6 +165,10 @@ export class ObjectResolver
     private async getCostsInternal(objs: Set<GameObject>): Promise<Set<GameObject>>
     {
         const failed = new Set<GameObject>();
+        if (objs.size === 0)
+        {
+            return failed;
+        }
 
         const submitted: Map<string, GameObject> = new Map<string, GameObject>();
         for (const obj of objs.values())
@@ -174,11 +196,11 @@ export class ObjectResolver
                         continue;
                     }
                     const obj: GameObject = this.region.objects.getObjectByUUID(new UUID(key));
-                    obj.linkPhysicsImpact = parseFloat(costs['linked_set_physics_cost']);
-                    obj.linkResourceImpact = parseFloat(costs['linked_set_resource_cost']);
-                    obj.physicaImpact = parseFloat(costs['physics_cost']);
-                    obj.resourceImpact = parseFloat(costs['resource_cost']);
-                    obj.limitingType = costs['resource_limiting_type'];
+                    obj.linkPhysicsImpact = parseFloat(costs.linked_set_physics_cost);
+                    obj.linkResourceImpact = parseFloat(costs.linked_set_resource_cost);
+                    obj.physicaImpact = parseFloat(costs.physics_cost);
+                    obj.resourceImpact = parseFloat(costs.resource_cost);
+                    obj.limitingType = costs.resource_limiting_type;
 
 
                     obj.landImpact = Math.round(obj.linkPhysicsImpact);
@@ -187,19 +209,22 @@ export class ObjectResolver
                         obj.landImpact = Math.round(obj.linkResourceImpact);
                     }
                     obj.calculatedLandImpact = obj.landImpact;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
                     if (obj.Flags !== undefined && ((obj.Flags & PrimFlags.TemporaryOnRez) === PrimFlags.TemporaryOnRez) && obj.limitingType === 'legacy')
                     {
                         obj.calculatedLandImpact = 0;
                     }
                     submitted.delete(key);
                 }
-                catch (error)
+                catch (_error: unknown)
                 {
+                    // Nothing
                 }
             }
         }
-        catch (error)
+        catch (_error)
         {
+            // Nothing
         }
 
         for (const go of submitted.values())
@@ -210,7 +235,7 @@ export class ObjectResolver
         return failed;
     }
 
-    private async waitForResolve(objs: Map<number, GameObject>, timeout: number = 10000): Promise<void>
+    private async waitForResolve(objs: Map<number, GameObject>, timeout = 10000): Promise<void>
     {
         const entries = objs.entries();
         for (const [localID, entry] of entries)

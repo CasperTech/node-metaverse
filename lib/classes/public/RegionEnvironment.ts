@@ -1,75 +1,163 @@
+import type { LLSDType } from '../llsd/LLSDType';
+import { LLSDMap } from '../llsd/LLSDMap';
+import { LLSDInteger } from '../llsd/LLSDInteger';
 import { UUID } from '../UUID';
-import { Vector4 } from '../Vector4';
-import { Color4 } from '../Color4';
-import { Vector2 } from '../Vector2';
-import { SkyPreset } from './interfaces/SkyPreset';
-import { WaterPreset } from './interfaces/WaterPreset';
-import { XMLNode } from 'xmlbuilder';
+import type { SettingsConfigLLSD } from '../LLSettings';
+import { LLSettings } from '../LLSettings';
+import { LLSDArray } from '../llsd/LLSDArray';
+import { LLSD } from '../llsd/LLSD';
 
 export class RegionEnvironment
 {
-    regionID: UUID;
-    dayCycleKeyframes: {
-        time: number,
-        preset: string
-    }[];
-    skyPresets: {
-        [key: string]: SkyPreset
-    } = {};
-    water: WaterPreset;
+    public regionID?: UUID;
+    public parcelID?: number | UUID;
+    public isDefault?: boolean;
+    public envVersion?: number;
+    public trackAltitudes?: [number, number, number];
+    public dayOffset?: number;
+    public dayNames?: string[];
+    public dayLength?: number;
+    public dayHash?: number;
+    public dayCycle?: LLSettings;
 
-    getXML(xml: XMLNode): void
+    public constructor(data: LLSDType)
     {
-        const env = xml.ele('Environment');
-        const dayCycle = env.ele('DayCycle');
-        for (const keyFrame of this.dayCycleKeyframes)
+        if (data instanceof LLSDMap)
         {
-            const kf = dayCycle.ele('KeyFrame');
-            kf.ele('Time', keyFrame.time);
-            kf.ele('Preset', keyFrame.preset);
+            const d = data as LLSDMap & {
+                success?: boolean;
+                environment?: LLSDMap & {
+                    day_cycle?: LLSDMap<SettingsConfigLLSD>,
+                    day_hash?: LLSDInteger,
+                    day_length?: LLSDInteger,
+                    day_names?: string[],
+                    day_offset?: LLSDInteger,
+                    env_version?: LLSDInteger,
+                    is_default?: boolean,
+                    parcel_id?: LLSDInteger | UUID,
+                    region_id?: UUID,
+                    track_altitudes?: [LLSDInteger, LLSDInteger, LLSDInteger]
+                }
+            };
+            if (!d.success || !d.environment)
+            {
+                throw new Error('Failed to parse region settings');
+            }
+            const env = d.environment;
+            if (env.day_cycle)
+            {
+                this.dayCycle = new LLSettings(env.day_cycle);
+            }
+            if (env.day_hash)
+            {
+                this.dayHash = env.day_hash.valueOf();
+            }
+            if (env.day_length)
+            {
+                this.dayLength = env.day_length.valueOf();
+            }
+            if (env.day_names)
+            {
+                this.dayNames = LLSDArray.toStringArray(env.day_names);
+            }
+            if (env.day_offset)
+            {
+                this.dayOffset = env.day_offset.valueOf();
+            }
+            if (env.env_version)
+            {
+                this.envVersion = env.env_version.valueOf();
+            }
+            if (env.is_default)
+            {
+                this.isDefault = env.is_default;
+            }
+            if (env.parcel_id)
+            {
+                if (env.parcel_id instanceof UUID)
+                {
+                    this.parcelID = env.parcel_id;
+                }
+                else
+                {
+                    this.parcelID = Number(env.parcel_id.valueOf());
+                }
+            }
+            if (env.region_id)
+            {
+                this.regionID = env.region_id;
+            }
+            if (env.track_altitudes)
+            {
+                if (env.track_altitudes.length === 3)
+                {
+                    this.trackAltitudes = [
+                        env.track_altitudes[0].valueOf(),
+                        env.track_altitudes[1].valueOf(),
+                        env.track_altitudes[2].valueOf(),
+                    ];
+                }
+            }
         }
-        const skyPresets = env.ele('SkyPresets');
-        for (const presetKey of Object.keys(this.skyPresets))
-        {
-            const preset = this.skyPresets[presetKey];
-            const pre = skyPresets.ele('Preset');
-            pre.att('name', presetKey);
-            Vector4.getXML(pre.ele('Ambient'), preset.ambient);
-            Vector4.getXML(pre.ele('BlueDensity'), preset.blueDensity);
-            Vector4.getXML(pre.ele('BlueHorizon'), preset.blueHorizon);
-            Color4.getXML(pre.ele('CloudColor'), preset.cloudColor);
-            Vector4.getXML(pre.ele('CloudPosDensity1'), preset.cloudPosDensity1);
-            Vector4.getXML(pre.ele('CloudPosDensity2'), preset.cloudPosDensity2);
-            Vector4.getXML(pre.ele('CloudScale'), preset.cloudScale);
-            Vector2.getXML(pre.ele('CloudScrollRate'), preset.cloudScrollRate);
-            Vector4.getXML(pre.ele('CloudShadow'), preset.cloudScale);
-            Vector4.getXML(pre.ele('DensityMultiplier'), preset.cloudScale);
-            Vector4.getXML(pre.ele('DistanceMultiplier'), preset.cloudScale);
-            pre.ele('EastAngle', preset.eastAngle);
-            const cloudScroll = pre.ele('EnableCloudScroll');
-            cloudScroll.ele('X', preset.enableCloudScroll.x);
-            cloudScroll.ele('Y', preset.enableCloudScroll.y);
-            Vector4.getXML(pre.ele('Gamma'), preset.gamma);
-            Vector4.getXML(pre.ele('Glow'), preset.glow);
-            Vector4.getXML(pre.ele('HazeDensity'), preset.hazeDensity);
-            Vector4.getXML(pre.ele('HazeHorizon'), preset.hazeHorizon);
-            Vector4.getXML(pre.ele('LightNormal'), preset.lightNormal);
-            Vector4.getXML(pre.ele('MaxY'), preset.maxY);
-            pre.ele('StarBrightness', preset.starBrightness);
-            pre.ele('SunAngle', preset.sunAngle);
-            Color4.getXML(pre.ele('SunLightColor'), preset.sunlightColor);
-        }
-        const water = env.ele('Water');
-        water.ele('BlurMultiplier', this.water.blurMultiplier);
-        water.ele('FresnelOffset', this.water.fresnelOffset);
-        water.ele('FresnelScale', this.water.fresnelScale);
-        UUID.getXML(water.ele('NormalMap'), this.water.normalMap);
-        water.ele('ScaleAbove', this.water.scaleAbove);
-        water.ele('ScaleBelow', this.water.scaleBelow);
-        water.ele('UnderWaterFogMod', this.water.underWaterFogMod);
-        Color4.getXML(water.ele('WaterFogColor'), this.water.waterFogColor);
-        water.ele('WaterFogDensity', this.water.waterFogDensity);
-        Vector2.getXML(water.ele('Wave1Dir'), this.water.wave1Dir);
-        Vector2.getXML(water.ele('Wave2Dir'), this.water.wave2Dir);
     }
+
+    public toNotation(): string
+    {
+        const envMap = new LLSDMap();
+        if (this.dayCycle !== undefined)
+        {
+            envMap.set('day_cycle', LLSettings.encodeSettings(this.dayCycle));
+        }
+        if (this.dayHash !== undefined)
+        {
+            envMap.set('day_hash', new LLSDInteger(this.dayHash));
+        }
+        if (this.dayLength !== undefined)
+        {
+            envMap.set('day_length', new LLSDInteger(this.dayLength));
+        }
+        if (this.dayNames !== undefined)
+        {
+            envMap.set('day_names', this.dayNames);
+        }
+        if (this.dayOffset !== undefined)
+        {
+            envMap.set('day_offset', new LLSDInteger(this.dayOffset));
+        }
+        if (this.envVersion !== undefined)
+        {
+            envMap.set('env_version', new LLSDInteger(this.envVersion));
+        }
+        if (this.isDefault !== undefined)
+        {
+            envMap.set('is_default', this.isDefault);
+        }
+        if (this.parcelID !== undefined)
+        {
+            if (typeof this.parcelID === 'number')
+            {
+                envMap.set('parcel_id', new LLSDInteger(this.parcelID));
+            }
+            else
+            {
+                envMap.set('parcel_id', this.parcelID);
+            }
+        }
+        if (this.regionID !== undefined)
+        {
+            envMap.set('region_id', this.regionID);
+        }
+        if (this.trackAltitudes !== undefined)
+        {
+            const arr: LLSDInteger[] = [];
+            for(const val of this.trackAltitudes)
+            {
+                arr.push(new LLSDInteger(val));
+            }
+            envMap.set('track_altitudes', arr);
+        }
+
+        return LLSD.toNotation(envMap);
+    }
+
 }

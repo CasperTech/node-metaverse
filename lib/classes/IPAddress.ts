@@ -1,25 +1,11 @@
-const ipaddr = require('ipaddr.js');
+import * as ipaddr from 'ipaddr.js'
+import type { IPv4, IPv6 } from 'ipaddr.js';
 
 export class IPAddress
 {
-    ip: any = null;
+    public ip: IPv4 | IPv6 | null = null;
 
-    static zero(): IPAddress
-    {
-        return new IPAddress('0.0.0.0');
-    }
-    public toString = (): string =>
-    {
-        try
-        {
-            return this.ip.toString();
-        }
-        catch (ignore)
-        {
-            return '';
-        }
-    };
-    constructor(buf?: Buffer | string, pos?: number)
+    public constructor(buf?: Buffer | string, pos?: number)
     {
         try
         {
@@ -27,10 +13,10 @@ export class IPAddress
             {
                 if (pos !== undefined)
                 {
-                    const bytes = buf.slice(pos, 4);
-                    this.ip = ipaddr.fromByteArray(bytes);
+                    const bytes = buf.subarray(pos, 4);
+                    this.ip = ipaddr.fromByteArray(Array.from(bytes));
                 }
-                else
+                else if (typeof buf === 'string')
                 {
                     if (ipaddr.isValid(buf))
                     {
@@ -42,7 +28,7 @@ export class IPAddress
                     }
                 }
             }
-            else
+            else if (typeof buf === 'string')
             {
                 if (ipaddr.isValid(buf))
                 {
@@ -54,14 +40,34 @@ export class IPAddress
                 }
             }
         }
-        catch (ignore)
+        catch (_ignore: unknown)
         {
             this.ip = ipaddr.parse('0.0.0.0');
         }
     }
-    writeToBuffer(buf: Buffer, pos: number): void
+
+    public static zero(): IPAddress
     {
-        const bytes: Uint8Array = this.ip.toByteArray();
+        return new IPAddress('0.0.0.0');
+    }
+
+    public toString = (): string =>
+    {
+        if (!this.ip)
+        {
+            return '';
+        }
+        return this.ip.toString();
+    };
+
+
+    public writeToBuffer(buf: Buffer, pos: number): void
+    {
+        if (!this.ip)
+        {
+            throw new Error('Invalid IP');
+        }
+        const bytes: number[] = this.ip.toByteArray();
         buf.writeUInt8(bytes[0], pos++);
         buf.writeUInt8(bytes[1], pos++);
         buf.writeUInt8(bytes[2], pos++);

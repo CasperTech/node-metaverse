@@ -1,4 +1,4 @@
-import { ReflectionProbeFlags } from './ReflectionProbeFlags';
+import type { ReflectionProbeFlags } from './ReflectionProbeFlags';
 
 export class ReflectionProbeData
 {
@@ -6,7 +6,7 @@ export class ReflectionProbeData
     public clipDistance = 0.0;
     public flags: ReflectionProbeFlags = 0 as ReflectionProbeFlags;
 
-    constructor(buf?: Buffer, pos?: number, length?: number)
+    public constructor(buf?: Buffer, pos?: number, length?: number)
     {
         if (buf !== undefined && pos !== undefined && length !== undefined)
         {
@@ -21,7 +21,7 @@ export class ReflectionProbeData
         }
     }
 
-    writeToBuffer(buf: Buffer, pos: number): void
+    public writeToBuffer(buf: Buffer, pos: number): void
     {
         buf.writeFloatLE(this.ambiance, pos);
         pos = pos + 4;
@@ -30,7 +30,7 @@ export class ReflectionProbeData
         buf.writeUInt8(this.flags, pos);
     }
 
-    getBuffer(): Buffer
+    public getBuffer(): Buffer
     {
         const buf = Buffer.allocUnsafe(9);
         this.writeToBuffer(buf, 0);

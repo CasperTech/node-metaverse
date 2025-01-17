@@ -3,9 +3,12 @@ import { Utils } from './Utils';
 
 export class LLLindenText
 {
-    version = 2;
+    public version = 2;
 
-    private lineObj: {
+    public body = '';
+    public embeddedItems = new Map<number, InventoryItem>();
+
+    private readonly lineObj: {
         lines: string[],
         lineNum: number,
         pos: number
@@ -15,10 +18,7 @@ export class LLLindenText
         pos: 0
     };
 
-    body = '';
-    embeddedItems: { [key: number]: InventoryItem } = {};
-
-    constructor(data?: Buffer)
+    public constructor(data?: Buffer)
     {
         if (data !== undefined)
         {
@@ -57,8 +57,8 @@ export class LLLindenText
                 throw new Error('Error parsing Linden Text file: ' + line);
             }
             const textLength = parseInt(this.getLastToken(line), 10);
-            this.body = data.slice(this.lineObj.pos, this.lineObj.pos + textLength).toString();
-            const remainingBuffer = data.slice(this.lineObj.pos + textLength).toString('ascii');
+            this.body = data.subarray(this.lineObj.pos, this.lineObj.pos + textLength).toString();
+            const remainingBuffer = data.subarray(this.lineObj.pos + textLength).toString('ascii');
             this.lineObj.lines = remainingBuffer.split('\n');
             this.lineObj.lineNum = 0;
 
@@ -70,21 +70,26 @@ export class LLLindenText
         }
     }
 
-    toAsset(): Buffer
+    public toAsset(): Buffer
     {
         const lines: string[] = [];
         lines.push('Linden text version ' + this.version);
         lines.push('{');
-        const count = Object.keys(this.embeddedItems).length;
+        const count = this.embeddedItems.size;
         lines.push('LLEmbeddedItems version 1');
         lines.push('{');
         lines.push('count ' + String(count));
-        for (const key of Object.keys(this.embeddedItems))
+        for (const key of this.embeddedItems.keys())
         {
+            const item = this.embeddedItems.get(key);
+            if (item === undefined)
+            {
+                continue;
+            }
             lines.push('{');
             lines.push('ext char index ' + key);
             lines.push('\tinv_item\t0');
-            lines.push(this.embeddedItems[parseInt(key, 10)].toAsset('\t'));
+            lines.push(item.toAsset('\t'));
             lines.push('}');
         }
         lines.push('}');
@@ -129,7 +134,7 @@ export class LLLindenText
                 throw new Error('Invalid LLEmbeddedItems format (no inv_item)');
             }
             const item = InventoryItem.fromEmbeddedAsset(this.lineObj);
-            this.embeddedItems[index] = item;
+            this.embeddedItems.set(index, item);
             line = Utils.getNotecardLine(this.lineObj);
             if (line !== '}')
             {

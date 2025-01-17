@@ -1,13 +1,13 @@
-import { UUID } from '../classes/UUID';
-import { ChatSourceType } from '../enums/ChatSourceType';
-import { AssetType } from '../enums/AssetType';
+import type { UUID } from '../classes/UUID';
+import type { ChatSourceType } from '../enums/ChatSourceType';
+import type { AssetType } from '../enums/AssetType';
 
 export class InventoryOfferedEvent
 {
-    from: UUID;
-    fromName: string;
-    requestID: UUID;
-    message: string;
-    source: ChatSourceType;
-    type: AssetType;
+    public from: UUID;
+    public fromName: string;
+    public requestID: UUID;
+    public message: string;
+    public source: ChatSourceType;
+    public type: AssetType;
 }

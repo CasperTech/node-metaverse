@@ -1,20 +1,18 @@
 import * as LLSD from '@caspertech/llsd';
-import { Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
 import * as builder from 'xmlbuilder';
 import * as crypto from 'crypto';
-import { GameObject } from '..';
 import { AssetType } from '../enums/AssetType';
-import { AssetTypeLL } from '../enums/AssetTypeLL';
-import { AttachmentPoint } from '../enums/AttachmentPoint';
+import type { AttachmentPoint } from '../enums/AttachmentPoint';
 import { FilterResponse } from '../enums/FilterResponse';
-import { InventoryItemFlags } from '../enums/InventoryItemFlags';
+import type { InventoryItemFlags } from '../enums/InventoryItemFlags';
 import { InventoryType } from '../enums/InventoryType';
 import { Message } from '../enums/Message';
 import { PacketFlags } from '../enums/PacketFlags';
 import { PermissionMask } from '../enums/PermissionMask';
 import { SaleTypeLL } from '../enums/SaleTypeLL';
-import { NewObjectEvent } from '../events/NewObjectEvent';
-import { Agent } from './Agent';
+import type { NewObjectEvent } from '../events/NewObjectEvent';
+import type { Agent } from './Agent';
 import { InventoryFolder } from './InventoryFolder';
 import { DetachAttachmentIntoInvMessage } from './messages/DetachAttachmentIntoInv';
 import { MoveInventoryItemMessage } from './messages/MoveInventoryItem';
@@ -22,35 +20,43 @@ import { MoveTaskInventoryMessage } from './messages/MoveTaskInventory';
 import { RemoveInventoryItemMessage } from './messages/RemoveInventoryItem';
 import { RezObjectMessage } from './messages/RezObject';
 import { RezSingleAttachmentFromInvMessage } from './messages/RezSingleAttachmentFromInv';
-import { UpdateCreateInventoryItemMessage } from './messages/UpdateCreateInventoryItem';
+import type { UpdateCreateInventoryItemMessage } from './messages/UpdateCreateInventoryItem';
 import { UpdateInventoryItemMessage } from './messages/UpdateInventoryItem';
 import { UpdateTaskInventoryMessage } from './messages/UpdateTaskInventory';
 import { Utils } from './Utils';
 import { UUID } from './UUID';
 import { Vector3 } from './Vector3';
-import Timeout = NodeJS.Timeout;
 import { CopyInventoryItemMessage } from './messages/CopyInventoryItem';
-import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
+import type { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
+import { AssetTypeRegistry } from './AssetTypeRegistry';
+import { InventoryTypeRegistry } from './InventoryTypeRegistry';
+import { GameObject } from './public/GameObject';
+import { GetScriptRunningMessage } from './messages/GetScriptRunning';
+import { ScriptRunningReplyMessage } from './messages/ScriptRunningReply';
+import Timeout = NodeJS.Timeout;
+import { SetScriptRunningMessage } from './messages/SetScriptRunning';
 
 export class InventoryItem
 {
-    assetID: UUID = UUID.zero();
-    inventoryType: InventoryType;
-    name: string;
-    metadata: string;
-    salePrice: number;
-    saleType: number;
-    created: Date;
-    parentID: UUID;
-    flags: InventoryItemFlags;
-    itemID: UUID;
-    oldItemID?: UUID;
-    parentPartID?: UUID;
-    permsGranter?: UUID;
-    description: string;
-    type: AssetType;
-    callbackID: number;
-    permissions: {
+    public assetID: UUID = UUID.zero();
+    public inventoryType: InventoryType;
+    public name: string;
+    public metadata: string;
+    public salePrice: number;
+    public saleType: number;
+    public created: Date;
+    public parentID: UUID;
+    public flags: InventoryItemFlags;
+    public itemID: UUID;
+    public oldItemID?: UUID;
+    public parentPartID?: UUID;
+    public permsGranter?: UUID;
+    public description: string;
+    public type: AssetType;
+    public callbackID: number;
+    public scriptRunning?: boolean;
+    public scriptMono?: boolean;
+    public permissions: {
         baseMask: PermissionMask;
         groupMask: PermissionMask;
         nextOwnerMask: PermissionMask;
@@ -74,7 +80,12 @@ export class InventoryItem
         groupOwned: false
     };
 
-    static fromEmbeddedAsset(lineObj: { lines: string[], lineNum: number, pos: number }, container?: GameObject | InventoryFolder, agent?: Agent): InventoryItem
+    public constructor(private readonly container?: GameObject | InventoryFolder, private readonly agent?: Agent)
+    {
+
+    }
+
+    public static fromEmbeddedAsset(lineObj: { lines: string[], lineNum: number, pos: number }, container?: GameObject | InventoryFolder, agent?: Agent): InventoryItem
     {
         const item: InventoryItem = new InventoryItem(container, agent);
         let contMetadata = false;
@@ -269,74 +280,17 @@ export class InventoryItem
                 }
                 else if (result.key === 'type')
                 {
-                    const typeString = result.value as any;
-                    item.type = parseInt(AssetTypeLL[typeString], 10);
+                    const typeString = result.value;
+                    const type = AssetTypeRegistry.getTypeFromTypeName(typeString);
+                    if (type !== undefined)
+                    {
+                        item.type = type.type;
+                    }
                 }
                 else if (result.key === 'inv_type')
                 {
-                    const typeString = String(result.value);
-                    switch (typeString)
-                    {
-                        case 'texture':
-                            item.inventoryType = InventoryType.Texture;
-                            break;
-                        case 'sound':
-                            item.inventoryType = InventoryType.Sound;
-                            break;
-                        case 'callcard':
-                            item.inventoryType = InventoryType.CallingCard;
-                            break;
-                        case 'landmark':
-                            item.inventoryType = InventoryType.Landmark;
-                            break;
-                        case 'object':
-                            item.inventoryType = InventoryType.Object;
-                            break;
-                        case 'notecard':
-                            item.inventoryType = InventoryType.Notecard;
-                            break;
-                        case 'category':
-                            item.inventoryType = InventoryType.Category;
-                            break;
-                        case 'root':
-                            item.inventoryType = InventoryType.RootCategory;
-                            break;
-                        case 'snapshot':
-                            item.inventoryType = InventoryType.Snapshot;
-                            break;
-                        case 'script':
-                            item.inventoryType = InventoryType.LSL;
-                            break;
-                        case 'attach':
-                            item.inventoryType = InventoryType.Attachment;
-                            break;
-                        case 'wearable':
-                            item.inventoryType = InventoryType.Wearable;
-                            break;
-                        case 'animation':
-                            item.inventoryType = InventoryType.Animation;
-                            break;
-                        case 'gesture':
-                            item.inventoryType = InventoryType.Gesture;
-                            break;
-                        case 'mesh':
-                            item.inventoryType = InventoryType.Mesh;
-                            break;
-                        case 'settings':
-                            item.inventoryType = InventoryType.Settings;
-                            break;
-                        case 'widget':
-                            item.inventoryType = InventoryType.Widget;
-                            break;
-                        case 'person':
-                            item.inventoryType = InventoryType.Person;
-                            break;
-                        case 'material':
-                            item.inventoryType = InventoryType.Material;
-                            break;
-                        default:
-                            console.error('Unknown inventory type: ' + typeString);
-                    }
+                    const t = InventoryTypeRegistry.getTypeFromTypeName(String(result.value));
+                    item.inventoryType = t?.type ?? InventoryType.Unknown;
                 }
                 else if (result.key === 'flags')
                 {
@@ -344,7 +298,7 @@ export class InventoryItem
                 }
                 else if (result.key === 'name')
                 {
-                    if (result.value.indexOf('|') !== -1)
+                    if (result.value.includes('|'))
                     {
                         item.name = result.value.substring(0, result.value.indexOf('|'));
                     }
@@ -356,7 +310,7 @@ export class InventoryItem
                 }
                 else if (result.key === 'desc')
                 {
-                    if (result.value.indexOf('|') !== -1)
+                    if (result.value.includes('|'))
                     {
                         item.description = result.value.substring(0, result.value.indexOf('|'));
                     }
@@ -372,7 +326,7 @@ export class InventoryItem
                 }
                 else if (result.key === 'metadata')
                 {
-                    if (result.value.indexOf('|') !== -1)
+                    if (result.value.includes('|'))
                     {
                         item.metadata = result.value.substring(0, result.value.indexOf('|'));
                     }
@@ -391,17 +345,17 @@ export class InventoryItem
         return item;
     }
 
-    static async fromXML(xml: string): Promise<InventoryItem>
+    public static async fromXML(xml: string): Promise<InventoryItem>
     {
         const parsed = await Utils.parseXML(xml);
 
-        if (!parsed['InventoryItem'])
+        if (!parsed.InventoryItem)
         {
             throw new Error('InventoryItem not found');
         }
         const inventoryItem = new InventoryItem();
-        const result = parsed['InventoryItem'];
-        let prop: any;
+        const result = parsed.InventoryItem;
+        let prop: any = null;
         if ((prop = Utils.getFromXMLJS(result, 'Name')) !== undefined)
         {
             inventoryItem.name = prop.toString();
@@ -424,6 +378,14 @@ export class InventoryItem
         if ((prop = Utils.getFromXMLJS(result, 'Type')) !== undefined)
         {
             inventoryItem.type = parseInt(prop, 10);
+        }
+        if ((prop = Utils.getFromXMLJS(result, 'ScriptRunning')) !== undefined)
+        {
+            inventoryItem.scriptRunning = prop === true;
+        }
+        if ((prop = Utils.getFromXMLJS(result, 'ScriptMono')) !== undefined)
+        {
+            inventoryItem.scriptMono = prop === true;
         }
         if ((prop = Utils.getFromXMLJS(result, 'CreatorUUID')) !== undefined)
         {
@@ -534,12 +496,7 @@ export class InventoryItem
         return inventoryItem;
     }
 
-    constructor(private container?: GameObject | InventoryFolder, private agent?: Agent)
-    {
-
-    }
-
-    toAsset(indent: string = ''): string
+    public toAsset(indent = ''): string
     {
         const lines: string[] = [];
         lines.push('{');
@@ -558,8 +515,8 @@ export class InventoryItem
         lines.push('\tgroup_id\t' + this.permissions.group.toString());
         lines.push('}');
         lines.push('\tasset_id\t' + this.assetID.toString());
-        lines.push('\ttype\t' + Utils.AssetTypeToHTTPAssetType(this.type));
-        lines.push('\tinv_type\t' + Utils.InventoryTypeToLLInventoryType(this.inventoryType));
+        lines.push('\ttype\t' + AssetTypeRegistry.getTypeName(this.type));
+        lines.push('\tinv_type\t' + InventoryTypeRegistry.getTypeName(this.inventoryType));
         lines.push('\tflags\t' + Utils.numberToFixedHex(this.flags));
         lines.push('sale_info\t0');
         lines.push('{');
@@ -588,7 +545,7 @@ export class InventoryItem
         return indent + lines.join('\n' + indent);
     }
 
-    getCRC(): number
+    public getCRC(): number
     {
         let crc = 0;
         crc = crc + this.itemID.CRC() >>> 0;
@@ -612,7 +569,7 @@ export class InventoryItem
         return crc;
     }
 
-    async update(): Promise<void>
+    public async update(): Promise<void>
     {
         if (this.agent === undefined)
         {
@@ -635,7 +592,7 @@ export class InventoryItem
             GroupMask: this.permissions.groupMask,
             EveryoneMask: this.permissions.everyoneMask,
             NextOwnerMask: this.permissions.nextOwnerMask,
-            GroupOwned: this.permissions.groupOwned || false,
+            GroupOwned: this.permissions.groupOwned ?? false,
             TransactionID: UUID.zero(),
             CallbackID: 0,
             Type: this.type,
@@ -652,7 +609,7 @@ export class InventoryItem
         return this.agent.currentRegion.circuit.waitForAck(ack, 10000);
     }
 
-    async moveToFolder(targetFolder: InventoryFolder): Promise<InventoryItem>
+    public async moveToFolder(targetFolder: InventoryFolder): Promise<InventoryItem>
     {
         if (this.agent !== undefined)
         {
@@ -729,7 +686,7 @@ export class InventoryItem
         }
     }
 
-    async delete(): Promise<void>
+    public async delete(): Promise<void>
     {
         if (this.agent !== undefined)
         {
@@ -752,7 +709,8 @@ export class InventoryItem
         }
     }
 
-    async exportXML(): Promise<string>
+    // noinspection JSUnusedGlobalSymbols
+    public exportXML(): string
     {
         const document = builder.create('InventoryItem');
         document.ele('Name', this.name);
@@ -774,10 +732,16 @@ export class InventoryItem
         document.ele('Flags', this.flags);
         document.ele('GroupID', this.permissions.group.toString());
         document.ele('GroupOwned', this.permissions.groupOwned);
+        if (this.type === AssetType.LSLText)
+        {
+            document.ele('ScriptRunning', this.scriptRunning);
+            document.ele('ScriptMono', this.scriptMono);
+        }
         return document.end({ pretty: true, allowEmpty: true });
     }
 
-    async detachFromAvatar(): Promise<void>
+    // noinspection JSUnusedGlobalSymbols
+    public async detachFromAvatar(): Promise<void>
     {
         if (this.agent === undefined)
         {
@@ -792,7 +756,8 @@ export class InventoryItem
         return this.agent.currentRegion.circuit.waitForAck(ack, 10000);
     }
 
-    async attachToAvatar(attachPoint: AttachmentPoint, timeout: number = 10000): Promise<GameObject>
+    // noinspection JSUnusedGlobalSymbols
+    public async attachToAvatar(attachPoint: AttachmentPoint, timeout = 10000): Promise<GameObject>
     {
         return new Promise<GameObject>((resolve, reject) =>
         {
@@ -859,9 +824,10 @@ export class InventoryItem
         });
     }
 
-    rezGroupInWorld(position: Vector3): Promise<GameObject[]>
+    // noinspection JSUnusedGlobalSymbols
+    public async rezGroupInWorld(position: Vector3): Promise<GameObject[]>
     {
-        return new Promise<GameObject[]>(async(resolve, reject) =>
+        return new Promise<GameObject[]>((resolve, reject) =>
         {
             if (this.agent === undefined)
             {
@@ -919,21 +885,26 @@ export class InventoryItem
 
             const gotObjects: GameObject[] = [];
 
-            objSub = this.agent.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(evt: NewObjectEvent) =>
+            objSub = this.agent.currentRegion.clientEvents.onNewObjectEvent.subscribe((evt: NewObjectEvent) =>
             {
-                if (evt.createSelected && !evt.object.resolvedAt)
+                (async(): Promise<void> =>
                 {
-                    // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
-                    await agent.currentRegion.clientCommands.region.resolveObject(evt.object, {});
-                }
-                if (evt.createSelected && !evt.object.claimedForBuild)
-                {
-                    if (evt.object.itemID !== undefined && evt.object.itemID.equals(this.itemID))
+                    if (evt.createSelected && !evt.object.resolvedAt)
                     {
-                        evt.object.claimedForBuild = true;
-                        gotObjects.push(evt.object);
+                        // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
+                        await agent.currentRegion.clientCommands.region.resolveObject(evt.object, {});
                     }
-                }
+                    if (evt.createSelected && !evt.object.claimedForBuild)
+                    {
+                        if (evt.object.itemID?.equals(this.itemID))
+                        {
+                            evt.object.claimedForBuild = true;
+                            gotObjects.push(evt.object);
+                        }
+                    }
+                })().catch((_e: unknown) => {
+                    // ignore
+                });
             });
 
             // We have no way of knowing when the cluster is finished rezzing, so we just wait for 30 seconds
@@ -957,14 +928,14 @@ export class InventoryItem
             // Move the camera to look directly at prim for faster capture
             const camLocation = new Vector3(position);
             camLocation.z += (5) + 1;
-            await this.agent.currentRegion.clientCommands.agent.setCamera(camLocation, position, 256, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
+            this.agent.currentRegion.clientCommands.agent.setCamera(camLocation, position, 256, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
             this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
         });
     }
 
-    rezInWorld(position: Vector3, objectScale?: Vector3): Promise<GameObject>
+    public async rezInWorld(position: Vector3, objectScale?: Vector3): Promise<GameObject>
     {
-        return new Promise<GameObject>(async(resolve, reject) =>
+        return new Promise<GameObject>((resolve, reject) =>
         {
             if (this.agent === undefined)
             {
@@ -1033,32 +1004,38 @@ export class InventoryItem
             }, 10000);
             let claimedPrim = false;
             const agent = this.agent;
-            objSub = this.agent.currentRegion.clientEvents.onNewObjectEvent.subscribe(async(evt: NewObjectEvent) =>
+            objSub = this.agent.currentRegion.clientEvents.onNewObjectEvent.subscribe((evt: NewObjectEvent) =>
             {
-                if (evt.createSelected && !evt.object.resolvedAt)
+                (async(): Promise<void> =>
                 {
-                    // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
-                    await agent.currentRegion.clientCommands.region.resolveObject(evt.object, {});
-                }
-                if (evt.createSelected && !evt.object.claimedForBuild && !claimedPrim)
-                {
-                    if (evt.object.itemID !== undefined && evt.object.itemID.equals(this.itemID))
+                    if (evt.createSelected && !evt.object.resolvedAt)
                     {
-                        if (objSub !== undefined)
-                        {
-                            objSub.unsubscribe();
-                            objSub = undefined;
-                        }
-                        if (timeout !== undefined)
-                        {
-                            clearTimeout(timeout);
-                            timeout = undefined;
-                        }
-                        evt.object.claimedForBuild = true;
-                        claimedPrim = true;
-                        resolve(evt.object);
+                        // We need to get the full ObjectProperties so we can be sure this is or isn't a rez from inventory
+                        await agent.currentRegion.clientCommands.region.resolveObject(evt.object, {});
                     }
-                }
+                    if (evt.createSelected && !evt.object.claimedForBuild && !claimedPrim)
+                    {
+                        if (evt.object.itemID?.equals(this.itemID))
+                        {
+                            if (objSub !== undefined)
+                            {
+                                objSub.unsubscribe();
+                                objSub = undefined;
+                            }
+                            if (timeout !== undefined)
+                            {
+                                clearTimeout(timeout);
+                                timeout = undefined;
+                            }
+                            evt.object.claimedForBuild = true;
+                            claimedPrim = true;
+                            resolve(evt.object);
+                        }
+                    }
+                })().catch((_e: unknown) =>
+                {
+                    // ignore
+                });
             });
 
             // Move the camera to look directly at prim for faster capture
@@ -1069,70 +1046,119 @@ export class InventoryItem
             }
             const camLocation = new Vector3(position);
             camLocation.z += (height / 2) + 1;
-            await this.agent.currentRegion.clientCommands.agent.setCamera(camLocation, position, height, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
+            this.agent.currentRegion.clientCommands.agent.setCamera(camLocation, position, height, new Vector3([-1.0, 0, 0]), new Vector3([0.0, 1.0, 0]));
             this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
         });
     }
 
-    async renameInTask(task: GameObject, newName: string): Promise<void>
+    // noinspection JSUnusedGlobalSymbols
+    public async rename(newName: string): Promise<void>
     {
         this.name = newName;
         if (this.agent === undefined)
         {
             return;
         }
-        const msg = new UpdateTaskInventoryMessage();
-        msg.AgentData = {
-            AgentID: this.agent.agentID,
-            SessionID: this.agent.currentRegion.circuit.sessionID
-        };
-        msg.UpdateData = {
-            Key: 0,
-            LocalID: task.ID
-        };
-        msg.InventoryData = {
-            ItemID: this.itemID,
-            FolderID: this.parentID,
-            CreatorID: this.permissions.creator,
-            OwnerID: this.permissions.owner,
-            GroupID: this.permissions.group,
-            BaseMask: this.permissions.baseMask,
-            OwnerMask: this.permissions.ownerMask,
-            GroupMask: this.permissions.groupMask,
-            EveryoneMask: this.permissions.everyoneMask,
-            NextOwnerMask: this.permissions.nextOwnerMask,
-            GroupOwned: this.permissions.groupOwned || false,
-            TransactionID: UUID.zero(),
-            Type: this.type,
-            InvType: this.inventoryType,
-            Flags: this.flags,
-            SaleType: this.saleType,
-            SalePrice: this.salePrice,
-            Name: Utils.StringToBuffer(this.name),
-            Description: Utils.StringToBuffer(this.description),
-            CreationDate: this.created.getTime() / 1000,
-            CRC: this.getCRC()
-        };
-        return this.agent.currentRegion.circuit.waitForAck(this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+        if (this.container instanceof GameObject)
+        {
+            const msg = new UpdateTaskInventoryMessage();
+            if (this.description == '')
+            {
+                this.description = '(No Description)';
+            }
+            msg.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.agent.currentRegion.circuit.sessionID
+            };
+            msg.UpdateData = {
+                Key: 0,
+                LocalID: this.container.ID
+            };
+            msg.InventoryData = {
+                ItemID: this.itemID,
+                FolderID: this.parentID,
+                CreatorID: this.permissions.creator,
+                OwnerID: this.agent.agentID,
+                GroupID: this.permissions.group,
+                BaseMask: this.permissions.baseMask,
+                OwnerMask: this.permissions.ownerMask,
+                GroupMask: this.permissions.groupMask,
+                EveryoneMask: this.permissions.everyoneMask,
+                NextOwnerMask: this.permissions.nextOwnerMask,
+                GroupOwned: this.permissions.groupOwned ?? false,
+                TransactionID: UUID.zero(),
+                Type: this.type,
+                InvType: this.inventoryType,
+                Flags: this.flags,
+                SaleType: this.saleType,
+                SalePrice: this.salePrice,
+                Name: Utils.StringToBuffer(this.name),
+                Description: Utils.StringToBuffer(this.description),
+                CreationDate: this.created.getTime() / 1000,
+                CRC: this.getCRC()
+            };
+            return this.agent.currentRegion.circuit.waitForAck(this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable), 10000);
+        }
+        else if (this.container instanceof InventoryFolder)
+        {
+            this.name = newName;
+            return this.update();
+        }
+        else
+        {
+            throw new Error('Item has no container, cannot be renamed');
+        }
     }
 
-    private async waitForCallbackID(callbackID: number): Promise<BulkUpdateInventoryEvent>
+    // noinspection JSUnusedGlobalSymbols
+    public async isScriptRunning(): Promise<boolean>
     {
-        if (!this.agent)
+        if (this.type !== AssetType.LSLText)
         {
-            throw new Error('No active agent');
+            throw new Error('Item is not a script');
         }
-        return Utils.waitOrTimeOut<BulkUpdateInventoryEvent>(this.agent.currentRegion.clientEvents.onBulkUpdateInventoryEvent, 10000, (event: BulkUpdateInventoryEvent) =>
+        if (!(this.container instanceof GameObject))
         {
-            for (const item of event.itemData)
+            throw new Error('Script can only be running inside a GameObject container')
+        }
+
+        const isr = new GetScriptRunningMessage();
+        isr.Script = {
+            ObjectID: this.container.FullID,
+            ItemID: this.itemID
+        };
+        const objID = this.container.FullID;
+
+
+        const event = this.container.region.clientEvents.waitForEvent(this.container.region.clientEvents.onScriptRunningReply, (evt): FilterResponse =>
+        {
+            if (evt.ItemID.equals(this.itemID) &&
+                evt.ObjectID.equals(objID))
             {
-                if (item.callbackID === callbackID)
-                {
-                    return FilterResponse.Finish;
-                }
+                return FilterResponse.Finish;
             }
             return FilterResponse.NoMatch;
         });
+        const legacy = this.container.region.circuit.sendAndWaitForMessage<ScriptRunningReplyMessage>(isr, PacketFlags.Reliable, Message.ScriptRunningReply, 10000, (message: ScriptRunningReplyMessage) =>
+        {
+            if (message.Script.ItemID.equals(this.itemID) &&
+                message.Script.ObjectID.equals(objID))
+            {
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.NoMatch;
+        });
+        const result = await Promise.race([event, legacy]);
+        if (result instanceof ScriptRunningReplyMessage)
+        {
+            this.scriptRunning = result.Script.Running
+        }
+        else
+        {
+            this.scriptRunning = result.Running;
+            this.scriptMono = result.Mono;
+        }
+        return this.scriptRunning;
     }
 
     public async copyTo(target: InventoryFolder, name: string): Promise<InventoryItem>
@@ -1174,7 +1200,8 @@ export class InventoryItem
         throw new Error('Unable to locate inventory item after copy');
     }
 
-    async updateScript(scriptAsset: Buffer): Promise<UUID>
+    // noinspection JSUnusedGlobalSymbols
+    public async updateScript(scriptAsset: Buffer, running = true, target: 'mono' | 'lsl2' = 'mono'): Promise<UUID>
     {
         if (this.agent === undefined)
         {
@@ -1187,16 +1214,16 @@ export class InventoryItem
                 const result: any = await this.agent.currentRegion.caps.capsPostXML('UpdateScriptTask', {
                     'item_id': new LLSD.UUID(this.itemID.toString()),
                     'task_id': new LLSD.UUID(this.container.FullID.toString()),
-                    'is_script_running': true,
-                    'target': 'mono'
+                    'is_script_running': running ? 1 : 0,
+                    'target': target
                 });
-                if (result['uploader'])
+                if (result.uploader)
                 {
-                    const uploader = result['uploader'];
+                    const uploader = result.uploader;
                     const uploadResult: any = await this.agent.currentRegion.caps.capsRequestUpload(uploader, scriptAsset);
-                    if (uploadResult['state'] && uploadResult['state'] === 'complete')
+                    if (uploadResult.state && uploadResult.state === 'complete')
                     {
-                        return new UUID(uploadResult['new_asset'].toString());
+                        return new UUID(uploadResult.new_asset.toString());
                     }
                 }
                 throw new Error('Asset upload failed');
@@ -1211,5 +1238,55 @@ export class InventoryItem
         {
             throw new Error('Agent inventory not supported just yet')
         }
+    }
+
+    public async setScriptRunning(running: boolean): Promise<void>
+    {
+        if (this.agent === undefined)
+        {
+            throw new Error('This item was created locally and can\'t be updated');
+        }
+        if (this.type !== AssetType.LSLText)
+        {
+            throw new Error('This is not a script');
+        }
+        if (this.container instanceof GameObject)
+        {
+            const msg = new SetScriptRunningMessage();
+            msg.AgentData = {
+                AgentID: this.agent.agentID,
+                SessionID: this.agent.currentRegion.circuit.sessionID,
+            };
+            msg.Script = {
+                ObjectID: this.container.FullID,
+                ItemID: this.itemID,
+                Running: running
+            };
+            const ack = this.agent.currentRegion.circuit.sendMessage(msg, PacketFlags.Reliable);
+            return this.agent.currentRegion.circuit.waitForAck(ack, 10000);
+        }
+        else
+        {
+            throw new Error('Script must be in an object to set state')
+        }
+    }
+
+    private async waitForCallbackID(callbackID: number): Promise<BulkUpdateInventoryEvent>
+    {
+        if (!this.agent)
+        {
+            throw new Error('No active agent');
+        }
+        return Utils.waitOrTimeOut<BulkUpdateInventoryEvent>(this.agent.currentRegion.clientEvents.onBulkUpdateInventoryEvent, 10000, (event: BulkUpdateInventoryEvent) =>
+        {
+            for (const item of event.itemData)
+            {
+                if (item.callbackID === callbackID)
+                {
+                    return FilterResponse.Finish;
+                }
+            }
+            return FilterResponse.NoMatch;
+        });
     }
 }

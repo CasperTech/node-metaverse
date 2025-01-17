@@ -1,11 +1,40 @@
 import validator from 'validator';
 import * as Long from 'long';
-import { XMLNode } from 'xmlbuilder';
+import type { XMLNode } from 'xmlbuilder';
 import * as uuid from 'uuid';
 
 export class UUID
 {
     private mUUID = '00000000-0000-0000-0000-000000000000';
+
+    public constructor(buf?: Buffer | string, pos?: number)
+    {
+        if (buf !== undefined)
+        {
+            if (typeof buf === 'string')
+            {
+                this.setUUID(buf);
+            }
+            else if (pos !== undefined)
+            {
+                const uuidBuf: Buffer = buf.subarray(pos, pos + 16);
+                const hexString = uuidBuf.toString('hex');
+                this.setUUID(hexString.substring(0, 8) + '-'
+                    + hexString.substring(8, 12) + '-'
+                    + hexString.substring(12, 16) + '-'
+                    + hexString.substring(16, 20) + '-'
+                    + hexString.substring(20, 32));
+            }
+            else if (typeof buf === 'object' && buf.toString !== undefined)
+            {
+                this.setUUID(buf.toString());
+            }
+            else
+            {
+                console.error('Can\'t accept UUIDs of type ' + typeof buf);
+            }
+        }
+    }
 
     public static zero(): UUID
     {
@@ -55,9 +84,9 @@ export class UUID
         }
         if (typeof obj[param] === 'object')
         {
-            if (obj[param]['UUID'] !== undefined && Array.isArray(obj[param]['UUID']) && obj[param]['UUID'].length > 0)
+            if (obj[param].UUID !== undefined && Array.isArray(obj[param].UUID) && obj[param].UUID.length > 0)
             {
-                const u = obj[param]['UUID'][0];
+                const u = obj[param].UUID[0];
                 if (typeof u === 'string')
                 {
                     if (validator.isUUID(u))
@@ -71,35 +100,6 @@ export class UUID
             return false;
         }
         return false;
-    }
-
-    public constructor(buf?: Buffer | string, pos?: number)
-    {
-        if (buf !== undefined)
-        {
-            if (typeof buf === 'string')
-            {
-                this.setUUID(buf);
-            }
-            else if (pos !== undefined)
-            {
-                const uuidBuf: Buffer = buf.slice(pos, pos + 16);
-                const hexString = uuidBuf.toString('hex');
-                this.setUUID(hexString.substring(0, 8) + '-'
-                    + hexString.substring(8, 12) + '-'
-                    + hexString.substring(12, 16) + '-'
-                    + hexString.substring(16, 20) + '-'
-                    + hexString.substring(20, 32));
-            }
-            else if (typeof buf === 'object' && buf.toString !== undefined)
-            {
-                this.setUUID(buf.toString());
-            }
-            else
-            {
-                console.error('Can\'t accept UUIDs of type ' + typeof buf);
-            }
-        }
     }
 
     public setUUID(val: string): boolean

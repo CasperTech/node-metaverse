@@ -1,26 +1,68 @@
 import { CommandsBase } from './CommandsBase';
-import { InventoryFolder } from '../InventoryFolder';
+import type { InventoryFolder } from '../InventoryFolder';
 import { InstantMessageDialog } from '../../enums/InstantMessageDialog';
 import { ImprovedInstantMessageMessage } from '../messages/ImprovedInstantMessage';
 import { Utils } from '../Utils';
-import { FolderType } from '../../enums/FolderType';
-import { InventoryOfferedEvent } from '../../events/InventoryOfferedEvent';
+import type { FolderType } from '../../enums/FolderType';
+import type { InventoryOfferedEvent } from '../../events/InventoryOfferedEvent';
 import { UUID } from '../UUID';
 import { Vector3 } from '../Vector3';
 import { PacketFlags } from '../../enums/PacketFlags';
 import { ChatSourceType } from '../../enums/ChatSourceType';
-import { InventoryItem } from '../InventoryItem';
+import type { InventoryItem } from '../InventoryItem';
 
 export class InventoryCommands extends CommandsBase
 {
-    getInventoryRoot(): InventoryFolder
+    public getInventoryRoot(): InventoryFolder
     {
         return this.agent.inventory.getRootFolderMain();
     }
-    getLibraryRoot(): InventoryFolder
+    public getLibraryRoot(): InventoryFolder
     {
         return this.agent.inventory.getRootFolderLibrary();
     }
+
+    public async getInventoryItem(item: UUID | string): Promise<InventoryItem>
+    {
+        if (typeof item === 'string')
+        {
+            item = new UUID(item);
+        }
+        const result = await this.currentRegion.agent.inventory.fetchInventoryItem(item);
+        if (result === null)
+        {
+            throw new Error('Unable to get inventory item');
+        }
+        else
+        {
+            return result;
+        }
+    }
+
+    public async acceptInventoryOffer(event: InventoryOfferedEvent): Promise<void>
+    {
+        if (event.source === ChatSourceType.Object)
+        {
+            return this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryAccepted);
+        }
+        else
+        {
+            return this.respondToInventoryOffer(event, InstantMessageDialog.InventoryAccepted);
+        }
+    }
+
+    public async rejectInventoryOffer(event: InventoryOfferedEvent): Promise<void>
+    {
+        if (event.source === ChatSourceType.Object)
+        {
+            await this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryDeclined); return;
+        }
+        else
+        {
+            await this.respondToInventoryOffer(event, InstantMessageDialog.InventoryDeclined); return;
+        }
+    }
+
     private async respondToInventoryOffer(event: InventoryOfferedEvent, response: InstantMessageDialog): Promise<void>
     {
         const agentName = this.agent.firstName + ' ' + this.agent.lastName;
@@ -49,47 +91,6 @@ export class InventoryCommands extends CommandsBase
             BinaryBucket: binary
         };
         const sequenceNo = this.circuit.sendMessage(im, PacketFlags.Reliable);
-        return await this.circuit.waitForAck(sequenceNo, 10000);
-    }
-
-    async getInventoryItem(item: UUID | string): Promise<InventoryItem>
-    {
-        if (typeof item === 'string')
-        {
-            item = new UUID(item);
-        }
-        const result = await this.currentRegion.agent.inventory.fetchInventoryItem(item);
-        if (result === null)
-        {
-            throw new Error('Unable to get inventory item');
-        }
-        else
-        {
-            return result;
-        }
-    }
-
-    async acceptInventoryOffer(event: InventoryOfferedEvent): Promise<void>
-    {
-        if (event.source === ChatSourceType.Object)
-        {
-            return await this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryAccepted);
-        }
-        else
-        {
-            return await this.respondToInventoryOffer(event, InstantMessageDialog.InventoryAccepted);
-        }
-    }
-
-    async rejectInventoryOffer(event: InventoryOfferedEvent): Promise<void>
-    {
-        if (event.source === ChatSourceType.Object)
-        {
-            return await this.respondToInventoryOffer(event, InstantMessageDialog.TaskInventoryDeclined);
-        }
-        else
-        {
-            return await this.respondToInventoryOffer(event, InstantMessageDialog.InventoryDeclined);
-        }
+        return this.circuit.waitForAck(sequenceNo, 10000);
     }
 }

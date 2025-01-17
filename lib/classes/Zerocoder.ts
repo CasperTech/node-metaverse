@@ -1,6 +1,6 @@
 export class Zerocoder
 {
-    static Encode(buf: Buffer, start: number, end: number): Buffer
+    public static Encode(buf: Buffer, start: number, end: number): Buffer
     {
         // First, run through the data and calculate how many bytes we will save
         let bytes = 0;
@@ -54,14 +54,14 @@ export class Zerocoder
         }
         return newBuf;
     }
-    static Decode(buf: Buffer, start: number, end: number, tail: number): Buffer
+    public static Decode(buf: Buffer, start: number, end: number, tail: number): Buffer
     {
         // First, run through the data and calculate how many bytes have been compressed
         let bytes = 0;
         let zero = false;
         for (let i = start; i <= end; i++)
         {
-            if (zero === true)
+            if (zero)
             {
                 zero = false;
                 // Minus two bytes for the overhead
@@ -79,7 +79,7 @@ export class Zerocoder
         zero = false;
         for (let i = start; i <= end; i++)
         {
-            if (zero === true)
+            if (zero)
             {
                 zero = false;
                 const zeroCount = buf.readUInt8(i);

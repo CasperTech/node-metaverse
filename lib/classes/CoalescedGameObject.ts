@@ -1,37 +1,41 @@
 import { Vector3 } from './Vector3';
 import { GameObject } from './public/GameObject';
-import { UUID } from './UUID';
+import type { UUID } from './UUID';
 import * as builder from 'xmlbuilder';
-import { XMLElement } from 'xmlbuilder';
+import type { XMLElement } from 'xmlbuilder';
 import { Utils } from './Utils';
 
 export class CoalescedGameObject
 {
-    itemID: UUID;
-    assetID: UUID;
-    size: Vector3;
-    objects: {
+    public itemID: UUID;
+    public assetID: UUID;
+    public size: Vector3;
+    public objects: {
         offset: Vector3,
         object: GameObject
     }[];
 
-    static async fromXML(xml: string): Promise<CoalescedGameObject>
+    public static async fromXML(xml: string): Promise<CoalescedGameObject>
     {
         const obj = new CoalescedGameObject();
 
         const parsed = await Utils.parseXML(xml);
 
-        if (!parsed['CoalescedObject'])
+        if (!parsed.CoalescedObject)
         {
             throw new Error('CoalescedObject not found');
         }
-        const result = parsed['CoalescedObject'];
+        const result = parsed.CoalescedObject;
         obj.size = new Vector3([parseFloat(result.$.x), parseFloat(result.$.y), parseFloat(result.$.z)]);
-        const sog = result['SceneObjectGroup'];
+        const sog = result.SceneObjectGroup;
         obj.objects = [];
         for (const object of sog)
         {
-            const toProcess = object['SceneObjectGroup'][0];
+            if (object.SceneObjectGroup === undefined || !Array.isArray(object.SceneObjectGroup) || object.SceneObjectGroup.length === 0)
+            {
+                continue;
+            }
+            const toProcess = object.SceneObjectGroup[0];
             const go = await GameObject.fromXML(toProcess);
             obj.objects.push({
                 offset: new Vector3([parseFloat(object.$.offsetx), parseFloat(object.$.offsety), parseFloat(object.$.offsetz)]),
@@ -41,7 +45,7 @@ export class CoalescedGameObject
         return obj;
     }
 
-    async exportXMLElement(rootNode?: string, skipResolve?: Set<string>): Promise<XMLElement>
+    public async exportXMLElement(rootNode?: string, skipResolve?: Set<string>): Promise<XMLElement>
     {
         const document = builder.create('CoalescedObject');
         document.att('x', this.size.x);
@@ -60,7 +64,7 @@ export class CoalescedGameObject
         return document;
     }
 
-    async exportXML(rootNode?: string, skipResolve?: Set<string>): Promise<string>
+    public async exportXML(rootNode?: string, skipResolve?: Set<string>): Promise<string>
     {
         return (await this.exportXMLElement(rootNode, skipResolve)).end({ pretty: true, allowEmpty: true });
     }

@@ -1,6 +1,6 @@
-import { Friend } from '../classes/public/Friend';
+import type { Friend } from '../classes/public/Friend';
 
 export class FriendRemovedEvent
 {
-    friend: Friend;
+    public friend: Friend;
 }

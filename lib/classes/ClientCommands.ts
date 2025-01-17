@@ -1,6 +1,6 @@
-import { Region } from './Region';
-import { Agent } from './Agent';
-import { Bot } from '../Bot';
+import type { Region } from './Region';
+import type { Agent } from './Agent';
+import type { Bot } from '../Bot';
 import { NetworkCommands } from './commands/NetworkCommands';
 import { AssetCommands } from './commands/AssetCommands';
 import { TeleportCommands } from './commands/TeleportCommands';
@@ -29,7 +29,7 @@ export class ClientCommands
     public inventory: InventoryCommands;
     public movement: MovementCommands;
 
-    constructor(region: Region, agent: Agent, bot: Bot)
+    public constructor(region: Region, agent: Agent, bot: Bot)
     {
         this.network = new NetworkCommands(region, agent, bot);
         this.asset = new AssetCommands(region, agent, bot);
@@ -45,7 +45,7 @@ export class ClientCommands
         this.movement = new MovementCommands(region, agent, bot);
     }
 
-    shutdown(): void
+    public shutdown(): void
     {
         this.network.shutdown();
         this.asset.shutdown();

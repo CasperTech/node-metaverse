@@ -1,20 +1,20 @@
-import { PCode } from '../../enums/PCode';
-import { SoundFlags } from '../../enums/SoundFlags';
-import { GameObject } from '../public/GameObject';
-import { UUID } from '../UUID';
-import { Vector3 } from '../Vector3';
-import { Color4 } from '../Color4';
-import { Quaternion } from '../Quaternion';
-import { Vector4 } from '../Vector4';
-import { Tree } from '../../enums/Tree';
-import { ParticleSystem } from '../ParticleSystem';
-import { NameValue } from '../NameValue';
-import { TextureEntry } from '../TextureEntry';
-import { FlexibleData } from '../public/FlexibleData';
-import { LightData } from '../public/LightData';
-import { LightImageData } from '../public/LightImageData';
-import { SculptData } from '../public/SculptData';
-import { MeshData } from '../public/MeshData';
+import type { PCode } from '../../enums/PCode';
+import type { SoundFlags } from '../../enums/SoundFlags';
+import type { GameObject } from '../public/GameObject';
+import type { UUID } from '../UUID';
+import type { Vector3 } from '../Vector3';
+import type { Color4 } from '../Color4';
+import type { Quaternion } from '../Quaternion';
+import type { Vector4 } from '../Vector4';
+import type { Tree } from '../../enums/Tree';
+import type { ParticleSystem } from '../ParticleSystem';
+import type { NameValue } from '../NameValue';
+import type { TextureEntry } from '../TextureEntry';
+import type { FlexibleData } from '../public/FlexibleData';
+import type { LightData } from '../public/LightData';
+import type { LightImageData } from '../public/LightImageData';
+import type { SculptData } from '../public/SculptData';
+import type { MeshData } from '../public/MeshData';
 
 export interface IGameObjectData
 {
@@ -61,7 +61,7 @@ export interface IGameObjectData
     ParentID?: number;
     OwnerID: UUID;
     IsAttachment: boolean;
-    NameValue: { [key: string]: NameValue };
+    NameValue: Map<string, NameValue>;
     PCode: PCode;
     State?: number;
     CRC?: number;

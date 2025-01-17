@@ -1,108 +1,113 @@
 import { UUID } from './UUID';
 import { Vector3 } from './Vector3';
 import { Inventory } from './Inventory';
-import { Wearable } from './Wearable';
-import { Region } from './Region';
+import type { Wearable } from './Wearable';
+import type { Region } from './Region';
 import { Message } from '../enums/Message';
-import { Packet } from './Packet';
-import { AvatarAnimationMessage } from './messages/AvatarAnimation';
+import type { Packet } from './Packet';
+import type { AvatarAnimationMessage } from './messages/AvatarAnimation';
 import { AgentUpdateMessage } from './messages/AgentUpdate';
 import { Quaternion } from './Quaternion';
 import { AgentState } from '../enums/AgentState';
 import { BuiltInAnimations } from '../enums/BuiltInAnimations';
 import { AgentWearablesRequestMessage } from './messages/AgentWearablesRequest';
-import { AgentWearablesUpdateMessage } from './messages/AgentWearablesUpdate';
+import type { AgentWearablesUpdateMessage } from './messages/AgentWearablesUpdate';
 import { RezSingleAttachmentFromInvMessage } from './messages/RezSingleAttachmentFromInv';
 import { AttachmentPoint } from '../enums/AttachmentPoint';
 import { Utils } from './Utils';
-import { ClientEvents } from './ClientEvents';
-import * as Long from 'long';
-import { GroupChatSessionAgentListEvent } from '../events/GroupChatSessionAgentListEvent';
+import type { ClientEvents } from './ClientEvents';
+import type * as Long from 'long';
+import type { GroupChatSessionAgentListEvent } from '../events/GroupChatSessionAgentListEvent';
 import { AgentFlags } from '../enums/AgentFlags';
 import { ControlFlags } from '../enums/ControlFlags';
 import { PacketFlags } from '../enums/PacketFlags';
 import { FolderType } from '../enums/FolderType';
-import { Subject, Subscription } from 'rxjs';
+import type { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 import { InventoryFolder } from './InventoryFolder';
 import { BulkUpdateInventoryEvent } from '../events/BulkUpdateInventoryEvent';
-import { BulkUpdateInventoryMessage } from './messages/BulkUpdateInventory';
+import type { BulkUpdateInventoryMessage } from './messages/BulkUpdateInventory';
 import { InventoryItem } from './InventoryItem';
-import { AgentDataUpdateMessage } from './messages/AgentDataUpdate';
+import type { AgentDataUpdateMessage } from './messages/AgentDataUpdate';
 import { InventoryLibrary } from '../enums/InventoryLibrary';
+import { AssetType } from '../enums/AssetType';
 
 export class Agent
 {
-    firstName: string;
-    lastName: string;
-    localID = 0;
-    agentID: UUID;
-    activeGroupID: UUID = UUID.zero();
-    accessMax: string;
-    regionAccess: string;
-    agentAccess: string;
-    currentRegion: Region;
-    chatSessions = new Map<string, {
+    public firstName: string;
+    public lastName: string;
+    public localID = 0;
+    public agentID: UUID;
+    public activeGroupID: UUID = UUID.zero();
+    public accessMax: string;
+    public regionAccess: string;
+    public agentAccess: string;
+    public currentRegion: Region;
+
+    public openID: {
+        'token'?: string,
+        'url'?: string
+    } = {};
+    public AOTransition: boolean;
+    public buddyList: {
+        'buddyRightsGiven': boolean,
+        'buddyID': UUID,
+        'buddyRightsHas': boolean
+    }[] = [];
+    public uiFlags: {
+        'allowFirstLife'?: boolean
+    } = {};
+    public maxGroups: number;
+    public agentFlags: number;
+    public startLocation: string;
+    public cofVersion: number;
+    public home: {
+        'regionHandle'?: Long,
+        'position'?: Vector3,
+        'lookAt'?: Vector3
+    } = {};
+    public snapshotConfigURL: string;
+    public readonly inventory: Inventory;
+    public gestures: {
+        assetID: UUID,
+        itemID: UUID
+    }[] = [];
+    public estateManager = false;
+    public appearanceComplete = false;
+    public agentAppearanceService: string;
+    public onGroupChatExpired = new Subject<UUID>();
+    public cameraLookAt: Vector3 = new Vector3([0.979546, 0.105575, -0.171303]);
+    public cameraCenter: Vector3 = new Vector3([199.58, 203.95, 24.304]);
+    public cameraLeftAxis: Vector3 = new Vector3([-1.0, 0.0, 0]);
+    public cameraUpAxis: Vector3 = new Vector3([0.0, 0.0, 1.0]);
+    public cameraFar = 1;
+    public readonly appearanceCompleteEvent: Subject<void> = new Subject<void>();
+
+    private readonly headRotation = Quaternion.getIdentity();
+    private readonly bodyRotation = Quaternion.getIdentity();
+
+    private wearables?: {
+        attachments: Wearable[];
+        serialNumber: number
+    };
+    private agentUpdateTimer: NodeJS.Timeout | null = null;
+
+    private controlFlags: ControlFlags = 0;
+
+    private readonly clientEvents: ClientEvents;
+    private animSubscription?: Subscription;
+    private readonly chatSessions = new Map<string, {
         agents: Map<string, {
             hasVoice: boolean;
             isModerator: boolean
         }>,
         timeout?: NodeJS.Timeout
     }>();
-    controlFlags: ControlFlags = 0;
-    openID: {
-        'token'?: string,
-        'url'?: string
-    } = {};
-    AOTransition: boolean;
-    buddyList: {
-        'buddyRightsGiven': boolean,
-        'buddyID': UUID,
-        'buddyRightsHas': boolean
-    }[] = [];
-    uiFlags: {
-        'allowFirstLife'?: boolean
-    } = {};
-    headRotation = Quaternion.getIdentity();
-    bodyRotation = Quaternion.getIdentity();
-    cameraLookAt: Vector3 = new Vector3([0.979546, 0.105575, -0.171303]);
-    cameraCenter: Vector3 = new Vector3([199.58, 203.95, 24.304]);
-    cameraLeftAxis: Vector3 = new Vector3([-1.0, 0.0, 0]);
-    cameraUpAxis: Vector3 = new Vector3([0.0, 0.0, 1.0]);
-    cameraFar = 1;
-    maxGroups: number;
-    agentFlags: number;
-    startLocation: string;
-    cofVersion: number;
-    home: {
-        'regionHandle'?: Long,
-        'position'?: Vector3,
-        'lookAt'?: Vector3
-    } = {};
-    snapshotConfigURL: string;
-    inventory: Inventory;
-    gestures: {
-        assetID: UUID,
-        itemID: UUID
-    }[] = [];
-    agentAppearanceService: string;
-    wearables?: {
-        attachments: Wearable[];
-        serialNumber: number
-    };
-    agentUpdateTimer: NodeJS.Timeout | null = null;
-    estateManager = false;
 
-    appearanceComplete = false;
-    appearanceCompleteEvent: Subject<void> = new Subject<void>();
 
-    private clientEvents: ClientEvents;
-    private animSubscription?: Subscription;
-
-    public onGroupChatExpired = new Subject<UUID>();
-
-    constructor(clientEvents: ClientEvents)
+    public constructor(clientEvents: ClientEvents)
     {
-        this.inventory = new Inventory(clientEvents, this);
+        this.inventory = new Inventory(this);
         this.clientEvents = clientEvents;
         this.clientEvents.onGroupChatAgentListUpdate.subscribe((event: GroupChatSessionAgentListEvent) =>
         {
@@ -152,12 +157,12 @@ export class Agent
         }
     }
 
-    setIsEstateManager(is: boolean): void
+    public setIsEstateManager(is: boolean): void
     {
         this.estateManager = is;
     }
 
-    getSessionAgentCount(uuid: UUID): number
+    public getSessionAgentCount(uuid: UUID): number
     {
         const str = uuid.toString();
         const session = this.chatSessions.get(str);
@@ -167,11 +172,11 @@ export class Agent
         }
         else
         {
-            return Object.keys(session.agents).length;
+            return session.agents.size;
         }
     }
 
-    addChatSession(uuid: UUID, timeout: boolean): boolean
+    public addChatSession(uuid: UUID, timeout: boolean): boolean
     {
         const str = uuid.toString();
         if (this.chatSessions.has(str))
@@ -188,18 +193,18 @@ export class Agent
         return true;
     }
 
-    private groupChatExpired(groupID: UUID): void
+    public groupChatExpired(groupID: UUID): void
     {
         this.onGroupChatExpired.next(groupID);
     }
 
-    hasChatSession(uuid: UUID): boolean
+    public hasChatSession(uuid: UUID): boolean
     {
         const str = uuid.toString();
         return this.chatSessions.has(str);
     }
 
-    deleteChatSession(uuid: UUID): boolean
+    public deleteChatSession(uuid: UUID): boolean
     {
         const str = uuid.toString();
         if (!this.chatSessions.has(str))
@@ -210,7 +215,7 @@ export class Agent
         return true;
     }
 
-    setCurrentRegion(region: Region): void
+    public setCurrentRegion(region: Region): void
     {
         if (this.animSubscription !== undefined)
         {
@@ -223,11 +228,122 @@ export class Agent
             Message.BulkUpdateInventory
         ], this.onMessage.bind(this));
     }
-    circuitActive(): void
+
+    public circuitActive(): void
     {
         this.agentUpdateTimer = setInterval(this.sendAgentUpdate.bind(this), 1000);
     }
-    sendAgentUpdate(): void
+
+    public shutdown(): void
+    {
+        if (this.agentUpdateTimer !== null)
+        {
+            clearInterval(this.agentUpdateTimer);
+            this.agentUpdateTimer = null;
+        }
+    }
+
+    public async setInitialAppearance(): Promise<void>
+    {
+        const circuit = this.currentRegion.circuit;
+        const wearablesRequest: AgentWearablesRequestMessage = new AgentWearablesRequestMessage();
+        wearablesRequest.AgentData = {
+            AgentID: this.agentID,
+            SessionID: circuit.sessionID
+        };
+        circuit.sendMessage(wearablesRequest, PacketFlags.Reliable);
+
+        const wearables: AgentWearablesUpdateMessage = await circuit.waitForMessage<AgentWearablesUpdateMessage>(Message.AgentWearablesUpdate, 30000);
+
+        if (!this.wearables || wearables.AgentData.SerialNum > this.wearables.serialNumber)
+        {
+            this.wearables = {
+                serialNumber: wearables.AgentData.SerialNum,
+                attachments: []
+            };
+            for (const wearable of wearables.WearableData)
+            {
+                if (this.wearables.attachments)
+                {
+                    this.wearables.attachments.push({
+                        itemID: wearable.ItemID,
+                        assetID: wearable.AssetID,
+                        wearableType: wearable.WearableType
+                    });
+                }
+            }
+        }
+
+
+        const currentOutfitFolder = await this.getWearables();
+        const wornObjects = this.currentRegion.objects.getObjectsByParent(this.localID);
+        for (const item of currentOutfitFolder.items)
+        {
+            if (item.type === AssetType.Notecard)
+            {
+                let found = false;
+                for (const obj of wornObjects)
+                {
+                    if (obj.hasNameValueEntry('AttachItemID'))
+                    {
+                        if (item.itemID.toString() === obj.getNameValueEntry('AttachItemID'))
+                        {
+                            found = true;
+                        }
+                    }
+                }
+
+                if (!found)
+                {
+                    const rsafi = new RezSingleAttachmentFromInvMessage();
+                    rsafi.AgentData = {
+                        AgentID: this.agentID,
+                        SessionID: circuit.sessionID
+                    };
+                    rsafi.ObjectData = {
+                        ItemID: new UUID(item.itemID.toString()),
+                        OwnerID: this.agentID,
+                        AttachmentPt: 0x80 | AttachmentPoint.Default,
+                        ItemFlags: item.flags,
+                        GroupMask: item.permissions.groupMask,
+                        EveryoneMask: item.permissions.everyoneMask,
+                        NextOwnerMask: item.permissions.nextOwnerMask,
+                        Name: Utils.StringToBuffer(item.name),
+                        Description: Utils.StringToBuffer(item.description)
+                    };
+                    circuit.sendMessage(rsafi, PacketFlags.Reliable);
+                }
+            }
+        }
+        this.appearanceComplete = true;
+        this.appearanceCompleteEvent.next();
+    }
+
+    public setControlFlag(flag: ControlFlags): void
+    {
+        this.controlFlags = this.controlFlags | flag;
+    }
+
+    public clearControlFlag(flag: ControlFlags): void
+    {
+        this.controlFlags = this.controlFlags & ~flag;
+    }
+
+    public async getWearables(): Promise<InventoryFolder>
+    {
+        for (const uuid of this.inventory.main.skeleton.keys())
+        {
+            const folder = this.inventory.main.skeleton.get(uuid);
+            if (folder && folder.typeDefault === FolderType.CurrentOutfit)
+            {
+                await folder.populate(false);
+                return folder;
+            }
+        }
+        throw new Error('Unable to get wearables from inventory')
+    }
+
+    public sendAgentUpdate(): void
     {
         if (!this.currentRegion)
         {
@@ -251,15 +367,8 @@ export class Agent
         };
         circuit.sendMessage(agentUpdate, 0 as PacketFlags);
     }
-    shutdown(): void
-    {
-        if (this.agentUpdateTimer !== null)
-        {
-            clearInterval(this.agentUpdateTimer);
-            this.agentUpdateTimer = null;
-        }
-    }
-    onMessage(packet: Packet): void
+
+    private onMessage(packet: Packet): void
     {
         if (packet.message.id === Message.AgentDataUpdate)
         {
@@ -274,7 +383,7 @@ export class Agent
             for (const newItem of msg.ItemData)
             {
                 const folder = this.inventory.findFolder(newItem.FolderID);
-                const item = new InventoryItem(folder || undefined, this);
+                const item = new InventoryItem(folder ?? undefined, this);
                 item.assetID = newItem.AssetID;
                 item.inventoryType = newItem.InvType;
                 item.name = Utils.BufferToStringSimple(newItem.Name);
@@ -316,7 +425,7 @@ export class Agent
             {
                 for (const anim of animMsg.AnimationList)
                 {
-                    const a = anim.AnimID.toString();
+                    const a = anim.AnimID.toString() as BuiltInAnimations;
                     if (a === BuiltInAnimations.STANDUP ||
                         a === BuiltInAnimations.PRE_JUMP ||
                         a === BuiltInAnimations.LAND ||
@@ -332,105 +441,5 @@ export class Agent
                 }
             }
         }
-    }
-
-    async getWearables(): Promise<InventoryFolder>
-    {
-        for (const uuid of Object.keys(this.inventory.main.skeleton))
-        {
-            const folder = this.inventory.main.skeleton[uuid];
-            if (folder.typeDefault === FolderType.CurrentOutfit)
-            {
-                await folder.populate(false);
-                return folder;
-            }
-        }
-        throw new Error('Unable to get wearables from inventory')
-    }
-
-    async setInitialAppearance(): Promise<void>
-    {
-        const circuit = this.currentRegion.circuit;
-        const wearablesRequest: AgentWearablesRequestMessage = new AgentWearablesRequestMessage();
-        wearablesRequest.AgentData = {
-            AgentID: this.agentID,
-            SessionID: circuit.sessionID
-        };
-        circuit.sendMessage(wearablesRequest, PacketFlags.Reliable);
-
-        const wearables: AgentWearablesUpdateMessage = await circuit.waitForMessage<AgentWearablesUpdateMessage>(Message.AgentWearablesUpdate, 10000);
-
-        if (!this.wearables || wearables.AgentData.SerialNum > this.wearables.serialNumber)
-        {
-            this.wearables = {
-                serialNumber: wearables.AgentData.SerialNum,
-                attachments: []
-            };
-            for (const wearable of wearables.WearableData)
-            {
-                if (this.wearables && this.wearables.attachments)
-                {
-                    this.wearables.attachments.push({
-                        itemID: wearable.ItemID,
-                        assetID: wearable.AssetID,
-                        wearableType: wearable.WearableType
-                    });
-                }
-            }
-        }
-
-
-        const currentOutfitFolder = await this.getWearables();
-        const wornObjects = this.currentRegion.objects.getObjectsByParent(this.localID);
-        for (const item of currentOutfitFolder.items)
-        {
-            if (item.type === 6)
-            {
-                let found = false;
-                for (const obj of wornObjects)
-                {
-                    if (obj.hasNameValueEntry('AttachItemID'))
-                    {
-                        if (item.itemID.toString() === obj.getNameValueEntry('AttachItemID'))
-                        {
-                            found = true;
-                        }
-                    }
-                }
-
-                if (!found)
-                {
-                    const rsafi = new RezSingleAttachmentFromInvMessage();
-                    rsafi.AgentData = {
-                        AgentID: this.agentID,
-                        SessionID: circuit.sessionID
-                    };
-                    rsafi.ObjectData = {
-                        ItemID: new UUID(item.itemID.toString()),
-                        OwnerID: this.agentID,
-                        AttachmentPt: 0x80 | AttachmentPoint.Default,
-                        ItemFlags: item.flags,
-                        GroupMask: item.permissions.groupMask,
-                        EveryoneMask: item.permissions.everyoneMask,
-                        NextOwnerMask: item.permissions.nextOwnerMask,
-                        Name: Utils.StringToBuffer(item.name),
-                        Description: Utils.StringToBuffer(item.description)
-                    };
-                    circuit.sendMessage(rsafi, PacketFlags.Reliable);
-                }
-            }
-        }
-        this.appearanceComplete = true;
-        this.appearanceCompleteEvent.next();
-    }
-
-    setControlFlag(flag: ControlFlags): void
-    {
-        this.controlFlags = this.controlFlags | flag;
-    }
-
-    clearControlFlag(flag: ControlFlags): void
-    {
-        this.controlFlags = this.controlFlags & ~flag;
     }
 }
