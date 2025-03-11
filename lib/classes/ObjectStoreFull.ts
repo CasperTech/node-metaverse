@@ -33,7 +33,7 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
     {
         super(circuit, agent, clientEvents, options);
         this.rtree = new RBush3D();
-
+        this.fullStore = true;
     }
 
     protected objectUpdate(objectUpdate: ObjectUpdateMessage): void
