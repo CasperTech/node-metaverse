@@ -42,6 +42,7 @@ export class LLMesh
         mesh: number[],
         mesh_triangles: number
     }
+    public submodel_id?: number;
 
     public static async from(buf: Buffer): Promise<LLMesh>
     {
@@ -74,6 +75,15 @@ export class LLMesh
                     if (int instanceof LLSDInteger)
                     {
                         llmesh.version = int.valueOf();
+                    }
+                    break;
+                }
+                case 'submodel_id':
+                {
+                    const int = obj[key];
+                    if (int instanceof LLSDInteger)
+                    {
+                        llmesh.submodel_id = int.valueOf();
                     }
                     break;
                 }
@@ -300,6 +310,10 @@ export class LLMesh
         {
             llsd.add('version', new LLSDInteger(this.version));
         }
+        if (this.submodel_id !== undefined)
+        {
+            llsd.add('submodel_id', new LLSDInteger(this.submodel_id));
+        }
         if (this.date !== undefined)
         {
             llsd.add('date', this.date);
@@ -473,7 +487,7 @@ export class LLMesh
     private static parsePhysicsConvex(mesh: LLSDMap): LLPhysicsConvex
     {
         const conv: LLPhysicsConvex = {
-            boundingVerts: [],
+            boundingVerts: undefined,
             domain: {
                 min: new Vector3([-0.5, -0.5, -0.5]),
                 max: new Vector3([0.5, 0.5, 0.5])
@@ -509,11 +523,10 @@ export class LLMesh
                 throw new Error('Hull list expected number of points does not match number of positions: ' + totalPoints + ' vs ' + conv.positions.length);
             }
         }
-        if (!(mesh.BoundingVerts instanceof Buffer))
+        if (mesh.BoundingVerts instanceof Buffer)
         {
-            throw new Error('BoundingVerts is required');
+            conv.boundingVerts = this.decodeByteDomain3(mesh.BoundingVerts, conv.domain.min, conv.domain.max);
         }
-        conv.boundingVerts = this.decodeByteDomain3(mesh.BoundingVerts, conv.domain.min, conv.domain.max);
         return conv;
     }
 
@@ -898,18 +911,21 @@ export class LLMesh
             llsd.add('Positions', buf);
         }
         {
-            const buf = Buffer.allocUnsafe(conv.boundingVerts.length * 6);
-            let pos = 0;
-            for (const vec of conv.boundingVerts)
+            if(conv.boundingVerts)
             {
-                buf.writeUInt16LE(Math.round(((vec.x - conv.domain.min.x) / sizeX) * 65535), pos);
-                pos = pos + 2;
-                buf.writeUInt16LE(Math.round(((vec.y - conv.domain.min.y) / sizeY) * 65535), pos);
-                pos = pos + 2;
-                buf.writeUInt16LE(Math.round(((vec.z - conv.domain.min.z) / sizeZ) * 65535), pos);
-                pos = pos + 2;
+                const buf = Buffer.allocUnsafe(conv.boundingVerts.length * 6);
+                let pos = 0;
+                for (const vec of conv.boundingVerts)
+                {
+                    buf.writeUInt16LE(Math.round(((vec.x - conv.domain.min.x) / sizeX) * 65535), pos);
+                    pos = pos + 2;
+                    buf.writeUInt16LE(Math.round(((vec.y - conv.domain.min.y) / sizeY) * 65535), pos);
+                    pos = pos + 2;
+                    buf.writeUInt16LE(Math.round(((vec.z - conv.domain.min.z) / sizeZ) * 65535), pos);
+                    pos = pos + 2;
+                }
+                llsd.add('BoundingVerts', buf);
             }
-            llsd.add('BoundingVerts', buf);
         }
         return Utils.deflate(LLSD.toBinary(llsd));
     }
