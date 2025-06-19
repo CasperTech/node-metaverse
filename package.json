@@ -33,7 +33,7 @@
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
     "eslint": "^9.15.0",
-    "mocha": "^9.2.2",
+    "mocha": "^11.7.0",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.1",
     "tslint": "^6.1.3",
