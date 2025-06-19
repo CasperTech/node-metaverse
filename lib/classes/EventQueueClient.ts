@@ -20,7 +20,7 @@ import { InventoryLibrary } from '../enums/InventoryLibrary';
 import { LandStatsEvent } from '../events/LandStatsEvent';
 
 import * as LLSD from '@caspertech/llsd';
-import type { CancelableRequest, Response } from 'got';
+import type { CancelableRequest, Response as GotResponse } from 'got';
 import got from 'got';
 import * as Long from 'long';
 
@@ -30,7 +30,7 @@ export class EventQueueClient
     public ack?: number;
     public done = false;
 
-    private currentRequest?: CancelableRequest<Response<string>> = undefined;
+    private currentRequest?: CancelableRequest<GotResponse<string>> = undefined;
     private readonly clientEvents: ClientEvents;
     private readonly agent: Agent;
 
@@ -578,7 +578,7 @@ export class EventQueueClient
     }
     public async request(url: string, data: string, contentType: string): Promise<string>
     {
-        let req: CancelableRequest<Response<string>> | undefined = undefined;
+        let req: CancelableRequest<GotResponse<string>> | undefined = undefined;
         try
         {
             req = got.post(url, {

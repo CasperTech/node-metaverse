@@ -16,7 +16,7 @@ describe('UUID', () =>
             {
                 assert.fail('Returned UUID is not a string');
             }
-            if (!validator.isUUID(uuid))
+            if (!validator.isUUID(uuid, 'loose'))
             {
                 assert.fail('Returned string is not a valid UUID');
             }
@@ -28,7 +28,7 @@ describe('UUID', () =>
             {
                 assert.fail('Returned second UUID is not a string');
             }
-            if (!validator.isUUID(secondUUID))
+            if (!validator.isUUID(secondUUID, 'loose'))
             {
                 assert.fail('Second UUID is not a valid UUID');
             }
@@ -52,7 +52,7 @@ describe('UUID', () =>
             {
                 assert.fail('Returned UUID is not a string');
             }
-            if (!validator.isUUID(uuid))
+            if (!validator.isUUID(uuid, 'loose'))
             {
                 assert.fail('Returned string is not a valid UUID');
             }
@@ -74,7 +74,7 @@ describe('UUID', () =>
             {
                 assert.fail('Returned UUID is not a string');
             }
-            if (!validator.isUUID(str))
+            if (!validator.isUUID(str, 'loose'))
             {
                 assert.fail('Returned string is not a valid UUID');
             }
@@ -99,7 +99,7 @@ describe('UUID', () =>
             {
                 assert.fail('Returned UUID is not a string');
             }
-            if (!validator.isUUID(result))
+            if (!validator.isUUID(result, 'loose'))
             {
                 assert.fail('Returned string is not a valid UUID');
             }

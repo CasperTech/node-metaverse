@@ -77,7 +77,7 @@ export class LoginHandler
             // Ignore any error
         }
 
-        if (hardwareID === null || !validator.isUUID(String(hardwareID)))
+        if (hardwareID === null || !validator.isUUID(String(hardwareID), 'loose'))
         {
             hardwareID = UUID.random().toString();
             await fs.promises.writeFile(hardwareIDFile, JSON.stringify({ id0: hardwareID }));
