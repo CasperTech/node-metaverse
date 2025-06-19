@@ -76,7 +76,7 @@ export class UUID
         }
         if (typeof obj[param] === 'string')
         {
-            if (validator.isUUID(obj[param]))
+            if (validator.isUUID(obj[param], 'loose'))
             {
                 return new UUID(obj[param]);
             }
@@ -89,7 +89,7 @@ export class UUID
                 const u = obj[param].UUID[0];
                 if (typeof u === 'string')
                 {
-                    if (validator.isUUID(u))
+                    if (validator.isUUID(u, 'loose'))
                     {
                         return new UUID(u);
                     }
@@ -105,7 +105,7 @@ export class UUID
     public setUUID(val: string): boolean
     {
         const test = val.trim();
-        if (validator.isUUID(test))
+        if (validator.isUUID(test, 'loose'))
         {
             this.mUUID = test;
             return true;
