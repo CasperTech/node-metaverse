@@ -1118,7 +1118,7 @@ export class Region
             SessionID: this.circuit.sessionID
         };
         this.circuit.sendMessage(request, PacketFlags.Reliable);
-        const regionInfo: RegionInfoMessage = await this.circuit.waitForMessage<RegionInfoMessage>(Message.RegionInfo, 30000);
+        const regionInfo: RegionInfoMessage = await this.circuit.waitForMessage<RegionInfoMessage>(Message.RegionInfo, 60000);
 
         this.estateID = regionInfo.RegionInfo.EstateID;
         this.parentEstateID = regionInfo.RegionInfo.ParentEstateID;

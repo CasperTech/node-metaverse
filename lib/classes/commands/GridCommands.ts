@@ -414,7 +414,7 @@ export class GridCommands extends CommandsBase
         }
 
         this.circuit.sendMessage(req, PacketFlags.Reliable);
-        await this.circuit.waitForMessage<UUIDNameReplyMessage>(Message.UUIDNameReply, 10000, (reply: UUIDNameReplyMessage): FilterResponse =>
+        await this.circuit.waitForMessage<UUIDNameReplyMessage>(Message.UUIDNameReply, 30000, (reply: UUIDNameReplyMessage): FilterResponse =>
         {
             let found = false;
             for (const name of reply.UUIDNameBlock)

@@ -1322,7 +1322,7 @@ export class ObjectStoreLite implements IObjectStore
                 pos = pos + 4;
             }
 
-            o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;
+            o.IsAttachment = o.NameValue !== undefined && o.NameValue.get('AttachItemID') !== undefined;
             if (o.IsAttachment && o.State !== undefined)
             {
                 o.attachmentPoint = this.decodeAttachPoint(o.State);
