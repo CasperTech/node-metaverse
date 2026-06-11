@@ -22,7 +22,7 @@ import { LandStatsEvent } from '../events/LandStatsEvent';
 import * as LLSD from '@caspertech/llsd';
 import type { CancelableRequest, Response as GotResponse } from 'got';
 import got from 'got';
-import * as Long from 'long';
+import { Long } from './LongUtil';
 
 export class EventQueueClient
 {

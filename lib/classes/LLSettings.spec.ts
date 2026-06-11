@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import * as fg from 'fast-glob';
 import * as fs from 'fs';
 import * as path from 'path';
 import { LLSettings } from './LLSettings';
-import { toDeeplyMatch } from '../../testing/TestingUtils.util.spec';
+import { toDeeplyMatch } from '../../testing/TestingUtils.util';
 
 expect.extend({
     toDeeplyMatch,
@@ -11,8 +10,8 @@ expect.extend({
 
 describe('LLSettings', () =>
 {
-    const filePath = path.join(__dirname, '..', '..', '..', '..', 'assets');
-    const filteredFileNames = fg.sync(filePath + '/*.bin');
+    const filePath = path.join(__dirname, '..', '..', 'testing');
+    const filteredFileNames = fs.readdirSync(filePath).filter((f) => f.endsWith('.bin')).map((f) => path.join(filePath, f));
     for(const file of filteredFileNames)
     {
         const baseName = path.basename(file);

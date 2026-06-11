@@ -2,7 +2,7 @@ import { UUID } from './UUID';
 import { Agent } from './Agent';
 import { Region } from './Region';
 import { Vector3 } from './Vector3';
-import * as Long from 'long';
+import { Long } from './LongUtil';
 import type { ClientEvents } from './ClientEvents';
 import { InventoryFolder } from './InventoryFolder';
 import type { BotOptionFlags} from '..';

@@ -97,14 +97,14 @@ describe('LLSD', () =>
             expect(parsed.arr[12]).toBeInstanceOf(LLSDReal);
             expect(parsed.arr[12].valueOf()).toBe(-0);
 
-            const rebuilt = LLSD.toNotation(parsed as unknown as LLSDType);
+            const rebuilt = LLSD.toNotation(parsed as unknown as LLSDType, false);
             expect(rebuilt).toBe('{"string":"Hello!","map":{"nestedMap":{"nestedArray":["one",i2,r3.14,u00000000-1111-2222-3333-444444444444,l"https://www.blahblah.com",{"date":d"2024-11-22T20:35:36.638Z"},!]}},"arr":[1,0,!,!,d"2024-11-22T20:35:36.638Z",b64"dGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw==",b64"UGVlcGVycyBqZWVwZXJzIQ==",rNaN,rNaN,r-Infinity,rInfinity,r0,r-0]}');
         });
 
         it('escapes special characters', () =>
         {
             const str = '\'"ⳑ⣺⋺➍⣋▎⊻™⿨₀⏆⨣⑬⛪␹⩯\0⁇⯒';
-            const encoded= LLSD.toNotation(str);
+            const encoded = LLSD.toNotation(str, false);
             expect(encoded.valueOf()).toBe('"\'\\"ⳑ⣺⋺➍⣋▎⊻™⿨₀⏆⨣⑬⛪␹⩯\\x00⁇⯒"');
 
             const parsed = LLSD.parseNotation(encoded);

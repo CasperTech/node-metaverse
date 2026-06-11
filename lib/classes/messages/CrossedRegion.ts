@@ -3,7 +3,7 @@
 import { UUID } from '../UUID';
 import { IPAddress } from '../IPAddress';
 import { Vector3 } from '../Vector3';
-import * as Long from 'long';
+import { Long } from '../LongUtil';
 import { MessageFlags } from '../../enums/MessageFlags';
 import { MessageBase } from '../MessageBase';
 import { Message } from '../../enums/Message';

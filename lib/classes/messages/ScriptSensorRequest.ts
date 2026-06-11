@@ -2,7 +2,7 @@
 
 import { UUID } from '../UUID';
 import { Vector3 } from '../Vector3';
-import * as Long from 'long';
+import { Long } from '../LongUtil';
 import { Quaternion } from '../Quaternion';
 import { MessageFlags } from '../../enums/MessageFlags';
 import { MessageBase } from '../MessageBase';

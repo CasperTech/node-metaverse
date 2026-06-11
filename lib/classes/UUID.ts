@@ -1,5 +1,5 @@
 import validator from 'validator';
-import * as Long from 'long';
+import { Long } from './LongUtil';
 import type { XMLNode } from 'xmlbuilder';
 import * as uuid from 'uuid';
 

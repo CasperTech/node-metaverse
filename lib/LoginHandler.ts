@@ -12,7 +12,12 @@ import type { BotOptionFlags } from './enums/BotOptionFlags';
 import { URL } from 'url';
 import * as os from 'os';
 
-const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
+// Resolves from lib/ when running from source, or dist/lib/ when compiled
+const packageJsonCandidates = [
+    path.join(__dirname, '..', 'package.json'),
+    path.join(__dirname, '..', '..', 'package.json')
+];
+const packageJsonPath = packageJsonCandidates.find((p) => fs.existsSync(p)) ?? packageJsonCandidates[1];
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJson = require(packageJsonPath);
 const version = packageJson.version;

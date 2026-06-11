@@ -1,4 +1,4 @@
-import * as Long from 'long';
+import { Long } from './LongUtil';
 import type { Subscription } from 'rxjs';
 import { Subject } from 'rxjs';
 import * as xml2js from 'xml2js';

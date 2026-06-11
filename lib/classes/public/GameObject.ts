@@ -2182,13 +2182,13 @@ export class GameObject implements IGameObjectData
                 shape.ele('ProfileShape', ProfileShape[profileShape]);
                 shape.ele('HollowShape', HoleType[holeType]);
             }
-            if (this.extraParams?.meshData !== null)
+            if (this.extraParams?.meshData)
             {
                 shape.ele('SculptType', this.extraParams.meshData.type);
                 UUID.getXML(shape.ele('SculptTexture'), this.extraParams.meshData.meshData);
                 shape.ele('SculptEntry', true);
             }
-            else if (this.extraParams?.sculptData !== null)
+            else if (this.extraParams?.sculptData)
             {
                 shape.ele('SculptType', this.extraParams.sculptData.type);
                 UUID.getXML(shape.ele('SculptTexture'), this.extraParams.sculptData.texture);
@@ -2198,7 +2198,7 @@ export class GameObject implements IGameObjectData
             {
                 shape.ele('SculptEntry', false);
             }
-            if (this.extraParams?.flexibleData !== null)
+            if (this.extraParams?.flexibleData)
             {
                 shape.ele('FlexiSoftness', this.extraParams.flexibleData.Softness);
                 shape.ele('FlexiTension', this.extraParams.flexibleData.Tension);
@@ -2214,7 +2214,7 @@ export class GameObject implements IGameObjectData
             {
                 shape.ele('FlexiEntry', false);
             }
-            if (this.extraParams?.lightData !== null)
+            if (this.extraParams?.lightData)
             {
                 shape.ele('LightColorR', this.extraParams.lightData.Color.red);
                 shape.ele('LightColorG', this.extraParams.lightData.Color.green);
