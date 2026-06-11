@@ -4,6 +4,11 @@ import type {
     LLGLTFMaterialEntry,
     LLGLTFTextureInfo,
 } from './LLGLTFMaterialData';
+import { LLSD } from './llsd/LLSD';
+import { LLSDInteger } from './llsd/LLSDInteger';
+import { LLSDMap } from './llsd/LLSDMap';
+import { LLSDReal } from './llsd/LLSDReal';
+import type { LLSDType } from './llsd/LLSDType';
 import { UUID } from './UUID';
 
 export interface LLGLTFTextureTransformOverride
@@ -24,6 +29,118 @@ export class LLGLTFMaterialOverride
     public alphaCutoff?: number;
     public doubleSided?: boolean;
     public textureTransforms?: (LLGLTFTextureTransformOverride | null)[];
+
+    public static fromStoredMaterial(data: string): LLGLTFMaterialOverride
+    {
+        try
+        {
+            return LLGLTFMaterialOverride.fromFullMaterialJSON(data);
+        }
+        catch (_error: unknown)
+        {
+            return LLGLTFMaterialOverride.fromOverrideLLSDNotation(data);
+        }
+    }
+
+    public static fromOverrideLLSDNotation(notation: string): LLGLTFMaterialOverride
+    {
+        const over = new LLGLTFMaterialOverride();
+        const parsed = LLSD.parseNotation(notation);
+        if (!(parsed instanceof LLSDMap))
+        {
+            return over;
+        }
+
+        const tex = parsed.get('tex');
+        if (Array.isArray(tex))
+        {
+            for (let i = 0; i < tex.length; i++)
+            {
+                const entry = tex[i];
+                if (entry instanceof UUID && !entry.isZero())
+                {
+                    over.setTexture(i, entry.toString());
+                }
+            }
+        }
+
+        const baseColor = LLGLTFMaterialOverride.llsdNumberArray(parsed.get('bc'));
+        if (baseColor !== undefined && baseColor.length === 4)
+        {
+            over.baseColor = baseColor;
+        }
+
+        const emissive = LLGLTFMaterialOverride.llsdNumberArray(parsed.get('ec'));
+        if (emissive !== undefined)
+        {
+            over.emissiveFactor = emissive;
+        }
+
+        const metallic = LLGLTFMaterialOverride.llsdNumber(parsed.get('mf'));
+        if (metallic !== undefined)
+        {
+            over.metallicFactor = metallic;
+        }
+
+        const roughness = LLGLTFMaterialOverride.llsdNumber(parsed.get('rf'));
+        if (roughness !== undefined)
+        {
+            over.roughnessFactor = roughness;
+        }
+
+        const alphaMode = LLGLTFMaterialOverride.llsdNumber(parsed.get('am'));
+        if (alphaMode !== undefined)
+        {
+            over.alphaMode = alphaMode;
+        }
+
+        const alphaCutoff = LLGLTFMaterialOverride.llsdNumber(parsed.get('ac'));
+        if (alphaCutoff !== undefined)
+        {
+            over.alphaCutoff = alphaCutoff;
+        }
+
+        const doubleSided = parsed.get('ds');
+        if (typeof doubleSided === 'boolean')
+        {
+            over.doubleSided = doubleSided;
+        }
+
+        const transforms = parsed.get('ti');
+        if (Array.isArray(transforms))
+        {
+            for (let i = 0; i < transforms.length; i++)
+            {
+                const entry = transforms[i];
+                if (!(entry instanceof LLSDMap))
+                {
+                    continue;
+                }
+                const transform: LLGLTFTextureTransformOverride = {};
+                const offset = LLGLTFMaterialOverride.llsdNumberArray(entry.get('o'));
+                if (offset !== undefined)
+                {
+                    transform.offset = offset;
+                }
+                const scale = LLGLTFMaterialOverride.llsdNumberArray(entry.get('s'));
+                if (scale !== undefined)
+                {
+                    transform.scale = scale;
+                }
+                const rotation = LLGLTFMaterialOverride.llsdNumber(entry.get('r'));
+                if (rotation !== undefined)
+                {
+                    transform.rotation = rotation;
+                }
+                if (Object.keys(transform).length > 0)
+                {
+                    over.setTransform(i, transform);
+                }
+            }
+        }
+
+        return over;
+    }
 
     public static fromFullMaterialJSON(json: string): LLGLTFMaterialOverride
     {
@@ -399,5 +516,37 @@ export class LLGLTFMaterialOverride
             this.textureTransforms.push(null);
         }
         this.textureTransforms[idx] = trans;
+    }
+
+    private static llsdNumber(value: LLSDType | undefined): number | undefined
+    {
+        if (value instanceof LLSDInteger || value instanceof LLSDReal)
+        {
+            return value.valueOf();
+        }
+        if (typeof value === 'number')
+        {
+            return value;
+        }
+        return undefined;
+    }
+
+    private static llsdNumberArray(value: LLSDType | undefined): number[] | undefined
+    {
+        if (!Array.isArray(value))
+        {
+            return undefined;
+        }
+        const result: number[] = [];
+        for (const entry of value)
+        {
+            const num = LLGLTFMaterialOverride.llsdNumber(entry);
+            if (num === undefined)
+            {
+                return undefined;
+            }
+            result.push(num);
+        }
+        return result;
     }
 }

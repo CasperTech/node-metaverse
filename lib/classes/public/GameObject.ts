@@ -1544,7 +1544,14 @@ export class GameObject implements IGameObjectData
                     pos++;
                     const json = tex.subarray(pos, pos + len).toString('utf-8');
                     pos = pos + len;
-                    go.TextureEntry.gltfMaterialOverrides.set(te_index, LLGLTFMaterialOverride.fromFullMaterialJSON(json));
+                    try
+                    {
+                        go.TextureEntry.gltfMaterialOverrides.set(te_index, LLGLTFMaterialOverride.fromStoredMaterial(json));
+                    }
+                    catch (error: unknown)
+                    {
+                        console.error('Failed to parse material override for face ' + String(te_index) + ': ' + String(error));
+                    }
                 }
             }
             if ((prop = Utils.getFromXMLJS(shape, 'PathBegin')) !== undefined)
