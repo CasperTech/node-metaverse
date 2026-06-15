@@ -150,6 +150,8 @@ export class GameObject implements IGameObjectData
     public JointAxisOrAnchor?: Vector3;
     public Position?: Vector3;
     public Rotation?: Quaternion;
+    public AttachedPos?: Vector3;
+    public AttachedRot?: Quaternion;
     public CollisionPlane?: Vector4;
     public Velocity?: Vector3;
     public Acceleration?: Vector3;
@@ -1381,6 +1383,14 @@ export class GameObject implements IGameObjectData
         {
             go.Rotation = prop;
         }
+        if ((prop = Vector3.fromXMLJS(obj, 'AttachedPos')) !== undefined)
+        {
+            go.AttachedPos = prop;
+        }
+        if ((prop = Quaternion.fromXMLJS(obj, 'AttachedRot')) !== undefined)
+        {
+            go.AttachedRot = prop;
+        }
         if ((prop = Vector3.fromXMLJS(obj, 'Velocity')) !== undefined)
         {
             go.Velocity = prop;
@@ -2091,6 +2101,14 @@ export class GameObject implements IGameObjectData
             Vector3.getXML(sceneObjectPart.ele('OffsetPosition'), this.Position);
         }
         Quaternion.getXML(sceneObjectPart.ele('RotationOffset'), this.Rotation);
+        if (this.AttachedPos !== undefined)
+        {
+            Vector3.getXML(sceneObjectPart.ele('AttachedPos'), this.AttachedPos);
+        }
+        if (this.AttachedRot !== undefined)
+        {
+            Quaternion.getXML(sceneObjectPart.ele('AttachedRot'), this.AttachedRot);
+        }
         Vector3.getXML(sceneObjectPart.ele('Velocity'), this.Velocity);
         Vector3.getXML(sceneObjectPart.ele('AngularVelocity'), this.AngularVelocity);
         Vector3.getXML(sceneObjectPart.ele('Acceleration'), this.Acceleration);
