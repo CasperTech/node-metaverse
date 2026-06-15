@@ -11,31 +11,44 @@ export class LLGLTFMaterial
     {
         if (data !== undefined)
         {
-            const header = data.subarray(0, 18).toString('utf-8');
-            if (header.length !== 18 || header !== '<? LLSD/Binary ?>\n')
-            {
-                throw new Error('Failed to parse LLGLTFMaterial');
-            }
-
-            const body = new LLSD.Binary(Array.from(data.subarray(18)), 'BINARY');
-            const llsd = LLSD.LLSD.parseBinary(body);
-            if (!llsd.result)
+            const result = LLGLTFMaterial.parseEnvelope(data);
+            if (result === undefined || result === null)
             {
                 throw new Error('Failed to decode LLGLTFMaterial');
             }
-            if (llsd.result.type)
+            if (result.type)
             {
-                this.type = String(llsd.result.type);
+                this.type = String(result.type as unknown);
             }
-            if (llsd.result.version)
+            if (result.version)
             {
-                this.version = String(llsd.result.version);
+                this.version = String(result.version as unknown);
             }
-            if (llsd.result.data)
+            if (result.data)
             {
-                const assetData = String(llsd.result.data);
+                const assetData = String(result.data as unknown);
                 this.data = JSON.parse(assetData);
             }
         }
+    }
+
+    private static parseEnvelope(data: Buffer): { type?: unknown; version?: unknown; data?: unknown } | undefined
+    {
+        const newline = data.indexOf(0x0a);
+        const marker = newline >= 0 ? data.subarray(0, newline).toString('utf-8').replace(/\s+/g, '').toLowerCase() : '';
+        if (marker === '<?llsd/binary?>')
+        {
+            const body = new LLSD.Binary(Array.from(data.subarray(newline + 1)), 'BINARY');
+            const llsd = LLSD.LLSD.parseBinary(body);
+            return llsd?.result as { type?: unknown; version?: unknown; data?: unknown };
+        }
+
+        const text = data.toString('utf-8').trimStart();
+        if (text.startsWith('<'))
+        {
+            return LLSD.LLSD.parseXML(text) as { type?: unknown; version?: unknown; data?: unknown };
+        }
+
+        throw new Error('Failed to parse LLGLTFMaterial');
     }
 }
