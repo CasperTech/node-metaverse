@@ -413,7 +413,8 @@ export class Utils
 
     public static packPathShear(pathShear: number): number
     {
-        return Math.round(pathShear / Utils.SHEAR_QUANTA);
+        const packed = Math.round(pathShear / Utils.SHEAR_QUANTA);
+        return packed < 0 ? packed + 256 : packed;
     }
 
     public static packPathTwist(pathTwist: number): number
@@ -453,17 +454,17 @@ export class Utils
 
     public static unpackPathShear(pathShear: number): number
     {
-        return pathShear * Utils.SHEAR_QUANTA;
+        return (pathShear > 127 ? pathShear - 256 : pathShear) * Utils.SHEAR_QUANTA;
     }
 
     public static unpackPathTwist(pathTwist: number): number
     {
-        return pathTwist * Utils.SCALE_QUANTA;
+        return (pathTwist > 127 ? pathTwist - 256 : pathTwist) * Utils.SCALE_QUANTA;
     }
 
     public static unpackPathTaper(pathTaper: number): number
     {
-        return pathTaper * Utils.TAPER_QUANTA;
+        return (pathTaper > 127 ? pathTaper - 256 : pathTaper) * Utils.TAPER_QUANTA;
     }
 
     public static unpackPathRevolutions(pathRevolutions: number): number
