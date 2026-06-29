@@ -92,11 +92,11 @@ export class Vector3
         doc.ele('Z', v.z);
     }
 
-    public static fromXMLJS(obj: any, param: string): Vector3 | false
+    public static fromXMLJS(obj: any, param: string): Vector3 | undefined
     {
         if (!obj[param])
         {
-            return false;
+            return undefined;
         }
         let value = obj[param];
         if (Array.isArray(value) && value.length > 0)
@@ -124,9 +124,9 @@ export class Vector3
                 }
                 return new Vector3([Number(x), Number(y), Number(z)]);
             }
-            return false;
+            return undefined;
         }
-        return false;
+        return undefined;
     }
 
     public static getZero(): Vector3

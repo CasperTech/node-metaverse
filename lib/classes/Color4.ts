@@ -66,11 +66,11 @@ export class Color4
         doc.ele('A', c.alpha);
     }
 
-    public static fromXMLJS(obj: any, param: string): Color4 | false
+    public static fromXMLJS(obj: any, param: string): Color4 | undefined
     {
         if (!obj[param])
         {
-            return false;
+            return undefined;
         }
         let value = obj[param];
         if (Array.isArray(value) && value.length > 0)
@@ -103,9 +103,9 @@ export class Color4
                 }
                 return new Color4(Number(red), Number(green), Number(blue), Number(alpha));
             }
-            return false;
+            return undefined;
         }
-        return false;
+        return undefined;
     }
 
     public getRed(): number

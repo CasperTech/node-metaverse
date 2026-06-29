@@ -64,11 +64,11 @@ export class UUID
         doc.ele('UUID', str);
     }
 
-    public static fromXMLJS(obj: any, param: string): false | UUID
+    public static fromXMLJS(obj: any, param: string): UUID | undefined
     {
         if (obj[param] === undefined)
         {
-            return false;
+            return undefined;
         }
         if (Array.isArray(obj[param]) && obj[param].length > 0)
         {
@@ -80,7 +80,7 @@ export class UUID
             {
                 return new UUID(obj[param]);
             }
-            return false;
+            return undefined;
         }
         if (typeof obj[param] === 'object')
         {
@@ -93,13 +93,13 @@ export class UUID
                     {
                         return new UUID(u);
                     }
-                    return false;
+                    return undefined;
                 }
-                return false;
+                return undefined;
             }
-            return false;
+            return undefined;
         }
-        return false;
+        return undefined;
     }
 
     public setUUID(val: string): boolean

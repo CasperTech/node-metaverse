@@ -53,11 +53,11 @@ export class Quaternion
         doc.ele('W', v.w);
     }
 
-    public static fromXMLJS(obj: any, param: string): Quaternion | false
+    public static fromXMLJS(obj: any, param: string): Quaternion | undefined
     {
         if (!obj[param])
         {
-            return false;
+            return undefined;
         }
         let value = obj[param];
         if (Array.isArray(value) && value.length > 0)
@@ -90,9 +90,9 @@ export class Quaternion
                 }
                 return new Quaternion([Number(x), Number(y), Number(z), Number(w)]);
             }
-            return false;
+            return undefined;
         }
-        return false;
+        return undefined;
     }
 
     public static fromAxis(axis: Vector3, angle: number): Quaternion
