@@ -169,6 +169,7 @@ export class GameObject implements IGameObjectData
     public physicsShapeType?: PhysicsShapeType;
     public restitution?: number;
     public attachmentPoint: AttachmentPoint = AttachmentPoint.Default;
+    public lastAttachPoint = 0;
     public inventory: InventoryItem[] = [];
     public linksetData?: Map<string, {
         value: string,
@@ -1642,6 +1643,10 @@ export class GameObject implements IGameObjectData
                 const mask = 0xf << 4 >>> 0;
                 go.State = (((prop & mask) >>> 4) | ((prop & ~mask) << 4)) >>> 0;
             }
+            if ((prop = Utils.getFromXMLJS(shape, 'LastAttachPoint')) !== undefined)
+            {
+                go.lastAttachPoint = parseInt(prop, 10);
+            }
             if ((prop = Utils.getFromXMLJS(shape, 'ProfileShape')) !== undefined)
             {
                 if (go.ProfileCurve === undefined)
@@ -2196,7 +2201,7 @@ export class GameObject implements IGameObjectData
             let state = (((this.State & mask) >>> 4) | ((this.State & ~mask) << 4)) >>> 0;
             state = state | this.attachmentPoint;
             shape.ele('State', state);
-            shape.ele('LastAttachPoint', 0);
+            shape.ele('LastAttachPoint', this.lastAttachPoint);
 
             if (this.ProfileCurve !== undefined)
             {
