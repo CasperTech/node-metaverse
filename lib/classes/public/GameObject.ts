@@ -1334,6 +1334,7 @@ export class GameObject implements IGameObjectData
         const go = new GameObject();
         go.Flags = 0;
         let prop: any = '';
+        let rawState: number | undefined = undefined;
         if (Utils.getFromXMLJS(obj, 'AllowedDrop') !== undefined)
         {
             go.Flags = go.Flags | PrimFlags.AllowInventoryDrop;
@@ -1639,9 +1640,7 @@ export class GameObject implements IGameObjectData
             }
             if ((prop = Utils.getFromXMLJS(shape, 'State')) !== undefined)
             {
-                go.attachmentPoint = parseInt(prop, 10);
-                const mask = 0xf << 4 >>> 0;
-                go.State = (((prop & mask) >>> 4) | ((prop & ~mask) << 4)) >>> 0;
+                rawState = parseInt(prop, 10) & 0xff;
             }
             if ((prop = Utils.getFromXMLJS(shape, 'LastAttachPoint')) !== undefined)
             {
@@ -1864,6 +1863,21 @@ export class GameObject implements IGameObjectData
                     }
                     go.inventory.push(invItem);
                 }
+            }
+        }
+        go.attachmentPoint = 0;
+        go.IsAttachment = false;
+        if (rawState !== undefined)
+        {
+            if (go.PCode === PCode.Prim && rawState !== 0 && isRoot)
+            {
+                go.attachmentPoint = rawState;
+                go.IsAttachment = true;
+                go.State = ((rawState >>> 4) | (rawState << 4)) & 0xff;
+            }
+            else
+            {
+                go.State = rawState;
             }
         }
         return go;
@@ -2110,9 +2124,17 @@ export class GameObject implements IGameObjectData
         {
             Vector3.getXML(sceneObjectPart.ele('AttachedPos'), this.AttachedPos);
         }
+        else if (this.IsAttachment)
+        {
+            Vector3.getXML(sceneObjectPart.ele('AttachedPos'), this.Position);
+        }
         if (this.AttachedRot !== undefined)
         {
             Quaternion.getXML(sceneObjectPart.ele('AttachedRot'), this.AttachedRot);
+        }
+        else if (this.IsAttachment)
+        {
+            Quaternion.getXML(sceneObjectPart.ele('AttachedRot'), this.Rotation);
         }
         Vector3.getXML(sceneObjectPart.ele('Velocity'), this.Velocity);
         Vector3.getXML(sceneObjectPart.ele('AngularVelocity'), this.AngularVelocity);
@@ -2192,15 +2214,38 @@ export class GameObject implements IGameObjectData
             shape.ele('ProfileEnd',  Utils.packEndCut(Utils.numberOrZero(this.ProfileEnd)));
             shape.ele('ProfileHollow',  Utils.packProfileHollow(Utils.numberOrZero(this.ProfileHollow)));
 
-            // This is wrong, but opensim expects it
-            const mask = 0xf << 4 >>> 0;
             if (this.State === undefined)
             {
                 this.State = 0;
             }
-            let state = (((this.State & mask) >>> 4) | ((this.State & ~mask) << 4)) >>> 0;
-            state = state | this.attachmentPoint;
-            shape.ele('State', state);
+
+            let stateOut = 0;
+
+            if (this.PCode !== PCode.Prim)
+            {
+                stateOut = this.State & 0xff;
+            }
+            else if (rootPrim !== this && rootPrim.IsAttachment)
+            {
+                stateOut = 0;
+            }
+            else if (this.IsAttachment)
+            {
+                if (this.attachmentPoint !== undefined)
+                {
+                    stateOut = this.attachmentPoint;
+                }
+                else
+                {
+                    stateOut = ((this.State >>> 4) | (this.State << 4)) & 0xff;
+                }
+            }
+            else
+            {
+                stateOut = this.State & 0xff;
+            }
+
+            shape.ele('State', stateOut);
             shape.ele('LastAttachPoint', this.lastAttachPoint);
 
             if (this.ProfileCurve !== undefined)
@@ -2266,10 +2311,6 @@ export class GameObject implements IGameObjectData
         sceneObjectPart.ele('ParentID', this.ParentID);
         sceneObjectPart.ele('CreationDate', Math.round((new Date()).getTime() / 1000));
         sceneObjectPart.ele('Category', this.category);
-        if (this.IsAttachment)
-        {
-            Vector3.getXML(sceneObjectPart.ele('AttachPos'), this.Position);
-        }
         sceneObjectPart.ele('SalePrice', this.salePrice);
         sceneObjectPart.ele('ObjectSaleType', this.saleType);
         sceneObjectPart.ele('OwnershipCost', this.ownershipCost);
