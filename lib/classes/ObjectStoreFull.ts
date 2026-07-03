@@ -460,6 +460,14 @@ export class ObjectStoreFull extends ObjectStoreLite implements IObjectStore
                     const textureAnimLength = buf.readUInt32LE(pos);
                     pos = pos + 4;
                     o.textureAnim = TextureAnim.from(buf.subarray(pos, pos + textureAnimLength));
+                    pos = pos + textureAnimLength;
+                }
+
+                if (compressedflags & CompressedFlags.HasParticlesNew)
+                {
+                    const particles = ParticleSystem.fromCompressed(buf, pos);
+                    o.Particles = particles.particleSystem;
+                    pos = pos + particles.readLength;
                 }
 
                 o.IsAttachment = (compressedflags & CompressedFlags.HasNameValues) !== 0 && o.ParentID !== 0;

@@ -10,5 +10,6 @@ export enum CompressedFlags
     TextureAnimation = 0x40,
     HasAngularVelocity = 0x80,
     HasNameValues = 0x100,
-    MediaURL = 0x200
+    MediaURL = 0x200,
+    HasParticlesNew = 0x400
 }

@@ -1319,10 +1319,19 @@ export class ObjectStoreLite implements IObjectStore
             pos = pos + textureEntryLength;
             if (compressedflags & CompressedFlags.TextureAnimation)
             {
+                const textureAnimLength = buf.readUInt32LE(pos);
                 pos = pos + 4;
+                pos = pos + textureAnimLength;
+            }
+            if (compressedflags & CompressedFlags.HasParticlesNew)
+            {
+                const sysSize = buf.readInt32LE(pos);
+                pos = pos + 4 + sysSize;
+                const dataSize = buf.readInt32LE(pos);
+                pos = pos + 4 + dataSize;
             }
 
-            o.IsAttachment = o.NameValue !== undefined && o.NameValue.get('AttachItemID') !== undefined;
+            o.IsAttachment = o.NameValue?.get('AttachItemID') !== undefined;
             if (o.IsAttachment && o.State !== undefined)
             {
                 o.attachmentPoint = this.decodeAttachPoint(o.State);

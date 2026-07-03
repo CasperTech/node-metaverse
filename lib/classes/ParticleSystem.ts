@@ -77,6 +77,15 @@ export class ParticleSystem
         return ps;
     }
 
+    public static fromCompressed(buf: Buffer, pos: number): { particleSystem: ParticleSystem; readLength: number }
+    {
+        const sysSize = buf.readInt32LE(pos);
+        const dataSize = buf.readInt32LE(pos + 4 + sysSize);
+        const readLength = 4 + sysSize + 4 + dataSize;
+        const particleSystem = ParticleSystem.from(buf.subarray(pos, pos + readLength));
+        return { particleSystem, readLength };
+    }
+
     public static packFixed(buf: Buffer, pos: number, data: number, signed: boolean, intBits: number, fracBits: number): number
     {
         let totalBits = intBits + fracBits;
@@ -300,7 +309,7 @@ export class ParticleSystem
             pos = 0;
             finalBuffer.writeInt32LE(systemBlock.length, pos); pos = pos + 4;
             systemBlock.copy(finalBuffer, pos); pos = pos + systemBlock.length;
-            finalBuffer.writeInt32LE(legacyBlock.length, pos); pos = pos + 4;
+            finalBuffer.writeInt32LE(legacyBlock.length + extraBytes, pos); pos = pos + 4;
             legacyBlock.copy(finalBuffer, pos);
             return Buffer.concat([finalBuffer, extraBuf]);
         }
