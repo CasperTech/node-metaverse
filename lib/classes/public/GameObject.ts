@@ -1520,17 +1520,17 @@ export class GameObject implements IGameObjectData
         {
             go.Sound = prop;
         }
-        if ((prop = UUID.fromXMLJS(obj, 'SoundGain')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'SoundGain')) !== undefined)
         {
-            go.SoundGain = prop;
+            go.SoundGain = Number(prop);
         }
-        if ((prop = UUID.fromXMLJS(obj, 'SoundFlags')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'SoundFlags')) !== undefined)
         {
-            go.SoundFlags = prop;
+            go.SoundFlags = Number(prop);
         }
-        if ((prop = UUID.fromXMLJS(obj, 'SoundRadius')) !== undefined)
+        if ((prop = Utils.getFromXMLJS(obj, 'SoundRadius')) !== undefined)
         {
-            go.SoundRadius = prop;
+            go.SoundRadius = Number(prop);
         }
         if ((prop = Utils.getFromXMLJS(obj, 'Shape')) !== undefined)
         {
