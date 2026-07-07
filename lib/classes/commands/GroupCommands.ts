@@ -27,6 +27,10 @@ import { DirGroupsReplyEvent } from '../../events/DirGroupsReplyEvent';
 import { GroupRoleMembersRequestMessage } from '../messages/GroupRoleMembersRequest';
 import type { GroupRoleMembersReplyMessage } from '../messages/GroupRoleMembersReply';
 import { GroupRoleMember } from '../GroupRoleMember';
+import { JoinGroupRequestMessage } from '../messages/JoinGroupRequest';
+import type { JoinGroupReplyMessage } from '../messages/JoinGroupReply';
+import { LeaveGroupRequestMessage } from '../messages/LeaveGroupRequest';
+import type { LeaveGroupReplyMessage } from '../messages/LeaveGroupReply';
 
 export class GroupCommands extends CommandsBase
 {
@@ -568,5 +572,79 @@ export class GroupCommands extends CommandsBase
             }
         }
         return roles;
+    }
+
+    public async joinGroup(groupID: UUID | string, approveCost?: (cost: number) => boolean | Promise<boolean>): Promise<boolean>
+    {
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
+
+        const profile = await this.getGroupProfile(groupID);
+        const membershipFee = profile.MembershipFee;
+        if (membershipFee > 0)
+        {
+            if (approveCost === undefined)
+            {
+                throw new Error('Refusing to join group ' + groupID.toString() + ': it charges a membership fee of L$' + membershipFee + ' and no cost-approval callback was provided to joinGroup().');
+            }
+            if (!(await approveCost(membershipFee)))
+            {
+                return false;
+            }
+        }
+
+        const msg = new JoinGroupRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        msg.GroupData = {
+            GroupID: groupID
+        };
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+
+        const reply = await this.circuit.waitForMessage<JoinGroupReplyMessage>(Message.JoinGroupReply, 10000, (jgr: JoinGroupReplyMessage): FilterResponse =>
+        {
+            if ((groupID as UUID).equals(jgr.GroupData.GroupID))
+            {
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.NoMatch;
+        });
+
+        return reply.GroupData.Success;
+    }
+
+    public async leaveGroup(groupID: UUID | string): Promise<boolean>
+    {
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
+
+        const msg = new LeaveGroupRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        msg.GroupData = {
+            GroupID: groupID
+        };
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+
+        const reply = await this.circuit.waitForMessage<LeaveGroupReplyMessage>(Message.LeaveGroupReply, 10000, (lgr: LeaveGroupReplyMessage): FilterResponse =>
+        {
+            if ((groupID as UUID).equals(lgr.GroupData.GroupID))
+            {
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.NoMatch;
+        });
+
+        return reply.GroupData.Success;
     }
 }
