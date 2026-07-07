@@ -20,6 +20,13 @@ import { GroupBanAction } from '../../enums/GroupBanAction';
 import { GroupBan } from '../GroupBan';
 import type { GroupInviteEvent } from '../../events/GroupInviteEvent';
 import type { GroupProfileReplyEvent } from '../../events/GroupProfileReplyEvent';
+import { DirFindQueryMessage } from '../messages/DirFindQuery';
+import type { DirGroupsReplyMessage } from '../messages/DirGroupsReply';
+import { DirFindFlags } from '../../enums/DirFindFlags';
+import { DirGroupsReplyEvent } from '../../events/DirGroupsReplyEvent';
+import { GroupRoleMembersRequestMessage } from '../messages/GroupRoleMembersRequest';
+import type { GroupRoleMembersReplyMessage } from '../messages/GroupRoleMembersReply';
+import { GroupRoleMember } from '../GroupRoleMember';
 
 export class GroupCommands extends CommandsBase
 {
@@ -449,5 +456,117 @@ export class GroupCommands extends CommandsBase
             public MaturePublish = groupProfileReply.GroupData.MaturePublish;
             public OwnerRole = groupProfileReply.GroupData.OwnerRole;
         };
+    }
+
+    public async searchGroups(query: string, start = 0): Promise<DirGroupsReplyEvent[]>
+    {
+        const msg = new DirFindQueryMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        const queryID = UUID.random();
+        msg.QueryData = {
+            QueryID: queryID,
+            QueryText: Utils.StringToBuffer(query),
+            QueryFlags: DirFindFlags.Groups | DirFindFlags.IncludePG | DirFindFlags.IncludeMature | DirFindFlags.IncludeAdult,
+            QueryStart: start
+        };
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+
+        const reply = await this.circuit.waitForMessage<DirGroupsReplyMessage>(Message.DirGroupsReply, 10000, (dgr: DirGroupsReplyMessage): FilterResponse =>
+        {
+            if (dgr.QueryData.QueryID.equals(queryID))
+            {
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.NoMatch;
+        });
+
+        const results: DirGroupsReplyEvent[] = [];
+        for (const group of reply.QueryReplies ?? [])
+        {
+            if (group.GroupID.isZero())
+            {
+                continue;
+            }
+            const result = new DirGroupsReplyEvent();
+            result.GroupID = group.GroupID;
+            result.GroupName = Utils.BufferToStringSimple(group.GroupName);
+            result.Members = group.Members;
+            result.SearchOrder = group.SearchOrder;
+            results.push(result);
+        }
+        return results;
+    }
+
+    public async getRoleMembers(groupID: UUID | string): Promise<GroupRoleMember[]>
+    {
+        if (typeof groupID === 'string')
+        {
+            groupID = new UUID(groupID);
+        }
+
+        const msg = new GroupRoleMembersRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID
+        };
+        const requestID = UUID.random();
+        msg.GroupData = {
+            GroupID: groupID,
+            RequestID: requestID
+        };
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+
+        const result: GroupRoleMember[] = [];
+        let totalPairs = 0;
+        let receivedPairs = 0;
+        await this.circuit.waitForMessage<GroupRoleMembersReplyMessage>(Message.GroupRoleMembersReply, 10000, (grmr: GroupRoleMembersReplyMessage): FilterResponse =>
+        {
+            if (!grmr.AgentData.RequestID.equals(requestID))
+            {
+                return FilterResponse.NoMatch;
+            }
+            totalPairs = grmr.AgentData.TotalPairs;
+            for (const pair of grmr.MemberData ?? [])
+            {
+                receivedPairs++;
+                if (pair.RoleID.isZero() && pair.MemberID.isZero())
+                {
+                    continue;
+                }
+                const member = new GroupRoleMember();
+                member.RoleID = pair.RoleID;
+                member.MemberID = pair.MemberID;
+                result.push(member);
+            }
+            if (totalPairs === 0 || receivedPairs >= totalPairs)
+            {
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.Match;
+        });
+        return result;
+    }
+
+    public async getMemberRoles(groupID: UUID | string, memberID: UUID | string): Promise<UUID[]>
+    {
+        if (typeof memberID === 'string')
+        {
+            memberID = new UUID(memberID);
+        }
+        const pairs = await this.getRoleMembers(groupID);
+        const roles: UUID[] = [];
+        for (const pair of pairs)
+        {
+            if (pair.MemberID.equals(memberID))
+            {
+                roles.push(pair.RoleID);
+            }
+        }
+        return roles;
     }
 }

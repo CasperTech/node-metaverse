@@ -10,6 +10,8 @@ import { FilterResponse } from '../../enums/FilterResponse';
 import type { AvatarPropertiesReplyMessage } from '../messages/AvatarPropertiesReply';
 import { AvatarPropertiesRequestMessage } from '../messages/AvatarPropertiesRequest';
 import type { AvatarPropertiesReplyEvent } from '../../events/AvatarPropertiesReplyEvent';
+import type { AvatarGroupsReplyMessage } from '../messages/AvatarGroupsReply';
+import { AvatarGroupReplyEvent } from '../../events/AvatarGroupReplyEvent';
 import type { Subscription } from 'rxjs';
 import type { Avatar } from '../public/Avatar';
 import type { GameObject } from '../public/GameObject';
@@ -177,6 +179,49 @@ export class AgentCommands extends CommandsBase
             public CharterMember = parseInt(Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.CharterMember), 10); // avatarPropertiesReply.PropertiesData.CharterMember;
             public Flags = avatarPropertiesReply.PropertiesData.Flags;
         };
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async getAvatarGroups(avatarID: UUID | string): Promise<AvatarGroupReplyEvent[]>
+    {
+        if (typeof avatarID === 'string')
+        {
+            avatarID = new UUID(avatarID);
+        }
+
+        const msg: AvatarPropertiesRequestMessage = new AvatarPropertiesRequestMessage();
+        msg.AgentData = {
+            AgentID: this.agent.agentID,
+            SessionID: this.circuit.sessionID,
+            AvatarID: avatarID
+        };
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+
+        const reply: AvatarGroupsReplyMessage = (await this.circuit.waitForMessage<AvatarGroupsReplyMessage>(Message.AvatarGroupsReply, 10000, (packet: AvatarGroupsReplyMessage): FilterResponse =>
+        {
+            if (packet.AgentData.AvatarID.equals(avatarID))
+            {
+                return FilterResponse.Finish;
+            }
+            return FilterResponse.NoMatch;
+        }));
+
+        const listInProfile = reply.NewGroupData.ListInProfile;
+        const results: AvatarGroupReplyEvent[] = [];
+        for (const group of reply.GroupData)
+        {
+            const result = new AvatarGroupReplyEvent();
+            result.GroupID = group.GroupID;
+            result.GroupName = Utils.BufferToStringSimple(group.GroupName);
+            result.GroupTitle = Utils.BufferToStringSimple(group.GroupTitle);
+            result.GroupPowers = group.GroupPowers;
+            result.GroupInsigniaID = group.GroupInsigniaID;
+            result.AcceptNotices = group.AcceptNotices;
+            result.ListInProfile = listInProfile;
+            results.push(result);
+        }
+        return results;
     }
 
     private async animate(anim: UUID[], run: boolean): Promise<void>
