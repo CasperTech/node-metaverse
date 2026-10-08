@@ -1223,6 +1223,11 @@ export class InventoryItem
                     const uploadResult: any = await this.agent.currentRegion.caps.capsRequestUpload(uploader, scriptAsset);
                     if (uploadResult.state && uploadResult.state === 'complete')
                     {
+                        if (uploadResult.compiled === false)
+                        {
+                            const errors: string[] = Array.isArray(uploadResult.errors) ? uploadResult.errors.map((e: unknown) => String(e)) : [];
+                            throw new Error('Script failed to compile: ' + errors.join('; '));
+                        }
                         return new UUID(uploadResult.new_asset.toString());
                     }
                 }
