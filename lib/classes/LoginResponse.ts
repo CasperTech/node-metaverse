@@ -1,4 +1,5 @@
 import { UUID } from './UUID';
+import { RightsFlags } from '../enums/RightsFlags';
 import { Agent } from './Agent';
 import { Region } from './Region';
 import { Vector3 } from './Vector3';
@@ -173,9 +174,9 @@ export class LoginResponse
                     for (const obj of val)
                     {
                         this.agent.buddyList.push({
-                            buddyRightsGiven: obj.buddy_rights_given !== 0,
+                            buddyRightsGiven: (Number(obj.buddy_rights_given) || 0) as RightsFlags,
                             buddyID: new UUID(obj.buddy_id),
-                            buddyRightsHas: obj.buddy_rights_has !== 0,
+                            buddyRightsHas: (Number(obj.buddy_rights_has) || 0) as RightsFlags,
                         });
                     }
                     break;

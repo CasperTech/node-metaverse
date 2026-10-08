@@ -19,6 +19,7 @@ import { IPAddress } from '../IPAddress';
 import { FilterResponse } from '../../enums/FilterResponse';
 import { GrantUserRightsMessage } from '../messages/GrantUserRights';
 import { Friend } from '../public/Friend';
+import type { AvatarQueryResult } from '../public/AvatarQueryResult';
 import { RightsFlags } from '../../enums/RightsFlags';
 import { FriendOnlineEvent } from '../../events/FriendOnlineEvent';
 import { FriendRemovedEvent } from '../../events/FriendRemovedEvent';
@@ -51,6 +52,45 @@ export class FriendCommands extends CommandsBase
         {
            void this.processPacket(packet);
         });
+
+        for (const buddy of agent.buddyList)
+        {
+            const friend = new Friend(buddy.buddyID, 'Unknown', 'Friend');
+            friend.online = false;
+            friend.myRights = buddy.buddyRightsHas;
+            friend.theirRights = buddy.buddyRightsGiven;
+            this.friendsList.set(buddy.buddyID.toString(), friend);
+        }
+        void this.resolveFriendNames();
+    }
+
+    private async resolveFriendNames(): Promise<void>
+    {
+        const keys = Array.from(this.friendsList.values()).map((f) => f.getKey());
+        for (let start = 0; start < keys.length; start += 50)
+        {
+            try
+            {
+                const results = await this.bot.clientCommands.grid.avatarKey2Name(keys.slice(start, start + 50)) as AvatarQueryResult[];
+                for (const result of results)
+                {
+                    const existing = this.friendsList.get(result.getKey().toString());
+                    if (existing === undefined)
+                    {
+                        continue;
+                    }
+                    const friend = new Friend(result.getKey(), result.getFirstName(), result.getLastName());
+                    friend.online = existing.online;
+                    friend.myRights = existing.myRights;
+                    friend.theirRights = existing.theirRights;
+                    this.friendsList.set(result.getKey().toString(), friend);
+                }
+            }
+            catch (_e: unknown)
+            {
+                continue;
+            }
+        }
     }
 
     // noinspection JSUnusedGlobalSymbols

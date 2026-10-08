@@ -1,4 +1,5 @@
 import { UUID } from './UUID';
+import { RightsFlags } from '../enums/RightsFlags';
 import { Vector3 } from './Vector3';
 import { Inventory } from './Inventory';
 import type { Wearable } from './Wearable';
@@ -50,9 +51,9 @@ export class Agent
     } = {};
     public AOTransition: boolean;
     public buddyList: {
-        'buddyRightsGiven': boolean,
+        'buddyRightsGiven': RightsFlags,
         'buddyID': UUID,
-        'buddyRightsHas': boolean
+        'buddyRightsHas': RightsFlags
     }[] = [];
     public uiFlags: {
         'allowFirstLife'?: boolean
