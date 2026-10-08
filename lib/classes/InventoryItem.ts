@@ -717,7 +717,7 @@ export class InventoryItem
         document.ele('ID', this.itemID.toString());
         document.ele('InvType', this.inventoryType);
         document.ele('CreatorUUID', this.permissions.creator.toString());
-        document.ele('CreationDate', this.created.getTime() / 1000);
+        document.ele('CreationDate', Math.floor(this.created.getTime() / 1000));
         document.ele('Owner', this.permissions.owner.toString());
         document.ele('LastOwner', this.permissions.lastOwner.toString());
         document.ele('Description', this.description);
